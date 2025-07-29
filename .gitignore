@@ -138,5 +138,6 @@ dist
 
 # custom
 backend/config.py
+backend/*.db
 env/
 **/__pycache__/

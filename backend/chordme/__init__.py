@@ -1,5 +1,6 @@
 from flask import Flask, send_from_directory, send_file
 from flask_cors import CORS
+from flask_sqlalchemy import SQLAlchemy
 import os
 
 # Set up static folder path - go up from backend/chordme to root, then to frontend
@@ -15,3 +16,6 @@ cors = CORS(app, resources={
     'origins': '*',
   }
 })
+
+# Initialize database
+db = SQLAlchemy(app)
