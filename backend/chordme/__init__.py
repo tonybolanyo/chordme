@@ -10,7 +10,8 @@ root_dir = os.path.dirname(backend_dir)  # project root
 static_folder = os.path.join(root_dir, 'frontend')
 
 app = Flask(__name__, static_folder=static_folder, static_url_path='')
-app.config.from_object('config')
+config_name = os.environ.get('FLASK_CONFIG', 'config')
+app.config.from_object(config_name)
 cors = CORS(app, resources={
   r'/api/*': {
     'origins': '*',

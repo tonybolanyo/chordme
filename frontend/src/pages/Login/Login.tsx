@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
 import { apiService } from '../../services/api';
 import { validateEmail, validateRequired } from '../../utils';
 import type { LoginRequest } from '../../types';
 import './Login.css';
 
 const Login: React.FC = () => {
+  const { login } = useAuth();
   const [formData, setFormData] = useState<LoginRequest>({
     email: '',
     password: '',
@@ -68,12 +70,12 @@ const Login: React.FC = () => {
     try {
       const response = await apiService.login(formData);
       
-      if (response.success && response.data?.token) {
+      if (response.success && response.data?.token && response.data?.user) {
         setSuccessMessage('Login successful!');
-        // Store token in localStorage (in a real app, consider more secure storage)
-        localStorage.setItem('authToken', response.data.token);
-        // Here you would typically redirect or update app state
-        console.log('User logged in:', response.data.user);
+        // Use the auth context to log in
+        login(response.data.token, response.data.user);
+        // Redirect to home page
+        window.location.hash = '';
       } else {
         setErrors({ submit: response.error || 'Login failed' });
       }

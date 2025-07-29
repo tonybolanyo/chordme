@@ -232,3 +232,52 @@ def verify_jwt_token(token):
         return None
     except jwt.InvalidTokenError:
         return None
+
+
+def auth_required(f):
+    """
+    Decorator to require authentication for an endpoint.
+    Expects Authorization header with Bearer token.
+    """
+    from functools import wraps
+    from flask import request, jsonify, g
+    
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # Get the Authorization header
+        auth_header = request.headers.get('Authorization')
+        
+        if not auth_header:
+            return jsonify({
+                'error': 'Authorization header is required',
+                'status': 'error'
+            }), 401
+        
+        # Check for Bearer token format
+        try:
+            token_type, token = auth_header.split(' ', 1)
+            if token_type.lower() != 'bearer':
+                return jsonify({
+                    'error': 'Authorization header must be Bearer token',
+                    'status': 'error'
+                }), 401
+        except ValueError:
+            return jsonify({
+                'error': 'Invalid Authorization header format',
+                'status': 'error'
+            }), 401
+        
+        # Verify the token
+        payload = verify_jwt_token(token)
+        if not payload:
+            return jsonify({
+                'error': 'Invalid or expired token',
+                'status': 'error'
+            }), 401
+        
+        # Store user ID in flask.g for use in the route
+        g.current_user_id = payload['user_id']
+        
+        return f(*args, **kwargs)
+    
+    return decorated_function
