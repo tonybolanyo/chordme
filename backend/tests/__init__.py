@@ -1,0 +1,1 @@
+"""ChordMe automated tests package."""

@@ -66,4 +66,80 @@ frontend/src/
 
 ## Backend Setup
 
-See the `/backend` directory for backend setup instructions.
+The backend is built with Python Flask and includes comprehensive automated tests for all authentication endpoints.
+
+### Getting Started
+
+1. Navigate to the backend directory:
+   ```bash
+   cd backend
+   ```
+
+2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. Copy configuration template:
+   ```bash
+   cp config.template.py config.py
+   ```
+
+4. Run the development server:
+   ```bash
+   python run.py
+   ```
+
+### Running Tests
+
+The backend includes a comprehensive test suite covering all authentication endpoints:
+
+```bash
+# Run all tests
+python -m pytest tests/ -v
+
+# Run specific test categories
+python -m pytest tests/test_auth.py::TestUserRegistration -v
+python -m pytest tests/test_auth.py::TestUserLogin -v
+
+# Run with coverage (if pytest-cov installed)
+python -m pytest tests/ --cov=chordme
+```
+
+### Test Documentation
+
+For detailed testing documentation, see [backend/TESTING.md](backend/TESTING.md).
+
+The test suite includes:
+- **25 automated tests** covering all authentication endpoints
+- **Health check** endpoint validation
+- **User registration** with comprehensive validation testing
+- **User login** with JWT token validation
+- **Integration scenarios** for end-to-end testing
+- **Error handling** and edge case coverage
+
+#### Test Coverage
+
+- ✅ Health check endpoint (`/api/v1/health`)
+- ✅ User registration endpoint (`/api/v1/auth/register`)
+  - Valid registration scenarios
+  - Email format validation
+  - Password strength validation  
+  - Duplicate user prevention
+  - Error handling
+- ✅ User login endpoint (`/api/v1/auth/login`)
+  - Valid login scenarios
+  - JWT token generation and validation
+  - Invalid credentials handling
+  - Error handling
+- ✅ Integration tests for complete user workflows
+
+### API Endpoints
+
+#### Authentication Endpoints
+
+- `POST /api/v1/auth/register` - User registration
+- `POST /api/v1/auth/login` - User login (returns JWT token)
+- `GET /api/v1/health` - Health check
+
+See the test documentation for detailed API behavior and response formats.
