@@ -1,5 +1,5 @@
 // API service functions for interacting with the backend
-import type { Song } from '../types';
+import type { Song, LoginRequest, RegisterRequest, AuthResponse } from '../types';
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
@@ -47,6 +47,21 @@ class ApiService {
   async deleteSong(id: string) {
     return this.fetchApi(`/api/songs/${id}`, {
       method: 'DELETE',
+    });
+  }
+
+  // Authentication API calls
+  async register(userData: RegisterRequest): Promise<AuthResponse> {
+    return this.fetchApi('/api/v1/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(userData),
+    });
+  }
+
+  async login(credentials: LoginRequest): Promise<AuthResponse> {
+    return this.fetchApi('/api/v1/auth/login', {
+      method: 'POST',
+      body: JSON.stringify(credentials),
     });
   }
 }

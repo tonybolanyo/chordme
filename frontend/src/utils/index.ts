@@ -22,3 +22,6 @@ export const debounce = <T extends (...args: unknown[]) => void>(
 export const capitalizeFirstLetter = (string: string): string => {
   return string.charAt(0).toUpperCase() + string.slice(1);
 };
+
+// Re-export validation utilities
+export * from './validation';
