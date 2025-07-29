@@ -1,6 +1,6 @@
 from . import app, db
 from .models import User
-from .utils import validate_email, validate_password, create_error_response, create_success_response
+from .utils import validate_email, validate_password, create_error_response, create_success_response, generate_jwt_token
 from flask import send_from_directory, send_file, request, jsonify
 from sqlalchemy.exc import IntegrityError
 import os
@@ -69,6 +69,56 @@ def register():
         db.session.rollback()
         app.logger.error(f"Registration error: {str(e)}")
         return create_error_response("An error occurred during registration", 500)
+
+
+@app.route('/api/v1/auth/login', methods=['POST'])
+def login():
+    """
+    Login user with email and password. Returns JWT token.
+    """
+    try:
+        # Get JSON data from request
+        data = request.get_json()
+        
+        if not data:
+            return create_error_response("No data provided")
+        
+        email = data.get('email', '').strip().lower()
+        password = data.get('password', '')
+        
+        # Validate required fields
+        if not email:
+            return create_error_response("Email is required")
+        
+        if not password:
+            return create_error_response("Password is required")
+        
+        # Find user by email
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            return create_error_response("Invalid email or password", 401)
+        
+        # Check password
+        if not user.check_password(password):
+            return create_error_response("Invalid email or password", 401)
+        
+        # Generate JWT token
+        token = generate_jwt_token(user.id)
+        if not token:
+            return create_error_response("Failed to generate authentication token", 500)
+        
+        # Return success response with token and user data
+        return create_success_response(
+            data={
+                'token': token,
+                'user': user.to_dict()
+            },
+            message="Login successful"
+        )
+        
+    except Exception as e:
+        app.logger.error(f"Login error: {str(e)}")
+        return create_error_response("An error occurred during login", 500)
 
 
 @app.route('/')

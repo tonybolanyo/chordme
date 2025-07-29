@@ -1,5 +1,7 @@
 import re
-from flask import jsonify
+from flask import jsonify, current_app
+import jwt
+from datetime import datetime, timedelta
 
 
 def validate_email(email):
@@ -65,3 +67,29 @@ def create_success_response(data=None, message=None, status_code=200):
         response['message'] = message
     
     return jsonify(response), status_code
+
+
+def generate_jwt_token(user_id):
+    """Generate a JWT token for the given user ID."""
+    try:
+        payload = {
+            'user_id': user_id,
+            'exp': datetime.utcnow() + timedelta(seconds=current_app.config['JWT_EXPIRATION_DELTA']),
+            'iat': datetime.utcnow()
+        }
+        token = jwt.encode(payload, current_app.config['JWT_SECRET_KEY'], algorithm='HS256')
+        return token
+    except Exception as e:
+        current_app.logger.error(f"JWT generation error: {str(e)}")
+        return None
+
+
+def verify_jwt_token(token):
+    """Verify and decode a JWT token."""
+    try:
+        payload = jwt.decode(token, current_app.config['JWT_SECRET_KEY'], algorithms=['HS256'])
+        return payload
+    except jwt.ExpiredSignatureError:
+        return None
+    except jwt.InvalidTokenError:
+        return None
