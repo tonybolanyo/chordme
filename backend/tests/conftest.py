@@ -79,11 +79,13 @@ def create_test_app():
     # Import utilities
     from chordme.utils import validate_email, validate_password, create_error_response, create_success_response, generate_jwt_token, sanitize_input
     from chordme.csrf_protection import get_csrf_token
+    from chordme.security_headers import security_headers
     from flask import send_from_directory, send_file, request, jsonify
     from sqlalchemy.exc import IntegrityError
     
     # Register routes
     @app.route('/api/v1/health', methods=['GET'])
+    @security_headers
     def health():
         """Health check endpoint."""
         return {
@@ -92,6 +94,7 @@ def create_test_app():
         }, 200
 
     @app.route('/api/v1/csrf-token', methods=['GET'])
+    @security_headers
     def get_csrf_token_endpoint():
         """Get a CSRF token for form submissions."""
         token = get_csrf_token()
@@ -101,6 +104,7 @@ def create_test_app():
         )
 
     @app.route('/api/v1/auth/register', methods=['POST'])
+    @security_headers
     def register():
         """Register a new user with email and password."""
         try:
@@ -155,6 +159,7 @@ def create_test_app():
             return create_error_response("An error occurred during registration", 500)
 
     @app.route('/api/v1/auth/login', methods=['POST'])
+    @security_headers
     def login():
         """Login user with email and password. Returns JWT token."""
         try:
