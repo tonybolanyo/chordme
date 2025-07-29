@@ -33,7 +33,7 @@ class ApiService {
         // Clear invalid token and redirect to login
         localStorage.removeItem('authToken');
         localStorage.removeItem('authUser');
-        window.location.hash = 'login';
+        navigateTo('login');
         throw new Error('Authentication failed. Please log in again.');
       }
       
