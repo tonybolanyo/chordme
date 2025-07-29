@@ -297,3 +297,55 @@ def valid_user_variations():
         {'email': 'user2@test.org', 'password': 'AnotherPass456'},
         {'email': 'test.user@domain.co.uk', 'password': 'ComplexPassword789'},
     ]
+
+
+@pytest.fixture
+def user(client):
+    """Create a test user."""
+    from chordme.models import User
+    from chordme import db
+    test_user = User(email='test@example.com', password='Test123!')
+    db.session.add(test_user)
+    db.session.commit()
+    return test_user
+
+
+@pytest.fixture
+def auth_headers(user):
+    """Create authentication headers for the test user."""
+    from chordme.utils import generate_jwt_token
+    token = generate_jwt_token(user.id)
+    return {'Authorization': f'Bearer {token}'}
+
+
+@pytest.fixture
+def another_user(client):
+    """Create another test user for multi-user tests."""
+    from chordme.models import User
+    from chordme import db
+    test_user = User(email='another@example.com', password='Test123!')
+    db.session.add(test_user)
+    db.session.commit()
+    return test_user
+
+
+def register_user(client, email='test@example.com', password='Test123!'):
+    """Helper function to register a user."""
+    import json
+    return client.post('/api/v1/auth/register', 
+                      data=json.dumps({
+                          'email': email,
+                          'password': password
+                      }),
+                      content_type='application/json')
+
+
+def login_user(client, email='test@example.com', password='Test123!'):
+    """Helper function to login a user."""
+    import json
+    return client.post('/api/v1/auth/login',
+                      data=json.dumps({
+                          'email': email,
+                          'password': password
+                      }),
+                      content_type='application/json')

@@ -1,10 +1,10 @@
 from . import app, db
-from .models import User
-from .utils import validate_email, validate_password, create_error_response, create_success_response, generate_jwt_token, sanitize_input
+from .models import User, Song
+from .utils import validate_email, validate_password, create_error_response, create_success_response, generate_jwt_token, sanitize_input, jwt_required
 from .rate_limiter import rate_limit
 from .csrf_protection import csrf_protect, get_csrf_token
 from .security_headers import security_headers, security_error_handler
-from flask import send_from_directory, send_file, request, jsonify
+from flask import send_from_directory, send_file, request, jsonify, g
 from sqlalchemy.exc import IntegrityError
 import os
 
@@ -203,6 +203,291 @@ def login():
     except Exception as e:
         return security_error_handler.handle_server_error(
             "An error occurred during login",
+            exception=e,
+            ip_address=request.remote_addr
+        )
+
+
+# Songs CRUD Endpoints
+
+@app.route('/api/v1/songs', methods=['POST'])
+@jwt_required
+@rate_limit(max_requests=20, window_seconds=300)  # 20 song creations per 5 minutes
+@csrf_protect(require_token=False)
+@security_headers
+def create_song():
+    """
+    Create a new song for the authenticated user.
+    """
+    try:
+        # Get JSON data from request
+        data = request.get_json()
+        
+        if not data:
+            return security_error_handler.handle_validation_error(
+                "No data provided",
+                "Empty request body in song creation"
+            )
+        
+        # Sanitize input data
+        data = sanitize_input(data)
+        
+        title = data.get('title', '').strip()
+        content = data.get('content', '').strip()
+        
+        # Validate required fields
+        if not title:
+            return security_error_handler.handle_validation_error(
+                "Title is required",
+                f"Missing title in song creation from IP {request.remote_addr}"
+            )
+        
+        if not content:
+            return security_error_handler.handle_validation_error(
+                "Content is required",
+                f"Missing content in song creation from IP {request.remote_addr}"
+            )
+        
+        # Validate title length
+        if len(title) > 200:
+            return security_error_handler.handle_validation_error(
+                "Title is too long (maximum 200 characters)",
+                f"Title too long in song creation from IP {request.remote_addr}"
+            )
+        
+        # Create new song
+        new_song = Song(title=title, author_id=g.current_user.id, content=content)
+        
+        # Save to database
+        try:
+            db.session.add(new_song)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f"Song creation failed: {str(e)} from IP {request.remote_addr}")
+            return security_error_handler.handle_server_error(
+                "Failed to create song",
+                exception=e,
+                ip_address=request.remote_addr
+            )
+        
+        app.logger.info(f"Song created successfully: {new_song.id} by user {g.current_user.id} from IP {request.remote_addr}")
+        
+        # Return success response
+        return create_success_response(
+            data=new_song.to_dict(),
+            message="Song created successfully",
+            status_code=201
+        )
+        
+    except Exception as e:
+        db.session.rollback()
+        return security_error_handler.handle_server_error(
+            "An error occurred during song creation",
+            exception=e,
+            ip_address=request.remote_addr
+        )
+
+
+@app.route('/api/v1/songs', methods=['GET'])
+@jwt_required
+@security_headers
+def list_songs():
+    """
+    Get all songs for the authenticated user.
+    """
+    try:
+        # Get query parameters for pagination (optional)
+        page = request.args.get('page', 1, type=int)
+        per_page = min(request.args.get('per_page', 20, type=int), 100)  # Max 100 per page
+        
+        # Query songs for the current user
+        songs_query = Song.query.filter_by(author_id=g.current_user.id).order_by(Song.created_at.desc())
+        
+        # Apply pagination
+        songs_paginated = songs_query.paginate(
+            page=page, per_page=per_page, error_out=False
+        )
+        
+        # Convert songs to dictionaries
+        songs_data = [song.to_dict() for song in songs_paginated.items]
+        
+        # Create response with pagination info
+        response_data = {
+            'songs': songs_data,
+            'pagination': {
+                'page': page,
+                'per_page': per_page,
+                'total': songs_paginated.total,
+                'pages': songs_paginated.pages,
+                'has_next': songs_paginated.has_next,
+                'has_prev': songs_paginated.has_prev
+            }
+        }
+        
+        return create_success_response(
+            data=response_data,
+            message=f"Retrieved {len(songs_data)} songs"
+        )
+        
+    except Exception as e:
+        return security_error_handler.handle_server_error(
+            "An error occurred while retrieving songs",
+            exception=e,
+            ip_address=request.remote_addr
+        )
+
+
+@app.route('/api/v1/songs/<int:song_id>', methods=['GET'])
+@jwt_required
+@security_headers
+def get_song(song_id):
+    """
+    Get a specific song by ID (only if owned by authenticated user).
+    """
+    try:
+        # Find song by ID and user
+        song = Song.query.filter_by(id=song_id, author_id=g.current_user.id).first()
+        
+        if not song:
+            return create_error_response("Song not found", 404)
+        
+        return create_success_response(
+            data=song.to_dict(),
+            message="Song retrieved successfully"
+        )
+        
+    except Exception as e:
+        return security_error_handler.handle_server_error(
+            "An error occurred while retrieving the song",
+            exception=e,
+            ip_address=request.remote_addr
+        )
+
+
+@app.route('/api/v1/songs/<int:song_id>', methods=['PUT'])
+@jwt_required
+@rate_limit(max_requests=30, window_seconds=300)  # 30 updates per 5 minutes
+@csrf_protect(require_token=False)
+@security_headers
+def update_song(song_id):
+    """
+    Update a specific song (only if owned by authenticated user).
+    """
+    try:
+        # Find song by ID and user
+        song = Song.query.filter_by(id=song_id, author_id=g.current_user.id).first()
+        
+        if not song:
+            return create_error_response("Song not found", 404)
+        
+        # Get JSON data from request
+        data = request.get_json()
+        
+        if not data:
+            return security_error_handler.handle_validation_error(
+                "No data provided",
+                "Empty request body in song update"
+            )
+        
+        # Sanitize input data
+        data = sanitize_input(data)
+        
+        # Update fields if provided
+        if 'title' in data:
+            title = data['title'].strip()
+            if not title:
+                return security_error_handler.handle_validation_error(
+                    "Title cannot be empty",
+                    f"Empty title in song update from IP {request.remote_addr}"
+                )
+            if len(title) > 200:
+                return security_error_handler.handle_validation_error(
+                    "Title is too long (maximum 200 characters)",
+                    f"Title too long in song update from IP {request.remote_addr}"
+                )
+            song.title = title
+        
+        if 'content' in data:
+            content = data['content'].strip()
+            if not content:
+                return security_error_handler.handle_validation_error(
+                    "Content cannot be empty",
+                    f"Empty content in song update from IP {request.remote_addr}"
+                )
+            song.content = content
+        
+        # Save changes to database
+        try:
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f"Song update failed: {str(e)} from IP {request.remote_addr}")
+            return security_error_handler.handle_server_error(
+                "Failed to update song",
+                exception=e,
+                ip_address=request.remote_addr
+            )
+        
+        app.logger.info(f"Song updated successfully: {song.id} by user {g.current_user.id} from IP {request.remote_addr}")
+        
+        return create_success_response(
+            data=song.to_dict(),
+            message="Song updated successfully"
+        )
+        
+    except Exception as e:
+        db.session.rollback()
+        return security_error_handler.handle_server_error(
+            "An error occurred during song update",
+            exception=e,
+            ip_address=request.remote_addr
+        )
+
+
+@app.route('/api/v1/songs/<int:song_id>', methods=['DELETE'])
+@jwt_required
+@rate_limit(max_requests=10, window_seconds=300)  # 10 deletions per 5 minutes
+@csrf_protect(require_token=False)
+@security_headers
+def delete_song(song_id):
+    """
+    Delete a specific song (only if owned by authenticated user).
+    """
+    try:
+        # Find song by ID and user
+        song = Song.query.filter_by(id=song_id, author_id=g.current_user.id).first()
+        
+        if not song:
+            return create_error_response("Song not found", 404)
+        
+        # Store song data for response before deletion
+        song_data = song.to_dict()
+        
+        # Delete song from database
+        try:
+            db.session.delete(song)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f"Song deletion failed: {str(e)} from IP {request.remote_addr}")
+            return security_error_handler.handle_server_error(
+                "Failed to delete song",
+                exception=e,
+                ip_address=request.remote_addr
+            )
+        
+        app.logger.info(f"Song deleted successfully: {song_id} by user {g.current_user.id} from IP {request.remote_addr}")
+        
+        return create_success_response(
+            data=song_data,
+            message="Song deleted successfully"
+        )
+        
+    except Exception as e:
+        db.session.rollback()
+        return security_error_handler.handle_server_error(
+            "An error occurred during song deletion",
             exception=e,
             ip_address=request.remote_addr
         )

@@ -232,3 +232,50 @@ def verify_jwt_token(token):
         return None
     except jwt.InvalidTokenError:
         return None
+
+
+def jwt_required(f):
+    """
+    Decorator to require JWT authentication for API endpoints.
+    Sets g.current_user to the authenticated user.
+    """
+    from functools import wraps
+    from flask import request, g
+    from . import db
+    from .models import User
+    
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # Get token from Authorization header
+        auth_header = request.headers.get('Authorization')
+        if not auth_header:
+            return create_error_response("Authorization header is required", 401)
+        
+        # Extract token from "Bearer <token>" format
+        try:
+            token_type, token = auth_header.split(' ', 1)
+            if token_type.lower() != 'bearer':
+                return create_error_response("Invalid authorization header format", 401)
+        except ValueError:
+            return create_error_response("Invalid authorization header format", 401)
+        
+        # Verify token
+        payload = verify_jwt_token(token)
+        if not payload:
+            return create_error_response("Invalid or expired token", 401)
+        
+        # Get user from payload
+        user_id = payload.get('user_id')
+        if not user_id:
+            return create_error_response("Invalid token payload", 401)
+        
+        user = db.session.get(User, user_id)
+        if not user:
+            return create_error_response("User not found", 401)
+        
+        # Set current user in Flask g object
+        g.current_user = user
+        
+        return f(*args, **kwargs)
+    
+    return decorated_function

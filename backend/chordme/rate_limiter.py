@@ -100,6 +100,14 @@ def rate_limit(max_requests=5, window_seconds=300, block_duration=300):
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
+            # Skip rate limiting in test mode if configured
+            try:
+                if current_app.config.get('TESTING') and not current_app.config.get('RATE_LIMITING_ENABLED', True):
+                    return f(*args, **kwargs)
+            except RuntimeError:
+                # No app context available, proceed with rate limiting
+                pass
+            
             # Get client IP address (handle proxy headers)
             ip_address = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr)
             if ip_address and ',' in ip_address:
