@@ -23,6 +23,15 @@
 .header-nav {
   display: flex;
   gap: 1.5rem;
+  align-items: center;
+}
+
+.auth-links {
+  display: flex;
+  gap: 0.75rem;
+  margin-left: 1rem;
+  padding-left: 1rem;
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .nav-link {
@@ -35,4 +44,41 @@
 
 .nav-link:hover {
   background-color: rgba(255, 255, 255, 0.1);
+  text-decoration: none;
+}
+
+.auth-link {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.btn-register {
+  background-color: #3498db;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+}
+
+.btn-register:hover {
+  background-color: #2980b9;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .header-container {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .header-nav {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .auth-links {
+    margin-left: 0;
+    padding-left: 0;
+    border-left: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    padding-top: 0.75rem;
+  }
 }
