@@ -1,5 +1,6 @@
 // API service functions for interacting with the backend
 import type { Song, LoginRequest, RegisterRequest, AuthResponse } from '../types';
+import { isTokenExpired } from '../utils/jwt';
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
@@ -11,6 +12,15 @@ class ApiService {
 
   private async fetchApi(endpoint: string, options: RequestInit = {}) {
     const token = this.getAuthToken();
+    
+    // Check if token is expired before making the request
+    if (token && isTokenExpired(token)) {
+      console.log('Token has expired, clearing authentication data');
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('authUser');
+      window.location.hash = 'login';
+      throw new Error('Your session has expired. Please log in again.');
+    }
     
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -33,7 +43,7 @@ class ApiService {
         // Clear invalid token and redirect to login
         localStorage.removeItem('authToken');
         localStorage.removeItem('authUser');
-        navigateTo('login');
+        window.location.hash = 'login';
         throw new Error('Authentication failed. Please log in again.');
       }
       

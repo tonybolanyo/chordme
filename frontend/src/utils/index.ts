@@ -25,3 +25,6 @@ export const capitalizeFirstLetter = (string: string): string => {
 
 // Re-export validation utilities
 export * from './validation';
+
+// Re-export JWT utilities
+export * from './jwt';
