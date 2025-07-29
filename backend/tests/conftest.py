@@ -77,7 +77,7 @@ def create_test_app():
             return f'<User {self.email}>'
     
     # Import utilities
-    from chordme.utils import validate_email, validate_password, create_error_response, create_success_response, generate_jwt_token
+    from chordme.utils import validate_email, validate_password, create_error_response, create_success_response, generate_jwt_token, sanitize_input
     from flask import send_from_directory, send_file, request, jsonify
     from sqlalchemy.exc import IntegrityError
     
@@ -100,15 +100,18 @@ def create_test_app():
             if not data:
                 return create_error_response("No data provided")
             
+            # Sanitize input data
+            data = sanitize_input(data)
+            
             email = data.get('email', '').strip().lower()
             password = data.get('password', '')
             
-            # Validate email
+            # Validate email with enhanced checks
             email_valid, email_error = validate_email(email)
             if not email_valid:
                 return create_error_response(email_error)
             
-            # Validate password
+            # Validate password with enhanced checks
             password_valid, password_error = validate_password(password)
             if not password_valid:
                 return create_error_response(password_error)
@@ -151,6 +154,9 @@ def create_test_app():
             if not data:
                 return create_error_response("No data provided")
             
+            # Sanitize input data
+            data = sanitize_input(data)
+            
             email = data.get('email', '').strip().lower()
             password = data.get('password', '')
             
@@ -160,6 +166,10 @@ def create_test_app():
             
             if not password:
                 return create_error_response("Password is required")
+            
+            # Basic email format validation for login
+            if '@' not in email or len(email) < 3 or len(email) > 120:
+                return create_error_response("Invalid email or password", 401)
             
             # Find user by email
             user = User.query.filter_by(email=email).first()
@@ -252,7 +262,7 @@ def invalid_passwords():
 def valid_user_variations():
     """Various valid user data for testing."""
     return [
-        {'email': 'user1@example.com', 'password': 'Password123'},
+        {'email': 'user1@example.com', 'password': 'ValidPass123'},
         {'email': 'user2@test.org', 'password': 'AnotherPass456'},
         {'email': 'test.user@domain.co.uk', 'password': 'ComplexPassword789'},
     ]

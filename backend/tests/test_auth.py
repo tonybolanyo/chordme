@@ -444,9 +444,9 @@ class TestIntegrationScenarios:
     def test_multiple_users_registration_and_login(self, client):
         """Test multiple users can register and login independently."""
         users = [
-            {'email': 'user1@example.com', 'password': 'Password123'},
-            {'email': 'user2@example.com', 'password': 'Password456'},
-            {'email': 'user3@example.com', 'password': 'Password789'},
+            {'email': 'user1@example.com', 'password': 'ValidPass123'},
+            {'email': 'user2@example.com', 'password': 'StrongPass456'},
+            {'email': 'user3@example.com', 'password': 'SecurePass789'},
         ]
         
         user_ids = []
