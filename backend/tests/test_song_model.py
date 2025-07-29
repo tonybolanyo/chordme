@@ -93,7 +93,7 @@ def test_song_model_multiple_songs():
             assert song.author_id == user.id
         
         # Clean up
-        for song in user.songs[:]:  # Create a copy of the list to avoid modification during iteration
+        for song in list(user.songs):  # Create a copy of the list to avoid modification during iteration
             db.session.delete(song)
         db.session.delete(user)
         db.session.commit()
