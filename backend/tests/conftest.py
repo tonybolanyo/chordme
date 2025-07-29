@@ -78,11 +78,14 @@ def create_test_app():
     
     # Import utilities
     from chordme.utils import validate_email, validate_password, create_error_response, create_success_response, generate_jwt_token, sanitize_input
+    from chordme.csrf_protection import get_csrf_token
+    from chordme.security_headers import security_headers
     from flask import send_from_directory, send_file, request, jsonify
     from sqlalchemy.exc import IntegrityError
     
     # Register routes
     @app.route('/api/v1/health', methods=['GET'])
+    @security_headers
     def health():
         """Health check endpoint."""
         return {
@@ -90,7 +93,18 @@ def create_test_app():
             'message': 'Service is running'
         }, 200
 
+    @app.route('/api/v1/csrf-token', methods=['GET'])
+    @security_headers
+    def get_csrf_token_endpoint():
+        """Get a CSRF token for form submissions."""
+        token = get_csrf_token()
+        return create_success_response(
+            data={'csrf_token': token},
+            message="CSRF token generated successfully"
+        )
+
     @app.route('/api/v1/auth/register', methods=['POST'])
+    @security_headers
     def register():
         """Register a new user with email and password."""
         try:
@@ -145,6 +159,7 @@ def create_test_app():
             return create_error_response("An error occurred during registration", 500)
 
     @app.route('/api/v1/auth/login', methods=['POST'])
+    @security_headers
     def login():
         """Login user with email and password. Returns JWT token."""
         try:
@@ -199,6 +214,22 @@ def create_test_app():
             return create_error_response("An error occurred during login", 500)
     
     return app, db
+
+
+@pytest.fixture
+def app():
+    """Create a test app instance."""
+    app, db = create_test_app()
+    
+    with app.app_context():
+        # Create all tables
+        db.create_all()
+        try:
+            yield app
+        finally:
+            # Clean up after test
+            db.session.remove()
+            db.drop_all()
 
 
 @pytest.fixture
