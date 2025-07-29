@@ -270,6 +270,10 @@ def create_song():
         if len(title) > 200:
             return create_error_response("Title must be 200 characters or less", 400)
         
+        # Validate content length
+        if len(content) > 10000:
+            return create_error_response("Content must be 10,000 characters or less", 400)
+        
         # Create new song
         new_song = Song(title=title, author_id=g.current_user_id, content=content)
         
