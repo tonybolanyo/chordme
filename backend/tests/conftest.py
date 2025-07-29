@@ -297,3 +297,35 @@ def valid_user_variations():
         {'email': 'user2@test.org', 'password': 'AnotherPass456'},
         {'email': 'test.user@domain.co.uk', 'password': 'ComplexPassword789'},
     ]
+
+
+@pytest.fixture
+def auth_token(client):
+    """Create a user and return a valid JWT token for testing."""
+    import json
+    from chordme.utils import generate_jwt_token
+    from chordme.models import User
+    from chordme import db
+    
+    # Create a test user
+    user_data = {
+        'email': 'test@example.com',
+        'password': 'TestPassword123'
+    }
+    
+    # Register the user
+    response = client.post('/api/v1/auth/register',
+                           data=json.dumps(user_data),
+                           content_type='application/json')
+    
+    assert response.status_code == 201
+    
+    # Get the user from database to get the ID
+    user = User.query.filter_by(email='test@example.com').first()
+    assert user is not None
+    
+    # Generate and return JWT token
+    token = generate_jwt_token(user.id)
+    assert token is not None
+    
+    return token
