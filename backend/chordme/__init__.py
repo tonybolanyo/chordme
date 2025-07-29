@@ -19,3 +19,6 @@ cors = CORS(app, resources={
 
 # Initialize database
 db = SQLAlchemy(app)
+
+# Import API routes (must come after db initialization)
+from . import api

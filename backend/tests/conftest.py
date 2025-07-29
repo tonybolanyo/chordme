@@ -78,6 +78,7 @@ def create_test_app():
     
     # Import utilities
     from chordme.utils import validate_email, validate_password, create_error_response, create_success_response, generate_jwt_token, sanitize_input
+    from chordme.csrf_protection import get_csrf_token
     from flask import send_from_directory, send_file, request, jsonify
     from sqlalchemy.exc import IntegrityError
     
@@ -89,6 +90,15 @@ def create_test_app():
             'status': 'ok',
             'message': 'Service is running'
         }, 200
+
+    @app.route('/api/v1/csrf-token', methods=['GET'])
+    def get_csrf_token_endpoint():
+        """Get a CSRF token for form submissions."""
+        token = get_csrf_token()
+        return create_success_response(
+            data={'csrf_token': token},
+            message="CSRF token generated successfully"
+        )
 
     @app.route('/api/v1/auth/register', methods=['POST'])
     def register():
@@ -199,6 +209,22 @@ def create_test_app():
             return create_error_response("An error occurred during login", 500)
     
     return app, db
+
+
+@pytest.fixture
+def app():
+    """Create a test app instance."""
+    app, db = create_test_app()
+    
+    with app.app_context():
+        # Create all tables
+        db.create_all()
+        try:
+            yield app
+        finally:
+            # Clean up after test
+            db.session.remove()
+            db.drop_all()
 
 
 @pytest.fixture

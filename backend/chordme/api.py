@@ -1,12 +1,16 @@
 from . import app, db
 from .models import User
 from .utils import validate_email, validate_password, create_error_response, create_success_response, generate_jwt_token, sanitize_input
+from .rate_limiter import rate_limit
+from .csrf_protection import csrf_protect, get_csrf_token
+from .security_headers import security_headers, security_error_handler
 from flask import send_from_directory, send_file, request, jsonify
 from sqlalchemy.exc import IntegrityError
 import os
 
 
 @app.route('/api/v1/health', methods=['GET'])
+@security_headers
 def health():
     """
     Health check endpoint.
@@ -17,7 +21,23 @@ def health():
     }, 200
 
 
+@app.route('/api/v1/csrf-token', methods=['GET'])
+@security_headers
+def get_csrf_token_endpoint():
+    """
+    Get a CSRF token for form submissions.
+    """
+    token = get_csrf_token()
+    return create_success_response(
+        data={'csrf_token': token},
+        message="CSRF token generated successfully"
+    )
+
+
 @app.route('/api/v1/auth/register', methods=['POST'])
+@rate_limit(max_requests=5, window_seconds=300)  # 5 requests per 5 minutes
+@csrf_protect(require_token=False)  # CSRF optional for registration to allow easier integration
+@security_headers
 def register():
     """
     Register a new user with email and password.
@@ -28,7 +48,10 @@ def register():
         data = request.get_json()
         
         if not data:
-            return create_error_response("No data provided")
+            return security_error_handler.handle_validation_error(
+                "No data provided",
+                "Empty request body in registration"
+            )
         
         # Sanitize input data
         data = sanitize_input(data)
@@ -40,28 +63,45 @@ def register():
         email_valid, email_error = validate_email(email)
         if not email_valid:
             app.logger.warning(f"Registration failed: invalid email format from IP {request.remote_addr}")
-            return create_error_response(email_error)
+            return security_error_handler.handle_validation_error(
+                email_error,
+                f"Invalid email format: {email} from IP {request.remote_addr}"
+            )
         
         # Validate password with enhanced checks
         password_valid, password_error = validate_password(password)
         if not password_valid:
             app.logger.warning(f"Registration failed: weak password from IP {request.remote_addr}")
-            return create_error_response(password_error)
+            return security_error_handler.handle_validation_error(
+                password_error,
+                f"Weak password attempt from IP {request.remote_addr}"
+            )
         
         # Check if user already exists (case-insensitive)
         existing_user = User.query.filter_by(email=email).first()
         if existing_user:
             app.logger.warning(f"Registration failed: duplicate email {email} from IP {request.remote_addr}")
-            return create_error_response("User with this email already exists", 409)
+            return security_error_handler.handle_validation_error(
+                "User with this email already exists",
+                f"Duplicate registration attempt for {email} from IP {request.remote_addr}"
+            )
         
         # Create new user
         new_user = User(email=email, password=password)
         
-        # Save to database
-        db.session.add(new_user)
-        db.session.commit()
+        # Save to database with transaction handling
+        try:
+            db.session.add(new_user)
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            app.logger.warning(f"Registration failed: database integrity error from IP {request.remote_addr}")
+            return security_error_handler.handle_validation_error(
+                "User with this email already exists",
+                f"Database integrity error for {email} from IP {request.remote_addr}"
+            )
         
-        app.logger.info(f"User registered successfully: {email}")
+        app.logger.info(f"User registered successfully: {email} from IP {request.remote_addr}")
         
         # Return success response (excluding password)
         return create_success_response(
@@ -70,18 +110,19 @@ def register():
             status_code=201
         )
         
-    except IntegrityError:
-        db.session.rollback()
-        app.logger.warning(f"Registration failed: database integrity error from IP {request.remote_addr}")
-        return create_error_response("User with this email already exists", 409)
-    
     except Exception as e:
         db.session.rollback()
-        app.logger.error(f"Registration error: {str(e)} from IP {request.remote_addr}")
-        return create_error_response("An error occurred during registration", 500)
+        return security_error_handler.handle_server_error(
+            "An error occurred during registration",
+            exception=e,
+            ip_address=request.remote_addr
+        )
 
 
 @app.route('/api/v1/auth/login', methods=['POST'])
+@rate_limit(max_requests=10, window_seconds=300)  # 10 login attempts per 5 minutes
+@csrf_protect(require_token=False)  # CSRF optional for login to allow easier integration
+@security_headers
 def login():
     """
     Login user with email and password. Returns JWT token.
@@ -92,7 +133,10 @@ def login():
         data = request.get_json()
         
         if not data:
-            return create_error_response("No data provided")
+            return security_error_handler.handle_validation_error(
+                "No data provided",
+                "Empty request body in login"
+            )
         
         # Sanitize input data
         data = sanitize_input(data)
@@ -102,34 +146,50 @@ def login():
         
         # Validate required fields
         if not email:
-            return create_error_response("Email is required")
+            return security_error_handler.handle_validation_error(
+                "Email is required",
+                f"Missing email in login from IP {request.remote_addr}"
+            )
         
         if not password:
-            return create_error_response("Password is required")
+            return security_error_handler.handle_validation_error(
+                "Password is required",
+                f"Missing password in login from IP {request.remote_addr}"
+            )
         
         # Basic email format validation for login (less strict than registration)
         if '@' not in email or len(email) < 3 or len(email) > 120:
-            app.logger.warning(f"Login failed: invalid email format from IP {request.remote_addr}")
-            return create_error_response("Invalid email or password", 401)
+            return security_error_handler.handle_authentication_error(
+                "Invalid email format",
+                ip_address=request.remote_addr
+            )
         
         # Find user by email
         user = User.query.filter_by(email=email).first()
         if not user:
-            app.logger.warning(f"Login failed: user not found for email {email} from IP {request.remote_addr}")
-            return create_error_response("Invalid email or password", 401)
+            return security_error_handler.handle_authentication_error(
+                f"Invalid credentials for {email}",
+                ip_address=request.remote_addr
+            )
         
         # Check password
         if not user.check_password(password):
-            app.logger.warning(f"Login failed: invalid password for email {email} from IP {request.remote_addr}")
-            return create_error_response("Invalid email or password", 401)
+            return security_error_handler.handle_authentication_error(
+                f"Invalid password for {email}",
+                ip_address=request.remote_addr
+            )
         
         # Generate JWT token
         token = generate_jwt_token(user.id)
         if not token:
-            app.logger.error(f"Login failed: JWT generation error for user {user.id}")
-            return create_error_response("Failed to generate authentication token", 500)
+            app.logger.error(f"Login failed: JWT generation error for user {user.id} from IP {request.remote_addr}")
+            return security_error_handler.handle_server_error(
+                "Failed to generate authentication token",
+                exception=Exception("JWT generation failed"),
+                ip_address=request.remote_addr
+            )
         
-        app.logger.info(f"User logged in successfully: {email}")
+        app.logger.info(f"User logged in successfully: {email} from IP {request.remote_addr}")
         
         # Return success response with token and user data
         return create_success_response(
@@ -141,8 +201,11 @@ def login():
         )
         
     except Exception as e:
-        app.logger.error(f"Login error: {str(e)} from IP {request.remote_addr}")
-        return create_error_response("An error occurred during login", 500)
+        return security_error_handler.handle_server_error(
+            "An error occurred during login",
+            exception=e,
+            ip_address=request.remote_addr
+        )
 
 
 @app.route('/')
