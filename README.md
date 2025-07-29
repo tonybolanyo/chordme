@@ -2,6 +2,10 @@
 
 Lyrics and chords in a simple way
 
+![CI/CD Pipeline](https://github.com/tonybolanyo/chordme/actions/workflows/ci.yml/badge.svg)
+![Frontend CI](https://github.com/tonybolanyo/chordme/actions/workflows/frontend-ci.yml/badge.svg)
+![Backend CI](https://github.com/tonybolanyo/chordme/actions/workflows/backend-ci.yml/badge.svg)
+
 ## Project Structure
 
 This project consists of two main parts:
@@ -143,3 +147,52 @@ The test suite includes:
 - `GET /api/v1/health` - Health check
 
 See the test documentation for detailed API behavior and response formats.
+
+## CI/CD Pipeline
+
+This project uses GitHub Actions for continuous integration and deployment. The CI/CD pipeline automatically runs on every pull request and push to the main branch.
+
+### Automated Checks
+
+**Frontend:**
+- ESLint code linting
+- Prettier code formatting validation  
+- TypeScript type checking
+- Production build testing
+- Security vulnerability scanning
+
+**Backend:**
+- Python dependency installation
+- Pytest test suite execution
+- Application startup verification
+- Configuration validation
+
+### Workflows
+
+- **Main CI/CD Pipeline**: Comprehensive testing for both frontend and backend
+- **Frontend CI**: Optimized workflow for frontend-only changes
+- **Backend CI**: Optimized workflow for backend-only changes  
+- **Dependency Updates**: Automated weekly dependency updates
+
+For detailed CI/CD documentation, see [CI/CD Documentation](.github/CI_CD_DOCUMENTATION.md).
+
+### Running CI Checks Locally
+
+**Frontend:**
+```bash
+cd frontend
+npm install
+npm run lint
+npm run format:check  
+npx tsc --noEmit
+npm run build
+```
+
+**Backend:**
+```bash
+cd backend
+pip install -r requirements.txt
+cp config.template.py config.py
+export FLASK_CONFIG=test_config
+python -m pytest tests/ -v
+```

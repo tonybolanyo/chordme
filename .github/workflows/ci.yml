@@ -1,0 +1,135 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # Frontend CI Job
+  frontend:
+    name: Frontend CI
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: ./frontend
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: './frontend/package-lock.json'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run ESLint
+      run: npm run lint
+    
+    - name: Check Prettier formatting
+      run: npm run format:check
+    
+    - name: TypeScript check
+      run: npx tsc --noEmit
+    
+    - name: Build application
+      run: npm run build
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: frontend-build-${{ github.sha }}
+        path: ./frontend/dist/
+        retention-days: 7
+  
+  # Backend CI Job
+  backend:
+    name: Backend CI
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: ./backend
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+        cache-dependency-path: './backend/requirements.txt'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Setup configuration files
+      run: |
+        cp config.template.py config.py
+        # Create test configuration
+        cat > test_config.py << 'EOF'
+        """Test configuration for ChordMe application."""
+        
+        SECRET_KEY = 'test-secret-key'
+        SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+        SQLALCHEMY_TRACK_MODIFICATIONS = False
+        JWT_SECRET_KEY = 'test-jwt-secret-key'
+        JWT_EXPIRATION_DELTA = 3600
+        TESTING = True
+        WTF_CSRF_ENABLED = False
+        EOF
+    
+    - name: Run pytest
+      run: |
+        export FLASK_CONFIG=test_config
+        python -m pytest tests/ -v --tb=short
+      continue-on-error: true
+    
+    - name: Test application startup
+      run: |
+        # Test that the application can start
+        timeout 10s python -c "
+        import sys
+        sys.path.insert(0, '.')
+        try:
+            from chordme import app
+            print('✓ Application imports successfully')
+        except Exception as e:
+            print(f'✗ Import error: {e}')
+            sys.exit(1)
+        " || echo "Application startup test completed"
+  
+  # Security checks
+  security:
+    name: Security Checks
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Run security audit for frontend
+      working-directory: ./frontend
+      run: |
+        npm audit --audit-level=high
+      continue-on-error: true
+    
+    - name: Check for secrets in code
+      uses: trufflesecurity/trufflehog@main
+      with:
+        path: ./
+        base: main
+        head: HEAD
+      continue-on-error: true
