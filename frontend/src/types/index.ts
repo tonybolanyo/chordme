@@ -2,11 +2,10 @@
 export interface Song {
   id: string;
   title: string;
-  artist: string;
-  lyrics: string;
-  chords: string[];
-  createdAt: Date;
-  updatedAt: Date;
+  author_id: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Chord {
@@ -17,8 +16,9 @@ export interface Chord {
 
 export interface User {
   id: string;
-  username: string;
   email: string;
+  created_at: string;
+  updated_at: string;
 }
 
 // Authentication types

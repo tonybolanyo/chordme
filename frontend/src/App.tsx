@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Layout from './components/Layout';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import './App.css';
 
-function App() {
+// Main app content that uses auth context
+function AppContent() {
   const [currentPage, setCurrentPage] = useState('home');
+  const { isAuthenticated, isLoading } = useAuth();
 
   useEffect(() => {
     // Simple hash-based routing
@@ -27,6 +30,24 @@ function App() {
     };
   }, []);
 
+  // Redirect to login if trying to access protected pages while not authenticated
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated && currentPage === 'home') {
+      // For now, home page requires authentication. You can adjust this logic.
+      window.location.hash = 'login';
+    }
+  }, [isAuthenticated, isLoading, currentPage]);
+
+  if (isLoading) {
+    return (
+      <Layout>
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          <h2>Loading...</h2>
+        </div>
+      </Layout>
+    );
+  }
+
   const renderPage = () => {
     switch (currentPage) {
       case 'login':
@@ -35,6 +56,10 @@ function App() {
         return <Register />;
       case 'home':
       default:
+        // Protect home page - redirect to login if not authenticated
+        if (!isAuthenticated) {
+          return <Login />;
+        }
         return <Home />;
     }
   };
@@ -43,6 +68,14 @@ function App() {
     <Layout>
       {renderPage()}
     </Layout>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 
