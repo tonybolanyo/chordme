@@ -1,13 +1,43 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React + TS</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChordMe - Lyrics and Chords</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1 class="logo">ChordMe</h1>
+            <nav class="nav">
+                <ul class="nav-list">
+                    <li><a href="#/songs" class="nav-link" data-route="songs">Songs</a></li>
+                    <li><a href="#/editor" class="nav-link" data-route="editor">Editor</a></li>
+                    <li class="auth-links">
+                        <a href="#/login" class="nav-link" data-route="login">Login</a>
+                        <a href="#/register" class="nav-link" data-route="register">Register</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div id="app" class="app-content">
+                <!-- Content will be loaded here by the router -->
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 ChordMe. Lyrics and chords in a simple way.</p>
+        </div>
+    </footer>
+
+    <script src="js/router.js"></script>
+    <script src="js/app.js"></script>
+</body>
 </html>
