@@ -18,12 +18,12 @@ echo "🔄 Synchronizing version to $VERSION"
 
 # Update root package.json
 echo "📦 Updating root package.json..."
-npm version $VERSION --no-git-tag-version
+npm version "$VERSION" --no-git-tag-version
 
 # Update frontend package.json
 echo "⚛️  Updating frontend package.json..."
 cd frontend
-npm version $VERSION --no-git-tag-version
+npm version "$VERSION" --no-git-tag-version
 cd ..
 
 # Update backend version file
