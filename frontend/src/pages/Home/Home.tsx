@@ -12,6 +12,8 @@ const Home: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newSong, setNewSong] = useState({ title: '', content: '' });
+  const [editingSong, setEditingSong] = useState<Song | null>(null);
+  const [editSongData, setEditSongData] = useState({ title: '', content: '' });
 
   useEffect(() => {
     loadSongs();
@@ -70,6 +72,40 @@ const Home: React.FC = () => {
       console.error('Error deleting song:', err);
       setError(err instanceof Error ? err.message : 'Failed to delete song');
     }
+  };
+
+  const handleEditSong = (song: Song) => {
+    setEditingSong(song);
+    setEditSongData({ title: song.title, content: song.content });
+    setShowCreateForm(false); // Hide create form if open
+  };
+
+  const handleUpdateSong = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingSong || !editSongData.title || !editSongData.content) {
+      return;
+    }
+
+    try {
+      const response = await apiService.updateSong(editingSong.id, {
+        title: editSongData.title,
+        content: editSongData.content,
+      });
+      
+      if (response.status === 'success') {
+        setEditingSong(null);
+        setEditSongData({ title: '', content: '' });
+        loadSongs(); // Reload songs list
+      }
+    } catch (err) {
+      console.error('Error updating song:', err);
+      setError(err instanceof Error ? err.message : 'Failed to update song');
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingSong(null);
+    setEditSongData({ title: '', content: '' });
   };
 
   if (isLoading) {
@@ -143,6 +179,47 @@ const Home: React.FC = () => {
             </div>
           </form>
         )}
+
+        {editingSong && (
+          <form onSubmit={handleUpdateSong} className="edit-song-form" style={{ margin: '2rem 0', padding: '1rem', backgroundColor: '#f0f8ff', borderRadius: '8px', border: '2px solid #4169e1' }}>
+            <h3>Edit Song: {editingSong.title}</h3>
+            <div style={{ marginBottom: '1rem' }}>
+              <label htmlFor="edit-title">Title:</label>
+              <input
+                type="text"
+                id="edit-title"
+                value={editSongData.title}
+                onChange={(e) => setEditSongData({ ...editSongData, title: e.target.value })}
+                placeholder="Enter song title"
+                required
+                style={{ width: '100%', padding: '0.5rem', margin: '0.5rem 0' }}
+              />
+            </div>
+            <div style={{ marginBottom: '1rem' }}>
+              <label htmlFor="edit-content">Content (ChordPro format):</label>
+              <textarea
+                id="edit-content"
+                value={editSongData.content}
+                onChange={(e) => setEditSongData({ ...editSongData, content: e.target.value })}
+                placeholder="Enter chords and lyrics in ChordPro format&#10;Example:&#10;[C]Verse lyrics [G]with chords&#10;{chorus}&#10;[F]Chorus lyrics [C]here"
+                required
+                rows={8}
+                style={{ width: '100%', padding: '0.5rem', margin: '0.5rem 0', fontFamily: 'monospace' }}
+              />
+            </div>
+            <div>
+              <button type="submit" className="btn btn-primary">Save Changes</button>
+              <button 
+                type="button" 
+                className="btn btn-secondary" 
+                onClick={handleCancelEdit}
+                style={{ marginLeft: '1rem' }}
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        )}
       </div>
 
       <div className="songs-section">
@@ -166,7 +243,7 @@ const Home: React.FC = () => {
                 <div className="song-actions">
                   <button 
                     className="btn btn-secondary"
-                    onClick={() => alert('Edit functionality coming soon!')}
+                    onClick={() => handleEditSong(song)}
                   >
                     Edit
                   </button>

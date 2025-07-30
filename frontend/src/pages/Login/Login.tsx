@@ -70,7 +70,7 @@ const Login: React.FC = () => {
     try {
       const response = await apiService.login(formData);
       
-      if (response.success && response.data?.token && response.data?.user) {
+      if (response.status === 'success' && response.data?.token && response.data?.user) {
         setSuccessMessage('Login successful!');
         // Use the auth context to log in
         login(response.data.token, response.data.user);
