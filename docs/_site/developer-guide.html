@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>ChordMe Developer Guide | ChordMe User Manual</title>
+<meta name="generator" content="Jekyll v4.3.4" />
+<meta property="og:title" content="ChordMe Developer Guide" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Comprehensive documentation for ChordMe - Lyrics and chords in a simple way" />
+<meta property="og:description" content="Comprehensive documentation for ChordMe - Lyrics and chords in a simple way" />
+<meta property="og:site_name" content="ChordMe User Manual" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="ChordMe Developer Guide" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebPage","description":"Comprehensive documentation for ChordMe - Lyrics and chords in a simple way","headline":"ChordMe Developer Guide","url":"/developer-guide.html"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="/feed.xml" title="ChordMe User Manual" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">ChordMe User Manual</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/getting-started.html">Getting Started with ChordMe</a><a class="page-link" href="/user-guide.html">ChordMe User Guide</a><a class="page-link" href="/chordpro-format.html">ChordPro Format Guide</a><a class="page-link" href="/api-reference.html">ChordMe API Reference</a><a class="page-link" href="/developer-guide.html">ChordMe Developer Guide</a><a class="page-link" href="/troubleshooting.html">ChordMe Troubleshooting Guide</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <h1 id="chordme-developer-guide">ChordMe Developer Guide</h1>
+
+<p>This guide is for developers who want to contribute to ChordMe or understand its technical architecture.</p>
+
+<h2 id="architecture-overview">Architecture Overview</h2>
+
+<p>ChordMe is a full-stack web application with a clear separation between frontend and backend:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>┌─────────────────┐    HTTP/REST API    ┌─────────────────┐
+│   React Frontend │ ◄─────────────────► │  Flask Backend  │
+│   (TypeScript)   │                     │    (Python)     │
+└─────────────────┘                     └─────────────────┘
+│                                                         │
+│ • React 19                                              │
+│ • TypeScript                             • Flask 3.1   │
+│ • Vite                                   • SQLAlchemy  │
+│ • ESLint/Prettier                        • JWT Auth    │
+│ • Vitest                                 • Pytest      │
+└─────────────────────────────────────────────────────────┘
+</code></pre></div></div>
+
+<h2 id="technology-stack">Technology Stack</h2>
+
+<h3 id="frontend">Frontend</h3>
+<ul>
+  <li><strong>React 19</strong>: Modern React with latest features</li>
+  <li><strong>TypeScript</strong>: Type safety and developer experience</li>
+  <li><strong>Vite</strong>: Fast build tool and development server</li>
+  <li><strong>ESLint &amp; Prettier</strong>: Code quality and formatting</li>
+  <li><strong>Vitest</strong>: Testing framework</li>
+  <li><strong>React Testing Library</strong>: Component testing</li>
+</ul>
+
+<h3 id="backend">Backend</h3>
+<ul>
+  <li><strong>Flask 3.1</strong>: Python web framework</li>
+  <li><strong>SQLAlchemy</strong>: Database ORM</li>
+  <li><strong>Flask-CORS</strong>: Cross-origin resource sharing</li>
+  <li><strong>PyJWT</strong>: JWT token handling</li>
+  <li><strong>bcrypt</strong>: Password hashing</li>
+  <li><strong>Pytest</strong>: Testing framework</li>
+</ul>
+
+<h3 id="development-tools">Development Tools</h3>
+<ul>
+  <li><strong>GitHub Actions</strong>: CI/CD pipeline</li>
+  <li><strong>Playwright</strong>: End-to-end testing</li>
+  <li><strong>Codecov</strong>: Test coverage reporting</li>
+</ul>
+
+<h2 id="repository-structure">Repository Structure</h2>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>chordme/
+├── .github/                    # GitHub Actions workflows
+│   ├── workflows/
+│   │   ├── ci.yml             # Main CI/CD pipeline
+│   │   ├── frontend-ci.yml    # Frontend-specific CI
+│   │   ├── backend-ci.yml     # Backend-specific CI
+│   │   └── dependency-updates.yml
+│   └── CI_CD_DOCUMENTATION.md
+├── frontend/                   # React frontend
+│   ├── src/
+│   │   ├── components/        # Reusable UI components
+│   │   ├── pages/            # Page-level components
+│   │   ├── services/         # API service layer
+│   │   ├── types/            # TypeScript definitions
+│   │   └── utils/            # Utility functions
+│   ├── public/               # Static assets
+│   ├── package.json          # Frontend dependencies
+│   └── vite.config.ts        # Vite configuration
+├── backend/                   # Flask backend
+│   ├── chordme/              # Main application package
+│   │   ├── models/           # SQLAlchemy models
+│   │   ├── routes/           # API route handlers
+│   │   ├── services/         # Business logic
+│   │   └── utils/            # Utility functions
+│   ├── tests/                # Backend test suite
+│   ├── requirements.txt      # Python dependencies
+│   ├── config.template.py    # Configuration template
+│   └── run.py               # Application entry point
+├── docs/                     # Documentation
+├── e2e/                      # End-to-end tests
+├── integration-tests/        # Integration test suite
+├── package.json              # Root package.json for scripts
+└── README.md
+</code></pre></div></div>
+
+<h2 id="development-setup">Development Setup</h2>
+
+<h3 id="prerequisites">Prerequisites</h3>
+
+<ol>
+  <li><strong>Node.js 20+</strong>: Download from <a href="https://nodejs.org/">nodejs.org</a></li>
+  <li><strong>Python 3.12+</strong>: Download from <a href="https://python.org/">python.org</a></li>
+  <li><strong>Git</strong>: Version control system</li>
+</ol>
+
+<h3 id="clone-and-setup">Clone and Setup</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Clone the repository</span>
+git clone https://github.com/tonybolanyo/chordme.git
+<span class="nb">cd </span>chordme
+
+<span class="c"># Install root dependencies</span>
+npm <span class="nb">install</span>
+
+<span class="c"># Setup frontend</span>
+<span class="nb">cd </span>frontend
+npm <span class="nb">install
+cd</span> ..
+
+<span class="c"># Setup backend</span>
+<span class="nb">cd </span>backend
+pip <span class="nb">install</span> <span class="nt">-r</span> requirements.txt
+<span class="nb">cp </span>config.template.py config.py
+<span class="nb">cd</span> ..
+</code></pre></div></div>
+
+<h3 id="development-workflow">Development Workflow</h3>
+
+<h4 id="running-the-application">Running the Application</h4>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Start both frontend and backend</span>
+npm run dev:frontend    <span class="c"># Terminal 1</span>
+npm run dev:backend     <span class="c"># Terminal 2</span>
+
+<span class="c"># Or individually</span>
+<span class="nb">cd </span>frontend <span class="o">&amp;&amp;</span> npm run dev         <span class="c"># Frontend only</span>
+<span class="nb">cd </span>backend <span class="o">&amp;&amp;</span> python run.py       <span class="c"># Backend only</span>
+</code></pre></div></div>
+
+<h4 id="running-tests">Running Tests</h4>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># All tests</span>
+npm run <span class="nb">test</span>:all
+
+<span class="c"># Frontend tests</span>
+npm run <span class="nb">test</span>:frontend
+npm run <span class="nb">test</span>:frontend:coverage
+
+<span class="c"># Backend tests</span>
+npm run <span class="nb">test</span>:backend
+npm run <span class="nb">test</span>:backend:coverage
+
+<span class="c"># End-to-end tests</span>
+npm run <span class="nb">test</span>:e2e
+
+<span class="c"># Integration tests</span>
+npm run <span class="nb">test</span>:integration
+</code></pre></div></div>
+
+<h4 id="code-quality">Code Quality</h4>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Frontend linting</span>
+npm run lint:frontend
+<span class="nb">cd </span>frontend <span class="o">&amp;&amp;</span> npm run lint:fix
+
+<span class="c"># Frontend formatting</span>
+npm run format:frontend
+<span class="nb">cd </span>frontend <span class="o">&amp;&amp;</span> npm run format
+
+<span class="c"># Type checking</span>
+<span class="nb">cd </span>frontend <span class="o">&amp;&amp;</span> npx tsc <span class="nt">--noEmit</span>
+</code></pre></div></div>
+
+<h2 id="contributing-guidelines">Contributing Guidelines</h2>
+
+<h3 id="code-style">Code Style</h3>
+
+<h4 id="frontend-typescriptreact">Frontend (TypeScript/React)</h4>
+<ul>
+  <li>Use TypeScript for all new code</li>
+  <li>Follow React functional component patterns</li>
+  <li>Use hooks for state management</li>
+  <li>Implement proper error boundaries</li>
+  <li>Write comprehensive tests for components</li>
+</ul>
+
+<h4 id="backend-pythonflask">Backend (Python/Flask)</h4>
+<ul>
+  <li>Follow PEP 8 style guidelines</li>
+  <li>Use type hints where applicable</li>
+  <li>Write comprehensive docstrings</li>
+  <li>Implement proper error handling</li>
+  <li>Write tests for all new functionality</li>
+</ul>
+
+<h3 id="git-workflow">Git Workflow</h3>
+
+<ol>
+  <li><strong>Fork</strong> the repository</li>
+  <li><strong>Create</strong> a feature branch: <code class="language-plaintext highlighter-rouge">git checkout -b feature/your-feature-name</code></li>
+  <li><strong>Make</strong> your changes with clear, descriptive commits</li>
+  <li><strong>Write</strong> tests for new functionality</li>
+  <li><strong>Run</strong> the full test suite</li>
+  <li><strong>Submit</strong> a pull request with a clear description</li>
+</ol>
+
+<h3 id="commit-message-format">Commit Message Format</h3>
+
+<p>Use conventional commit messages:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>type(scope): brief description
+
+- feat: new features
+- fix: bug fixes
+- docs: documentation changes
+- style: formatting, missing semicolons, etc.
+- refactor: code restructuring without functionality changes
+- test: adding or modifying tests
+- chore: maintenance tasks
+</code></pre></div></div>
+
+<p>Examples:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>feat(api): add ChordPro validation endpoint
+fix(frontend): resolve chord display alignment issue
+docs(readme): update installation instructions
+test(backend): add authentication endpoint tests
+</code></pre></div></div>
+
+<h2 id="architecture-deep-dive">Architecture Deep Dive</h2>
+
+<h3 id="frontend-architecture">Frontend Architecture</h3>
+
+<h4 id="component-structure">Component Structure</h4>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>src/
+├── components/
+│   ├── Layout/
+│   │   ├── Header.tsx
+│   │   ├── Navigation.tsx
+│   │   └── Footer.tsx
+│   ├── ChordProEditor/
+│   │   ├── ChordProEditor.tsx
+│   │   ├── ChordProEditor.test.tsx
+│   │   └── ChordProEditor.module.css
+│   ├── ChordProViewer/
+│   └── Forms/
+├── pages/
+│   ├── Home/
+│   ├── Login/
+│   ├── Register/
+│   └── SongEditor/
+├── services/
+│   ├── api.ts              # API client
+│   ├── auth.ts             # Authentication service
+│   └── storage.ts          # Local storage utilities
+├── types/
+│   └── index.ts            # TypeScript type definitions
+└── utils/
+    ├── chordpro.ts         # ChordPro parsing utilities
+    └── validation.ts       # Form validation helpers
+</code></pre></div></div>
+
+<h4 id="state-management">State Management</h4>
+
+<p>ChordMe uses React’s built-in state management:</p>
+
+<ul>
+  <li><strong>useState</strong>: Component-level state</li>
+  <li><strong>useReducer</strong>: Complex state logic</li>
+  <li><strong>useContext</strong>: Shared application state</li>
+  <li><strong>Custom hooks</strong>: Reusable stateful logic</li>
+</ul>
+
+<h4 id="api-integration">API Integration</h4>
+
+<div class="language-typescript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// services/api.ts</span>
+<span class="kd">class</span> <span class="nc">ApiService</span> <span class="p">{</span>
+  <span class="k">private</span> <span class="nx">baseURL</span> <span class="o">=</span> <span class="k">import</span><span class="p">.</span><span class="nx">meta</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">VITE_API_BASE_URL</span><span class="p">;</span>
+  <span class="k">private</span> <span class="nx">token</span><span class="p">:</span> <span class="kr">string</span> <span class="o">|</span> <span class="kc">null</span> <span class="o">=</span> <span class="kc">null</span><span class="p">;</span>
+
+  <span class="k">async</span> <span class="nf">login</span><span class="p">(</span><span class="nx">email</span><span class="p">:</span> <span class="kr">string</span><span class="p">,</span> <span class="nx">password</span><span class="p">:</span> <span class="kr">string</span><span class="p">):</span> <span class="nb">Promise</span><span class="o">&lt;</span><span class="nx">AuthResponse</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="kd">const</span> <span class="nx">response</span> <span class="o">=</span> <span class="k">await</span> <span class="nf">fetch</span><span class="p">(</span><span class="s2">`</span><span class="p">${</span><span class="k">this</span><span class="p">.</span><span class="nx">baseURL</span><span class="p">}</span><span class="s2">/auth/login`</span><span class="p">,</span> <span class="p">{</span>
+      <span class="na">method</span><span class="p">:</span> <span class="dl">'</span><span class="s1">POST</span><span class="dl">'</span><span class="p">,</span>
+      <span class="na">headers</span><span class="p">:</span> <span class="p">{</span> <span class="dl">'</span><span class="s1">Content-Type</span><span class="dl">'</span><span class="p">:</span> <span class="dl">'</span><span class="s1">application/json</span><span class="dl">'</span> <span class="p">},</span>
+      <span class="na">body</span><span class="p">:</span> <span class="nx">JSON</span><span class="p">.</span><span class="nf">stringify</span><span class="p">({</span> <span class="nx">email</span><span class="p">,</span> <span class="nx">password</span> <span class="p">})</span>
+    <span class="p">});</span>
+    <span class="k">return</span> <span class="nx">response</span><span class="p">.</span><span class="nf">json</span><span class="p">();</span>
+  <span class="p">}</span>
+
+  <span class="k">async</span> <span class="nf">getSongs</span><span class="p">():</span> <span class="nb">Promise</span><span class="o">&lt;</span><span class="nx">SongResponse</span><span class="p">[]</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="kd">const</span> <span class="nx">response</span> <span class="o">=</span> <span class="k">await</span> <span class="nf">fetch</span><span class="p">(</span><span class="s2">`</span><span class="p">${</span><span class="k">this</span><span class="p">.</span><span class="nx">baseURL</span><span class="p">}</span><span class="s2">/songs`</span><span class="p">,</span> <span class="p">{</span>
+      <span class="na">headers</span><span class="p">:</span> <span class="p">{</span> <span class="dl">'</span><span class="s1">Authorization</span><span class="dl">'</span><span class="p">:</span> <span class="s2">`Bearer </span><span class="p">${</span><span class="k">this</span><span class="p">.</span><span class="nx">token</span><span class="p">}</span><span class="s2">`</span> <span class="p">}</span>
+    <span class="p">});</span>
+    <span class="k">return</span> <span class="nx">response</span><span class="p">.</span><span class="nf">json</span><span class="p">();</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="backend-architecture">Backend Architecture</h3>
+
+<h4 id="application-structure">Application Structure</h4>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># chordme/__init__.py
+</span><span class="kn">from</span> <span class="n">flask</span> <span class="kn">import</span> <span class="n">Flask</span>
+<span class="kn">from</span> <span class="n">flask_sqlalchemy</span> <span class="kn">import</span> <span class="n">SQLAlchemy</span>
+<span class="kn">from</span> <span class="n">flask_cors</span> <span class="kn">import</span> <span class="n">CORS</span>
+
+<span class="n">db</span> <span class="o">=</span> <span class="nc">SQLAlchemy</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">create_app</span><span class="p">(</span><span class="n">config_name</span><span class="o">=</span><span class="sh">'</span><span class="s">config</span><span class="sh">'</span><span class="p">):</span>
+    <span class="n">app</span> <span class="o">=</span> <span class="nc">Flask</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+    <span class="n">app</span><span class="p">.</span><span class="n">config</span><span class="p">.</span><span class="nf">from_object</span><span class="p">(</span><span class="n">config_name</span><span class="p">)</span>
+    
+    <span class="n">db</span><span class="p">.</span><span class="nf">init_app</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+    <span class="nc">CORS</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+    
+    <span class="c1"># Register blueprints
+</span>    <span class="kn">from</span> <span class="n">.routes.auth</span> <span class="kn">import</span> <span class="n">auth_bp</span>
+    <span class="kn">from</span> <span class="n">.routes.songs</span> <span class="kn">import</span> <span class="n">songs_bp</span>
+    
+    <span class="n">app</span><span class="p">.</span><span class="nf">register_blueprint</span><span class="p">(</span><span class="n">auth_bp</span><span class="p">,</span> <span class="n">url_prefix</span><span class="o">=</span><span class="sh">'</span><span class="s">/api/v1/auth</span><span class="sh">'</span><span class="p">)</span>
+    <span class="n">app</span><span class="p">.</span><span class="nf">register_blueprint</span><span class="p">(</span><span class="n">songs_bp</span><span class="p">,</span> <span class="n">url_prefix</span><span class="o">=</span><span class="sh">'</span><span class="s">/api/v1/songs</span><span class="sh">'</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">app</span>
+</code></pre></div></div>
+
+<h4 id="database-models">Database Models</h4>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># chordme/models/user.py
+</span><span class="kn">from</span> <span class="n">chordme</span> <span class="kn">import</span> <span class="n">db</span>
+<span class="kn">from</span> <span class="n">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">import</span> <span class="n">bcrypt</span>
+
+<span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">db</span><span class="p">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">db</span><span class="p">.</span><span class="nc">Column</span><span class="p">(</span><span class="n">db</span><span class="p">.</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">email</span> <span class="o">=</span> <span class="n">db</span><span class="p">.</span><span class="nc">Column</span><span class="p">(</span><span class="n">db</span><span class="p">.</span><span class="nc">String</span><span class="p">(</span><span class="mi">120</span><span class="p">),</span> <span class="n">unique</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">password_hash</span> <span class="o">=</span> <span class="n">db</span><span class="p">.</span><span class="nc">Column</span><span class="p">(</span><span class="n">db</span><span class="p">.</span><span class="nc">String</span><span class="p">(</span><span class="mi">128</span><span class="p">),</span> <span class="n">nullable</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">created_at</span> <span class="o">=</span> <span class="n">db</span><span class="p">.</span><span class="nc">Column</span><span class="p">(</span><span class="n">db</span><span class="p">.</span><span class="n">DateTime</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">datetime</span><span class="p">.</span><span class="n">utcnow</span><span class="p">)</span>
+    
+    <span class="n">songs</span> <span class="o">=</span> <span class="n">db</span><span class="p">.</span><span class="nf">relationship</span><span class="p">(</span><span class="sh">'</span><span class="s">Song</span><span class="sh">'</span><span class="p">,</span> <span class="n">backref</span><span class="o">=</span><span class="sh">'</span><span class="s">user</span><span class="sh">'</span><span class="p">,</span> <span class="n">lazy</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">set_password</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">password</span><span class="p">):</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">password_hash</span> <span class="o">=</span> <span class="n">bcrypt</span><span class="p">.</span><span class="nf">hashpw</span><span class="p">(</span>
+            <span class="n">password</span><span class="p">.</span><span class="nf">encode</span><span class="p">(</span><span class="sh">'</span><span class="s">utf-8</span><span class="sh">'</span><span class="p">),</span> 
+            <span class="n">bcrypt</span><span class="p">.</span><span class="nf">gensalt</span><span class="p">()</span>
+        <span class="p">).</span><span class="nf">decode</span><span class="p">(</span><span class="sh">'</span><span class="s">utf-8</span><span class="sh">'</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">check_password</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">password</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">bcrypt</span><span class="p">.</span><span class="nf">checkpw</span><span class="p">(</span>
+            <span class="n">password</span><span class="p">.</span><span class="nf">encode</span><span class="p">(</span><span class="sh">'</span><span class="s">utf-8</span><span class="sh">'</span><span class="p">),</span>
+            <span class="n">self</span><span class="p">.</span><span class="n">password_hash</span><span class="p">.</span><span class="nf">encode</span><span class="p">(</span><span class="sh">'</span><span class="s">utf-8</span><span class="sh">'</span><span class="p">)</span>
+        <span class="p">)</span>
+</code></pre></div></div>
+
+<h4 id="api-routes">API Routes</h4>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># chordme/routes/songs.py
+</span><span class="kn">from</span> <span class="n">flask</span> <span class="kn">import</span> <span class="n">Blueprint</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">jsonify</span>
+<span class="kn">from</span> <span class="n">chordme.models.song</span> <span class="kn">import</span> <span class="n">Song</span>
+<span class="kn">from</span> <span class="n">chordme.utils.auth</span> <span class="kn">import</span> <span class="n">token_required</span>
+<span class="kn">from</span> <span class="n">chordme</span> <span class="kn">import</span> <span class="n">db</span>
+
+<span class="n">songs_bp</span> <span class="o">=</span> <span class="nc">Blueprint</span><span class="p">(</span><span class="sh">'</span><span class="s">songs</span><span class="sh">'</span><span class="p">,</span> <span class="n">__name__</span><span class="p">)</span>
+
+<span class="nd">@songs_bp.route</span><span class="p">(</span><span class="sh">''</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="sh">'</span><span class="s">GET</span><span class="sh">'</span><span class="p">])</span>
+<span class="nd">@token_required</span>
+<span class="k">def</span> <span class="nf">get_songs</span><span class="p">(</span><span class="n">current_user</span><span class="p">):</span>
+    <span class="n">songs</span> <span class="o">=</span> <span class="n">Song</span><span class="p">.</span><span class="n">query</span><span class="p">.</span><span class="nf">filter_by</span><span class="p">(</span><span class="n">user_id</span><span class="o">=</span><span class="n">current_user</span><span class="p">.</span><span class="nb">id</span><span class="p">).</span><span class="nf">all</span><span class="p">()</span>
+    <span class="k">return</span> <span class="nf">jsonify</span><span class="p">({</span>
+        <span class="sh">'</span><span class="s">status</span><span class="sh">'</span><span class="p">:</span> <span class="sh">'</span><span class="s">success</span><span class="sh">'</span><span class="p">,</span>
+        <span class="sh">'</span><span class="s">data</span><span class="sh">'</span><span class="p">:</span> <span class="p">{</span><span class="sh">'</span><span class="s">songs</span><span class="sh">'</span><span class="p">:</span> <span class="p">[</span><span class="n">song</span><span class="p">.</span><span class="nf">to_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">song</span> <span class="ow">in</span> <span class="n">songs</span><span class="p">]}</span>
+    <span class="p">})</span>
+
+<span class="nd">@songs_bp.route</span><span class="p">(</span><span class="sh">''</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="sh">'</span><span class="s">POST</span><span class="sh">'</span><span class="p">])</span>
+<span class="nd">@token_required</span>
+<span class="k">def</span> <span class="nf">create_song</span><span class="p">(</span><span class="n">current_user</span><span class="p">):</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">request</span><span class="p">.</span><span class="nf">get_json</span><span class="p">()</span>
+    <span class="n">song</span> <span class="o">=</span> <span class="nc">Song</span><span class="p">(</span>
+        <span class="n">title</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="sh">'</span><span class="s">title</span><span class="sh">'</span><span class="p">],</span>
+        <span class="n">content</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="sh">'</span><span class="s">content</span><span class="sh">'</span><span class="p">],</span>
+        <span class="n">user_id</span><span class="o">=</span><span class="n">current_user</span><span class="p">.</span><span class="nb">id</span>
+    <span class="p">)</span>
+    <span class="n">db</span><span class="p">.</span><span class="n">session</span><span class="p">.</span><span class="nf">add</span><span class="p">(</span><span class="n">song</span><span class="p">)</span>
+    <span class="n">db</span><span class="p">.</span><span class="n">session</span><span class="p">.</span><span class="nf">commit</span><span class="p">()</span>
+    <span class="k">return</span> <span class="nf">jsonify</span><span class="p">({</span>
+        <span class="sh">'</span><span class="s">status</span><span class="sh">'</span><span class="p">:</span> <span class="sh">'</span><span class="s">success</span><span class="sh">'</span><span class="p">,</span>
+        <span class="sh">'</span><span class="s">data</span><span class="sh">'</span><span class="p">:</span> <span class="p">{</span><span class="sh">'</span><span class="s">song</span><span class="sh">'</span><span class="p">:</span> <span class="n">song</span><span class="p">.</span><span class="nf">to_dict</span><span class="p">()}</span>
+    <span class="p">}),</span> <span class="mi">201</span>
+</code></pre></div></div>
+
+<h2 id="testing-strategy">Testing Strategy</h2>
+
+<h3 id="frontend-testing">Frontend Testing</h3>
+
+<h4 id="unit-tests">Unit Tests</h4>
+<div class="language-typescript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// components/ChordProEditor/ChordProEditor.test.tsx</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">render</span><span class="p">,</span> <span class="nx">screen</span><span class="p">,</span> <span class="nx">fireEvent</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">@testing-library/react</span><span class="dl">'</span><span class="p">;</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">ChordProEditor</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">./ChordProEditor</span><span class="dl">'</span><span class="p">;</span>
+
+<span class="nf">describe</span><span class="p">(</span><span class="dl">'</span><span class="s1">ChordProEditor</span><span class="dl">'</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nf">it</span><span class="p">(</span><span class="dl">'</span><span class="s1">renders editor with initial content</span><span class="dl">'</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nf">render</span><span class="p">(</span><span class="o">&lt;</span><span class="nx">ChordProEditor</span> <span class="nx">initialContent</span><span class="o">=</span><span class="dl">""</span> <span class="o">/&gt;</span><span class="p">);</span>
+    <span class="nf">expect</span><span class="p">(</span><span class="nx">screen</span><span class="p">.</span><span class="nf">getByRole</span><span class="p">(</span><span class="dl">'</span><span class="s1">textbox</span><span class="dl">'</span><span class="p">)).</span><span class="nf">toBeInTheDocument</span><span class="p">();</span>
+  <span class="p">});</span>
+
+  <span class="nf">it</span><span class="p">(</span><span class="dl">'</span><span class="s1">updates content on text change</span><span class="dl">'</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kd">const</span> <span class="nx">onContentChange</span> <span class="o">=</span> <span class="nx">jest</span><span class="p">.</span><span class="nf">fn</span><span class="p">();</span>
+    <span class="nf">render</span><span class="p">(</span><span class="o">&lt;</span><span class="nx">ChordProEditor</span> <span class="nx">onContentChange</span><span class="o">=</span><span class="p">{</span><span class="nx">onContentChange</span><span class="p">}</span> <span class="sr">/&gt;</span><span class="se">)</span><span class="err">;
+</span>    
+    <span class="kd">const</span> <span class="nx">editor</span> <span class="o">=</span> <span class="nx">screen</span><span class="p">.</span><span class="nf">getByRole</span><span class="p">(</span><span class="dl">'</span><span class="s1">textbox</span><span class="dl">'</span><span class="p">);</span>
+    <span class="nx">fireEvent</span><span class="p">.</span><span class="nf">change</span><span class="p">(</span><span class="nx">editor</span><span class="p">,</span> <span class="p">{</span> <span class="na">target</span><span class="p">:</span> <span class="p">{</span> <span class="na">value</span><span class="p">:</span> <span class="dl">'</span><span class="s1">[C]Test</span><span class="dl">'</span> <span class="p">}</span> <span class="p">});</span>
+    
+    <span class="nf">expect</span><span class="p">(</span><span class="nx">onContentChange</span><span class="p">).</span><span class="nf">toHaveBeenCalledWith</span><span class="p">(</span><span class="dl">'</span><span class="s1">[C]Test</span><span class="dl">'</span><span class="p">);</span>
+  <span class="p">});</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<h4 id="integration-tests">Integration Tests</h4>
+<div class="language-typescript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// pages/SongEditor/SongEditor.test.tsx</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">render</span><span class="p">,</span> <span class="nx">screen</span><span class="p">,</span> <span class="nx">waitFor</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">@testing-library/react</span><span class="dl">'</span><span class="p">;</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">SongEditor</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">./SongEditor</span><span class="dl">'</span><span class="p">;</span>
+<span class="k">import</span> <span class="o">*</span> <span class="kd">as </span><span class="nx">apiService</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">../../services/api</span><span class="dl">'</span><span class="p">;</span>
+
+<span class="nx">jest</span><span class="p">.</span><span class="nf">mock</span><span class="p">(</span><span class="dl">'</span><span class="s1">../../services/api</span><span class="dl">'</span><span class="p">);</span>
+
+<span class="nf">describe</span><span class="p">(</span><span class="dl">'</span><span class="s1">SongEditor</span><span class="dl">'</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nf">it</span><span class="p">(</span><span class="dl">'</span><span class="s1">saves song successfully</span><span class="dl">'</span><span class="p">,</span> <span class="k">async </span><span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kd">const</span> <span class="nx">mockSaveSong</span> <span class="o">=</span> <span class="nx">jest</span><span class="p">.</span><span class="nf">fn</span><span class="p">().</span><span class="nf">mockResolvedValue</span><span class="p">({</span> <span class="na">id</span><span class="p">:</span> <span class="mi">1</span> <span class="p">});</span>
+    <span class="p">(</span><span class="nx">apiService</span><span class="p">.</span><span class="nx">saveSong</span> <span class="kd">as </span><span class="nx">jest</span><span class="p">.</span><span class="nx">Mock</span><span class="p">)</span> <span class="o">=</span> <span class="nx">mockSaveSong</span><span class="p">;</span>
+
+    <span class="nf">render</span><span class="p">(</span><span class="o">&lt;</span><span class="nx">SongEditor</span> <span class="o">/&gt;</span><span class="p">);</span>
+    
+    <span class="c1">// Fill form and submit</span>
+    <span class="nx">fireEvent</span><span class="p">.</span><span class="nf">click</span><span class="p">(</span><span class="nx">screen</span><span class="p">.</span><span class="nf">getByText</span><span class="p">(</span><span class="dl">'</span><span class="s1">Save</span><span class="dl">'</span><span class="p">));</span>
+    
+    <span class="k">await</span> <span class="nf">waitFor</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nf">expect</span><span class="p">(</span><span class="nx">mockSaveSong</span><span class="p">).</span><span class="nf">toHaveBeenCalled</span><span class="p">();</span>
+    <span class="p">});</span>
+  <span class="p">});</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<h3 id="backend-testing">Backend Testing</h3>
+
+<h4 id="unit-tests-1">Unit Tests</h4>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># tests/test_models.py
+</span><span class="kn">import</span> <span class="n">pytest</span>
+<span class="kn">from</span> <span class="n">chordme.models.user</span> <span class="kn">import</span> <span class="n">User</span>
+
+<span class="k">def</span> <span class="nf">test_user_password_hashing</span><span class="p">():</span>
+    <span class="n">user</span> <span class="o">=</span> <span class="nc">User</span><span class="p">(</span><span class="n">email</span><span class="o">=</span><span class="sh">'</span><span class="s">test@example.com</span><span class="sh">'</span><span class="p">)</span>
+    <span class="n">user</span><span class="p">.</span><span class="nf">set_password</span><span class="p">(</span><span class="sh">'</span><span class="s">testpassword</span><span class="sh">'</span><span class="p">)</span>
+    
+    <span class="k">assert</span> <span class="n">user</span><span class="p">.</span><span class="nf">check_password</span><span class="p">(</span><span class="sh">'</span><span class="s">testpassword</span><span class="sh">'</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">user</span><span class="p">.</span><span class="nf">check_password</span><span class="p">(</span><span class="sh">'</span><span class="s">wrongpassword</span><span class="sh">'</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">user</span><span class="p">.</span><span class="n">password_hash</span> <span class="o">!=</span> <span class="sh">'</span><span class="s">testpassword</span><span class="sh">'</span>
+</code></pre></div></div>
+
+<h4 id="api-tests">API Tests</h4>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># tests/test_auth.py
+</span><span class="kn">import</span> <span class="n">pytest</span>
+<span class="kn">from</span> <span class="n">chordme</span> <span class="kn">import</span> <span class="n">create_app</span><span class="p">,</span> <span class="n">db</span>
+
+<span class="nd">@pytest.fixture</span>
+<span class="k">def</span> <span class="nf">app</span><span class="p">():</span>
+    <span class="n">app</span> <span class="o">=</span> <span class="nf">create_app</span><span class="p">(</span><span class="sh">'</span><span class="s">test_config</span><span class="sh">'</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">app</span><span class="p">.</span><span class="nf">app_context</span><span class="p">():</span>
+        <span class="n">db</span><span class="p">.</span><span class="nf">create_all</span><span class="p">()</span>
+        <span class="k">yield</span> <span class="n">app</span>
+        <span class="n">db</span><span class="p">.</span><span class="nf">drop_all</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">test_user_registration</span><span class="p">(</span><span class="n">client</span><span class="p">):</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="p">.</span><span class="nf">post</span><span class="p">(</span><span class="sh">'</span><span class="s">/api/v1/auth/register</span><span class="sh">'</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="p">{</span>
+        <span class="sh">'</span><span class="s">email</span><span class="sh">'</span><span class="p">:</span> <span class="sh">'</span><span class="s">test@example.com</span><span class="sh">'</span><span class="p">,</span>
+        <span class="sh">'</span><span class="s">password</span><span class="sh">'</span><span class="p">:</span> <span class="sh">'</span><span class="s">testpassword123</span><span class="sh">'</span>
+    <span class="p">})</span>
+    
+    <span class="k">assert</span> <span class="n">response</span><span class="p">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">201</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="p">.</span><span class="n">json</span><span class="p">[</span><span class="sh">'</span><span class="s">status</span><span class="sh">'</span><span class="p">]</span> <span class="o">==</span> <span class="sh">'</span><span class="s">success</span><span class="sh">'</span>
+    <span class="k">assert</span> <span class="sh">'</span><span class="s">user</span><span class="sh">'</span> <span class="ow">in</span> <span class="n">response</span><span class="p">.</span><span class="n">json</span><span class="p">[</span><span class="sh">'</span><span class="s">data</span><span class="sh">'</span><span class="p">]</span>
+</code></pre></div></div>
+
+<h3 id="end-to-end-testing">End-to-End Testing</h3>
+
+<div class="language-typescript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// e2e/song-management.spec.ts</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">test</span><span class="p">,</span> <span class="nx">expect</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">@playwright/test</span><span class="dl">'</span><span class="p">;</span>
+
+<span class="nf">test</span><span class="p">(</span><span class="dl">'</span><span class="s1">user can create and edit a song</span><span class="dl">'</span><span class="p">,</span> <span class="k">async </span><span class="p">({</span> <span class="nx">page</span> <span class="p">})</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="c1">// Login</span>
+  <span class="k">await</span> <span class="nx">page</span><span class="p">.</span><span class="nf">goto</span><span class="p">(</span><span class="dl">'</span><span class="s1">/</span><span class="dl">'</span><span class="p">);</span>
+  <span class="k">await</span> <span class="nx">page</span><span class="p">.</span><span class="nf">fill</span><span class="p">(</span><span class="dl">'</span><span class="s1">[data-testid="email"]</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">test@example.com</span><span class="dl">'</span><span class="p">);</span>
+  <span class="k">await</span> <span class="nx">page</span><span class="p">.</span><span class="nf">fill</span><span class="p">(</span><span class="dl">'</span><span class="s1">[data-testid="password"]</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">password</span><span class="dl">'</span><span class="p">);</span>
+  <span class="k">await</span> <span class="nx">page</span><span class="p">.</span><span class="nf">click</span><span class="p">(</span><span class="dl">'</span><span class="s1">[data-testid="login-button"]</span><span class="dl">'</span><span class="p">);</span>
+
+  <span class="c1">// Create song</span>
+  <span class="k">await</span> <span class="nx">page</span><span class="p">.</span><span class="nf">click</span><span class="p">(</span><span class="dl">'</span><span class="s1">[data-testid="new-song-button"]</span><span class="dl">'</span><span class="p">);</span>
+  <span class="k">await</span> <span class="nx">page</span><span class="p">.</span><span class="nf">fill</span><span class="p">(</span><span class="dl">'</span><span class="s1">[data-testid="song-title"]</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">Test Song</span><span class="dl">'</span><span class="p">);</span>
+  <span class="k">await</span> <span class="nx">page</span><span class="p">.</span><span class="nf">fill</span><span class="p">(</span><span class="dl">'</span><span class="s1">[data-testid="song-content"]</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">[C]Test content</span><span class="dl">'</span><span class="p">);</span>
+  <span class="k">await</span> <span class="nx">page</span><span class="p">.</span><span class="nf">click</span><span class="p">(</span><span class="dl">'</span><span class="s1">[data-testid="save-button"]</span><span class="dl">'</span><span class="p">);</span>
+
+  <span class="c1">// Verify song was created</span>
+  <span class="k">await</span> <span class="nf">expect</span><span class="p">(</span><span class="nx">page</span><span class="p">.</span><span class="nf">locator</span><span class="p">(</span><span class="dl">'</span><span class="s1">text=Test Song</span><span class="dl">'</span><span class="p">)).</span><span class="nf">toBeVisible</span><span class="p">();</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<h2 id="database-design">Database Design</h2>
+
+<h3 id="schema-overview">Schema Overview</h3>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">-- Users table</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">users</span> <span class="p">(</span>
+    <span class="n">id</span> <span class="nb">INTEGER</span> <span class="k">PRIMARY</span> <span class="k">KEY</span> <span class="n">AUTOINCREMENT</span><span class="p">,</span>
+    <span class="n">email</span> <span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">120</span><span class="p">)</span> <span class="k">UNIQUE</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+    <span class="n">password_hash</span> <span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">128</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+    <span class="n">created_at</span> <span class="nb">DATETIME</span> <span class="k">DEFAULT</span> <span class="k">CURRENT_TIMESTAMP</span>
+<span class="p">);</span>
+
+<span class="c1">-- Songs table</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">songs</span> <span class="p">(</span>
+    <span class="n">id</span> <span class="nb">INTEGER</span> <span class="k">PRIMARY</span> <span class="k">KEY</span> <span class="n">AUTOINCREMENT</span><span class="p">,</span>
+    <span class="n">title</span> <span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">200</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+    <span class="n">artist</span> <span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">200</span><span class="p">),</span>
+    <span class="k">key</span> <span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span>
+    <span class="n">capo</span> <span class="nb">INTEGER</span> <span class="k">DEFAULT</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">tempo</span> <span class="nb">INTEGER</span><span class="p">,</span>
+    <span class="n">content</span> <span class="nb">TEXT</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+    <span class="n">user_id</span> <span class="nb">INTEGER</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+    <span class="n">created_at</span> <span class="nb">DATETIME</span> <span class="k">DEFAULT</span> <span class="k">CURRENT_TIMESTAMP</span><span class="p">,</span>
+    <span class="n">updated_at</span> <span class="nb">DATETIME</span> <span class="k">DEFAULT</span> <span class="k">CURRENT_TIMESTAMP</span><span class="p">,</span>
+    <span class="k">FOREIGN</span> <span class="k">KEY</span> <span class="p">(</span><span class="n">user_id</span><span class="p">)</span> <span class="k">REFERENCES</span> <span class="n">users</span> <span class="p">(</span><span class="n">id</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="c1">-- Indexes for performance</span>
+<span class="k">CREATE</span> <span class="k">INDEX</span> <span class="n">idx_songs_user_id</span> <span class="k">ON</span> <span class="n">songs</span><span class="p">(</span><span class="n">user_id</span><span class="p">);</span>
+<span class="k">CREATE</span> <span class="k">INDEX</span> <span class="n">idx_songs_title</span> <span class="k">ON</span> <span class="n">songs</span><span class="p">(</span><span class="n">title</span><span class="p">);</span>
+<span class="k">CREATE</span> <span class="k">INDEX</span> <span class="n">idx_users_email</span> <span class="k">ON</span> <span class="n">users</span><span class="p">(</span><span class="n">email</span><span class="p">);</span>
+</code></pre></div></div>
+
+<h3 id="migration-strategy">Migration Strategy</h3>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># migrations/001_initial_schema.py
+</span><span class="kn">from</span> <span class="n">chordme</span> <span class="kn">import</span> <span class="n">db</span>
+
+<span class="k">def</span> <span class="nf">upgrade</span><span class="p">():</span>
+    <span class="n">db</span><span class="p">.</span><span class="nf">create_all</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">downgrade</span><span class="p">():</span>
+    <span class="n">db</span><span class="p">.</span><span class="nf">drop_all</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h2 id="deployment">Deployment</h2>
+
+<h3 id="development-environment">Development Environment</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Environment variables</span>
+<span class="nb">export </span><span class="nv">FLASK_ENV</span><span class="o">=</span>development
+<span class="nb">export </span><span class="nv">FLASK_DEBUG</span><span class="o">=</span>1
+<span class="nb">export </span><span class="nv">VITE_API_BASE_URL</span><span class="o">=</span>http://localhost:5000
+
+<span class="c"># Start services</span>
+npm run dev:backend    <span class="c"># Port 5000</span>
+npm run dev:frontend   <span class="c"># Port 5173</span>
+</code></pre></div></div>
+
+<h3 id="production-environment">Production Environment</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Build frontend</span>
+<span class="nb">cd </span>frontend
+npm run build
+
+<span class="c"># Configure backend</span>
+<span class="nb">cd </span>backend
+<span class="nb">export </span><span class="nv">FLASK_ENV</span><span class="o">=</span>production
+<span class="nb">export </span><span class="nv">DATABASE_URL</span><span class="o">=</span>postgresql://user:pass@host:port/db
+<span class="nb">export </span><span class="nv">JWT_SECRET_KEY</span><span class="o">=</span>your-production-secret
+
+<span class="c"># Run with gunicorn</span>
+pip <span class="nb">install </span>gunicorn
+gunicorn <span class="nt">-w</span> 4 <span class="nt">-b</span> 0.0.0.0:5000 run:app
+</code></pre></div></div>
+
+<h3 id="docker-deployment">Docker Deployment</h3>
+
+<div class="language-dockerfile highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Dockerfile.frontend</span>
+<span class="k">FROM</span><span class="s"> node:20-alpine</span>
+<span class="k">WORKDIR</span><span class="s"> /app</span>
+<span class="k">COPY</span><span class="s"> package*.json ./</span>
+<span class="k">RUN </span>npm ci <span class="nt">--only</span><span class="o">=</span>production
+<span class="k">COPY</span><span class="s"> . .</span>
+<span class="k">RUN </span>npm run build
+<span class="k">EXPOSE</span><span class="s"> 5173</span>
+<span class="k">CMD</span><span class="s"> ["npm", "run", "preview"]</span>
+</code></pre></div></div>
+
+<div class="language-dockerfile highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Dockerfile.backend</span>
+<span class="k">FROM</span><span class="s"> python:3.12-slim</span>
+<span class="k">WORKDIR</span><span class="s"> /app</span>
+<span class="k">COPY</span><span class="s"> requirements.txt .</span>
+<span class="k">RUN </span>pip <span class="nb">install</span> <span class="nt">-r</span> requirements.txt
+<span class="k">COPY</span><span class="s"> . .</span>
+<span class="k">EXPOSE</span><span class="s"> 5000</span>
+<span class="k">CMD</span><span class="s"> ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "run:app"]</span>
+</code></pre></div></div>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># docker-compose.yml</span>
+<span class="na">version</span><span class="pi">:</span> <span class="s1">'</span><span class="s">3.8'</span>
+<span class="na">services</span><span class="pi">:</span>
+  <span class="na">backend</span><span class="pi">:</span>
+    <span class="na">build</span><span class="pi">:</span>
+      <span class="na">context</span><span class="pi">:</span> <span class="s">./backend</span>
+      <span class="na">dockerfile</span><span class="pi">:</span> <span class="s">Dockerfile.backend</span>
+    <span class="na">ports</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s2">"</span><span class="s">5000:5000"</span>
+    <span class="na">environment</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s">DATABASE_URL=postgresql://postgres:password@db:5432/chordme</span>
+    <span class="na">depends_on</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s">db</span>
+
+  <span class="na">frontend</span><span class="pi">:</span>
+    <span class="na">build</span><span class="pi">:</span>
+      <span class="na">context</span><span class="pi">:</span> <span class="s">./frontend</span>
+      <span class="na">dockerfile</span><span class="pi">:</span> <span class="s">Dockerfile.frontend</span>
+    <span class="na">ports</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s2">"</span><span class="s">5173:5173"</span>
+    <span class="na">environment</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s">VITE_API_BASE_URL=http://localhost:5000</span>
+
+  <span class="na">db</span><span class="pi">:</span>
+    <span class="na">image</span><span class="pi">:</span> <span class="s">postgres:15</span>
+    <span class="na">environment</span><span class="pi">:</span>
+      <span class="na">POSTGRES_DB</span><span class="pi">:</span> <span class="s">chordme</span>
+      <span class="na">POSTGRES_USER</span><span class="pi">:</span> <span class="s">postgres</span>
+      <span class="na">POSTGRES_PASSWORD</span><span class="pi">:</span> <span class="s">password</span>
+    <span class="na">volumes</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s">postgres_data:/var/lib/postgresql/data</span>
+
+<span class="na">volumes</span><span class="pi">:</span>
+  <span class="na">postgres_data</span><span class="pi">:</span>
+</code></pre></div></div>
+
+<h2 id="performance-optimization">Performance Optimization</h2>
+
+<h3 id="frontend-optimization">Frontend Optimization</h3>
+
+<ol>
+  <li><strong>Code Splitting</strong>: Use React.lazy() for route-based splitting</li>
+  <li><strong>Bundle Analysis</strong>: Regular analysis with <code class="language-plaintext highlighter-rouge">npm run build -- --analyze</code></li>
+  <li><strong>Asset Optimization</strong>: Optimize images and static assets</li>
+  <li><strong>Caching</strong>: Implement proper browser caching strategies</li>
+</ol>
+
+<h3 id="backend-optimization">Backend Optimization</h3>
+
+<ol>
+  <li><strong>Database Indexing</strong>: Proper indexes on frequently queried columns</li>
+  <li><strong>Query Optimization</strong>: Use SQLAlchemy query optimization techniques</li>
+  <li><strong>Caching</strong>: Implement Redis caching for frequent operations</li>
+  <li><strong>Connection Pooling</strong>: Configure proper database connection pooling</li>
+</ol>
+
+<h2 id="security-considerations">Security Considerations</h2>
+
+<h3 id="authentication--authorization">Authentication &amp; Authorization</h3>
+<ul>
+  <li>JWT tokens with appropriate expiration</li>
+  <li>Secure password hashing with bcrypt</li>
+  <li>Input validation and sanitization</li>
+  <li>Rate limiting on authentication endpoints</li>
+</ul>
+
+<h3 id="data-protection">Data Protection</h3>
+<ul>
+  <li>HTTPS enforcement in production</li>
+  <li>SQL injection prevention through ORM</li>
+  <li>XSS protection through proper output encoding</li>
+  <li>CSRF protection for state-changing operations</li>
+</ul>
+
+<h3 id="api-security">API Security</h3>
+<ul>
+  <li>Input validation on all endpoints</li>
+  <li>Proper error handling without information leakage</li>
+  <li>Rate limiting and throttling</li>
+  <li>CORS configuration for production</li>
+</ul>
+
+<h2 id="troubleshooting-common-issues">Troubleshooting Common Issues</h2>
+
+<h3 id="development-setup-issues">Development Setup Issues</h3>
+
+<h4 id="nodejs-version-conflicts">Node.js Version Conflicts</h4>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Use nvm to manage Node.js versions</span>
+nvm <span class="nb">install </span>20
+nvm use 20
+</code></pre></div></div>
+
+<h4 id="python-virtual-environment">Python Virtual Environment</h4>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Create and activate virtual environment</span>
+python <span class="nt">-m</span> venv venv
+<span class="nb">source </span>venv/bin/activate  <span class="c"># On Windows: venv\Scripts\activate</span>
+pip <span class="nb">install</span> <span class="nt">-r</span> requirements.txt
+</code></pre></div></div>
+
+<h4 id="database-connection-issues">Database Connection Issues</h4>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Reset database</span>
+<span class="nb">cd </span>backend
+<span class="nb">rm</span> <span class="nt">-f</span> chordme.db
+python <span class="nt">-c</span> <span class="s2">"from chordme import create_app, db; app = create_app(); app.app_context().push(); db.create_all()"</span>
+</code></pre></div></div>
+
+<h3 id="build-issues">Build Issues</h3>
+
+<h4 id="frontend-build-failures">Frontend Build Failures</h4>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Clear cache and reinstall</span>
+<span class="nb">cd </span>frontend
+<span class="nb">rm</span> <span class="nt">-rf</span> node_modules package-lock.json
+npm <span class="nb">install</span>
+</code></pre></div></div>
+
+<h4 id="typescript-errors">TypeScript Errors</h4>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Check TypeScript configuration</span>
+npx tsc <span class="nt">--noEmit</span>
+</code></pre></div></div>
+
+<h3 id="testing-issues">Testing Issues</h3>
+
+<h4 id="test-database-setup">Test Database Setup</h4>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cd </span>backend
+<span class="nb">export </span><span class="nv">FLASK_CONFIG</span><span class="o">=</span>test_config
+python <span class="nt">-m</span> pytest tests/ <span class="nt">-v</span>
+</code></pre></div></div>
+
+<h4 id="e2e-test-failures">E2E Test Failures</h4>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Install Playwright browsers</span>
+npx playwright <span class="nb">install</span> <span class="nt">--with-deps</span>
+</code></pre></div></div>
+
+<h2 id="resources">Resources</h2>
+
+<h3 id="documentation">Documentation</h3>
+<ul>
+  <li><a href="https://flask.palletsprojects.com/">Flask Documentation</a></li>
+  <li><a href="https://react.dev/">React Documentation</a></li>
+  <li><a href="https://www.typescriptlang.org/docs/">TypeScript Documentation</a></li>
+  <li><a href="https://vitejs.dev/">Vite Documentation</a></li>
+  <li><a href="https://playwright.dev/">Playwright Documentation</a></li>
+</ul>
+
+<h3 id="tools">Tools</h3>
+<ul>
+  <li><a href="https://code.visualstudio.com/docs/languages/typescript">VS Code Extensions</a></li>
+  <li><a href="https://cli.github.com/">GitHub CLI</a></li>
+  <li><a href="https://www.postman.com/">Postman</a> for API testing</li>
+</ul>
+
+<h3 id="community">Community</h3>
+<ul>
+  <li><a href="https://github.com/tonybolanyo/chordme/discussions">GitHub Discussions</a></li>
+  <li><a href="https://github.com/tonybolanyo/chordme/issues">Issue Tracker</a></li>
+</ul>
+
+<hr />
+
+<p><em>For more information about using ChordMe, see the <a href="user-guide.md">User Guide</a> and <a href="api-reference.md">API Reference</a>.</em></p>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">ChordMe User Manual</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">ChordMe User Manual</li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Comprehensive documentation for ChordMe - Lyrics and chords in a simple way</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

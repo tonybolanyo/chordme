@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>ChordMe User Guide | ChordMe User Manual</title>
+<meta name="generator" content="Jekyll v4.3.4" />
+<meta property="og:title" content="ChordMe User Guide" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Comprehensive documentation for ChordMe - Lyrics and chords in a simple way" />
+<meta property="og:description" content="Comprehensive documentation for ChordMe - Lyrics and chords in a simple way" />
+<meta property="og:site_name" content="ChordMe User Manual" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="ChordMe User Guide" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebPage","description":"Comprehensive documentation for ChordMe - Lyrics and chords in a simple way","headline":"ChordMe User Guide","url":"/user-guide.html"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="/feed.xml" title="ChordMe User Manual" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">ChordMe User Manual</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/getting-started.html">Getting Started with ChordMe</a><a class="page-link" href="/user-guide.html">ChordMe User Guide</a><a class="page-link" href="/chordpro-format.html">ChordPro Format Guide</a><a class="page-link" href="/api-reference.html">ChordMe API Reference</a><a class="page-link" href="/developer-guide.html">ChordMe Developer Guide</a><a class="page-link" href="/troubleshooting.html">ChordMe Troubleshooting Guide</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <h1 id="chordme-user-guide">ChordMe User Guide</h1>
+
+<p>This guide covers all the features and functionality available in ChordMe for end users.</p>
+
+<h2 id="overview">Overview</h2>
+
+<p>ChordMe provides a comprehensive platform for managing songs with lyrics and chords. Whether you’re a musician, songwriter, or music teacher, ChordMe offers the tools you need to organize and display your musical content.</p>
+
+<h2 id="user-authentication">User Authentication</h2>
+
+<h3 id="registration">Registration</h3>
+
+<p>To start using ChordMe, you need to create an account:</p>
+
+<ol>
+  <li>Navigate to the registration page</li>
+  <li>Provide a valid email address</li>
+  <li>Create a secure password (minimum requirements apply)</li>
+  <li>Submit the registration form</li>
+  <li>You’ll receive a success message upon successful registration</li>
+</ol>
+
+<h3 id="login">Login</h3>
+
+<p>After registration, log in to access your personal song library:</p>
+
+<ol>
+  <li>Enter your email and password</li>
+  <li>Click the login button</li>
+  <li>You’ll receive a JWT token for authenticated requests</li>
+  <li>The token automatically handles your session</li>
+</ol>
+
+<h3 id="password-security">Password Security</h3>
+
+<p>ChordMe implements robust password security:</p>
+
+<ul>
+  <li>Passwords are hashed using bcrypt</li>
+  <li>Minimum length and complexity requirements</li>
+  <li>Secure storage with no plain-text passwords</li>
+  <li>JWT tokens for secure API access</li>
+</ul>
+
+<h2 id="song-management">Song Management</h2>
+
+<h3 id="creating-songs">Creating Songs</h3>
+
+<p>ChordMe supports creating songs using the ChordPro format:</p>
+
+<h4 id="using-the-web-interface">Using the Web Interface</h4>
+
+<ol>
+  <li>Click “Create New Song” or similar button</li>
+  <li>Enter song metadata (title, artist, key, etc.)</li>
+  <li>Add your lyrics and chords using ChordPro format</li>
+  <li>Preview your song as you type</li>
+  <li>Save your song to your library</li>
+</ol>
+
+<h4 id="using-the-api">Using the API</h4>
+
+<p>Send a POST request to <code class="language-plaintext highlighter-rouge">/api/v1/songs</code>:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Amazing Grace"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"artist"</span><span class="p">:</span><span class="w"> </span><span class="s2">"John Newton"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"content"</span><span class="p">:</span><span class="w"> </span><span class="s2">"{title: Amazing Grace}</span><span class="se">\n</span><span class="s2">{artist: John Newton}</span><span class="se">\n</span><span class="s2">[G]Amazing [G7]grace..."</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h3 id="viewing-songs">Viewing Songs</h3>
+
+<h4 id="song-list">Song List</h4>
+
+<ul>
+  <li>View all your songs in a organized list</li>
+  <li>Search and filter functionality</li>
+  <li>Sort by title, artist, or creation date</li>
+  <li>Quick access to edit or view individual songs</li>
+</ul>
+
+<h4 id="song-display">Song Display</h4>
+
+<ul>
+  <li>Clean, readable display of lyrics and chords</li>
+  <li>Proper formatting of ChordPro directives</li>
+  <li>Responsive design for various screen sizes</li>
+  <li>Print-friendly formatting</li>
+</ul>
+
+<h3 id="editing-songs">Editing Songs</h3>
+
+<ol>
+  <li>Select a song from your library</li>
+  <li>Click the edit button</li>
+  <li>Modify any song properties or content</li>
+  <li>Changes are preserved in real-time</li>
+  <li>Save your modifications</li>
+</ol>
+
+<h3 id="organizing-songs">Organizing Songs</h3>
+
+<ul>
+  <li><strong>Search</strong>: Find songs by title, artist, or content</li>
+  <li><strong>Categories</strong>: Organize songs by genre, key, or custom tags</li>
+  <li><strong>Favorites</strong>: Mark frequently used songs as favorites</li>
+  <li><strong>Recent</strong>: Quick access to recently viewed or edited songs</li>
+</ul>
+
+<h2 id="chordpro-format-features">ChordPro Format Features</h2>
+
+<p>ChordMe fully supports the ChordPro format with these features:</p>
+
+<h3 id="directives">Directives</h3>
+
+<p>Add metadata and structure to your songs:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{title: Song Title}
+{artist: Artist Name}
+{key: G}
+{capo: 3}
+{tempo: 120}
+{comment: Additional notes}
+</code></pre></div></div>
+
+<h3 id="chord-notation">Chord Notation</h3>
+
+<p>Place chords above lyrics using square brackets:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[G]Amazing [G7]grace, how [C]sweet the [G]sound
+That [Em]saved a [D]wretch like [G]me
+</code></pre></div></div>
+
+<h3 id="song-structure">Song Structure</h3>
+
+<p>Organize your songs with structural directives:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{start_of_verse}
+[G]Verse lyrics go here
+{end_of_verse}
+
+{start_of_chorus}
+[C]Chorus lyrics go here
+{end_of_chorus}
+</code></pre></div></div>
+
+<h3 id="advanced-features">Advanced Features</h3>
+
+<ul>
+  <li><strong>Tablature</strong>: Include guitar tabs and notation</li>
+  <li><strong>Comments</strong>: Add performance notes and instructions</li>
+  <li><strong>Multiple verses</strong>: Organize complex song structures</li>
+  <li><strong>Key changes</strong>: Handle modulations and key changes</li>
+</ul>
+
+<h2 id="interface-features">Interface Features</h2>
+
+<h3 id="chordpro-editor">ChordPro Editor</h3>
+
+<p>The built-in editor provides:</p>
+
+<ul>
+  <li><strong>Syntax highlighting</strong> for ChordPro format</li>
+  <li><strong>Real-time preview</strong> of your formatted song</li>
+  <li><strong>Auto-completion</strong> for common directives</li>
+  <li><strong>Error detection</strong> for invalid ChordPro syntax</li>
+  <li><strong>Line numbers</strong> for easy reference</li>
+</ul>
+
+<h3 id="chordpro-viewer">ChordPro Viewer</h3>
+
+<p>Display songs with:</p>
+
+<ul>
+  <li><strong>Professional formatting</strong> of chords and lyrics</li>
+  <li><strong>Responsive layout</strong> that adapts to screen size</li>
+  <li><strong>Print optimization</strong> for physical sheet music</li>
+  <li><strong>Zoom controls</strong> for accessibility</li>
+  <li><strong>Color themes</strong> for different viewing preferences</li>
+</ul>
+
+<h3 id="search-and-filter">Search and Filter</h3>
+
+<p>Find your content quickly with:</p>
+
+<ul>
+  <li><strong>Full-text search</strong> across titles, artists, and lyrics</li>
+  <li><strong>Filter by key</strong> to find songs in specific keys</li>
+  <li><strong>Sort options</strong> for different organizational preferences</li>
+  <li><strong>Tag-based organization</strong> for custom categorization</li>
+</ul>
+
+<h2 id="mobile-experience">Mobile Experience</h2>
+
+<p>ChordMe is fully responsive and works great on mobile devices:</p>
+
+<ul>
+  <li><strong>Touch-friendly interface</strong> optimized for phones and tablets</li>
+  <li><strong>Swipe navigation</strong> for easy song browsing</li>
+  <li><strong>Zoom support</strong> for easy reading on small screens</li>
+  <li><strong>Offline capability</strong> for previously loaded songs</li>
+  <li><strong>Portrait and landscape</strong> viewing modes</li>
+</ul>
+
+<h2 id="keyboard-shortcuts">Keyboard Shortcuts</h2>
+
+<p>Improve your workflow with keyboard shortcuts:</p>
+
+<ul>
+  <li><strong>Ctrl/Cmd + S</strong>: Save current song</li>
+  <li><strong>Ctrl/Cmd + N</strong>: Create new song</li>
+  <li><strong>Ctrl/Cmd + F</strong>: Search songs</li>
+  <li><strong>Ctrl/Cmd + E</strong>: Toggle edit mode</li>
+  <li><strong>Escape</strong>: Exit current mode</li>
+  <li><strong>Tab</strong>: Navigate between form fields</li>
+</ul>
+
+<h2 id="import-and-export">Import and Export</h2>
+
+<h3 id="importing-songs">Importing Songs</h3>
+
+<ul>
+  <li><strong>ChordPro files</strong>: Direct import of .pro or .chopro files</li>
+  <li><strong>Text files</strong>: Convert plain text with basic formatting</li>
+  <li><strong>Batch import</strong>: Upload multiple songs at once</li>
+</ul>
+
+<h3 id="exporting-songs">Exporting Songs</h3>
+
+<ul>
+  <li><strong>ChordPro format</strong>: Export individual or multiple songs</li>
+  <li><strong>PDF generation</strong>: Create printable sheet music</li>
+  <li><strong>Text format</strong>: Simple text export for sharing</li>
+  <li><strong>JSON export</strong>: Machine-readable format for integration</li>
+</ul>
+
+<h2 id="collaboration-features">Collaboration Features</h2>
+
+<h3 id="sharing-songs">Sharing Songs</h3>
+
+<ul>
+  <li><strong>Public links</strong>: Share songs with non-users</li>
+  <li><strong>Collaboration mode</strong>: Work on songs with other users</li>
+  <li><strong>Version history</strong>: Track changes over time</li>
+  <li><strong>Comments and notes</strong>: Add collaborative feedback</li>
+</ul>
+
+<h3 id="user-permissions">User Permissions</h3>
+
+<ul>
+  <li><strong>Private songs</strong>: Keep songs personal to your account</li>
+  <li><strong>Shared collections</strong>: Collaborate with specific users</li>
+  <li><strong>Public library</strong>: Share songs with the community</li>
+  <li><strong>Read-only sharing</strong>: Allow viewing without editing</li>
+</ul>
+
+<h2 id="performance-and-optimization">Performance and Optimization</h2>
+
+<p>ChordMe is optimized for performance:</p>
+
+<ul>
+  <li><strong>Fast loading</strong>: Optimized code and assets</li>
+  <li><strong>Efficient caching</strong>: Reduced server requests</li>
+  <li><strong>Lazy loading</strong>: Load content as needed</li>
+  <li><strong>Offline support</strong>: Access previously viewed content</li>
+  <li><strong>Progressive enhancement</strong>: Works on slower connections</li>
+</ul>
+
+<h2 id="accessibility">Accessibility</h2>
+
+<p>ChordMe follows accessibility best practices:</p>
+
+<ul>
+  <li><strong>Screen reader support</strong>: Full compatibility with assistive technology</li>
+  <li><strong>Keyboard navigation</strong>: Complete functionality without a mouse</li>
+  <li><strong>High contrast modes</strong>: Better visibility for users with visual impairments</li>
+  <li><strong>Scalable text</strong>: Support for different font sizes</li>
+  <li><strong>Alternative text</strong>: Descriptions for all visual elements</li>
+</ul>
+
+<h2 id="data-management">Data Management</h2>
+
+<h3 id="backup-and-sync">Backup and Sync</h3>
+
+<ul>
+  <li><strong>Automatic backups</strong>: Your data is regularly backed up</li>
+  <li><strong>Cross-device sync</strong>: Access your songs from any device</li>
+  <li><strong>Export functionality</strong>: Download your complete song library</li>
+  <li><strong>Data portability</strong>: Easy migration to other systems</li>
+</ul>
+
+<h3 id="privacy-and-security">Privacy and Security</h3>
+
+<ul>
+  <li><strong>Data encryption</strong>: All data is encrypted in transit and at rest</li>
+  <li><strong>User privacy</strong>: Your songs are private by default</li>
+  <li><strong>GDPR compliance</strong>: Full compliance with data protection regulations</li>
+  <li><strong>Account security</strong>: Strong authentication and session management</li>
+</ul>
+
+<h2 id="tips-and-best-practices">Tips and Best Practices</h2>
+
+<h3 id="writing-effective-chordpro">Writing Effective ChordPro</h3>
+
+<ol>
+  <li><strong>Use consistent formatting</strong> for better readability</li>
+  <li><strong>Include metadata</strong> like key, tempo, and capo information</li>
+  <li><strong>Structure your songs</strong> with verse/chorus markers</li>
+  <li><strong>Add comments</strong> for performance notes</li>
+  <li><strong>Test your formatting</strong> with the preview feature</li>
+</ol>
+
+<h3 id="organizing-your-library">Organizing Your Library</h3>
+
+<ol>
+  <li><strong>Use descriptive titles</strong> for easy searching</li>
+  <li><strong>Tag songs consistently</strong> with genres or themes</li>
+  <li><strong>Include artist information</strong> for better organization</li>
+  <li><strong>Use favorites</strong> for frequently accessed songs</li>
+  <li><strong>Regular maintenance</strong> to keep your library clean</li>
+</ol>
+
+<h3 id="performance-tips">Performance Tips</h3>
+
+<ol>
+  <li><strong>Use keyboard shortcuts</strong> for faster navigation</li>
+  <li><strong>Bookmark frequently used songs</strong> for quick access</li>
+  <li><strong>Take advantage of search</strong> instead of browsing</li>
+  <li><strong>Use the preview mode</strong> for performance viewing</li>
+  <li><strong>Export backup copies</strong> of important songs</li>
+</ol>
+
+<h2 id="getting-support">Getting Support</h2>
+
+<p>If you need help using ChordMe:</p>
+
+<ol>
+  <li><strong>Check the documentation</strong> in this user manual</li>
+  <li><strong>Search the FAQ</strong> for common questions</li>
+  <li><strong>Review troubleshooting guides</strong> for technical issues</li>
+  <li><strong>Contact support</strong> through the GitHub repository</li>
+  <li><strong>Join the community</strong> for user discussions</li>
+</ol>
+
+<hr />
+
+<p><em>For technical details and API usage, see the <a href="api-reference.md">API Reference</a> and <a href="developer-guide.md">Developer Guide</a>.</em></p>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">ChordMe User Manual</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">ChordMe User Manual</li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Comprehensive documentation for ChordMe - Lyrics and chords in a simple way</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

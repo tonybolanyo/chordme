@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>ChordPro Format Guide | ChordMe User Manual</title>
+<meta name="generator" content="Jekyll v4.3.4" />
+<meta property="og:title" content="ChordPro Format Guide" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Comprehensive documentation for ChordMe - Lyrics and chords in a simple way" />
+<meta property="og:description" content="Comprehensive documentation for ChordMe - Lyrics and chords in a simple way" />
+<meta property="og:site_name" content="ChordMe User Manual" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="ChordPro Format Guide" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebPage","description":"Comprehensive documentation for ChordMe - Lyrics and chords in a simple way","headline":"ChordPro Format Guide","url":"/chordpro-format.html"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="/feed.xml" title="ChordMe User Manual" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">ChordMe User Manual</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/getting-started.html">Getting Started with ChordMe</a><a class="page-link" href="/user-guide.html">ChordMe User Guide</a><a class="page-link" href="/chordpro-format.html">ChordPro Format Guide</a><a class="page-link" href="/api-reference.html">ChordMe API Reference</a><a class="page-link" href="/developer-guide.html">ChordMe Developer Guide</a><a class="page-link" href="/troubleshooting.html">ChordMe Troubleshooting Guide</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <h1 id="chordpro-format-guide">ChordPro Format Guide</h1>
+
+<p>ChordMe fully supports the ChordPro format, the industry standard for storing and displaying songs with chords and lyrics. This guide explains everything you need to know about using ChordPro in ChordMe.</p>
+
+<h2 id="what-is-chordpro">What is ChordPro?</h2>
+
+<p>ChordPro is a simple text format that allows you to:</p>
+
+<ul>
+  <li>Store lyrics with chord notations</li>
+  <li>Add metadata like title, artist, and key</li>
+  <li>Structure songs with sections like verses and choruses</li>
+  <li>Include performance instructions and comments</li>
+  <li>Maintain professional formatting</li>
+</ul>
+
+<h2 id="basic-syntax">Basic Syntax</h2>
+
+<h3 id="chords">Chords</h3>
+
+<p>Chords are enclosed in square brackets <code class="language-plaintext highlighter-rouge">[chord]</code> and positioned directly above the lyrics:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[G]Amazing [G7]grace, how [C]sweet the [G]sound
+That [Em]saved a [D]wretch like [G]me
+</code></pre></div></div>
+
+<h3 id="directives">Directives</h3>
+
+<p>Directives provide metadata and structure, enclosed in curly braces <code class="language-plaintext highlighter-rouge">{directive: value}</code>:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{title: Amazing Grace}
+{artist: John Newton}
+{key: G}
+</code></pre></div></div>
+
+<h2 id="complete-chordpro-reference">Complete ChordPro Reference</h2>
+
+<h3 id="metadata-directives">Metadata Directives</h3>
+
+<h4 id="basic-song-information">Basic Song Information</h4>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{title: Song Title}              # Song title
+{artist: Artist Name}            # Primary artist
+{composer: Composer Name}        # Song composer
+{lyricist: Lyricist Name}        # Lyrics writer
+{copyright: Copyright Info}      # Copyright notice
+{album: Album Name}              # Album title
+{year: 2024}                     # Release year
+</code></pre></div></div>
+
+<h4 id="musical-information">Musical Information</h4>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{key: G}                         # Song key
+{capo: 3}                        # Capo position
+{tempo: 120}                     # Beats per minute
+{time: 4/4}                      # Time signature
+{duration: 3:45}                 # Song length
+</code></pre></div></div>
+
+<h4 id="technical-directives">Technical Directives</h4>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{comment: Performance notes}     # General comments
+{highlight: Important text}      # Highlighted text
+{subtitle: Additional info}      # Song subtitle
+</code></pre></div></div>
+
+<h3 id="structural-directives">Structural Directives</h3>
+
+<h4 id="verse-sections">Verse Sections</h4>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{start_of_verse}
+[G]This is the first line of the verse
+[C]This is the second line [G]with chords
+{end_of_verse}
+
+# Or abbreviated form:
+{sov}
+Verse content here
+{eov}
+</code></pre></div></div>
+
+<h4 id="chorus-sections">Chorus Sections</h4>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{start_of_chorus}
+[F]This is the chorus line
+[C]Everyone sings [G]along
+{end_of_chorus}
+
+# Or abbreviated form:
+{soc}
+Chorus content here
+{eoc}
+</code></pre></div></div>
+
+<h4 id="bridge-sections">Bridge Sections</h4>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{start_of_bridge}
+[Am]Bridge section content
+[F]Different melody [C]here
+{end_of_bridge}
+
+# Or abbreviated form:
+{sob}
+Bridge content here
+{eob}
+</code></pre></div></div>
+
+<h4 id="custom-sections">Custom Sections</h4>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{start_of_tab}
+E|--0--2--3--|
+B|--0--1--0--|
+G|--0--2--0--|
+{end_of_tab}
+
+{start_of_grid}
+| G | G | C | C |
+| G | Em| D | G |
+{end_of_grid}
+</code></pre></div></div>
+
+<h3 id="advanced-features">Advanced Features</h3>
+
+<h4 id="multiple-verses">Multiple Verses</h4>
+
+<p>You can number verses for organization:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{start_of_verse: 1}
+[G]First verse content
+{end_of_verse}
+
+{start_of_verse: 2}
+[G]Second verse content
+{end_of_verse}
+</code></pre></div></div>
+
+<h4 id="chorus-references">Chorus References</h4>
+
+<p>Reference previously defined choruses:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{start_of_chorus}
+[G]Main chorus content
+{end_of_chorus}
+
+{start_of_verse}
+[G]Verse content
+{end_of_verse}
+
+{chorus}  # References the defined chorus
+</code></pre></div></div>
+
+<h4 id="comments-and-instructions">Comments and Instructions</h4>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{comment: Slow tempo for intro}
+{comment: Key change after bridge}
+{comment: Repeat chorus 2x}
+</code></pre></div></div>
+
+<h4 id="text-formatting">Text Formatting</h4>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{highlight: Important performance note}
+{comment: Whisper this line}
+{comment: Loud and energetic}
+</code></pre></div></div>
+
+<h2 id="chord-notation">Chord Notation</h2>
+
+<h3 id="basic-chords">Basic Chords</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[C] [Dm] [G7] [Am]              # Major, minor, 7th chords
+[C/E] [G/B]                     # Slash chords (bass notes)
+[Cmaj7] [Dm7] [G7sus4]          # Complex chords
+</code></pre></div></div>
+
+<h3 id="chord-positioning">Chord Positioning</h3>
+
+<h4 id="inline-with-lyrics">Inline with Lyrics</h4>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[G]Amazing [G7]grace, how [C]sweet the [G]sound
+</code></pre></div></div>
+
+<h4 id="chord-only-lines">Chord-Only Lines</h4>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[G] [G7] [C] [G]                # Instrumental section
+[Em] [D] [G] [C]
+</code></pre></div></div>
+
+<h4 id="mixed-positioning">Mixed Positioning</h4>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[G]Amazing grace           # Chord at start of word
+how [C]sweet the sound     # Chord in middle of line
+that saved a wretch[G]     # Chord at end
+</code></pre></div></div>
+
+<h3 id="special-chord-notations">Special Chord Notations</h3>
+
+<h4 id="no-chord">No Chord</h4>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[NC]Spoken word section    # NC = No Chord
+</code></pre></div></div>
+
+<h4 id="chord-continuations">Chord Continuations</h4>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[G]Long [.]held [.]note    # [.] continues previous chord
+</code></pre></div></div>
+
+<h4 id="parenthetical-chords">Parenthetical Chords</h4>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[G(add9)]Optional chord    # Additional notation
+[(G)]Quiet/optional        # Truly optional chord
+</code></pre></div></div>
+
+<h2 id="song-structure-examples">Song Structure Examples</h2>
+
+<h3 id="simple-song-structure">Simple Song Structure</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{title: Simple Song}
+{artist: Example Artist}
+{key: G}
+
+{start_of_verse}
+[G]This is the first verse
+[C]With some simple [G]chords
+{end_of_verse}
+
+{start_of_chorus}
+[F]This is the chorus
+[C]Everyone sings [G]along
+{end_of_chorus}
+
+{start_of_verse}
+[G]This is the second verse
+[C]Building on the [G]theme
+{end_of_verse}
+
+{chorus}
+</code></pre></div></div>
+
+<h3 id="complex-song-structure">Complex Song Structure</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{title: Complex Song}
+{artist: Advanced Artist}
+{key: Em}
+{capo: 2}
+{tempo: 76}
+
+{comment: Soft fingerpicking intro}
+{start_of_verse: Intro}
+[Em] [Am] [C] [G]
+[Em] [Am] [B7] [Em]
+{end_of_verse}
+
+{start_of_verse: 1}
+[Em]In the quiet of the [Am]morning
+[C]When the world is [G]still asleep
+[Em]I can hear your [Am]whisper
+[B7]Promises you'll [Em]keep
+{end_of_verse}
+
+{start_of_chorus}
+[C]Hold me [G]close, don't [D]let me [Em]go
+[C]In this [G]moment [D]time moves [Em]slow
+[Am]Everything we [C]need to [G]know
+[B7]Is right here [Em]now
+{end_of_chorus}
+
+{start_of_bridge}
+{comment: Key change to G major}
+[G]When the storms of [D]life come calling
+[Em]And the winds begin to [C]blow
+[G]I'll remember [D]this moment
+[C]And the love that [D]we both [G]know
+{end_of_bridge}
+
+{comment: Return to Em for final chorus}
+{chorus}
+
+{start_of_verse: Outro}
+{comment: Slow down and fade}
+[Em] [Am] [C] [G]
+[Em] [Am] [B7] [Em]
+{end_of_verse}
+</code></pre></div></div>
+
+<h2 id="chordme-specific-features">ChordMe-Specific Features</h2>
+
+<h3 id="content-preservation">Content Preservation</h3>
+
+<p>ChordMe guarantees:</p>
+
+<ul>
+  <li><strong>Exact storage</strong> of your ChordPro content</li>
+  <li><strong>Perfect retrieval</strong> with all formatting intact</li>
+  <li><strong>No modifications</strong> to your original text</li>
+  <li><strong>Unicode support</strong> for international characters</li>
+  <li><strong>Whitespace preservation</strong> including line breaks and spacing</li>
+</ul>
+
+<h3 id="validation">Validation</h3>
+
+<p>ChordMe can validate your ChordPro content:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">POST</span><span class="w"> </span><span class="err">/api/v</span><span class="mi">1</span><span class="err">/songs/validate-chordpro</span><span class="w">
+</span><span class="p">{</span><span class="w">
+  </span><span class="nl">"content"</span><span class="p">:</span><span class="w"> </span><span class="s2">"{title: Test}</span><span class="se">\n</span><span class="s2">[C]Test [G]lyrics"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Response includes:</p>
+<ul>
+  <li>Validation status and any warnings</li>
+  <li>Extracted metadata (title, artist, key)</li>
+  <li>Chord analysis (unique chords, count)</li>
+  <li>Content statistics (lines, characters)</li>
+</ul>
+
+<h3 id="editor-features">Editor Features</h3>
+
+<p>ChordMe’s editor provides:</p>
+
+<ul>
+  <li><strong>Syntax highlighting</strong> for ChordPro elements</li>
+  <li><strong>Auto-completion</strong> for common directives</li>
+  <li><strong>Real-time preview</strong> of formatted output</li>
+  <li><strong>Error detection</strong> for invalid syntax</li>
+  <li><strong>Line numbers</strong> for reference</li>
+</ul>
+
+<h2 id="best-practices">Best Practices</h2>
+
+<h3 id="formatting-guidelines">Formatting Guidelines</h3>
+
+<ol>
+  <li><strong>Consistent spacing</strong>: Use consistent spacing around chords</li>
+  <li><strong>Logical grouping</strong>: Group related content together</li>
+  <li><strong>Clear sections</strong>: Use structural directives for organization</li>
+  <li><strong>Meaningful comments</strong>: Add helpful performance notes</li>
+  <li><strong>Proper metadata</strong>: Include all relevant song information</li>
+</ol>
+
+<h3 id="chord-placement">Chord Placement</h3>
+
+<ol>
+  <li><strong>Above syllables</strong>: Place chords directly above sung syllables</li>
+  <li><strong>Consistent timing</strong>: Maintain consistent chord timing</li>
+  <li><strong>Clear notation</strong>: Use standard chord names and symbols</li>
+  <li><strong>Slash chords</strong>: Indicate bass notes when important</li>
+  <li><strong>Optional chords</strong>: Mark optional or alternative chords clearly</li>
+</ol>
+
+<h3 id="organization-tips">Organization Tips</h3>
+
+<ol>
+  <li><strong>Title first</strong>: Always start with the title directive</li>
+  <li><strong>Metadata block</strong>: Group all metadata at the top</li>
+  <li><strong>Structural order</strong>: Follow logical song structure</li>
+  <li><strong>Comments placement</strong>: Add comments before relevant sections</li>
+  <li><strong>Consistent naming</strong>: Use consistent section naming</li>
+</ol>
+
+<h2 id="common-patterns">Common Patterns</h2>
+
+<h3 id="verse-chorus-songs">Verse-Chorus Songs</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{title: Standard Pop Song}
+{artist: Artist Name}
+
+{start_of_verse: 1}
+Verse 1 content
+{end_of_verse}
+
+{start_of_chorus}
+Chorus content
+{end_of_chorus}
+
+{start_of_verse: 2}
+Verse 2 content
+{end_of_verse}
+
+{chorus}
+
+{start_of_bridge}
+Bridge content
+{end_of_bridge}
+
+{chorus}
+</code></pre></div></div>
+
+<h3 id="folktraditional-songs">Folk/Traditional Songs</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{title: Traditional Folk Song}
+{artist: Traditional}
+{key: D}
+{capo: 0}
+
+{start_of_verse: 1}
+Traditional verse structure
+{end_of_verse}
+
+{start_of_verse: 2}
+More verses following
+{end_of_verse}
+
+{comment: Repeat verses as desired}
+</code></pre></div></div>
+
+<h3 id="contemporary-worship">Contemporary Worship</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{title: Worship Song}
+{artist: Worship Leader}
+{key: G}
+{tempo: 72}
+
+{comment: Quiet, contemplative start}
+{start_of_verse: 1}
+Worship verse content
+{end_of_verse}
+
+{start_of_chorus}
+Uplifting chorus
+{end_of_chorus}
+
+{comment: Build energy}
+{start_of_verse: 2}
+Building verse
+{end_of_verse}
+
+{start_of_chorus}
+{comment: Full band, energetic}
+Chorus with energy
+{end_of_chorus}
+
+{start_of_bridge}
+{comment: Strip down to acoustic}
+Contemplative bridge
+{end_of_bridge}
+
+{comment: Big finish}
+{chorus}
+</code></pre></div></div>
+
+<h2 id="troubleshooting">Troubleshooting</h2>
+
+<h3 id="common-issues">Common Issues</h3>
+
+<h4 id="chords-not-displaying">Chords Not Displaying</h4>
+
+<ul>
+  <li>Check for proper square bracket syntax <code class="language-plaintext highlighter-rouge">[C]</code></li>
+  <li>Ensure no spaces inside brackets <code class="language-plaintext highlighter-rouge">[C ]</code> ❌ <code class="language-plaintext highlighter-rouge">[C]</code> ✅</li>
+  <li>Verify chord names are valid</li>
+</ul>
+
+<h4 id="directives-not-working">Directives Not Working</h4>
+
+<ul>
+  <li>Check for proper curly brace syntax <code class="language-plaintext highlighter-rouge">{title: Song}</code></li>
+  <li>Ensure colon and space after directive name</li>
+  <li>Verify directive names are spelled correctly</li>
+</ul>
+
+<h4 id="formatting-problems">Formatting Problems</h4>
+
+<ul>
+  <li>Check for matching start/end directive pairs</li>
+  <li>Ensure proper line breaks between sections</li>
+  <li>Verify no extra characters in directive lines</li>
+</ul>
+
+<h3 id="validation-errors">Validation Errors</h3>
+
+<p>Use ChordMe’s validation endpoint to check for:</p>
+
+<ul>
+  <li>Invalid directive syntax</li>
+  <li>Mismatched section markers</li>
+  <li>Unsupported chord notations</li>
+  <li>Formatting inconsistencies</li>
+</ul>
+
+<h2 id="migration-from-other-formats">Migration from Other Formats</h2>
+
+<h3 id="from-plain-text">From Plain Text</h3>
+
+<ol>
+  <li>Add <code class="language-plaintext highlighter-rouge">{title:}</code> and <code class="language-plaintext highlighter-rouge">{artist:}</code> directives</li>
+  <li>Wrap chords in square brackets</li>
+  <li>Add structural directives for sections</li>
+  <li>Include any performance notes as comments</li>
+</ol>
+
+<h3 id="from-chord-charts">From Chord Charts</h3>
+
+<ol>
+  <li>Convert chord symbols to ChordPro format</li>
+  <li>Add lyrics below chord lines</li>
+  <li>Include timing and rhythm information</li>
+  <li>Add metadata and structure</li>
+</ol>
+
+<h3 id="from-other-chordpro-tools">From Other ChordPro Tools</h3>
+
+<p>ChordMe accepts standard ChordPro format, so most files will work directly. If you encounter issues:</p>
+
+<ol>
+  <li>Check for non-standard directives</li>
+  <li>Verify character encoding (UTF-8 recommended)</li>
+  <li>Review chord notation for compatibility</li>
+  <li>Test with ChordMe’s validation tool</li>
+</ol>
+
+<hr />
+
+<p><em>For more information about using ChordPro in ChordMe, see the <a href="user-guide.md">User Guide</a> and <a href="api-reference.md">API Reference</a>.</em></p>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">ChordMe User Manual</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">ChordMe User Manual</li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Comprehensive documentation for ChordMe - Lyrics and chords in a simple way</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

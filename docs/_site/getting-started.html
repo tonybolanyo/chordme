@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Getting Started with ChordMe | ChordMe User Manual</title>
+<meta name="generator" content="Jekyll v4.3.4" />
+<meta property="og:title" content="Getting Started with ChordMe" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Comprehensive documentation for ChordMe - Lyrics and chords in a simple way" />
+<meta property="og:description" content="Comprehensive documentation for ChordMe - Lyrics and chords in a simple way" />
+<meta property="og:site_name" content="ChordMe User Manual" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Getting Started with ChordMe" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebPage","description":"Comprehensive documentation for ChordMe - Lyrics and chords in a simple way","headline":"Getting Started with ChordMe","url":"/getting-started.html"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="/feed.xml" title="ChordMe User Manual" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">ChordMe User Manual</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/getting-started.html">Getting Started with ChordMe</a><a class="page-link" href="/user-guide.html">ChordMe User Guide</a><a class="page-link" href="/chordpro-format.html">ChordPro Format Guide</a><a class="page-link" href="/api-reference.html">ChordMe API Reference</a><a class="page-link" href="/developer-guide.html">ChordMe Developer Guide</a><a class="page-link" href="/troubleshooting.html">ChordMe Troubleshooting Guide</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <h1 id="getting-started-with-chordme">Getting Started with ChordMe</h1>
+
+<p>This guide will help you set up and run ChordMe on your local machine.</p>
+
+<h2 id="prerequisites">Prerequisites</h2>
+
+<p>Before you begin, ensure you have the following installed:</p>
+
+<ul>
+  <li><strong>Node.js 20+</strong> - For running the frontend</li>
+  <li><strong>Python 3.12+</strong> - For running the backend</li>
+  <li><strong>npm</strong> - For managing frontend dependencies</li>
+  <li><strong>pip</strong> - For managing Python dependencies</li>
+  <li><strong>Git</strong> - For cloning the repository</li>
+</ul>
+
+<h2 id="quick-start">Quick Start</h2>
+
+<h3 id="1-clone-the-repository">1. Clone the Repository</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git clone https://github.com/tonybolanyo/chordme.git
+<span class="nb">cd </span>chordme
+</code></pre></div></div>
+
+<h3 id="2-install-dependencies">2. Install Dependencies</h3>
+
+<h4 id="root-dependencies">Root Dependencies</h4>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>npm <span class="nb">install</span>
+</code></pre></div></div>
+
+<h4 id="frontend-dependencies">Frontend Dependencies</h4>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cd </span>frontend
+npm <span class="nb">install
+cd</span> ..
+</code></pre></div></div>
+
+<h4 id="backend-dependencies">Backend Dependencies</h4>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cd </span>backend
+pip <span class="nb">install</span> <span class="nt">-r</span> requirements.txt
+<span class="nb">cd</span> ..
+</code></pre></div></div>
+
+<h3 id="3-configure-the-backend">3. Configure the Backend</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cd </span>backend
+<span class="nb">cp </span>config.template.py config.py
+<span class="c"># Edit config.py with your settings if needed</span>
+<span class="nb">cd</span> ..
+</code></pre></div></div>
+
+<h3 id="4-start-the-development-servers">4. Start the Development Servers</h3>
+
+<h4 id="option-a-start-both-services-simultaneously">Option A: Start Both Services Simultaneously</h4>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># In one terminal - Backend</span>
+npm run dev:backend
+
+<span class="c"># In another terminal - Frontend</span>
+npm run dev:frontend
+</code></pre></div></div>
+
+<h4 id="option-b-manual-startup">Option B: Manual Startup</h4>
+
+<p><strong>Backend:</strong></p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cd </span>backend
+python run.py
+</code></pre></div></div>
+
+<p><strong>Frontend:</strong></p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cd </span>frontend
+npm run dev
+</code></pre></div></div>
+
+<h3 id="5-access-the-application">5. Access the Application</h3>
+
+<ul>
+  <li><strong>Frontend</strong>: http://localhost:5173</li>
+  <li><strong>Backend API</strong>: http://localhost:5000</li>
+  <li><strong>Health Check</strong>: http://localhost:5000/api/v1/health</li>
+</ul>
+
+<h2 id="environment-configuration">Environment Configuration</h2>
+
+<h3 id="frontend-environment-variables">Frontend Environment Variables</h3>
+
+<p>Create a <code class="language-plaintext highlighter-rouge">.env</code> file in the <code class="language-plaintext highlighter-rouge">frontend/</code> directory:</p>
+
+<pre><code class="language-env">VITE_API_BASE_URL=http://localhost:5000
+</code></pre>
+
+<h3 id="backend-configuration">Backend Configuration</h3>
+
+<p>The backend uses <code class="language-plaintext highlighter-rouge">config.py</code> for configuration. Key settings include:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Database configuration
+</span><span class="n">SQLALCHEMY_DATABASE_URI</span> <span class="o">=</span> <span class="sh">'</span><span class="s">sqlite:///chordme.db</span><span class="sh">'</span>
+
+<span class="c1"># JWT configuration
+</span><span class="n">JWT_SECRET_KEY</span> <span class="o">=</span> <span class="sh">'</span><span class="s">your-secret-key-here</span><span class="sh">'</span>
+<span class="n">JWT_EXPIRATION_DELTA</span> <span class="o">=</span> <span class="mi">3600</span>  <span class="c1"># 1 hour
+</span>
+<span class="c1"># Flask configuration
+</span><span class="n">SECRET_KEY</span> <span class="o">=</span> <span class="sh">'</span><span class="s">your-flask-secret-key</span><span class="sh">'</span>
+</code></pre></div></div>
+
+<h2 id="first-steps">First Steps</h2>
+
+<h3 id="1-register-a-user-account">1. Register a User Account</h3>
+
+<p>Navigate to the registration page and create your first user account.</p>
+
+<h3 id="2-login">2. Login</h3>
+
+<p>Use your credentials to log in and receive a JWT token for API access.</p>
+
+<h3 id="3-create-your-first-song">3. Create Your First Song</h3>
+
+<p>Use the web interface or API to create your first song with ChordPro format.</p>
+
+<h2 id="development-mode">Development Mode</h2>
+
+<h3 id="frontend-development-features">Frontend Development Features</h3>
+
+<ul>
+  <li><strong>Hot Reload</strong>: Changes are automatically reflected in the browser</li>
+  <li><strong>TypeScript Support</strong>: Full type checking and IntelliSense</li>
+  <li><strong>ESLint Integration</strong>: Code quality checks as you type</li>
+  <li><strong>Prettier Formatting</strong>: Automatic code formatting</li>
+</ul>
+
+<h3 id="backend-development-features">Backend Development Features</h3>
+
+<ul>
+  <li><strong>Auto-reload</strong>: Flask development server reloads on code changes</li>
+  <li><strong>Comprehensive Testing</strong>: Run tests with <code class="language-plaintext highlighter-rouge">python -m pytest tests/ -v</code></li>
+  <li><strong>API Documentation</strong>: Interactive API exploration via endpoints</li>
+</ul>
+
+<h2 id="useful-commands">Useful Commands</h2>
+
+<h3 id="build-and-test-commands">Build and Test Commands</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Frontend</span>
+npm run build:frontend        <span class="c"># Build for production</span>
+npm run <span class="nb">test</span>:frontend        <span class="c"># Run frontend tests</span>
+npm run lint:frontend        <span class="c"># Check code quality</span>
+
+<span class="c"># Backend</span>
+npm run <span class="nb">test</span>:backend         <span class="c"># Run backend tests</span>
+python <span class="nt">-m</span> pytest tests/ <span class="nt">-v</span>  <span class="c"># Direct backend testing</span>
+
+<span class="c"># Full Application</span>
+npm run <span class="nb">test</span>:all            <span class="c"># Run all tests</span>
+npm run <span class="nb">test</span>:coverage       <span class="c"># Generate coverage reports</span>
+</code></pre></div></div>
+
+<h3 id="development-workflow-commands">Development Workflow Commands</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Code Quality</span>
+npm run lint:frontend       <span class="c"># Lint frontend code</span>
+<span class="nb">cd </span>frontend <span class="o">&amp;&amp;</span> npm run format  <span class="c"># Format frontend code</span>
+
+<span class="c"># Database Management (Backend)</span>
+<span class="nb">cd </span>backend
+python <span class="nt">-c</span> <span class="s2">"from chordme import app, db; app.app_context().push(); db.create_all()"</span>
+</code></pre></div></div>
+
+<h2 id="troubleshooting-setup-issues">Troubleshooting Setup Issues</h2>
+
+<h3 id="port-conflicts">Port Conflicts</h3>
+
+<p>If you encounter port conflicts:</p>
+
+<ul>
+  <li><strong>Frontend</strong>: Change the port in <code class="language-plaintext highlighter-rouge">vite.config.ts</code></li>
+  <li><strong>Backend</strong>: Set <code class="language-plaintext highlighter-rouge">PORT</code> environment variable or modify <code class="language-plaintext highlighter-rouge">run.py</code></li>
+</ul>
+
+<h3 id="database-issues">Database Issues</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Reset the database</span>
+<span class="nb">cd </span>backend
+<span class="nb">rm</span> <span class="nt">-f</span> chordme.db
+python <span class="nt">-c</span> <span class="s2">"from chordme import app, db; app.app_context().push(); db.create_all()"</span>
+</code></pre></div></div>
+
+<h3 id="dependency-issues">Dependency Issues</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Clean and reinstall frontend dependencies</span>
+<span class="nb">cd </span>frontend
+<span class="nb">rm</span> <span class="nt">-rf</span> node_modules package-lock.json
+npm <span class="nb">install</span>
+
+<span class="c"># Clean and reinstall backend dependencies</span>
+<span class="nb">cd </span>backend
+pip <span class="nb">install</span> <span class="nt">--force-reinstall</span> <span class="nt">-r</span> requirements.txt
+</code></pre></div></div>
+
+<h2 id="next-steps">Next Steps</h2>
+
+<p>Once you have ChordMe running locally:</p>
+
+<ol>
+  <li>Read the <a href="user-guide.md">User Guide</a> to learn how to use all features</li>
+  <li>Explore the <a href="chordpro-format.md">ChordPro Format</a> documentation</li>
+  <li>Check out the <a href="api-reference.md">API Reference</a> for programmatic access</li>
+  <li>See the <a href="developer-guide.md">Developer Guide</a> if you want to contribute</li>
+</ol>
+
+<h2 id="getting-help">Getting Help</h2>
+
+<p>If you encounter issues:</p>
+
+<ol>
+  <li>Check the <a href="troubleshooting.md">Troubleshooting Guide</a></li>
+  <li>Review the error logs in your terminal</li>
+  <li>Open an issue on the <a href="https://github.com/tonybolanyo/chordme/issues">GitHub repository</a></li>
+  <li>Check existing issues for similar problems</li>
+</ol>
+
+<hr />
+
+<p><em>Need more detailed information? See the complete <a href="README.md">User Manual</a>.</em></p>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">ChordMe User Manual</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">ChordMe User Manual</li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Comprehensive documentation for ChordMe - Lyrics and chords in a simple way</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
