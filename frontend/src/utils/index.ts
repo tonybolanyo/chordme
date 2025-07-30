@@ -9,6 +9,9 @@ export const formatDate = (date: Date): string => {
 
 export const formatRelativeTime = (dateString: string): string => {
   const date = new Date(dateString);
+  if (isNaN(date.getTime())) {
+    return 'Invalid date';
+  }
   const now = new Date();
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
