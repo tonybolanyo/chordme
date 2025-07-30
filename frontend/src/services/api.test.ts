@@ -47,7 +47,7 @@ describe('ApiService', () => {
       const mockToken = 'test-token';
       localStorage.setItem('authToken', mockToken);
       mockIsTokenExpired.mockReturnValue(false);
-      
+
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({ status: 'success', data: [] }),
@@ -68,7 +68,7 @@ describe('ApiService', () => {
     it('does not include Authorization header when no token', async () => {
       localStorage.clear();
       mockIsTokenExpired.mockReturnValue(false);
-      
+
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({ status: 'success', data: [] }),
@@ -89,12 +89,14 @@ describe('ApiService', () => {
     it('clears expired token before request', async () => {
       const expiredToken = 'expired-token';
       const mockUser = { id: '1', email: 'test@example.com' };
-      
+
       localStorage.setItem('authToken', expiredToken);
       localStorage.setItem('authUser', JSON.stringify(mockUser));
       mockIsTokenExpired.mockReturnValue(true);
 
-      await expect(apiService.getSongs()).rejects.toThrow('Your session has expired. Please log in again.');
+      await expect(apiService.getSongs()).rejects.toThrow(
+        'Your session has expired. Please log in again.'
+      );
 
       expect(localStorage.getItem('authToken')).toBeNull();
       expect(localStorage.getItem('authUser')).toBeNull();
@@ -106,7 +108,10 @@ describe('ApiService', () => {
     it('handles 401 authentication errors', async () => {
       const mockToken = 'invalid-token';
       localStorage.setItem('authToken', mockToken);
-      localStorage.setItem('authUser', JSON.stringify({ id: '1', email: 'test@example.com' }));
+      localStorage.setItem(
+        'authUser',
+        JSON.stringify({ id: '1', email: 'test@example.com' })
+      );
       mockIsTokenExpired.mockReturnValue(false);
 
       mockFetch.mockResolvedValueOnce({
@@ -116,7 +121,9 @@ describe('ApiService', () => {
         text: async () => JSON.stringify({ error: 'Invalid token' }),
       });
 
-      await expect(apiService.getSongs()).rejects.toThrow('Authentication failed. Please log in again.');
+      await expect(apiService.getSongs()).rejects.toThrow(
+        'Authentication failed. Please log in again.'
+      );
 
       expect(localStorage.getItem('authToken')).toBeNull();
       expect(localStorage.getItem('authUser')).toBeNull();
@@ -125,7 +132,7 @@ describe('ApiService', () => {
 
     it('handles API errors with JSON error response', async () => {
       mockIsTokenExpired.mockReturnValue(false);
-      
+
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 400,
@@ -138,7 +145,7 @@ describe('ApiService', () => {
 
     it('handles API errors with non-JSON response', async () => {
       mockIsTokenExpired.mockReturnValue(false);
-      
+
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 500,
@@ -146,7 +153,9 @@ describe('ApiService', () => {
         text: async () => 'Server error occurred',
       });
 
-      await expect(apiService.getSongs()).rejects.toThrow('API Error: Internal Server Error');
+      await expect(apiService.getSongs()).rejects.toThrow(
+        'API Error: Internal Server Error'
+      );
     });
 
     it('handles network errors', async () => {
@@ -184,8 +193,11 @@ describe('ApiService', () => {
 
     it('getSong calls correct endpoint with ID', async () => {
       const songId = '123';
-      const mockResponse = { status: 'success', data: { song: { id: songId, title: 'Test Song' } } };
-      
+      const mockResponse = {
+        status: 'success',
+        data: { song: { id: songId, title: 'Test Song' } },
+      };
+
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => mockResponse,
@@ -201,9 +213,15 @@ describe('ApiService', () => {
     });
 
     it('createSong sends POST request with song data', async () => {
-      const songData: Partial<Song> = { title: 'New Song', content: '[C]Test content' };
-      const mockResponse = { status: 'success', data: { song: { id: '123', ...songData } } };
-      
+      const songData: Partial<Song> = {
+        title: 'New Song',
+        content: '[C]Test content',
+      };
+      const mockResponse = {
+        status: 'success',
+        data: { song: { id: '123', ...songData } },
+      };
+
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => mockResponse,
@@ -226,9 +244,15 @@ describe('ApiService', () => {
 
     it('updateSong sends PUT request with song data', async () => {
       const songId = '123';
-      const songData: Partial<Song> = { title: 'Updated Song', content: '[G]Updated content' };
-      const mockResponse = { status: 'success', data: { song: { id: songId, ...songData } } };
-      
+      const songData: Partial<Song> = {
+        title: 'Updated Song',
+        content: '[G]Updated content',
+      };
+      const mockResponse = {
+        status: 'success',
+        data: { song: { id: songId, ...songData } },
+      };
+
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => mockResponse,
@@ -249,7 +273,7 @@ describe('ApiService', () => {
     it('deleteSong sends DELETE request', async () => {
       const songId = '123';
       const mockResponse = { status: 'success', message: 'Song deleted' };
-      
+
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => mockResponse,
@@ -275,7 +299,7 @@ describe('ApiService', () => {
         href: '',
         download: '',
         click: vi.fn(),
-      })) as any;
+      })) as unknown as HTMLAnchorElement;
       document.body.appendChild = vi.fn();
       document.body.removeChild = vi.fn();
     });
@@ -283,7 +307,7 @@ describe('ApiService', () => {
     it('downloads song with correct filename from header', async () => {
       const songId = '123';
       const mockBlob = new Blob(['song content'], { type: 'text/plain' });
-      
+
       mockFetch.mockResolvedValueOnce({
         ok: true,
         headers: {
@@ -313,7 +337,7 @@ describe('ApiService', () => {
     it('uses default filename when header missing', async () => {
       const songId = '123';
       const mockBlob = new Blob(['song content'], { type: 'text/plain' });
-      
+
       mockFetch.mockResolvedValueOnce({
         ok: true,
         headers: {
@@ -336,17 +360,21 @@ describe('ApiService', () => {
         text: async () => JSON.stringify({ error: 'Song not found' }),
       });
 
-      await expect(apiService.downloadSong(songId)).rejects.toThrow('Song not found');
+      await expect(apiService.downloadSong(songId)).rejects.toThrow(
+        'Song not found'
+      );
     });
 
     it('handles expired token during download', async () => {
       const songId = '123';
       const expiredToken = 'expired-token';
-      
+
       localStorage.setItem('authToken', expiredToken);
       mockIsTokenExpired.mockReturnValue(true);
 
-      await expect(apiService.downloadSong(songId)).rejects.toThrow('Your session has expired. Please log in again.');
+      await expect(apiService.downloadSong(songId)).rejects.toThrow(
+        'Your session has expired. Please log in again.'
+      );
 
       expect(localStorage.getItem('authToken')).toBeNull();
       expect(window.location.hash).toBe('login');
@@ -355,15 +383,18 @@ describe('ApiService', () => {
 
   describe('Authentication API Methods', () => {
     it('register sends POST request to register endpoint', async () => {
-      const userData: RegisterRequest = { email: 'test@example.com', password: 'password123' };
-      const mockResponse = { 
-        status: 'success', 
-        data: { 
-          token: 'new-token', 
-          user: { id: '1', email: userData.email } 
-        } 
+      const userData: RegisterRequest = {
+        email: 'test@example.com',
+        password: 'password123',
       };
-      
+      const mockResponse = {
+        status: 'success',
+        data: {
+          token: 'new-token',
+          user: { id: '1', email: userData.email },
+        },
+      };
+
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => mockResponse,
@@ -385,15 +416,18 @@ describe('ApiService', () => {
     });
 
     it('login sends POST request to login endpoint', async () => {
-      const credentials: LoginRequest = { email: 'test@example.com', password: 'password123' };
-      const mockResponse = { 
-        status: 'success', 
-        data: { 
-          token: 'auth-token', 
-          user: { id: '1', email: credentials.email } 
-        } 
+      const credentials: LoginRequest = {
+        email: 'test@example.com',
+        password: 'password123',
       };
-      
+      const mockResponse = {
+        status: 'success',
+        data: {
+          token: 'auth-token',
+          user: { id: '1', email: credentials.email },
+        },
+      };
+
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => mockResponse,
@@ -412,8 +446,11 @@ describe('ApiService', () => {
     });
 
     it('handles login errors', async () => {
-      const credentials: LoginRequest = { email: 'test@example.com', password: 'wrongpassword' };
-      
+      const credentials: LoginRequest = {
+        email: 'test@example.com',
+        password: 'wrongpassword',
+      };
+
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 401,
@@ -421,12 +458,17 @@ describe('ApiService', () => {
         text: async () => JSON.stringify({ error: 'Invalid credentials' }),
       });
 
-      await expect(apiService.login(credentials)).rejects.toThrow('Invalid credentials');
+      await expect(apiService.login(credentials)).rejects.toThrow(
+        'Invalid credentials'
+      );
     });
 
     it('handles registration errors', async () => {
-      const userData: RegisterRequest = { email: 'existing@example.com', password: 'password123' };
-      
+      const userData: RegisterRequest = {
+        email: 'existing@example.com',
+        password: 'password123',
+      };
+
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 400,
@@ -434,7 +476,9 @@ describe('ApiService', () => {
         text: async () => JSON.stringify({ error: 'Email already exists' }),
       });
 
-      await expect(apiService.register(userData)).rejects.toThrow('Email already exists');
+      await expect(apiService.register(userData)).rejects.toThrow(
+        'Email already exists'
+      );
     });
   });
 
@@ -498,7 +542,9 @@ describe('ApiService', () => {
         text: async () => 'Invalid JSON {',
       });
 
-      await expect(apiService.getSongs()).rejects.toThrow('API Error: Internal Server Error');
+      await expect(apiService.getSongs()).rejects.toThrow(
+        'API Error: Internal Server Error'
+      );
     });
 
     it('handles missing error field in JSON response', async () => {
@@ -510,7 +556,9 @@ describe('ApiService', () => {
         text: async () => JSON.stringify({ message: 'Some other field' }),
       });
 
-      await expect(apiService.getSongs()).rejects.toThrow('API Error: Bad Request');
+      await expect(apiService.getSongs()).rejects.toThrow(
+        'API Error: Bad Request'
+      );
     });
   });
 });

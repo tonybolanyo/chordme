@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { validateEmail, validatePassword, validateRequired } from './validation';
+import {
+  validateEmail,
+  validatePassword,
+  validateRequired,
+} from './validation';
 
 describe('Validation Utilities', () => {
   describe('validateEmail', () => {
@@ -8,10 +12,10 @@ describe('Validation Utilities', () => {
         'test@example.com',
         'user.name@domain.co.uk',
         'first.last+tag@subdomain.example.com',
-        'x@y.z'
+        'x@y.z',
       ];
 
-      validEmails.forEach(email => {
+      validEmails.forEach((email) => {
         const result = validateEmail(email);
         expect(result.isValid).toBe(true);
         expect(result.error).toBeUndefined();
@@ -25,10 +29,10 @@ describe('Validation Utilities', () => {
         'user@',
         'user@domain',
         'user.domain.com',
-        ''
+        '',
       ];
 
-      invalidEmails.forEach(email => {
+      invalidEmails.forEach((email) => {
         const result = validateEmail(email);
         expect(result.isValid).toBe(false);
         expect(result.error).toBeDefined();
@@ -38,7 +42,7 @@ describe('Validation Utilities', () => {
     it('should fail for empty or whitespace-only emails', () => {
       const emptyEmails = ['', '   ', '\t', '\n'];
 
-      emptyEmails.forEach(email => {
+      emptyEmails.forEach((email) => {
         const result = validateEmail(email);
         expect(result.isValid).toBe(false);
         expect(result.error).toBeDefined();
@@ -50,7 +54,7 @@ describe('Validation Utilities', () => {
     it('should fail for emails that are too long', () => {
       const longEmail = 'a'.repeat(110) + '@example.com'; // 121 characters
       const result = validateEmail(longEmail);
-      
+
       expect(result.isValid).toBe(false);
       expect(result.error).toContain('120 characters');
     });
@@ -62,10 +66,10 @@ describe('Validation Utilities', () => {
         'MyPassword1!',
         'AnotherValidPass123@',
         'Complex#Password99',
-        'StrongPass1$'
+        'StrongPass1$',
       ];
 
-      validPasswords.forEach(password => {
+      validPasswords.forEach((password) => {
         const result = validatePassword(password);
         expect(result.isValid).toBe(true);
         expect(result.error).toBeUndefined();
@@ -111,7 +115,7 @@ describe('Validation Utilities', () => {
     it('should fail for passwords that are too long', () => {
       const longPassword = 'A1!' + 'a'.repeat(130); // 133 characters
       const result = validatePassword(longPassword);
-      
+
       expect(result.isValid).toBe(false);
       expect(result.error).toContain('128 characters');
     });
@@ -121,7 +125,7 @@ describe('Validation Utilities', () => {
     it('should pass for non-empty values', () => {
       const validValues = ['test', 'hello world', '123', 'a'];
 
-      validValues.forEach(value => {
+      validValues.forEach((value) => {
         const result = validateRequired(value, 'TestField');
         expect(result.isValid).toBe(true);
         expect(result.error).toBeUndefined();
@@ -131,18 +135,24 @@ describe('Validation Utilities', () => {
     it('should fail for empty or whitespace-only values', () => {
       const emptyValues = ['', '   ', '\t', '\n'];
 
-      emptyValues.forEach(value => {
+      emptyValues.forEach((value) => {
         const result = validateRequired(value, 'TestField');
         expect(result.isValid).toBe(false);
         expect(result.error).toContain('TestField is required');
       });
-      
+
       // Test undefined and null separately since they need type casting
-      const undefinedResult = validateRequired(undefined as any, 'TestField');
+      const undefinedResult = validateRequired(
+        undefined as unknown as string,
+        'TestField'
+      );
       expect(undefinedResult.isValid).toBe(false);
       expect(undefinedResult.error).toContain('TestField is required');
-      
-      const nullResult = validateRequired(null as any, 'TestField');
+
+      const nullResult = validateRequired(
+        null as unknown as string,
+        'TestField'
+      );
       expect(nullResult.isValid).toBe(false);
       expect(nullResult.error).toContain('TestField is required');
     });

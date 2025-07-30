@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import Login from './Login';
@@ -38,16 +38,18 @@ describe('Login', () => {
 
   it('renders login form elements', () => {
     render(<Login />);
-    
+
     expect(screen.getByText(/login to chordme/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /sign in/i })
+    ).toBeInTheDocument();
   });
 
   it('renders register link', () => {
     render(<Login />);
-    
+
     const registerLink = screen.getByText(/sign up here/i);
     expect(registerLink.closest('a')).toHaveAttribute('href', '#register');
   });
@@ -55,13 +57,13 @@ describe('Login', () => {
   it('updates form fields when user types', async () => {
     const user = userEvent.setup();
     render(<Login />);
-    
+
     const emailInput = screen.getByLabelText(/email/i);
     const passwordInput = screen.getByLabelText(/password/i);
-    
+
     await user.type(emailInput, 'test@example.com');
     await user.type(passwordInput, 'password123');
-    
+
     expect(emailInput).toHaveValue('test@example.com');
     expect(passwordInput).toHaveValue('password123');
   });
@@ -69,15 +71,15 @@ describe('Login', () => {
   it('handles form submission', async () => {
     const user = userEvent.setup();
     render(<Login />);
-    
+
     const emailInput = screen.getByLabelText(/email/i);
     const passwordInput = screen.getByLabelText(/password/i);
     const submitButton = screen.getByRole('button', { name: /sign in/i });
-    
+
     await user.type(emailInput, 'test@example.com');
     await user.type(passwordInput, 'password123');
     await user.click(submitButton);
-    
+
     // Just verify the form submission attempt happened
     // The actual implementation details may vary
     expect(emailInput).toHaveValue('test@example.com');
