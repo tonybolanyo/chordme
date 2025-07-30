@@ -139,5 +139,9 @@ dist
 # custom
 backend/config.py
 backend/*.db
+backend/instance/
+backend/chordme/static/
+frontend/assets/
+frontend/index.html
 env/
 **/__pycache__/
