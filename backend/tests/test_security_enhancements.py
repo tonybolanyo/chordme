@@ -387,7 +387,6 @@ class TestSecurityIntegration:
     
     def test_security_logging_integration(self, client):
         """Test that security events are properly logged."""
-        from unittest.mock import patch
         with patch('flask.current_app.logger') as mock_logger:
             # Test failed login attempt
             response = client.post('/api/v1/auth/login', json={
