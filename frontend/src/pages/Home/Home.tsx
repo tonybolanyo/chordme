@@ -160,7 +160,8 @@ const Home: React.FC = () => {
         extractedTitle = titleMatch[1].trim();
       } else {
         // If no title directive found, use filename without extension
-        extractedTitle = file.name.substring(0, file.name.lastIndexOf('.'));
+        const lastDotIndex = file.name.lastIndexOf('.');
+        extractedTitle = lastDotIndex === -1 ? file.name : file.name.substring(0, lastDotIndex);
       }
 
       // Update the form with the file content
