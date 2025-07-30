@@ -39,7 +39,7 @@ const ChordProEditor: React.FC<ChordProEditorProps> = ({
 
     lines.forEach((line, lineIndex) => {
       const lineStart = currentIndex;
-      
+
       // Comments (lines starting with #)
       if (line.trim().startsWith('#')) {
         tokens.push({
@@ -53,11 +53,11 @@ const ChordProEditor: React.FC<ChordProEditorProps> = ({
       else if (line.includes('{') && line.includes('}')) {
         let tempContent = line;
         let tempStart = lineStart;
-        
+
         while (tempContent.includes('{') && tempContent.includes('}')) {
           const startBrace = tempContent.indexOf('{');
           const endBrace = tempContent.indexOf('}', startBrace);
-          
+
           if (startBrace !== -1 && endBrace !== -1) {
             // Add lyrics before directive
             if (startBrace > 0) {
@@ -68,7 +68,7 @@ const ChordProEditor: React.FC<ChordProEditorProps> = ({
                 end: tempStart + startBrace,
               });
             }
-            
+
             // Add directive
             tokens.push({
               type: 'directive',
@@ -76,14 +76,14 @@ const ChordProEditor: React.FC<ChordProEditorProps> = ({
               start: tempStart + startBrace,
               end: tempStart + endBrace + 1,
             });
-            
+
             tempStart = tempStart + endBrace + 1;
             tempContent = tempContent.substring(endBrace + 1);
           } else {
             break;
           }
         }
-        
+
         // Add remaining content as lyrics
         if (tempContent.length > 0) {
           tokens.push({
@@ -98,11 +98,11 @@ const ChordProEditor: React.FC<ChordProEditorProps> = ({
       else if (line.includes('[') && line.includes(']')) {
         let tempContent = line;
         let tempStart = lineStart;
-        
+
         while (tempContent.includes('[') && tempContent.includes(']')) {
           const startBracket = tempContent.indexOf('[');
           const endBracket = tempContent.indexOf(']', startBracket);
-          
+
           if (startBracket !== -1 && endBracket !== -1) {
             // Add lyrics before chord
             if (startBracket > 0) {
@@ -113,7 +113,7 @@ const ChordProEditor: React.FC<ChordProEditorProps> = ({
                 end: tempStart + startBracket,
               });
             }
-            
+
             // Add chord
             tokens.push({
               type: 'chord',
@@ -121,14 +121,14 @@ const ChordProEditor: React.FC<ChordProEditorProps> = ({
               start: tempStart + startBracket,
               end: tempStart + endBracket + 1,
             });
-            
+
             tempStart = tempStart + endBracket + 1;
             tempContent = tempContent.substring(endBracket + 1);
           } else {
             break;
           }
         }
-        
+
         // Add remaining content as lyrics
         if (tempContent.length > 0) {
           tokens.push({
@@ -148,9 +148,10 @@ const ChordProEditor: React.FC<ChordProEditorProps> = ({
           end: lineStart + line.length,
         });
       }
-      
+
       // Account for newline character (except for last line)
-      currentIndex = lineStart + line.length + (lineIndex < lines.length - 1 ? 1 : 0);
+      currentIndex =
+        lineStart + line.length + (lineIndex < lines.length - 1 ? 1 : 0);
     });
 
     return tokens;
@@ -159,7 +160,7 @@ const ChordProEditor: React.FC<ChordProEditorProps> = ({
   // Generate highlighted HTML
   const generateHighlightedHTML = (text: string): string => {
     if (!text) return '';
-    
+
     const tokens = parseChordPro(text);
     let highlightedHTML = '';
     let lastEnd = 0;
@@ -174,7 +175,7 @@ const ChordProEditor: React.FC<ChordProEditorProps> = ({
       // Add the token with its CSS class
       const escapedContent = escapeHtml(token.content);
       highlightedHTML += `<span class="chordpro-${token.type}">${escapedContent}</span>`;
-      
+
       lastEnd = token.end;
     });
 
@@ -213,7 +214,7 @@ const ChordProEditor: React.FC<ChordProEditorProps> = ({
 
   return (
     <div className="chordpro-editor-container" style={style}>
-      <div 
+      <div
         ref={highlightRef}
         className="chordpro-highlight-layer"
         dangerouslySetInnerHTML={{ __html: generateHighlightedHTML(value) }}

@@ -79,25 +79,25 @@
     border-color: #4b5563;
     background-color: #1f2937;
   }
-  
+
   .chordpro-textarea {
     caret-color: #f9fafb;
   }
-  
+
   .chordpro-chord {
     color: #60a5fa;
     background-color: rgba(96, 165, 250, 0.1);
   }
-  
+
   .chordpro-directive {
     color: #f87171;
     background-color: rgba(248, 113, 113, 0.1);
   }
-  
+
   .chordpro-comment {
     color: #9ca3af;
   }
-  
+
   .chordpro-lyrics {
     color: #e5e7eb;
   }

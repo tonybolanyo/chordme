@@ -22,7 +22,7 @@ function AppContent() {
 
     // Listen for hash changes
     window.addEventListener('hashchange', handleHashChange);
-    
+
     // Set initial page
     handleHashChange();
 
@@ -67,11 +67,7 @@ function AppContent() {
     }
   };
 
-  return (
-    <Layout>
-      {renderPage()}
-    </Layout>
-  );
+  return <Layout>{renderPage()}</Layout>;
 }
 
 function App() {

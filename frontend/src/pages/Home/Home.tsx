@@ -51,7 +51,7 @@ const Home: React.FC = () => {
         title: newSong.title,
         content: newSong.content,
       });
-      
+
       if (response.status === 'success') {
         setNewSong({ title: '', content: '' });
         setShowCreateForm(false);
@@ -106,7 +106,7 @@ const Home: React.FC = () => {
         title: editSongData.title,
         content: editSongData.content,
       });
-      
+
       if (response.status === 'success') {
         setEditingSong(null);
         setEditSongData({ title: '', content: '' });
@@ -133,7 +133,9 @@ const Home: React.FC = () => {
     setViewingSong(null);
   };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -141,14 +143,18 @@ const Home: React.FC = () => {
     const allowedExtensions = ['.cho', '.chopro', '.crd'];
     const lastDotIndex = file.name.lastIndexOf('.');
     if (lastDotIndex === -1) {
-      setError('Invalid file type. The uploaded file does not have an extension.');
+      setError(
+        'Invalid file type. The uploaded file does not have an extension.'
+      );
       return;
     }
 
     const fileExtension = file.name.toLowerCase().substring(lastDotIndex);
-    
+
     if (!allowedExtensions.includes(fileExtension)) {
-      setError(`Invalid file type. Please upload a ChordPro file with one of these extensions: ${allowedExtensions.join(', ')}`);
+      setError(
+        `Invalid file type. Please upload a ChordPro file with one of these extensions: ${allowedExtensions.join(', ')}`
+      );
       return;
     }
 
@@ -163,7 +169,7 @@ const Home: React.FC = () => {
 
     try {
       const content = await file.text();
-      
+
       // Parse ChordPro content to extract title if available
       let extractedTitle = '';
       const titleMatch = content.match(/\{title:\s*([^}]+)\}/i);
@@ -172,21 +178,25 @@ const Home: React.FC = () => {
       } else {
         // If no title directive found, use filename without extension
         const lastDotIndex = file.name.lastIndexOf('.');
-        extractedTitle = lastDotIndex === -1 ? file.name : file.name.substring(0, lastDotIndex);
+        extractedTitle =
+          lastDotIndex === -1
+            ? file.name
+            : file.name.substring(0, lastDotIndex);
       }
 
       // Update the form with the file content
       setNewSong({
         title: extractedTitle,
-        content: content
+        content: content,
       });
 
       // Clear the file input
       event.target.value = '';
-      
     } catch (err) {
       console.error('Error reading file:', err);
-      setError('Error reading ChordPro file. Please make sure the file is valid and not corrupted.');
+      setError(
+        'Error reading ChordPro file. Please make sure the file is valid and not corrupted.'
+      );
     } finally {
       setIsFileUploading(false);
     }
@@ -207,15 +217,24 @@ const Home: React.FC = () => {
       <div className="home-hero">
         <h1>Welcome back, {user?.email}!</h1>
         <p className="home-subtitle">Manage your chords and lyrics</p>
-        
+
         {error && (
-          <div className="error-message" style={{ margin: '1rem 0', padding: '1rem', backgroundColor: '#fee', border: '1px solid #fcc', borderRadius: '4px' }}>
+          <div
+            className="error-message"
+            style={{
+              margin: '1rem 0',
+              padding: '1rem',
+              backgroundColor: '#fee',
+              border: '1px solid #fcc',
+              borderRadius: '4px',
+            }}
+          >
             {error}
           </div>
         )}
 
         <div className="home-actions">
-          <button 
+          <button
             className="btn btn-primary"
             onClick={() => {
               setShowCreateForm(!showCreateForm);
@@ -230,7 +249,16 @@ const Home: React.FC = () => {
         </div>
 
         {showCreateForm && (
-          <form onSubmit={handleCreateSong} className="create-song-form" style={{ margin: '2rem 0', padding: '1rem', backgroundColor: '#f9f9f9', borderRadius: '8px' }}>
+          <form
+            onSubmit={handleCreateSong}
+            className="create-song-form"
+            style={{
+              margin: '2rem 0',
+              padding: '1rem',
+              backgroundColor: '#f9f9f9',
+              borderRadius: '8px',
+            }}
+          >
             <h3>Create New Song</h3>
             <div style={{ marginBottom: '1rem' }}>
               <label htmlFor="title">Title:</label>
@@ -238,14 +266,31 @@ const Home: React.FC = () => {
                 type="text"
                 id="title"
                 value={newSong.title}
-                onChange={(e) => setNewSong({ ...newSong, title: e.target.value })}
+                onChange={(e) =>
+                  setNewSong({ ...newSong, title: e.target.value })
+                }
                 placeholder="Enter song title"
                 required
                 style={{ width: '100%', padding: '0.5rem', margin: '0.5rem 0' }}
               />
             </div>
-            <div style={{ marginBottom: '1rem', padding: '1rem', backgroundColor: '#e8f4f8', borderRadius: '4px', border: '1px dashed #4169e1' }}>
-              <label htmlFor="file-upload" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+            <div
+              style={{
+                marginBottom: '1rem',
+                padding: '1rem',
+                backgroundColor: '#e8f4f8',
+                borderRadius: '4px',
+                border: '1px dashed #4169e1',
+              }}
+            >
+              <label
+                htmlFor="file-upload"
+                style={{
+                  display: 'block',
+                  marginBottom: '0.5rem',
+                  fontWeight: 'bold',
+                }}
+              >
                 Upload ChordPro File (.cho, .chopro, .crd):
               </label>
               <input
@@ -254,19 +299,24 @@ const Home: React.FC = () => {
                 accept=".cho,.chopro,.crd"
                 onChange={handleFileUpload}
                 disabled={isFileUploading}
-                style={{ 
-                  width: '100%', 
-                  padding: '0.5rem', 
-                  border: '1px solid #ccc', 
+                style={{
+                  width: '100%',
+                  padding: '0.5rem',
+                  border: '1px solid #ccc',
                   borderRadius: '4px',
-                  backgroundColor: '#fff' 
+                  backgroundColor: '#fff',
                 }}
               />
-              <p style={{ fontSize: '0.8rem', color: '#666', margin: '0.5rem 0 0 0' }}>
-                {isFileUploading 
-                  ? 'Reading file...' 
-                  : 'Optional: Upload a ChordPro file to automatically fill the title and content fields. You can still edit them after upload.'
-                }
+              <p
+                style={{
+                  fontSize: '0.8rem',
+                  color: '#666',
+                  margin: '0.5rem 0 0 0',
+                }}
+              >
+                {isFileUploading
+                  ? 'Reading file...'
+                  : 'Optional: Upload a ChordPro file to automatically fill the title and content fields. You can still edit them after upload.'}
               </p>
             </div>
             <div style={{ marginBottom: '1rem' }}>
@@ -282,10 +332,12 @@ const Home: React.FC = () => {
               />
             </div>
             <div>
-              <button type="submit" className="btn btn-primary">Create Song</button>
-              <button 
-                type="button" 
-                className="btn btn-secondary" 
+              <button type="submit" className="btn btn-primary">
+                Create Song
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary"
                 onClick={() => setShowCreateForm(false)}
                 style={{ marginLeft: '1rem' }}
               >
@@ -296,7 +348,17 @@ const Home: React.FC = () => {
         )}
 
         {editingSong && (
-          <form onSubmit={handleUpdateSong} className="edit-song-form" style={{ margin: '2rem 0', padding: '1rem', backgroundColor: '#f0f8ff', borderRadius: '8px', border: '2px solid #4169e1' }}>
+          <form
+            onSubmit={handleUpdateSong}
+            className="edit-song-form"
+            style={{
+              margin: '2rem 0',
+              padding: '1rem',
+              backgroundColor: '#f0f8ff',
+              borderRadius: '8px',
+              border: '2px solid #4169e1',
+            }}
+          >
             <h3>Edit Song: {editingSong.title}</h3>
             <div style={{ marginBottom: '1rem' }}>
               <label htmlFor="edit-title">Title:</label>
@@ -304,7 +366,9 @@ const Home: React.FC = () => {
                 type="text"
                 id="edit-title"
                 value={editSongData.title}
-                onChange={(e) => setEditSongData({ ...editSongData, title: e.target.value })}
+                onChange={(e) =>
+                  setEditSongData({ ...editSongData, title: e.target.value })
+                }
                 placeholder="Enter song title"
                 required
                 style={{ width: '100%', padding: '0.5rem', margin: '0.5rem 0' }}
@@ -315,7 +379,9 @@ const Home: React.FC = () => {
               <ChordProEditor
                 id="edit-content"
                 value={editSongData.content}
-                onChange={(value) => setEditSongData({ ...editSongData, content: value })}
+                onChange={(value) =>
+                  setEditSongData({ ...editSongData, content: value })
+                }
                 placeholder="Enter chords and lyrics in ChordPro format&#10;Example:&#10;{title: My Song}&#10;{artist: Artist Name}&#10;# This is a comment&#10;[C]Here are the [G]lyrics [Am]with [F]chords"
                 required
                 rows={8}
@@ -323,10 +389,12 @@ const Home: React.FC = () => {
               />
             </div>
             <div>
-              <button type="submit" className="btn btn-primary">Save Changes</button>
-              <button 
-                type="button" 
-                className="btn btn-secondary" 
+              <button type="submit" className="btn btn-primary">
+                Save Changes
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary"
                 onClick={handleCancelEdit}
                 style={{ marginLeft: '1rem' }}
               >
@@ -337,13 +405,29 @@ const Home: React.FC = () => {
         )}
 
         {viewingSong && (
-          <div className="view-song-section" style={{ margin: '2rem 0', padding: '1rem', backgroundColor: '#f8f9fa', borderRadius: '8px', border: '2px solid #6c757d' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <div
+            className="view-song-section"
+            style={{
+              margin: '2rem 0',
+              padding: '1rem',
+              backgroundColor: '#f8f9fa',
+              borderRadius: '8px',
+              border: '2px solid #6c757d',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '1rem',
+              }}
+            >
               <h3>Viewing: {viewingSong.title}</h3>
               <div>
-                <button 
-                  type="button" 
-                  className="btn btn-primary" 
+                <button
+                  type="button"
+                  className="btn btn-primary"
                   onClick={() => handleDownloadSong(viewingSong.id)}
                   style={{ marginRight: '0.5rem' }}
                   aria-label="Download the song in ChordPro format"
@@ -351,16 +435,22 @@ const Home: React.FC = () => {
                 >
                   Download
                 </button>
-                <button 
-                  type="button" 
-                  className="btn btn-secondary" 
+                <button
+                  type="button"
+                  className="btn btn-secondary"
                   onClick={handleCloseView}
                 >
                   Close
                 </button>
               </div>
             </div>
-            <div style={{ backgroundColor: '#fff', padding: '1rem', borderRadius: '4px' }}>
+            <div
+              style={{
+                backgroundColor: '#fff',
+                padding: '1rem',
+                borderRadius: '4px',
+              }}
+            >
               <ChordProViewer content={viewingSong.content} />
             </div>
           </div>
@@ -369,56 +459,100 @@ const Home: React.FC = () => {
 
       <div className="songs-section">
         <h2>Your Songs ({songs.length})</h2>
-        
+
         {songs.length === 0 ? (
           <div className="no-songs">
-            <p>You haven't created any songs yet. Create your first song to get started!</p>
+            <p>
+              You haven't created any songs yet. Create your first song to get
+              started!
+            </p>
           </div>
         ) : (
           <div className="songs-grid">
             {songs.map((song) => (
-              <div key={song.id} className="song-card" style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '1rem', margin: '1rem 0', backgroundColor: '#fff' }}>
+              <div
+                key={song.id}
+                className="song-card"
+                style={{
+                  border: '1px solid #ddd',
+                  borderRadius: '8px',
+                  padding: '1rem',
+                  margin: '1rem 0',
+                  backgroundColor: '#fff',
+                }}
+              >
                 <h3>{song.title}</h3>
-                <div className="song-metadata" style={{ fontSize: '0.8rem', color: '#888', marginBottom: '0.5rem' }}>
+                <div
+                  className="song-metadata"
+                  style={{
+                    fontSize: '0.8rem',
+                    color: '#888',
+                    marginBottom: '0.5rem',
+                  }}
+                >
                   Last modified: {formatRelativeTime(song.updated_at)}
                 </div>
-                <div className="song-content" style={{ marginBottom: '1rem', border: '1px solid #eee', borderRadius: '4px', padding: '0.5rem', backgroundColor: '#fafafa' }}>
-                  <ChordProViewer 
-                    content={song.content.length > 300 ? `${song.content.substring(0, 300)}...` : song.content}
+                <div
+                  className="song-content"
+                  style={{
+                    marginBottom: '1rem',
+                    border: '1px solid #eee',
+                    borderRadius: '4px',
+                    padding: '0.5rem',
+                    backgroundColor: '#fafafa',
+                  }}
+                >
+                  <ChordProViewer
+                    content={
+                      song.content.length > 300
+                        ? `${song.content.substring(0, 300)}...`
+                        : song.content
+                    }
                     showMetadata={false}
                     maxHeight="150px"
                     className="song-preview"
                   />
                   {song.content.length > 300 && (
-                    <div style={{ fontSize: '0.8rem', color: '#888', marginTop: '0.5rem', fontStyle: 'italic' }}>
+                    <div
+                      style={{
+                        fontSize: '0.8rem',
+                        color: '#888',
+                        marginTop: '0.5rem',
+                        fontStyle: 'italic',
+                      }}
+                    >
                       Content truncated... Click "View" to see full song
                     </div>
                   )}
                 </div>
                 <div className="song-actions">
-                  <button 
+                  <button
                     className="btn btn-primary"
                     onClick={() => handleViewSong(song)}
                     style={{ marginRight: '0.5rem' }}
                   >
                     View
                   </button>
-                  <button 
+                  <button
                     className="btn btn-secondary"
                     onClick={() => handleEditSong(song)}
                     style={{ marginRight: '0.5rem' }}
                   >
                     Edit
                   </button>
-                  <button 
+                  <button
                     className="btn"
                     onClick={() => handleDownloadSong(song.id)}
-                    style={{ marginRight: '0.5rem', backgroundColor: '#28a745', color: 'white' }}
+                    style={{
+                      marginRight: '0.5rem',
+                      backgroundColor: '#28a745',
+                      color: 'white',
+                    }}
                     title="Download as ChordPro file"
                   >
                     Download
                   </button>
-                  <button 
+                  <button
                     className="btn btn-danger"
                     onClick={() => handleDeleteSong(song.id)}
                     style={{ backgroundColor: '#dc3545', color: 'white' }}
