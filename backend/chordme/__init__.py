@@ -4,6 +4,12 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import event
 import os
 
+# Import version information
+try:
+    from .version import __version__
+except ImportError:
+    __version__ = "unknown"
+
 # Set up static folder path - go up from backend/chordme to root, then to frontend
 current_dir = os.path.dirname(os.path.abspath(__file__))  # backend/chordme
 backend_dir = os.path.dirname(current_dir)  # backend
