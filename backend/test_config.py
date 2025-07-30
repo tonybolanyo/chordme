@@ -7,3 +7,6 @@ JWT_SECRET_KEY = 'test-jwt-secret-key'
 JWT_EXPIRATION_DELTA = 3600  # 1 hour in seconds
 TESTING = True
 WTF_CSRF_ENABLED = False
+
+# Password hashing configuration
+BCRYPT_ROUNDS = 4  # Lower rounds for faster testing
