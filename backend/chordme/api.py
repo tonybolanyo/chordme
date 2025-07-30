@@ -4,6 +4,7 @@ from .utils import validate_email, validate_password, create_error_response, cre
 from .rate_limiter import rate_limit
 from .csrf_protection import csrf_protect, get_csrf_token
 from .security_headers import security_headers, security_error_handler
+from .chordpro_utils import validate_chordpro_content
 from flask import send_from_directory, send_file, request, jsonify, g
 from sqlalchemy.exc import IntegrityError
 import os
@@ -413,6 +414,49 @@ def delete_song(song_id):
         db.session.rollback()
         return security_error_handler.handle_server_error(
             "An error occurred while deleting the song",
+            exception=e,
+            ip_address=request.remote_addr
+        )
+
+
+@app.route('/api/v1/songs/validate-chordpro', methods=['POST'])
+@auth_required
+@rate_limit(max_requests=20, window_seconds=300)  # 20 validations per 5 minutes
+@csrf_protect(require_token=False)  # CSRF optional for API endpoints
+@security_headers
+def validate_chordpro():
+    """
+    Validate ChordPro content and return analysis.
+    Optional endpoint for users who want to validate their ChordPro formatting.
+    """
+    try:
+        # Get JSON data from request
+        data = request.get_json()
+        
+        if not data:
+            return create_error_response("No data provided", 400)
+        
+        # Sanitize input data
+        data = sanitize_input(data)
+        
+        content = data.get('content', '').strip()
+        
+        if not content:
+            return create_error_response("Content is required for validation", 400)
+        
+        # Validate ChordPro content
+        validation_result = validate_chordpro_content(content)
+        
+        app.logger.info(f"ChordPro validation performed by user {g.current_user_id} from IP {request.remote_addr}")
+        
+        return create_success_response(
+            data=validation_result,
+            message="ChordPro content validated successfully"
+        )
+        
+    except Exception as e:
+        return security_error_handler.handle_server_error(
+            "An error occurred while validating ChordPro content",
             exception=e,
             ip_address=request.remote_addr
         )
