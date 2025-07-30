@@ -22,6 +22,10 @@ cors = CORS(app, resources={
 # Initialize database
 db = SQLAlchemy(app)
 
+# Initialize HTTPS enforcement
+from .https_enforcement import HTTPSEnforcement
+https_enforcement = HTTPSEnforcement(app)
+
 # Import API routes (must come after db initialization)
 from . import api
 

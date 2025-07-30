@@ -10,3 +10,7 @@ WTF_CSRF_ENABLED = False
 
 # Password hashing configuration
 BCRYPT_ROUNDS = 4  # Lower rounds for faster testing
+
+# HTTPS enforcement configuration
+# Disable HTTPS enforcement in testing environment
+HTTPS_ENFORCED = False
