@@ -13,7 +13,7 @@ services:
     healthCheckPath: /api/v1/health
     envVars:
       - key: PYTHON_VERSION
-        value: 3.12.3
+        value: 3.12
       - key: SECRET_KEY
         generateValue: true
       - key: JWT_SECRET_KEY
