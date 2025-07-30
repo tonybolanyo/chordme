@@ -346,6 +346,8 @@ const Home: React.FC = () => {
                   className="btn btn-primary" 
                   onClick={() => handleDownloadSong(viewingSong.id)}
                   style={{ marginRight: '0.5rem' }}
+                  aria-label="Download the song in ChordPro format"
+                  title="Download the song in ChordPro format"
                 >
                   Download
                 </button>
