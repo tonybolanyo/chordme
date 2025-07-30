@@ -59,11 +59,11 @@ jobs:
         VERSION="${{ steps.version.outputs.version }}"
         
         # Update root package.json
-        npm version $VERSION --no-git-tag-version
+        npm version "$VERSION" --no-git-tag-version
         
         # Update frontend package.json
         cd frontend
-        npm version $VERSION --no-git-tag-version
+        npm version "$VERSION" --no-git-tag-version
         cd ..
         
         # Create or update backend version file
