@@ -83,7 +83,7 @@ const Register: React.FC = () => {
     try {
       const response = await apiService.register(formData);
       
-      if (response.success) {
+      if (response.status === 'success') {
         setSuccessMessage('Registration successful! You can now sign in with your account.');
         // Clear form
         setFormData({ email: '', password: '' });
