@@ -20,6 +20,8 @@ on:
 
 jobs:
   update-api-docs:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     
     defaults:
