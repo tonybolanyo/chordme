@@ -89,7 +89,6 @@
       "type": "object"
     }
   },
-  "host": "localhost:5000",
   "info": {
     "contact": {
       "name": "ChordMe",
@@ -478,6 +477,116 @@
         ]
       }
     },
+    "/songs/validate-chordpro": {
+      "post": {
+        "description": "    ",
+        "parameters": [
+          {
+            "description": "ChordPro content to validate",
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "properties": {
+                "content": {
+                  "description": "ChordPro content to validate (max 15,000 characters)",
+                  "example": "{title: Test Song} {artist: Test Artist}\n[C]Hello [F]world [G]how are [C]you",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "content"
+              ],
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ChordPro content validated successfully",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Success"
+                },
+                {
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "chord_count": {
+                          "description": "Number of chords found",
+                          "type": "integer"
+                        },
+                        "directives": {
+                          "description": "Parsed ChordPro directives",
+                          "type": "object"
+                        },
+                        "is_valid": {
+                          "description": "Whether the content is valid ChordPro",
+                          "type": "boolean"
+                        },
+                        "line_count": {
+                          "description": "Number of lines",
+                          "type": "integer"
+                        },
+                        "warnings": {
+                          "description": "List of validation warnings",
+                          "items": {
+                            "type": "string"
+                          },
+                          "type": "array"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Invalid input or validation error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "413": {
+            "description": "Request entity too large",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "    Validate ChordPro content",
+        "tags": [
+          "Songs"
+        ]
+      }
+    },
     "/songs/{song_id}": {
       "delete": {
         "description": "Delete a specific song by its ID (only if owned by authenticated user)",
@@ -688,6 +797,76 @@
           }
         ],
         "summary": "    Update a specific song by ID",
+        "tags": [
+          "Songs"
+        ]
+      }
+    },
+    "/songs/{song_id}/download": {
+      "get": {
+        "description": "Download a specific song as a ChordPro (.cho) file (only if owned by authenticated user)",
+        "parameters": [
+          {
+            "description": "Song ID",
+            "in": "path",
+            "minimum": 1,
+            "name": "song_id",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "produces": [
+          "text/plain"
+        ],
+        "responses": {
+          "200": {
+            "description": "Song file downloaded successfully",
+            "headers": {
+              "Content-Disposition": {
+                "description": "attachment; filename=\"songname.cho\"",
+                "type": "string"
+              },
+              "Content-Type": {
+                "description": "text/plain; charset=utf-8",
+                "type": "string"
+              }
+            },
+            "schema": {
+              "description": "ChordPro file content",
+              "type": "string"
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Song not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Download song as ChordPro file",
         "tags": [
           "Songs"
         ]

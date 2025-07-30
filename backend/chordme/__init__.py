@@ -50,7 +50,6 @@ swagger_template = {
             "url": "https://github.com/tonybolanyo/chordme"
         }
     },
-    "host": "localhost:5000",
     "basePath": "/api/v1",
     "schemes": ["http", "https"],
     "consumes": ["application/json"],

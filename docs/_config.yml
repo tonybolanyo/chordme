@@ -1,0 +1,20 @@
+theme: jekyll-theme-minimal
+title: ChordMe API Documentation
+description: API documentation for ChordMe - A ChordPro song management application
+show_downloads: false
+google_analytics: 
+repository: tonybolanyo/chordme
+
+plugins:
+  - jekyll-default-layout
+  - jekyll-readme-index
+
+readme_index:
+  enabled: true
+  remove_originals: false
+
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: "default"

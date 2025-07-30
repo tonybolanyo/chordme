@@ -807,7 +807,52 @@ def delete_song(song_id):
 @security_headers
 def download_song(song_id):
     """
-    Download a specific song as a ChordPro file (only if owned by authenticated user).
+    Download song as ChordPro file
+    ---
+    tags:
+      - Songs
+    summary: Download song file
+    description: Download a specific song as a ChordPro (.cho) file (only if owned by authenticated user)
+    security:
+      - Bearer: []
+    parameters:
+      - in: path
+        name: song_id
+        description: Song ID
+        required: true
+        type: integer
+        minimum: 1
+    produces:
+      - text/plain
+    responses:
+      200:
+        description: Song file downloaded successfully
+        headers:
+          Content-Disposition:
+            type: string
+            description: attachment; filename="songname.cho"
+          Content-Type:
+            type: string
+            description: text/plain; charset=utf-8
+        schema:
+          type: string
+          description: ChordPro file content
+      401:
+        description: Authentication required
+        schema:
+          $ref: '#/definitions/Error'
+      404:
+        description: Song not found
+        schema:
+          $ref: '#/definitions/Error'
+      429:
+        description: Too many requests
+        schema:
+          $ref: '#/definitions/Error'
+      500:
+        description: Internal server error
+        schema:
+          $ref: '#/definitions/Error'
     """
     try:
         # Find song by ID and ensure it belongs to the current user
@@ -858,8 +903,76 @@ def download_song(song_id):
 @security_headers
 def validate_chordpro():
     """
-    Validate ChordPro content and return analysis.
-    Optional endpoint for users who want to validate their ChordPro formatting.
+    Validate ChordPro content
+    ---
+    tags:
+      - Songs
+    summary: Validate ChordPro content
+    description: Validate ChordPro content format and return analysis results
+    security:
+      - Bearer: []
+    parameters:
+      - in: body
+        name: body
+        description: ChordPro content to validate
+        required: true
+        schema:
+          type: object
+          required:
+            - content
+          properties:
+            content:
+              type: string
+              description: ChordPro content to validate (max 15,000 characters)
+              example: "{title: Test Song}\n{artist: Test Artist}\n\n[C]Hello [F]world [G]how are [C]you"
+    responses:
+      200:
+        description: ChordPro content validated successfully
+        schema:
+          allOf:
+            - $ref: '#/definitions/Success'
+            - type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    is_valid:
+                      type: boolean
+                      description: Whether the content is valid ChordPro
+                    warnings:
+                      type: array
+                      items:
+                        type: string
+                      description: List of validation warnings
+                    directives:
+                      type: object
+                      description: Parsed ChordPro directives
+                    chord_count:
+                      type: integer
+                      description: Number of chords found
+                    line_count:
+                      type: integer
+                      description: Number of lines
+      400:
+        description: Invalid input or validation error
+        schema:
+          $ref: '#/definitions/Error'
+      401:
+        description: Authentication required
+        schema:
+          $ref: '#/definitions/Error'
+      413:
+        description: Request entity too large
+        schema:
+          $ref: '#/definitions/Error'
+      429:
+        description: Too many requests
+        schema:
+          $ref: '#/definitions/Error'
+      500:
+        description: Internal server error
+        schema:
+          $ref: '#/definitions/Error'
     """
     try:
         # Get JSON data from request
