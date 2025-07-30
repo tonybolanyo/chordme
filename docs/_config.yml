@@ -30,6 +30,10 @@ exclude:
 include:
   - .nojekyll
 
+# Multi-language configuration
+languages: ["en", "es"]
+default_lang: "en"
+
 header_pages:
   - getting-started.md
   - user-guide.md
@@ -38,9 +42,21 @@ header_pages:
   - developer-guide.md
   - troubleshooting.md
 
+header_pages_es:
+  - getting-started-es.md
+  - user-guide-es.md
+  - chordpro-format-es.md
+  - api-reference-es.md
+  - developer-guide-es.md
+  - troubleshooting-es.md
+
 defaults:
   - scope:
       path: ""
       type: "pages"
     values:
       layout: "default"
+  - scope:
+      path: "*-es.md"
+    values:
+      lang: "es"

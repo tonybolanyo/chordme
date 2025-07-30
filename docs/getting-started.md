@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Getting Started with ChordMe
+---
+
 # Getting Started with ChordMe
 
 This guide will help you set up and run ChordMe on your local machine.
@@ -217,6 +223,10 @@ If you encounter issues:
 2. Review the error logs in your terminal
 3. Open an issue on the [GitHub repository](https://github.com/tonybolanyo/chordme/issues)
 4. Check existing issues for similar problems
+
+---
+
+**Language:** **English** | [Español](getting-started-es.md)
 
 ---
 
