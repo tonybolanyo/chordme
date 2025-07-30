@@ -32,7 +32,7 @@ class TestAPIIntegration:
         """Test complete user registration and login flow."""
         # Test data
         user_data = {
-            "email": f"test_{int(time.time())}@example.com",
+            "email": f"test_{uuid.uuid4()}@example.com",
             "password": "TestPassword123!"
         }
         
