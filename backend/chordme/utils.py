@@ -188,7 +188,7 @@ def sanitize_input(data, max_string_length=1000):
         return sanitized
     
     elif isinstance(data, list):
-        return [sanitize_input(item, max_string_length) for item in data]
+        return [sanitize_input(item, max_string_length) if item is not None else None for item in data]
     
     elif isinstance(data, str):
         # Strip whitespace
