@@ -250,8 +250,11 @@ class TestInputSanitization:
     def test_non_dict_input(self):
         """Test handling of non-dictionary input."""
         assert sanitize_input(None) == {}
-        assert sanitize_input([]) == {}
-        assert sanitize_input("string") == {}
+        # Lists are now properly handled and returned as sanitized lists
+        assert sanitize_input([]) == []
+        assert sanitize_input(["  test  ", "value\x00"]) == ["test", "value"]
+        # Strings are now properly handled too
+        assert sanitize_input("  string  ") == "string"
     
     def test_non_string_values(self):
         """Test that non-string values are preserved."""

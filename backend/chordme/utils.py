@@ -160,29 +160,64 @@ def validate_password(password):
     return True, None
 
 
-def sanitize_input(data):
+def sanitize_input(data, max_string_length=1000):
     """
-    Sanitize input data to prevent injection attacks and normalize values.
+    Enhanced sanitize input data to prevent injection attacks and normalize values.
+    
+    Args:
+        data: Input data to sanitize (dict, str, or other types)
+        max_string_length: Maximum length for string values (default 1000)
+    
+    Returns:
+        Sanitized data maintaining the original structure, or {} for None/non-dict
     """
-    if not isinstance(data, dict):
+    if data is None:
         return {}
     
-    sanitized = {}
-    for key, value in data.items():
-        if isinstance(value, str):
-            # Strip whitespace
-            value = value.strip()
-            
-            # Limit string length to prevent DoS
-            if len(value) > 1000:
-                value = value[:1000]
-            
-            # Remove null bytes and control characters except newline/tab
-            value = ''.join(char for char in value if ord(char) >= 32 or char in '\n\t')
-            
-        sanitized[key] = value
+    if isinstance(data, dict):
+        sanitized = {}
+        for key, value in data.items():
+            # Sanitize both key and value
+            sanitized_key = sanitize_input(key, max_string_length) if isinstance(key, str) else key
+            # Don't sanitize None values within dicts, keep them as None
+            if value is None:
+                sanitized_value = None
+            else:
+                sanitized_value = sanitize_input(value, max_string_length)
+            sanitized[sanitized_key] = sanitized_value
+        return sanitized
     
-    return sanitized
+    elif isinstance(data, list):
+        return [sanitize_input(item, max_string_length) if item is not None else None for item in data]
+    
+    elif isinstance(data, str):
+        # Strip whitespace
+        value = data.strip()
+        
+        # Limit string length to prevent DoS
+        if len(value) > max_string_length:
+            value = value[:max_string_length]
+        
+        # Remove null bytes and most control characters except newline/tab
+        value = ''.join(char for char in value if ord(char) >= 32 or char in '\n\t')
+        
+        # Remove potential SQL injection patterns (basic protection)
+        # Note: The main protection is parameterized queries, this is additional
+        dangerous_patterns = [
+            '\x00',  # null byte
+            '\x1a',  # substitute character
+        ]
+        for pattern in dangerous_patterns:
+            value = value.replace(pattern, '')
+        
+        return value
+    
+    elif isinstance(data, (int, float, bool)):
+        return data
+    
+    else:
+        # For other types (like None, lists, etc.), return empty dict for compatibility
+        return {}
 
 
 def create_error_response(message, status_code=400):
@@ -232,6 +267,79 @@ def verify_jwt_token(token):
         return None
     except jwt.InvalidTokenError:
         return None
+
+
+def validate_positive_integer(param_name):
+    """
+    Decorator to validate that a path parameter is a positive integer.
+    
+    Args:
+        param_name: Name of the parameter to validate
+    """
+    from functools import wraps
+    from flask import request, jsonify
+    
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            # Get the parameter value from kwargs
+            param_value = kwargs.get(param_name)
+            
+            if param_value is None:
+                return jsonify({
+                    'error': f'Missing required parameter: {param_name}',
+                    'status': 'error'
+                }), 400
+            
+            # Validate it's a positive integer
+            try:
+                int_value = int(param_value)
+                if int_value <= 0:
+                    return jsonify({
+                        'error': f'{param_name} must be a positive integer',
+                        'status': 'error'
+                    }), 400
+                
+                # Update kwargs with validated integer
+                kwargs[param_name] = int_value
+                
+            except (ValueError, TypeError):
+                return jsonify({
+                    'error': f'{param_name} must be a valid integer',
+                    'status': 'error'
+                }), 400
+            
+            return f(*args, **kwargs)
+        
+        return decorated_function
+    return decorator
+
+
+def validate_request_size(max_content_length=1024*1024):  # 1MB default
+    """
+    Decorator to validate request content length.
+    
+    Args:
+        max_content_length: Maximum allowed content length in bytes
+    """
+    from functools import wraps
+    from flask import request, jsonify
+    
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            content_length = request.content_length
+            
+            if content_length and content_length > max_content_length:
+                return jsonify({
+                    'error': f'Request too large. Maximum size: {max_content_length} bytes',
+                    'status': 'error'
+                }), 413
+            
+            return f(*args, **kwargs)
+        
+        return decorated_function
+    return decorator
 
 
 def auth_required(f):
