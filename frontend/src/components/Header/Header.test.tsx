@@ -34,7 +34,7 @@ describe('Header', () => {
 
   it('shows login and register links when not authenticated', () => {
     render(<Header />);
-    
+
     expect(screen.getByText('Login')).toBeInTheDocument();
     expect(screen.getByText('Sign Up')).toBeInTheDocument();
   });
@@ -43,9 +43,9 @@ describe('Header', () => {
     // Update mock to simulate authenticated state
     mockAuthContext.isAuthenticated = true;
     mockAuthContext.user = { id: 1, email: 'test@example.com' };
-    
+
     render(<Header />);
-    
+
     expect(screen.getByText('Home')).toBeInTheDocument();
     expect(screen.getByText('Logout')).toBeInTheDocument();
   });
@@ -54,18 +54,18 @@ describe('Header', () => {
     // Update mock to simulate authenticated state
     mockAuthContext.isAuthenticated = true;
     mockAuthContext.user = { id: 1, email: 'test@example.com' };
-    
+
     render(<Header />);
-    
+
     const logoutButton = screen.getByText('Logout');
     fireEvent.click(logoutButton);
-    
+
     expect(mockLogout).toHaveBeenCalledOnce();
   });
 
   it('title links to home', () => {
     render(<Header />);
-    
+
     const titleLink = screen.getByText('ChordMe').closest('a');
     expect(titleLink).toHaveAttribute('href', '#home');
   });
