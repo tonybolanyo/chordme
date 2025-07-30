@@ -3,8 +3,8 @@
 Lyrics and chords in a simple way
 
 ![CI/CD Pipeline](https://github.com/tonybolanyo/chordme/actions/workflows/ci.yml/badge.svg)
-![Frontend CI](https://github.com/tonybolanyo/chordme/actions/workflows/frontend-ci.yml/badge.svg)
-![Backend CI](https://github.com/tonybolanyo/chordme/actions/workflows/backend-ci.yml/badge.svg)
+![Frontend CI](https://github.com/tonybolanyo/chordme/actions/workflows/frontend-ci.yml/badge.svg?label=frontend)
+![Backend CI](https://github.com/tonybolanyo/chordme/actions/workflows/backend-ci.yml/badge.svg?label=backend)
 ![Documentation](https://github.com/tonybolanyo/chordme/actions/workflows/deploy-docs.yml/badge.svg)
 
 [![codecov](https://codecov.io/gh/tonybolanyo/chordme/branch/main/graph/badge.svg)](https://codecov.io/gh/tonybolanyo/chordme)
