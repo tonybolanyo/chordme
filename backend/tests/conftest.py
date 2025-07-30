@@ -303,9 +303,6 @@ def valid_user_variations():
 def auth_token(client):
     """Create a user and return a valid JWT token for testing."""
     import json
-    from chordme.utils import generate_jwt_token
-    from chordme.models import User
-    from chordme import db
     
     # Create a test user
     user_data = {
@@ -320,12 +317,16 @@ def auth_token(client):
     
     assert response.status_code == 201
     
-    # Get the user from database to get the ID
-    user = User.query.filter_by(email='test@example.com').first()
-    assert user is not None
+    # Login to get the token
+    login_response = client.post('/api/v1/auth/login',
+                                data=json.dumps(user_data),
+                                content_type='application/json')
     
-    # Generate and return JWT token
-    token = generate_jwt_token(user.id)
+    assert login_response.status_code == 200
+    login_data = login_response.get_json()
+    
+    # Extract token from response data
+    token = login_data['data']['token']
     assert token is not None
     
     return token
