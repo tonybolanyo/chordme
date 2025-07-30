@@ -132,10 +132,7 @@ class TestAPIIntegration:
     def test_song_creation_flow(self):
         """Test creating a song with proper authentication."""
         # First, register and login a user
-        user_data = {
-            "email": f"songwriter_{int(time.time())}@example.com",
-            "password": "TestPassword123!"
-        }
+        user_data = self.create_user_data()
         
         # Register
         requests.post(
