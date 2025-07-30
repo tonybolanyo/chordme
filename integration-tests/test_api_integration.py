@@ -7,6 +7,10 @@ import pytest
 import json
 import time
 import uuid
+import subprocess
+import signal
+import os
+import sys
 from typing import Dict, Any
 
 # Base URL for the API
@@ -14,6 +18,66 @@ BASE_URL = "http://localhost:5000"
 
 class TestAPIIntegration:
     """Integration tests for the ChordMe API."""
+    
+    server_process = None
+    
+    @classmethod
+    def setup_class(cls):
+        """Setup for the test class - start backend server if needed."""
+        # Check if server is already running
+        try:
+            response = requests.get(f"{BASE_URL}/api/v1/health", timeout=2)
+            if response.status_code == 200:
+                print("Backend server already running")
+                return
+        except requests.exceptions.RequestException:
+            pass
+        
+        # Try to start the server for CI/local testing
+        backend_dir = os.path.join(os.path.dirname(__file__), "..", "backend")
+        if os.path.exists(backend_dir):
+            try:
+                # Set up environment
+                env = os.environ.copy()
+                env['FLASK_CONFIG'] = 'test_config'
+                
+                # Start the server
+                cls.server_process = subprocess.Popen(
+                    [sys.executable, "run.py"],
+                    cwd=backend_dir,
+                    env=env,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE
+                )
+                
+                # Wait for server to start
+                for _ in range(30):  # Wait up to 30 seconds
+                    try:
+                        response = requests.get(f"{BASE_URL}/api/v1/health", timeout=1)
+                        if response.status_code == 200:
+                            print("Backend server started successfully")
+                            return
+                    except requests.exceptions.RequestException:
+                        pass
+                    time.sleep(1)
+                
+                # If we get here, server didn't start
+                if cls.server_process:
+                    cls.server_process.terminate()
+                    cls.server_process = None
+                
+            except Exception as e:
+                print(f"Failed to start backend server: {e}")
+                if cls.server_process:
+                    cls.server_process.terminate()
+                    cls.server_process = None
+    
+    @classmethod
+    def teardown_class(cls):
+        """Cleanup - stop the server if we started it."""
+        if cls.server_process:
+            cls.server_process.terminate()
+            cls.server_process.wait()
     
     @pytest.fixture(autouse=True)
     def setup_method(self):
@@ -85,13 +149,13 @@ class TestAPIIntegration:
             }
             
             songs_response = requests.get(
-                f"{BASE_URL}/api/songs",
+                f"{BASE_URL}/api/v1/songs",
                 headers=auth_headers
             )
             
             assert songs_response.status_code == 200
             songs_data = songs_response.json()
-            assert isinstance(songs_data, list)
+            assert isinstance(songs_data["data"]["songs"], list)
         except requests.exceptions.ConnectionError:
             pytest.skip("Backend server not available at localhost:5000")
     
@@ -148,7 +212,7 @@ class TestAPIIntegration:
     def test_unauthorized_access(self):
         """Test accessing protected endpoints without authentication."""
         try:
-            response = requests.get(f"{BASE_URL}/api/songs")
+            response = requests.get(f"{BASE_URL}/api/v1/songs")
             assert response.status_code == 401
         except requests.exceptions.ConnectionError:
             pytest.skip("Backend server not available at localhost:5000")
@@ -187,27 +251,27 @@ class TestAPIIntegration:
             }
             
             create_response = requests.post(
-                f"{BASE_URL}/api/songs",
+                f"{BASE_URL}/api/v1/songs",
                 json=song_data,
                 headers=auth_headers
             )
             
             assert create_response.status_code == 201
             created_song = create_response.json()
-            assert "id" in created_song
-            assert created_song["title"] == song_data["title"]
-            assert created_song["content"] == song_data["content"]
+            assert "id" in created_song["data"]
+            assert created_song["data"]["title"] == song_data["title"]
+            assert created_song["data"]["content"] == song_data["content"]
             
             # Retrieve the created song
-            song_id = created_song["id"]
+            song_id = created_song["data"]["id"]
             get_response = requests.get(
-                f"{BASE_URL}/api/songs/{song_id}",
+                f"{BASE_URL}/api/v1/songs/{song_id}",
                 headers=auth_headers
             )
             
             assert get_response.status_code == 200
             retrieved_song = get_response.json()
-            assert retrieved_song["id"] == song_id
-            assert retrieved_song["title"] == song_data["title"]
+            assert retrieved_song["data"]["id"] == song_id
+            assert retrieved_song["data"]["title"] == song_data["title"]
         except requests.exceptions.ConnectionError:
             pytest.skip("Backend server not available at localhost:5000")

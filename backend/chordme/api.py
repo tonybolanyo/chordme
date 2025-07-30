@@ -1,6 +1,6 @@
 from . import app, db
 from .models import User, Song
-from .utils import validate_email, validate_password, create_error_response, create_success_response, generate_jwt_token, sanitize_input, auth_required, validate_positive_integer, validate_request_size
+from .utils import validate_email, validate_password, create_error_response, create_success_response, generate_jwt_token, sanitize_input, auth_required, validate_positive_integer, validate_request_size, sanitize_html_content
 from .rate_limiter import rate_limit
 from .csrf_protection import csrf_protect, get_csrf_token
 from .security_headers import security_headers, security_error_handler
@@ -266,6 +266,9 @@ def create_song():
         title = data.get('title', '').strip()
         content = data.get('content', '').strip()
         
+        # Additional HTML sanitization for content
+        content = sanitize_html_content(content)
+        
         # Validate required fields
         if not title:
             return create_error_response("Title is required", 400)
@@ -362,6 +365,10 @@ def update_song(song_id):
         
         title = data.get('title', '').strip()
         content = data.get('content', '').strip()
+        
+        # Additional HTML sanitization for content
+        if content:
+            content = sanitize_html_content(content)
         
         # Update fields if provided
         if title:

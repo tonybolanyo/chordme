@@ -151,3 +151,7 @@ backend/htmlcov/
 backend/coverage.xml
 backend/coverage.lcov
 frontend/coverage/
+
+# Playwright test artifacts
+test-results/
+playwright-report/
