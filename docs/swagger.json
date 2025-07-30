@@ -1,0 +1,713 @@
+{
+  "basePath": "/api/v1",
+  "consumes": [
+    "application/json"
+  ],
+  "definitions": {
+    "Error": {
+      "properties": {
+        "message": {
+          "description": "Error message",
+          "type": "string"
+        },
+        "status_code": {
+          "description": "HTTP status code",
+          "type": "integer"
+        },
+        "success": {
+          "example": false,
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "Song": {
+      "properties": {
+        "author_id": {
+          "description": "ID of the user who created the song",
+          "type": "integer"
+        },
+        "content": {
+          "description": "ChordPro content",
+          "type": "string"
+        },
+        "created_at": {
+          "description": "Song creation timestamp",
+          "format": "date-time",
+          "type": "string"
+        },
+        "id": {
+          "description": "Song ID",
+          "type": "integer"
+        },
+        "title": {
+          "description": "Song title",
+          "type": "string"
+        },
+        "updated_at": {
+          "description": "Song last update timestamp",
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "Success": {
+      "properties": {
+        "data": {
+          "description": "Response data",
+          "type": "object"
+        },
+        "message": {
+          "description": "Success message",
+          "type": "string"
+        },
+        "success": {
+          "example": true,
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "User": {
+      "properties": {
+        "created_at": {
+          "description": "Account creation timestamp",
+          "format": "date-time",
+          "type": "string"
+        },
+        "email": {
+          "description": "User email address",
+          "format": "email",
+          "type": "string"
+        },
+        "id": {
+          "description": "User ID",
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "host": "localhost:5000",
+  "info": {
+    "contact": {
+      "name": "ChordMe",
+      "url": "https://github.com/tonybolanyo/chordme"
+    },
+    "description": "API for ChordMe - A ChordPro song management application",
+    "title": "ChordMe API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "description": "Authenticate user with email and password, returns JWT token for API access",
+        "parameters": [
+          {
+            "description": "User login credentials",
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "properties": {
+                "email": {
+                  "description": "User email address",
+                  "example": "user@example.com",
+                  "format": "email",
+                  "type": "string"
+                },
+                "password": {
+                  "description": "User password",
+                  "example": "SecurePass123!",
+                  "format": "password",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "email",
+                "password"
+              ],
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Success"
+                },
+                {
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "token": {
+                          "description": "JWT authentication token",
+                          "type": "string"
+                        },
+                        "user": {
+                          "$ref": "#/definitions/User"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Invalid input or missing credentials",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "429": {
+            "description": "Too many login attempts",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        },
+        "summary": "Authenticate user and get JWT token",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "description": "Create a new user account with email and password. Requires strong password and valid email format.",
+        "parameters": [
+          {
+            "description": "User registration details",
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "properties": {
+                "email": {
+                  "description": "Valid email address",
+                  "example": "user@example.com",
+                  "format": "email",
+                  "type": "string"
+                },
+                "password": {
+                  "description": "Strong password (min 8 chars, uppercase, lowercase, number, special char)",
+                  "example": "SecurePass123!",
+                  "format": "password",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "email",
+                "password"
+              ],
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "User registered successfully",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Success"
+                },
+                {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/User"
+                    }
+                  },
+                  "type": "object"
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Invalid input or validation error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "409": {
+            "description": "User with this email already exists",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "429": {
+            "description": "Too many registration attempts",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        },
+        "summary": "Register a new user account",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/csrf-token": {
+      "get": {
+        "description": "Returns a CSRF token that must be included in form submissions for security",
+        "responses": {
+          "200": {
+            "description": "CSRF token generated successfully",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Success"
+                },
+                {
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "csrf_token": {
+                          "description": "CSRF token for form submissions",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              ]
+            }
+          }
+        },
+        "summary": "Get CSRF token for form submissions",
+        "tags": [
+          "Security"
+        ]
+      }
+    },
+    "/health": {
+      "get": {
+        "description": "Returns the current status of the API service",
+        "responses": {
+          "200": {
+            "description": "Service is healthy",
+            "schema": {
+              "properties": {
+                "message": {
+                  "example": "Service is running",
+                  "type": "string"
+                },
+                "status": {
+                  "example": "ok",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          }
+        },
+        "summary": "Health check endpoint",
+        "tags": [
+          "System"
+        ]
+      }
+    },
+    "/songs": {
+      "get": {
+        "description": "Retrieve all songs owned by the authenticated user",
+        "responses": {
+          "200": {
+            "description": "Songs retrieved successfully",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Success"
+                },
+                {
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "songs": {
+                          "items": {
+                            "$ref": "#/definitions/Song"
+                          },
+                          "type": "array"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              ]
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Get all songs for authenticated user",
+        "tags": [
+          "Songs"
+        ]
+      },
+      "post": {
+        "description": "    ",
+        "parameters": [
+          {
+            "description": "Song details",
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "properties": {
+                "content": {
+                  "description": "ChordPro content (max 10,000 characters)",
+                  "example": "{title: Amazing Grace} {artist: Traditional}\n[C]Amazing [F]grace how [C]sweet the sound",
+                  "type": "string"
+                },
+                "title": {
+                  "description": "Song title (max 200 characters)",
+                  "example": "Amazing Grace",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "title",
+                "content"
+              ],
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Song created successfully",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Success"
+                },
+                {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/Song"
+                    }
+                  },
+                  "type": "object"
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Invalid input or validation error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "413": {
+            "description": "Request entity too large",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "    Create a new song",
+        "tags": [
+          "Songs"
+        ]
+      }
+    },
+    "/songs/{song_id}": {
+      "delete": {
+        "description": "Delete a specific song by its ID (only if owned by authenticated user)",
+        "parameters": [
+          {
+            "description": "Song ID",
+            "in": "path",
+            "minimum": 1,
+            "name": "song_id",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Song deleted successfully",
+            "schema": {
+              "$ref": "#/definitions/Success"
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Song not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Delete a specific song by ID",
+        "tags": [
+          "Songs"
+        ]
+      },
+      "get": {
+        "description": "Retrieve a specific song by its ID (only if owned by authenticated user)",
+        "parameters": [
+          {
+            "description": "Song ID",
+            "in": "path",
+            "minimum": 1,
+            "name": "song_id",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Song retrieved successfully",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Success"
+                },
+                {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/Song"
+                    }
+                  },
+                  "type": "object"
+                }
+              ]
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Song not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Get a specific song by ID",
+        "tags": [
+          "Songs"
+        ]
+      },
+      "put": {
+        "description": "    ",
+        "parameters": [
+          {
+            "description": "Song ID",
+            "in": "path",
+            "minimum": 1,
+            "name": "song_id",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "description": "Updated song details",
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "properties": {
+                "content": {
+                  "description": "ChordPro content (max 10,000 characters)",
+                  "example": "{title: Amazing Grace} {artist: Traditional}\n[C]Amazing [F]grace how [C]sweet the sound",
+                  "type": "string"
+                },
+                "title": {
+                  "description": "Song title (max 200 characters)",
+                  "example": "Amazing Grace (Updated)",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Song updated successfully",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Success"
+                },
+                {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/Song"
+                    }
+                  },
+                  "type": "object"
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Invalid input or validation error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Song not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "413": {
+            "description": "Request entity too large",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "    Update a specific song by ID",
+        "tags": [
+          "Songs"
+        ]
+      }
+    }
+  },
+  "produces": [
+    "application/json"
+  ],
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "securityDefinitions": {
+    "Bearer": {
+      "description": "JWT token. Format: Bearer {token}",
+      "in": "header",
+      "name": "Authorization",
+      "type": "apiKey"
+    }
+  },
+  "swagger": "2.0"
+}

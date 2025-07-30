@@ -19,7 +19,24 @@ TITLE_DIRECTIVE_REGEX = r'^\{title:\s*.*\}$'
 @security_headers
 def health():
     """
-    Health check endpoint.
+    Health check endpoint
+    ---
+    tags:
+      - System
+    summary: Check API health status
+    description: Returns the current status of the API service
+    responses:
+      200:
+        description: Service is healthy
+        schema:
+          type: object
+          properties:
+            status:
+              type: string
+              example: "ok"
+            message:
+              type: string
+              example: "Service is running"
     """
     return {
         'status': 'ok',
@@ -31,7 +48,26 @@ def health():
 @security_headers
 def get_csrf_token_endpoint():
     """
-    Get a CSRF token for form submissions.
+    Get CSRF token for form submissions
+    ---
+    tags:
+      - Security
+    summary: Generate CSRF token
+    description: Returns a CSRF token that must be included in form submissions for security
+    responses:
+      200:
+        description: CSRF token generated successfully
+        schema:
+          allOf:
+            - $ref: '#/definitions/Success'
+            - type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    csrf_token:
+                      type: string
+                      description: CSRF token for form submissions
     """
     token = get_csrf_token()
     return create_success_response(
@@ -46,8 +82,59 @@ def get_csrf_token_endpoint():
 @security_headers
 def register():
     """
-    Register a new user with email and password.
-    Enhanced with improved validation and security measures.
+    Register a new user account
+    ---
+    tags:
+      - Authentication
+    summary: Register a new user
+    description: Create a new user account with email and password. Requires strong password and valid email format.
+    parameters:
+      - in: body
+        name: body
+        description: User registration details
+        required: true
+        schema:
+          type: object
+          required:
+            - email
+            - password
+          properties:
+            email:
+              type: string
+              format: email
+              description: Valid email address
+              example: "user@example.com"
+            password:
+              type: string
+              format: password
+              description: Strong password (min 8 chars, uppercase, lowercase, number, special char)
+              example: "SecurePass123!"
+    responses:
+      201:
+        description: User registered successfully
+        schema:
+          allOf:
+            - $ref: '#/definitions/Success'
+            - type: object
+              properties:
+                data:
+                  $ref: '#/definitions/User'
+      400:
+        description: Invalid input or validation error
+        schema:
+          $ref: '#/definitions/Error'
+      409:
+        description: User with this email already exists
+        schema:
+          $ref: '#/definitions/Error'
+      429:
+        description: Too many registration attempts
+        schema:
+          $ref: '#/definitions/Error'
+      500:
+        description: Internal server error
+        schema:
+          $ref: '#/definitions/Error'
     """
     try:
         # Get JSON data from request with size limit
@@ -131,8 +218,65 @@ def register():
 @security_headers
 def login():
     """
-    Login user with email and password. Returns JWT token.
-    Enhanced with improved validation and security measures.
+    Authenticate user and get JWT token
+    ---
+    tags:
+      - Authentication
+    summary: Login user
+    description: Authenticate user with email and password, returns JWT token for API access
+    parameters:
+      - in: body
+        name: body
+        description: User login credentials
+        required: true
+        schema:
+          type: object
+          required:
+            - email
+            - password
+          properties:
+            email:
+              type: string
+              format: email
+              description: User email address
+              example: "user@example.com"
+            password:
+              type: string
+              format: password
+              description: User password
+              example: "SecurePass123!"
+    responses:
+      200:
+        description: Login successful
+        schema:
+          allOf:
+            - $ref: '#/definitions/Success'
+            - type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    token:
+                      type: string
+                      description: JWT authentication token
+                    user:
+                      $ref: '#/definitions/User'
+      400:
+        description: Invalid input or missing credentials
+        schema:
+          $ref: '#/definitions/Error'
+      401:
+        description: Invalid credentials
+        schema:
+          $ref: '#/definitions/Error'
+      429:
+        description: Too many login attempts
+        schema:
+          $ref: '#/definitions/Error'
+      500:
+        description: Internal server error
+        schema:
+          $ref: '#/definitions/Error'
     """
     try:
         # Get JSON data from request with size limit
@@ -221,7 +365,37 @@ def login():
 @security_headers
 def get_songs():
     """
-    Get all songs for the authenticated user.
+    Get all songs for authenticated user
+    ---
+    tags:
+      - Songs
+    summary: List user's songs
+    description: Retrieve all songs owned by the authenticated user
+    security:
+      - Bearer: []
+    responses:
+      200:
+        description: Songs retrieved successfully
+        schema:
+          allOf:
+            - $ref: '#/definitions/Success'
+            - type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    songs:
+                      type: array
+                      items:
+                        $ref: '#/definitions/Song'
+      401:
+        description: Authentication required
+        schema:
+          $ref: '#/definitions/Error'
+      500:
+        description: Internal server error
+        schema:
+          $ref: '#/definitions/Error'
     """
     try:
         # Get songs for the current user
@@ -251,7 +425,63 @@ def get_songs():
 @security_headers
 def create_song():
     """
-    Create a new song for the authenticated user.
+    Create a new song
+    ---
+    tags:
+      - Songs
+    summary: Create new song
+    description: Create a new ChordPro song for the authenticated user
+    security:
+      - Bearer: []
+    parameters:
+      - in: body
+        name: body
+        description: Song details
+        required: true
+        schema:
+          type: object
+          required:
+            - title
+            - content
+          properties:
+            title:
+              type: string
+              description: Song title (max 200 characters)
+              example: "Amazing Grace"
+            content:
+              type: string
+              description: ChordPro content (max 10,000 characters)
+              example: "{title: Amazing Grace}\n{artist: Traditional}\n\n[C]Amazing [F]grace how [C]sweet the sound"
+    responses:
+      201:
+        description: Song created successfully
+        schema:
+          allOf:
+            - $ref: '#/definitions/Success'
+            - type: object
+              properties:
+                data:
+                  $ref: '#/definitions/Song'
+      400:
+        description: Invalid input or validation error
+        schema:
+          $ref: '#/definitions/Error'
+      401:
+        description: Authentication required
+        schema:
+          $ref: '#/definitions/Error'
+      413:
+        description: Request entity too large
+        schema:
+          $ref: '#/definitions/Error'
+      429:
+        description: Too many requests
+        schema:
+          $ref: '#/definitions/Error'
+      500:
+        description: Internal server error
+        schema:
+          $ref: '#/definitions/Error'
     """
     try:
         # Get JSON data from request
@@ -314,7 +544,43 @@ def create_song():
 @security_headers
 def get_song(song_id):
     """
-    Get a specific song by ID (only if owned by authenticated user).
+    Get a specific song by ID
+    ---
+    tags:
+      - Songs
+    summary: Get song by ID
+    description: Retrieve a specific song by its ID (only if owned by authenticated user)
+    security:
+      - Bearer: []
+    parameters:
+      - in: path
+        name: song_id
+        description: Song ID
+        required: true
+        type: integer
+        minimum: 1
+    responses:
+      200:
+        description: Song retrieved successfully
+        schema:
+          allOf:
+            - $ref: '#/definitions/Success'
+            - type: object
+              properties:
+                data:
+                  $ref: '#/definitions/Song'
+      401:
+        description: Authentication required
+        schema:
+          $ref: '#/definitions/Error'
+      404:
+        description: Song not found
+        schema:
+          $ref: '#/definitions/Error'
+      500:
+        description: Internal server error
+        schema:
+          $ref: '#/definitions/Error'
     """
     try:
         # Find song by ID and ensure it belongs to the current user
@@ -345,7 +611,70 @@ def get_song(song_id):
 @security_headers
 def update_song(song_id):
     """
-    Update a specific song by ID (only if owned by authenticated user).
+    Update a specific song by ID
+    ---
+    tags:
+      - Songs
+    summary: Update song
+    description: Update a specific song by its ID (only if owned by authenticated user)
+    security:
+      - Bearer: []
+    parameters:
+      - in: path
+        name: song_id
+        description: Song ID
+        required: true
+        type: integer
+        minimum: 1
+      - in: body
+        name: body
+        description: Updated song details
+        required: true
+        schema:
+          type: object
+          properties:
+            title:
+              type: string
+              description: Song title (max 200 characters)
+              example: "Amazing Grace (Updated)"
+            content:
+              type: string
+              description: ChordPro content (max 10,000 characters)
+              example: "{title: Amazing Grace}\n{artist: Traditional}\n\n[C]Amazing [F]grace how [C]sweet the sound"
+    responses:
+      200:
+        description: Song updated successfully
+        schema:
+          allOf:
+            - $ref: '#/definitions/Success'
+            - type: object
+              properties:
+                data:
+                  $ref: '#/definitions/Song'
+      400:
+        description: Invalid input or validation error
+        schema:
+          $ref: '#/definitions/Error'
+      401:
+        description: Authentication required
+        schema:
+          $ref: '#/definitions/Error'
+      404:
+        description: Song not found
+        schema:
+          $ref: '#/definitions/Error'
+      413:
+        description: Request entity too large
+        schema:
+          $ref: '#/definitions/Error'
+      429:
+        description: Too many requests
+        schema:
+          $ref: '#/definitions/Error'
+      500:
+        description: Internal server error
+        schema:
+          $ref: '#/definitions/Error'
     """
     try:
         # Find song by ID and ensure it belongs to the current user
@@ -406,7 +735,42 @@ def update_song(song_id):
 @security_headers
 def delete_song(song_id):
     """
-    Delete a specific song by ID (only if owned by authenticated user).
+    Delete a specific song by ID
+    ---
+    tags:
+      - Songs
+    summary: Delete song
+    description: Delete a specific song by its ID (only if owned by authenticated user)
+    security:
+      - Bearer: []
+    parameters:
+      - in: path
+        name: song_id
+        description: Song ID
+        required: true
+        type: integer
+        minimum: 1
+    responses:
+      200:
+        description: Song deleted successfully
+        schema:
+          $ref: '#/definitions/Success'
+      401:
+        description: Authentication required
+        schema:
+          $ref: '#/definitions/Error'
+      404:
+        description: Song not found
+        schema:
+          $ref: '#/definitions/Error'
+      429:
+        description: Too many requests
+        schema:
+          $ref: '#/definitions/Error'
+      500:
+        description: Internal server error
+        schema:
+          $ref: '#/definitions/Error'
     """
     try:
         # Find song by ID and ensure it belongs to the current user
