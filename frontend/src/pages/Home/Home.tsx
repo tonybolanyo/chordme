@@ -3,7 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { apiService } from '../../services/api';
 import { formatRelativeTime } from '../../utils';
 import type { Song } from '../../types';
-import { ChordProEditor } from '../../components';
+import { ChordProEditor, ChordProViewer } from '../../components';
 import './Home.css';
 
 const Home: React.FC = () => {
@@ -15,6 +15,7 @@ const Home: React.FC = () => {
   const [newSong, setNewSong] = useState({ title: '', content: '' });
   const [editingSong, setEditingSong] = useState<Song | null>(null);
   const [editSongData, setEditSongData] = useState({ title: '', content: '' });
+  const [viewingSong, setViewingSong] = useState<Song | null>(null);
 
   useEffect(() => {
     loadSongs();
@@ -79,6 +80,7 @@ const Home: React.FC = () => {
     setEditingSong(song);
     setEditSongData({ title: song.title, content: song.content });
     setShowCreateForm(false); // Hide create form if open
+    setViewingSong(null); // Hide view if open
   };
 
   const handleUpdateSong = async (e: React.FormEvent) => {
@@ -109,6 +111,16 @@ const Home: React.FC = () => {
     setEditSongData({ title: '', content: '' });
   };
 
+  const handleViewSong = (song: Song) => {
+    setViewingSong(song);
+    setShowCreateForm(false); // Hide create form if open
+    setEditingSong(null); // Hide edit if open
+  };
+
+  const handleCloseView = () => {
+    setViewingSong(null);
+  };
+
   if (isLoading) {
     return (
       <div className="home">
@@ -134,7 +146,13 @@ const Home: React.FC = () => {
         <div className="home-actions">
           <button 
             className="btn btn-primary"
-            onClick={() => setShowCreateForm(!showCreateForm)}
+            onClick={() => {
+              setShowCreateForm(!showCreateForm);
+              if (!showCreateForm) {
+                setEditingSong(null);
+                setViewingSong(null);
+              }
+            }}
           >
             {showCreateForm ? 'Cancel' : 'Create New Song'}
           </button>
@@ -221,6 +239,24 @@ const Home: React.FC = () => {
             </div>
           </form>
         )}
+
+        {viewingSong && (
+          <div className="view-song-section" style={{ margin: '2rem 0', padding: '1rem', backgroundColor: '#f8f9fa', borderRadius: '8px', border: '2px solid #6c757d' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h3>Viewing: {viewingSong.title}</h3>
+              <button 
+                type="button" 
+                className="btn btn-secondary" 
+                onClick={handleCloseView}
+              >
+                Close
+              </button>
+            </div>
+            <div style={{ backgroundColor: '#fff', padding: '1rem', borderRadius: '4px' }}>
+              <ChordProViewer content={viewingSong.content} />
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="songs-section">
@@ -238,20 +274,38 @@ const Home: React.FC = () => {
                 <div className="song-metadata" style={{ fontSize: '0.8rem', color: '#888', marginBottom: '0.5rem' }}>
                   Last modified: {formatRelativeTime(song.updated_at)}
                 </div>
-                <div className="song-content" style={{ whiteSpace: 'pre-wrap', fontSize: '0.9rem', color: '#666', marginBottom: '1rem' }}>
-                  {song.content.length > 150 ? `${song.content.substring(0, 150)}...` : song.content}
+                <div className="song-content" style={{ marginBottom: '1rem', border: '1px solid #eee', borderRadius: '4px', padding: '0.5rem', backgroundColor: '#fafafa' }}>
+                  <ChordProViewer 
+                    content={song.content.length > 300 ? `${song.content.substring(0, 300)}...` : song.content}
+                    showMetadata={false}
+                    maxHeight="150px"
+                    className="song-preview"
+                  />
+                  {song.content.length > 300 && (
+                    <div style={{ fontSize: '0.8rem', color: '#888', marginTop: '0.5rem', fontStyle: 'italic' }}>
+                      Content truncated... Click "View" to see full song
+                    </div>
+                  )}
                 </div>
                 <div className="song-actions">
                   <button 
+                    className="btn btn-primary"
+                    onClick={() => handleViewSong(song)}
+                    style={{ marginRight: '0.5rem' }}
+                  >
+                    View
+                  </button>
+                  <button 
                     className="btn btn-secondary"
                     onClick={() => handleEditSong(song)}
+                    style={{ marginRight: '0.5rem' }}
                   >
                     Edit
                   </button>
                   <button 
                     className="btn btn-danger"
                     onClick={() => handleDeleteSong(song.id)}
-                    style={{ marginLeft: '0.5rem', backgroundColor: '#dc3545', color: 'white' }}
+                    style={{ backgroundColor: '#dc3545', color: 'white' }}
                   >
                     Delete
                   </button>
