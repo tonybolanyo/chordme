@@ -28,7 +28,6 @@ from . import api
 # Enable foreign key constraints for SQLite - must be set up after app context is available
 def enable_foreign_key_constraints():
     """Enable foreign key constraints for SQLite databases."""
-    from sqlalchemy import event
     
     @event.listens_for(db.engine, "connect")
     def set_sqlite_pragma(dbapi_connection, connection_record):
