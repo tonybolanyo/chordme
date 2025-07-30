@@ -5,10 +5,46 @@ Lyrics and chords in a simple way
 ![CI/CD Pipeline](https://github.com/tonybolanyo/chordme/actions/workflows/ci.yml/badge.svg)
 ![Frontend CI](https://github.com/tonybolanyo/chordme/actions/workflows/frontend-ci.yml/badge.svg)
 ![Backend CI](https://github.com/tonybolanyo/chordme/actions/workflows/backend-ci.yml/badge.svg)
+![Documentation](https://github.com/tonybolanyo/chordme/actions/workflows/deploy-docs.yml/badge.svg)
 
 [![codecov](https://codecov.io/gh/tonybolanyo/chordme/branch/main/graph/badge.svg)](https://codecov.io/gh/tonybolanyo/chordme)
 [![Frontend Coverage](https://codecov.io/gh/tonybolanyo/chordme/branch/main/graph/badge.svg?flag=frontend)](https://codecov.io/gh/tonybolanyo/chordme)
 [![Backend Coverage](https://codecov.io/gh/tonybolanyo/chordme/branch/main/graph/badge.svg?flag=backend)](https://codecov.io/gh/tonybolanyo/chordme)
+
+## 📖 Documentation
+
+**[Complete User Manual](https://tonybolanyo.github.io/chordme/)** - Comprehensive documentation including:
+
+- **[Getting Started](docs/getting-started.md)** - Installation and setup guide
+- **[User Guide](docs/user-guide.md)** - Complete feature documentation  
+- **[ChordPro Format](docs/chordpro-format.md)** - ChordPro format reference
+- **[API Reference](docs/api-reference.md)** - Complete API documentation
+- **[Developer Guide](docs/developer-guide.md)** - Contributing and development
+- **[Troubleshooting](docs/troubleshooting.md)** - Common issues and solutions
+
+*The documentation is automatically updated with each release and available at [tonybolanyo.github.io/chordme](https://tonybolanyo.github.io/chordme/).*
+
+## Quick Start
+
+```bash
+# Clone the repository
+git clone https://github.com/tonybolanyo/chordme.git
+cd chordme
+
+# Install dependencies
+npm install
+cd frontend && npm install && cd ..
+cd backend && pip install -r requirements.txt && cd ..
+
+# Configure backend
+cd backend && cp config.template.py config.py && cd ..
+
+# Start development servers
+npm run dev:backend    # Terminal 1 (Flask API - Port 5000)
+npm run dev:frontend   # Terminal 2 (React App - Port 5173)
+```
+
+Then open http://localhost:5173 in your browser.
 
 ## Project Structure
 
