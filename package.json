@@ -1,6 +1,6 @@
 {
   "name": "chordme",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "description": "ChordMe - Lyrics and chords in a simple way",
   "scripts": {
     "dev:frontend": "cd frontend && npm run dev",
