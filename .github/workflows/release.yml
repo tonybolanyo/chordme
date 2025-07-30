@@ -1,0 +1,322 @@
+name: Release and Deploy
+
+permissions:
+  contents: read
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Tag name (e.g., v1.0.0)'
+        required: true
+        type: string
+
+jobs:
+  # Version synchronization and validation
+  prepare:
+    name: Prepare Release
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Get version from tag
+      id: version
+      run: |
+        if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+          VERSION="${{ github.event.inputs.tag_name }}"
+        else
+          VERSION=${GITHUB_REF#refs/tags/}
+        fi
+        # Remove 'v' prefix if present
+        VERSION=${VERSION#v}
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Version: $VERSION"
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: './frontend/package-lock.json'
+    
+    - name: Install frontend dependencies
+      working-directory: ./frontend
+      run: npm ci
+    
+    - name: Update package versions
+      run: |
+        VERSION="${{ steps.version.outputs.version }}"
+        
+        # Update root package.json
+        npm version "$VERSION" --no-git-tag-version
+        
+        # Update frontend package.json
+        cd frontend
+        npm version "$VERSION" --no-git-tag-version
+        cd ..
+        
+        # Create or update backend version file
+        mkdir -p backend/chordme
+        cat > backend/chordme/version.py << EOF
+        """Version information for ChordMe backend."""
+        __version__ = "$VERSION"
+        EOF
+        
+        echo "Updated all package versions to $VERSION"
+    
+    - name: Commit version updates
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add package.json frontend/package.json backend/chordme/version.py
+        if git diff --cached --quiet; then
+          echo "No version changes to commit"
+        else
+          git commit -m "chore: update version to ${{ steps.version.outputs.version }}"
+          git push
+        fi
+
+  # Build frontend and backend
+  build:
+    name: Build Applications
+    runs-on: ubuntu-latest
+    needs: prepare
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: './frontend/package-lock.json'
+    
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+        cache-dependency-path: './backend/requirements.txt'
+    
+    - name: Install frontend dependencies
+      working-directory: ./frontend
+      run: npm ci
+    
+    - name: Install backend dependencies
+      working-directory: ./backend
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Build frontend
+      working-directory: ./frontend
+      run: npm run build
+    
+    - name: Prepare backend for deployment
+      working-directory: ./backend
+      run: |
+        # Copy template config for production
+        cp config.template.py config.py
+        # Create production requirements
+        cp requirements.txt requirements-prod.txt
+    
+    - name: Create release artifacts
+      run: |
+        VERSION="${{ needs.prepare.outputs.version }}"
+        
+        # Create release directory
+        mkdir -p release/chordme-$VERSION
+        
+        # Copy built frontend
+        cp -r frontend/dist release/chordme-$VERSION/frontend
+        
+        # Copy backend files
+        cp -r backend release/chordme-$VERSION/
+        
+        # Copy deployment configurations
+        cp render.yaml release/chordme-$VERSION/ 2>/dev/null || echo "render.yaml not found, will create"
+        cp vercel.json release/chordme-$VERSION/ 2>/dev/null || echo "vercel.json not found, will create"
+        
+        # Create deployment README
+        cat > release/chordme-$VERSION/DEPLOYMENT.md << 'EOF'
+        # ChordMe Deployment Guide
+        
+        This package contains the built ChordMe application ready for deployment.
+        
+        ## Contents
+        
+        - `frontend/` - Built React application (static files)
+        - `backend/` - Flask backend application
+        - `render.yaml` - Render deployment configuration
+        - `vercel.json` - Vercel deployment configuration
+        
+        ## Manual Deployment
+        
+        ### Frontend (Vercel)
+        1. Upload the `frontend/` directory to your hosting provider
+        2. Configure environment variables as needed
+        
+        ### Backend (Render/Railway/Heroku)
+        1. Upload the `backend/` directory to your hosting provider
+        2. Install dependencies: `pip install -r requirements.txt`
+        3. Configure environment variables
+        4. Run: `python run.py`
+        
+        ## Environment Variables
+        
+        ### Backend
+        - `SECRET_KEY` - Flask secret key
+        - `DATABASE_URL` - Database connection string
+        - `JWT_SECRET_KEY` - JWT signing key
+        
+        ### Frontend
+        - `VITE_API_URL` - Backend API URL
+        
+        EOF
+        
+        # Create ZIP archive
+        cd release
+        zip -r chordme-$VERSION.zip chordme-$VERSION/
+        cd ..
+        
+        # Move ZIP to root for upload
+        mv release/chordme-$VERSION.zip ./
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-artifacts-${{ needs.prepare.outputs.version }}
+        path: |
+          chordme-${{ needs.prepare.outputs.version }}.zip
+          release/chordme-${{ needs.prepare.outputs.version }}/
+        retention-days: 30
+
+  # Deploy to Render (Backend)
+  deploy-backend:
+    name: Deploy Backend to Render
+    runs-on: ubuntu-latest
+    needs: [prepare, build]
+    if: github.repository == 'tonybolanyo/chordme'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Deploy to Render
+      env:
+        RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+        RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
+      run: |
+        if [ -z "$RENDER_API_KEY" ] || [ -z "$RENDER_SERVICE_ID" ]; then
+          echo "⚠️  Render deployment skipped: RENDER_API_KEY or RENDER_SERVICE_ID not configured"
+          echo "To enable automatic deployment to Render, configure these secrets in your repository settings."
+          exit 0
+        fi
+        
+        # Trigger Render deployment
+        curl -X POST \
+          -H "Authorization: Bearer $RENDER_API_KEY" \
+          -H "Accept: application/json" \
+          -H "Content-Type: application/json" \
+          "https://api.render.com/v1/services/$RENDER_SERVICE_ID/deploys"
+
+  # Deploy to Vercel (Frontend)
+  deploy-frontend:
+    name: Deploy Frontend to Vercel
+    runs-on: ubuntu-latest
+    needs: [prepare, build]
+    if: github.repository == 'tonybolanyo/chordme'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+    
+    - name: Install Vercel CLI
+      run: npm install -g vercel@latest
+    
+    - name: Deploy to Vercel
+      env:
+        VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+        VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      working-directory: ./frontend
+      run: |
+        if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_ORG_ID" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
+          echo "⚠️  Vercel deployment skipped: Required secrets not configured"
+          echo "To enable automatic deployment to Vercel, configure these secrets in your repository settings:"
+          echo "- VERCEL_TOKEN"
+          echo "- VERCEL_ORG_ID" 
+          echo "- VERCEL_PROJECT_ID"
+          exit 0
+        fi
+        
+        # Deploy to production
+        vercel --prod --token $VERCEL_TOKEN
+
+  # Create GitHub release
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [prepare, build, deploy-backend, deploy-frontend]
+    if: always() && needs.build.result == 'success'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: release-artifacts-${{ needs.prepare.outputs.version }}
+    
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ needs.prepare.outputs.version }}
+        release_name: Release v${{ needs.prepare.outputs.version }}
+        body: |
+          ## ChordMe v${{ needs.prepare.outputs.version }}
+          
+          ### 🚀 Deployment Status
+          - **Backend**: ${{ needs.deploy-backend.result == 'success' && '✅ Deployed to Render' || needs.deploy-backend.result == 'skipped' && '⚠️ Skipped (secrets not configured)' || '❌ Failed' }}
+          - **Frontend**: ${{ needs.deploy-frontend.result == 'success' && '✅ Deployed to Vercel' || needs.deploy-frontend.result == 'skipped' && '⚠️ Skipped (secrets not configured)' || '❌ Failed' }}
+          
+          ### 📦 Manual Deployment
+          
+          Download the `chordme-${{ needs.prepare.outputs.version }}.zip` file below for manual deployment. 
+          The archive contains both frontend (built static files) and backend (Flask application) ready for deployment.
+          
+          See `DEPLOYMENT.md` in the archive for detailed deployment instructions.
+          
+          ### 🔧 What's Changed
+          
+          This release includes version synchronization across all packages and deployment configurations.
+        draft: false
+        prerelease: false
+    
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./chordme-${{ needs.prepare.outputs.version }}.zip
+        asset_name: chordme-${{ needs.prepare.outputs.version }}.zip
+        asset_content_type: application/zip
