@@ -198,12 +198,17 @@ describe('Register Component', () => {
 
       await user.type(screen.getByLabelText('Email'), 'test@example.com');
       await user.type(screen.getByLabelText('Password'), 'Password123!');
-      await user.type(screen.getByLabelText('Confirm Password'), 'Password123!');
+      await user.type(
+        screen.getByLabelText('Confirm Password'),
+        'Password123!'
+      );
       await user.click(screen.getByRole('button', { name: 'Create Account' }));
 
       await waitFor(() => {
         expect(
-          screen.getByText('Registration successful! You can now sign in with your account.')
+          screen.getByText(
+            'Registration successful! You can now sign in with your account.'
+          )
         ).toBeInTheDocument();
       });
     });
@@ -249,7 +254,10 @@ describe('Register Component', () => {
 
       await user.type(screen.getByLabelText('Email'), 'existing@example.com');
       await user.type(screen.getByLabelText('Password'), 'Password123!');
-      await user.type(screen.getByLabelText('Confirm Password'), 'Password123!');
+      await user.type(
+        screen.getByLabelText('Confirm Password'),
+        'Password123!'
+      );
       await user.click(screen.getByRole('button', { name: 'Create Account' }));
 
       await waitFor(() => {
@@ -266,12 +274,17 @@ describe('Register Component', () => {
 
       await user.type(screen.getByLabelText('Email'), 'test@example.com');
       await user.type(screen.getByLabelText('Password'), 'Password123!');
-      await user.type(screen.getByLabelText('Confirm Password'), 'Password123!');
+      await user.type(
+        screen.getByLabelText('Confirm Password'),
+        'Password123!'
+      );
       await user.click(screen.getByRole('button', { name: 'Create Account' }));
 
       await waitFor(() => {
         expect(
-          screen.getByText('An error occurred during registration. Please try again.')
+          screen.getByText(
+            'An error occurred during registration. Please try again.'
+          )
         ).toBeInTheDocument();
       });
     });
@@ -288,7 +301,10 @@ describe('Register Component', () => {
 
       await user.type(screen.getByLabelText('Email'), 'test@example.com');
       await user.type(screen.getByLabelText('Password'), 'Password123!');
-      await user.type(screen.getByLabelText('Confirm Password'), 'Password123!');
+      await user.type(
+        screen.getByLabelText('Confirm Password'),
+        'Password123!'
+      );
       await user.click(screen.getByRole('button', { name: 'Create Account' }));
 
       await waitFor(() => {
@@ -321,7 +337,10 @@ describe('Register Component', () => {
 
       await user.type(screen.getByLabelText('Email'), 'test@example.com');
       await user.type(screen.getByLabelText('Password'), 'Password123!');
-      await user.type(screen.getByLabelText('Confirm Password'), 'Password123!');
+      await user.type(
+        screen.getByLabelText('Confirm Password'),
+        'Password123!'
+      );
       await user.click(screen.getByRole('button', { name: 'Create Account' }));
 
       // Check loading state
@@ -468,7 +487,10 @@ describe('Register Component', () => {
 
       await user.type(screen.getByLabelText('Email'), specialEmail);
       await user.type(screen.getByLabelText('Password'), 'Password123!');
-      await user.type(screen.getByLabelText('Confirm Password'), 'Password123!');
+      await user.type(
+        screen.getByLabelText('Confirm Password'),
+        'Password123!'
+      );
       await user.click(screen.getByRole('button', { name: 'Create Account' }));
 
       await waitFor(() => {
@@ -516,7 +538,10 @@ describe('Register Component', () => {
 
       await user.type(screen.getByLabelText('Email'), '  test@example.com  ');
       await user.type(screen.getByLabelText('Password'), 'Password123!');
-      await user.type(screen.getByLabelText('Confirm Password'), 'Password123!');
+      await user.type(
+        screen.getByLabelText('Confirm Password'),
+        'Password123!'
+      );
       await user.click(screen.getByRole('button', { name: 'Create Account' }));
 
       await waitFor(() => {

@@ -521,7 +521,7 @@ describe('AuthContext', () => {
 
       expect(screen.getByTestId('token')).toHaveTextContent('null');
       expect(screen.getByTestId('user')).toHaveTextContent(
-        JSON.stringify({ id: '', email: '' })
+        JSON.stringify({ id: '', email: '', created_at: '', updated_at: '' })
       );
     });
   });
