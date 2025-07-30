@@ -44,6 +44,9 @@ const Header: React.FC<HeaderProps> = ({ title = 'ChordMe' }) => {
             </>
           ) : (
             <>
+              <a href="#demo" className="nav-link">
+                Demo
+              </a>
               <div className="auth-links">
                 <a href="#login" className="nav-link auth-link">
                   Login

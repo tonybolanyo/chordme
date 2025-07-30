@@ -4,6 +4,7 @@ import Layout from './components/Layout';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ChordProDemo from './pages/ChordProDemo';
 import './App.css';
 
 // Main app content that uses auth context
@@ -54,6 +55,8 @@ function AppContent() {
         return <Login />;
       case 'register':
         return <Register />;
+      case 'demo':
+        return <ChordProDemo />;
       case 'home':
       default:
         // Protect home page - redirect to login if not authenticated
