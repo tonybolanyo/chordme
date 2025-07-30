@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: ChordMe User Guide
+---
+
 # ChordMe User Guide
 
 This guide covers all the features and functionality available in ChordMe for end users.
@@ -296,5 +302,7 @@ If you need help using ChordMe:
 5. **Join the community** for user discussions
 
 ---
+
+**Language:** **English** | [Español](user-guide-es.md)
 
 *For technical details and API usage, see the [API Reference](api-reference.md) and [Developer Guide](developer-guide.md).*

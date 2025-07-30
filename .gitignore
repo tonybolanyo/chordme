@@ -158,3 +158,10 @@ integration-tests/coverage.lcov
 # Playwright test artifacts
 test-results/
 playwright-report/
+
+# Jekyll build artifacts
+docs/_site/
+docs/.jekyll-cache/
+docs/vendor/
+docs/.bundle/
+docs/Gemfile.lock
