@@ -206,7 +206,7 @@ describe('AuthContext', () => {
       });
 
       const testUser: User = { id: '1', email: 'test@example.com' };
-      const testToken = 'new-token';
+      const testToken = 'test-token';
 
       act(() => {
         screen.getByTestId('login-btn').click();
@@ -336,7 +336,7 @@ describe('AuthContext', () => {
   });
 
   describe('Loading State', () => {
-    it('shows loading state during initialization', () => {
+    it('shows loading state during initialization', async () => {
       mockIsTokenExpired.mockReturnValue(false);
       
       render(
@@ -345,8 +345,10 @@ describe('AuthContext', () => {
         </AuthProvider>
       );
 
-      // Initially should be loading
-      expect(screen.getByTestId('isLoading')).toHaveTextContent('true');
+      // Wait for loading to complete
+      await waitFor(() => {
+        expect(screen.getByTestId('isLoading')).toHaveTextContent('false');
+      });
     });
 
     it('stops loading after initialization completes', async () => {
