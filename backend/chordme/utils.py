@@ -3,6 +3,33 @@ import unicodedata
 from flask import jsonify, current_app
 import jwt
 from datetime import datetime, timedelta
+import html
+
+
+def sanitize_html_content(content):
+    """
+    Sanitize HTML content by removing potentially dangerous tags.
+    
+    This is specifically for ChordPro content that should not contain HTML/JavaScript.
+    """
+    if not isinstance(content, str):
+        return content
+    
+    # Remove script tags and their content
+    content = re.sub(r'<script[^>]*>.*?</script>', '', content, flags=re.IGNORECASE | re.DOTALL)
+    
+    # Remove other potentially dangerous tags
+    dangerous_tags = ['script', 'iframe', 'object', 'embed', 'form', 'input', 'button']
+    for tag in dangerous_tags:
+        # Remove opening and closing tags
+        content = re.sub(rf'<{tag}[^>]*>', '', content, flags=re.IGNORECASE)
+        content = re.sub(rf'</{tag}[^>]*>', '', content, flags=re.IGNORECASE)
+    
+    # Remove javascript: and data: URLs
+    content = re.sub(r'javascript:[^"\'\s]*', '', content, flags=re.IGNORECASE)
+    content = re.sub(r'data:[^"\'\s]*', '', content, flags=re.IGNORECASE)
+    
+    return content
 
 
 def validate_email(email):
