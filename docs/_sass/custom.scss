@@ -23,10 +23,9 @@
 
 .lang-current {
   font-weight: bold;
-  color: var(--text-color);
   padding: 0.25rem 0.5rem;
   background-color: var(--accent-color);
-  color: white;
+  color: var(--accent-text-color);
   border-radius: 4px;
 }
 
@@ -79,6 +78,7 @@
   --border-color-hover: #8c959f;
   --hover-bg-color: #f3f4f6;
   --accent-color: #0969da;
+  --accent-text-color: #ffffff;
 }
 
 // CSS Variables for dark theme
@@ -92,6 +92,7 @@
   --border-color-hover: #8b949e;
   --hover-bg-color: #21262d;
   --accent-color: #58a6ff;
+  --accent-text-color: #0d1117;
 }
 
 [data-theme="dark"] {
