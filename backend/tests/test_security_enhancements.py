@@ -73,42 +73,98 @@ class TestRateLimiting:
             is_limited, _, _ = limiter.is_rate_limited(ip2, max_requests=5, window_seconds=60)
             assert not is_limited
     
-    def test_rate_limiting_endpoint_integration(self, client):
-        """Test rate limiting on actual endpoints."""
-        # Register endpoint should be rate limited after 5 attempts
-        user_data = {
-            'email': 'ratelimit@example.com',
-            'password': 'TestPassword123'
-        }
+    def test_rate_limiting_endpoint_integration(self):
+        """Test rate limiting on actual endpoints using real app."""
+        import tempfile
+        import os
+        import uuid
+        from chordme import app, db
+        from chordme.rate_limiter import rate_limiter
         
-        # Make multiple requests rapidly
-        responses = []
-        for i in range(7):
-            response = client.post('/api/v1/auth/register', json={
-                'email': f'ratelimit{i}@example.com',  # Use different emails to avoid duplicate errors
-                'password': 'TestPassword123'
-            })
-            responses.append(response.status_code)
+        # Clear rate limiter state
+        rate_limiter.requests.clear()
+        rate_limiter.blocked_ips.clear()
         
-        # Most requests should succeed initially
-        success_count = responses.count(201)
-        rate_limited_count = responses.count(429)
+        # Create a temporary database for testing
+        db_fd, db_path = tempfile.mkstemp()
         
-        # Should have some successful requests and at least one rate limited
-        assert success_count >= 5  # At least 5 should succeed
-        assert rate_limited_count >= 1  # At least 1 should be rate limited
+        try:
+            app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
+            app.config['TESTING'] = False  # Important: don't disable rate limiting
+            app.config['WTF_CSRF_ENABLED'] = False  # Disable CSRF for testing
+            app.config['HTTPS_ENFORCED'] = False  # Disable HTTPS redirect for testing
+            app.config['DEBUG'] = True  # This also disables HTTPS enforcement
+            
+            with app.app_context():
+                # Create tables
+                db.create_all()
+                
+                with app.test_client() as client:
+                    # Make multiple requests rapidly with unique emails
+                    responses = []
+                    test_id = str(uuid.uuid4())[:8]  # Use unique suffix
+                    for i in range(7):
+                        response = client.post('/api/v1/auth/register', json={
+                            'email': f'ratelimit{test_id}{i}@example.com',  # Use unique emails
+                            'password': 'TestPassword123!'
+                        })
+                        responses.append(response.status_code)
+                    
+                    # Most requests should succeed initially
+                    success_count = responses.count(201)
+                    rate_limited_count = responses.count(429)
+                    
+                    # Should have some successful requests and at least one rate limited
+                    assert success_count >= 5  # At least 5 should succeed
+                    assert rate_limited_count >= 1  # At least 1 should be rate limited
+        
+        finally:
+            # Clean up
+            os.close(db_fd)
+            os.unlink(db_path)
     
-    def test_rate_limiting_headers(self, client):
+    def test_rate_limiting_headers(self):
         """Test that rate limiting headers are present."""
-        response = client.post('/api/v1/auth/register', json={
-            'email': 'headertest@example.com',
-            'password': 'TestPassword123'
-        })
+        import tempfile
+        import os
+        import uuid
+        from chordme import app, db
+        from chordme.rate_limiter import rate_limiter
         
-        # Check for rate limiting headers
-        assert 'X-RateLimit-Limit' in response.headers
-        assert 'X-RateLimit-Remaining' in response.headers
-        assert 'X-RateLimit-Reset' in response.headers
+        # Clear rate limiter state
+        rate_limiter.requests.clear()
+        rate_limiter.blocked_ips.clear()
+        
+        # Create a temporary database for testing
+        db_fd, db_path = tempfile.mkstemp()
+        
+        try:
+            app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
+            app.config['TESTING'] = False  # Important: don't disable rate limiting
+            app.config['WTF_CSRF_ENABLED'] = False  # Disable CSRF for testing
+            app.config['HTTPS_ENFORCED'] = False  # Disable HTTPS redirect for testing
+            app.config['DEBUG'] = True  # This also disables HTTPS enforcement
+            
+            with app.app_context():
+                # Create tables
+                db.create_all()
+                
+                with app.test_client() as client:
+                    test_id = str(uuid.uuid4())[:8]  # Use unique suffix
+                    response = client.post('/api/v1/auth/register', json={
+                        'email': f'headertest{test_id}@example.com',
+                        'password': 'TestPassword123!'
+                    })
+                    
+                    # Check for rate limiting headers
+                    assert 'X-RateLimit-Limit' in response.headers
+                    assert 'X-RateLimit-Remaining' in response.headers
+                    assert 'X-RateLimit-Reset' in response.headers
+        
+        finally:
+            # Clean up
+            os.close(db_fd)
+            os.unlink(db_path)
 
 
 class TestCSRFProtection:

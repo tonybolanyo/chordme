@@ -128,8 +128,20 @@ def rate_limit(max_requests=5, window_seconds=300, block_duration=300):
                     pass
                 
                 from .utils import create_error_response
+                
+                # Create a more informative error message
+                minutes = reset_time // 60
+                seconds = reset_time % 60
+                
+                if minutes > 0:
+                    retry_msg = f"Please try again in {minutes} minute{'s' if minutes != 1 else ''}"
+                    if seconds > 0:
+                        retry_msg += f" and {seconds} second{'s' if seconds != 1 else ''}"
+                else:
+                    retry_msg = f"Please try again in {seconds} second{'s' if seconds != 1 else ''}"
+                
                 response, status_code = create_error_response(
-                    "Too many requests. Please try again later.", 
+                    f"Too many requests. {retry_msg}.", 
                     429
                 )
                 
