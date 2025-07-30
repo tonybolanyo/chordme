@@ -206,7 +206,7 @@ def validate_chordpro_content(content: str) -> Dict:
         'directives': directives,
         'chords': chords,
         'statistics': {
-            'line_count': len(content.splitlines()),
+            'line_count': content.count('\n') + 1,
             'character_count': len(content),
             'directive_count': len(directives),
             'unique_chord_count': len(chords)
