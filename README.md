@@ -6,6 +6,10 @@ Lyrics and chords in a simple way
 ![Frontend CI](https://github.com/tonybolanyo/chordme/actions/workflows/frontend-ci.yml/badge.svg)
 ![Backend CI](https://github.com/tonybolanyo/chordme/actions/workflows/backend-ci.yml/badge.svg)
 
+[![codecov](https://codecov.io/gh/tonybolanyo/chordme/branch/main/graph/badge.svg)](https://codecov.io/gh/tonybolanyo/chordme)
+[![Frontend Coverage](https://codecov.io/gh/tonybolanyo/chordme/branch/main/graph/badge.svg?flag=frontend)](https://codecov.io/gh/tonybolanyo/chordme)
+[![Backend Coverage](https://codecov.io/gh/tonybolanyo/chordme/branch/main/graph/badge.svg?flag=backend)](https://codecov.io/gh/tonybolanyo/chordme)
+
 ## Project Structure
 
 This project consists of two main parts:
@@ -106,9 +110,37 @@ python -m pytest tests/ -v
 python -m pytest tests/test_auth.py::TestUserRegistration -v
 python -m pytest tests/test_auth.py::TestUserLogin -v
 
-# Run with coverage (if pytest-cov installed)
-python -m pytest tests/ --cov=chordme
+# Run with coverage
+python -m pytest tests/ --cov=chordme --cov-report=term --cov-report=html
 ```
+
+### Test Coverage
+
+Both frontend and backend have comprehensive test coverage reporting:
+
+**Frontend Coverage:**
+```bash
+cd frontend
+npm run test:coverage
+```
+
+**Backend Coverage:**
+```bash
+cd backend
+FLASK_CONFIG=test_config python -m pytest tests/ --cov=chordme --cov-report=html:htmlcov --cov-report=xml:coverage.xml
+```
+
+**Combined Coverage:**
+```bash
+# Run coverage for both frontend and backend
+npm run test:coverage
+```
+
+Coverage reports are generated in:
+- Frontend: `frontend/coverage/` (HTML reports)
+- Backend: `backend/htmlcov/` (HTML reports)
+
+Current coverage status is displayed in the badges above and detailed reports are available through our CI/CD pipeline.
 
 ### Test Documentation
 

@@ -8,10 +8,13 @@
     "build:frontend": "cd frontend && npm run build",
     "test:frontend": "cd frontend && npm run test",
     "test:frontend:run": "cd frontend && npm run test:run",
+    "test:frontend:coverage": "cd frontend && npm run test:coverage",
     "test:backend": "cd backend && FLASK_CONFIG=test_config python -m pytest tests/ -v",
+    "test:backend:coverage": "cd backend && FLASK_CONFIG=test_config python -m pytest tests/test_*.py -v --cov=chordme --cov-report=term --cov-report=html:htmlcov --cov-report=xml:coverage.xml --cov-report=lcov:coverage.lcov",
     "test:integration": "cd integration-tests && python -m pytest -v",
     "test:e2e": "npx playwright test",
     "test:all": "npm run test:frontend:run && npm run test:backend && npm run test:integration",
+    "test:coverage": "npm run test:frontend:coverage && npm run test:backend:coverage",
     "lint:frontend": "cd frontend && npm run lint",
     "format:frontend": "cd frontend && npm run format"
   },
