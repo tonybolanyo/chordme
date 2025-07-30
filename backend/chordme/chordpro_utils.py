@@ -53,8 +53,8 @@ class ChordProValidator:
         if not chord.strip():
             return False
             
-        # Basic chord pattern: note + optional modifiers
-        chord_pattern = r'^[A-G][#b]?[mM]?(?:maj|min|dim|aug|sus|add)?[0-9]*$'
+        # Updated chord pattern: note + optional modifiers + extended notations + slash chords
+        chord_pattern = r'^[A-G][#b]?[mM]?(?:maj|min|dim|aug|sus|add)?[0-9]*(?:[#b]?[0-9]*)?(?:/[A-G][#b]?)?$'
         return bool(re.match(chord_pattern, chord.strip()))
     
     @staticmethod
