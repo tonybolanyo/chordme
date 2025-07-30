@@ -16,6 +16,7 @@ const Home: React.FC = () => {
   const [editingSong, setEditingSong] = useState<Song | null>(null);
   const [editSongData, setEditSongData] = useState({ title: '', content: '' });
   const [viewingSong, setViewingSong] = useState<Song | null>(null);
+  const [isFileUploading, setIsFileUploading] = useState(false);
 
   useEffect(() => {
     loadSongs();
@@ -121,6 +122,65 @@ const Home: React.FC = () => {
     setViewingSong(null);
   };
 
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Check file extension
+    const allowedExtensions = ['.cho', '.chopro', '.crd'];
+    const lastDotIndex = file.name.lastIndexOf('.');
+    if (lastDotIndex === -1) {
+      setError('Invalid file type. The uploaded file does not have an extension.');
+      return;
+    }
+
+    const fileExtension = file.name.toLowerCase().substring(lastDotIndex);
+    
+    if (!allowedExtensions.includes(fileExtension)) {
+      setError(`Invalid file type. Please upload a ChordPro file with one of these extensions: ${allowedExtensions.join(', ')}`);
+      return;
+    }
+
+    // Check file size (limit to 1MB)
+    if (file.size > 1024 * 1024) {
+      setError('File is too large. Please upload a file smaller than 1MB.');
+      return;
+    }
+
+    setIsFileUploading(true);
+    setError(null);
+
+    try {
+      const content = await file.text();
+      
+      // Parse ChordPro content to extract title if available
+      let extractedTitle = '';
+      const titleMatch = content.match(/\{title:\s*([^}]+)\}/i);
+      if (titleMatch && titleMatch[1]) {
+        extractedTitle = titleMatch[1].trim();
+      } else {
+        // If no title directive found, use filename without extension
+        const lastDotIndex = file.name.lastIndexOf('.');
+        extractedTitle = lastDotIndex === -1 ? file.name : file.name.substring(0, lastDotIndex);
+      }
+
+      // Update the form with the file content
+      setNewSong({
+        title: extractedTitle,
+        content: content
+      });
+
+      // Clear the file input
+      event.target.value = '';
+      
+    } catch (err) {
+      console.error('Error reading file:', err);
+      setError('Error reading ChordPro file. Please make sure the file is valid and not corrupted.');
+    } finally {
+      setIsFileUploading(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="home">
@@ -172,6 +232,31 @@ const Home: React.FC = () => {
                 required
                 style={{ width: '100%', padding: '0.5rem', margin: '0.5rem 0' }}
               />
+            </div>
+            <div style={{ marginBottom: '1rem', padding: '1rem', backgroundColor: '#e8f4f8', borderRadius: '4px', border: '1px dashed #4169e1' }}>
+              <label htmlFor="file-upload" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                Upload ChordPro File (.cho, .chopro, .crd):
+              </label>
+              <input
+                type="file"
+                id="file-upload"
+                accept=".cho,.chopro,.crd"
+                onChange={handleFileUpload}
+                disabled={isFileUploading}
+                style={{ 
+                  width: '100%', 
+                  padding: '0.5rem', 
+                  border: '1px solid #ccc', 
+                  borderRadius: '4px',
+                  backgroundColor: '#fff' 
+                }}
+              />
+              <p style={{ fontSize: '0.8rem', color: '#666', margin: '0.5rem 0 0 0' }}>
+                {isFileUploading 
+                  ? 'Reading file...' 
+                  : 'Optional: Upload a ChordPro file to automatically fill the title and content fields. You can still edit them after upload.'
+                }
+              </p>
             </div>
             <div style={{ marginBottom: '1rem' }}>
               <label htmlFor="content">Content (ChordPro format):</label>
