@@ -128,7 +128,13 @@ const Home: React.FC = () => {
 
     // Check file extension
     const allowedExtensions = ['.cho', '.chopro', '.crd'];
-    const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+    const lastDotIndex = file.name.lastIndexOf('.');
+    if (lastDotIndex === -1) {
+      setError('Invalid file type. The uploaded file does not have an extension.');
+      return;
+    }
+
+    const fileExtension = file.name.toLowerCase().substring(lastDotIndex);
     
     if (!allowedExtensions.includes(fileExtension)) {
       setError(`Invalid file type. Please upload a ChordPro file with one of these extensions: ${allowedExtensions.join(', ')}`);
