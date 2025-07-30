@@ -439,7 +439,7 @@ def download_song(song_id):
         content = song.content
         
         # Add title directive if not present
-        if not re.search(r'\{title:\s*[^}]+\}', content, re.IGNORECASE):
+        if not re.search(TITLE_DIRECTIVE_REGEX, content, re.IGNORECASE):
             content = f"{{title: {song.title}}}\n{content}"
         
         # Generate filename (sanitize for filesystem)
