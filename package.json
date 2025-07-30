@@ -1,0 +1,29 @@
+{
+  "name": "chordme",
+  "version": "1.0.0",
+  "description": "ChordMe - Lyrics and chords in a simple way",
+  "scripts": {
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && python run.py",
+    "build:frontend": "cd frontend && npm run build",
+    "test:frontend": "cd frontend && npm run test",
+    "test:frontend:run": "cd frontend && npm run test:run",
+    "test:backend": "cd backend && FLASK_CONFIG=test_config python -m pytest tests/ -v",
+    "test:integration": "cd integration-tests && python -m pytest -v",
+    "test:e2e": "npx playwright test",
+    "test:all": "npm run test:frontend:run && npm run test:backend && npm run test:integration",
+    "lint:frontend": "cd frontend && npm run lint",
+    "format:frontend": "cd frontend && npm run format"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.54.1"
+  },
+  "keywords": [
+    "music",
+    "chords",
+    "lyrics",
+    "chordpro"
+  ],
+  "author": "Tony Bolanyo",
+  "license": "MIT"
+}
