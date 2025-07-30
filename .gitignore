@@ -144,3 +144,10 @@ backend/chordme/static/
 frontend/assets/
 env/
 **/__pycache__/
+
+# Coverage files
+backend/.coverage
+backend/htmlcov/
+backend/coverage.xml
+backend/coverage.lcov
+frontend/coverage/

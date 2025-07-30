@@ -57,11 +57,19 @@ jobs:
         WTF_CSRF_ENABLED = False
         EOF
     
-    - name: Run tests
+    - name: Run tests with coverage
       run: |
         export FLASK_CONFIG=test_config
-        python -m pytest tests/ -v --tb=short
+        python -m pytest tests/test_auth.py tests/test_chordpro_support.py tests/test_file_upload_download.py tests/test_password_hashing.py tests/test_song_download.py tests/test_song_model.py tests/test_song_routes.py -v --cov=chordme --cov-report=xml --cov-report=lcov
       continue-on-error: true
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./backend/coverage.xml
+        flags: backend
+        name: backend-coverage
+        fail_ci_if_error: false
     
     - name: Test application startup
       run: |
