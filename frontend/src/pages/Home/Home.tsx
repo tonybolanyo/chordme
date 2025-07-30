@@ -77,6 +77,17 @@ const Home: React.FC = () => {
     }
   };
 
+  const handleDownloadSong = async (songId: string) => {
+    try {
+      setError(null); // Clear any previous errors
+      await apiService.downloadSong(songId);
+      // Success - no need to show any message as the download should start
+    } catch (err) {
+      console.error('Error downloading song:', err);
+      setError(err instanceof Error ? err.message : 'Failed to download song');
+    }
+  };
+
   const handleEditSong = (song: Song) => {
     setEditingSong(song);
     setEditSongData({ title: song.title, content: song.content });
@@ -329,13 +340,25 @@ const Home: React.FC = () => {
           <div className="view-song-section" style={{ margin: '2rem 0', padding: '1rem', backgroundColor: '#f8f9fa', borderRadius: '8px', border: '2px solid #6c757d' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
               <h3>Viewing: {viewingSong.title}</h3>
-              <button 
-                type="button" 
-                className="btn btn-secondary" 
-                onClick={handleCloseView}
-              >
-                Close
-              </button>
+              <div>
+                <button 
+                  type="button" 
+                  className="btn btn-primary" 
+                  onClick={() => handleDownloadSong(viewingSong.id)}
+                  style={{ marginRight: '0.5rem' }}
+                  aria-label="Download the song in ChordPro format"
+                  title="Download the song in ChordPro format"
+                >
+                  Download
+                </button>
+                <button 
+                  type="button" 
+                  className="btn btn-secondary" 
+                  onClick={handleCloseView}
+                >
+                  Close
+                </button>
+              </div>
             </div>
             <div style={{ backgroundColor: '#fff', padding: '1rem', borderRadius: '4px' }}>
               <ChordProViewer content={viewingSong.content} />
@@ -386,6 +409,14 @@ const Home: React.FC = () => {
                     style={{ marginRight: '0.5rem' }}
                   >
                     Edit
+                  </button>
+                  <button 
+                    className="btn"
+                    onClick={() => handleDownloadSong(song.id)}
+                    style={{ marginRight: '0.5rem', backgroundColor: '#28a745', color: 'white' }}
+                    title="Download as ChordPro file"
+                  >
+                    Download
                   </button>
                   <button 
                     className="btn btn-danger"

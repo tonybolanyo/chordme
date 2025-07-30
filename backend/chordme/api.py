@@ -5,9 +5,10 @@ from .rate_limiter import rate_limit
 from .csrf_protection import csrf_protect, get_csrf_token
 from .security_headers import security_headers, security_error_handler
 from .chordpro_utils import validate_chordpro_content
-from flask import send_from_directory, send_file, request, jsonify, g
+from flask import send_from_directory, send_file, request, jsonify, g, Response
 from sqlalchemy.exc import IntegrityError
 import os
+import re
 
 
 @app.route('/api/v1/health', methods=['GET'])
@@ -414,6 +415,55 @@ def delete_song(song_id):
         db.session.rollback()
         return security_error_handler.handle_server_error(
             "An error occurred while deleting the song",
+            exception=e,
+            ip_address=request.remote_addr
+        )
+
+
+@app.route('/api/v1/songs/<int:song_id>/download', methods=['GET'])
+@auth_required
+@rate_limit(max_requests=10, window_seconds=60)  # 10 downloads per minute
+@security_headers
+def download_song(song_id):
+    """
+    Download a specific song as a ChordPro file (only if owned by authenticated user).
+    """
+    try:
+        # Find song by ID and ensure it belongs to the current user
+        song = Song.query.filter_by(id=song_id, author_id=g.current_user_id).first()
+        
+        if not song:
+            return create_error_response("Song not found", 404)
+        
+        # Generate ChordPro content
+        content = song.content
+        
+        # Add title directive if not present
+        if not re.search(TITLE_DIRECTIVE_REGEX, content, re.IGNORECASE):
+            content = f"{{title: {song.title}}}\n{content}"
+        
+        # Generate filename (sanitize for filesystem)
+        safe_title = re.sub(r'[^\w\s-]', '', song.title.strip())
+        safe_title = re.sub(r'[-\s]+', '-', safe_title)
+        filename = f"{safe_title}.cho"
+        
+        # Create response with ChordPro content
+        response = Response(
+            content,
+            mimetype='text/plain',
+            headers={
+                'Content-Disposition': f'attachment; filename="{filename}"',
+                'Content-Type': 'text/plain; charset=utf-8'
+            }
+        )
+        
+        app.logger.info(f"Song downloaded: {song.title} by user {g.current_user_id} from IP {request.remote_addr}")
+        
+        return response
+        
+    except Exception as e:
+        return security_error_handler.handle_server_error(
+            "An error occurred while downloading the song",
             exception=e,
             ip_address=request.remote_addr
         )
