@@ -60,7 +60,7 @@ class User(db.Model):
             # Store as string
             self.password_hash = password_hash.decode('utf-8')
             
-            logger.debug(f"Password hashed successfully for user with {rounds} rounds")
+            logger.debug("Password hashed successfully for user.")
             
         except Exception as e:
             logger.error(f"Password hashing failed: {str(e)}")
