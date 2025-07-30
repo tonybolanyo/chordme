@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { apiService } from '../../services/api';
+import { formatRelativeTime } from '../../utils';
 import type { Song } from '../../types';
 import './Home.css';
 
@@ -156,6 +157,9 @@ const Home: React.FC = () => {
             {songs.map((song) => (
               <div key={song.id} className="song-card" style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '1rem', margin: '1rem 0', backgroundColor: '#fff' }}>
                 <h3>{song.title}</h3>
+                <div className="song-metadata" style={{ fontSize: '0.8rem', color: '#888', marginBottom: '0.5rem' }}>
+                  Last modified: {formatRelativeTime(song.updated_at)}
+                </div>
                 <div className="song-content" style={{ whiteSpace: 'pre-wrap', fontSize: '0.9rem', color: '#666', marginBottom: '1rem' }}>
                   {song.content.length > 150 ? `${song.content.substring(0, 150)}...` : song.content}
                 </div>
