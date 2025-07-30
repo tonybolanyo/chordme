@@ -175,7 +175,7 @@ const Home: React.FC = () => {
       
     } catch (err) {
       console.error('Error reading file:', err);
-      setError('Error reading file. Please make sure it\'s a valid text file.');
+      setError('Error reading ChordPro file. Please make sure the file is valid and not corrupted.');
     } finally {
       setIsFileUploading(false);
     }
