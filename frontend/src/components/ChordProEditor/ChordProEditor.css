@@ -1,0 +1,104 @@
+/* ChordPro Editor Styles */
+.chordpro-editor-container {
+  position: relative;
+  font-family: 'Courier New', monospace;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.chordpro-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  background-color: transparent;
+  color: transparent;
+  caret-color: #333;
+  border: none;
+  outline: none;
+  resize: vertical;
+  padding: 0.5rem;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1.4;
+  z-index: 2;
+  position: relative;
+}
+
+.chordpro-highlight-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 0.5rem;
+  pointer-events: none;
+  overflow: hidden;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  z-index: 1;
+}
+
+/* Syntax highlighting colors */
+.chordpro-chord {
+  color: #2563eb; /* Blue for chords */
+  font-weight: bold;
+  background-color: rgba(37, 99, 235, 0.1);
+  padding: 1px 2px;
+  border-radius: 2px;
+}
+
+.chordpro-directive {
+  color: #dc2626; /* Red for directives */
+  font-weight: bold;
+  background-color: rgba(220, 38, 38, 0.1);
+  padding: 1px 2px;
+  border-radius: 2px;
+}
+
+.chordpro-comment {
+  color: #6b7280; /* Gray for comments */
+  font-style: italic;
+}
+
+.chordpro-lyrics {
+  color: #374151; /* Dark gray for lyrics */
+}
+
+/* Ensure proper focus state */
+.chordpro-editor-container:focus-within {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .chordpro-editor-container {
+    border-color: #4b5563;
+    background-color: #1f2937;
+  }
+  
+  .chordpro-textarea {
+    caret-color: #f9fafb;
+  }
+  
+  .chordpro-chord {
+    color: #60a5fa;
+    background-color: rgba(96, 165, 250, 0.1);
+  }
+  
+  .chordpro-directive {
+    color: #f87171;
+    background-color: rgba(248, 113, 113, 0.1);
+  }
+  
+  .chordpro-comment {
+    color: #9ca3af;
+  }
+  
+  .chordpro-lyrics {
+    color: #e5e7eb;
+  }
+}

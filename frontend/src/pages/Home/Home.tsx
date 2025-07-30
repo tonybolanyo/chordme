@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { apiService } from '../../services/api';
 import { formatRelativeTime } from '../../utils';
 import type { Song } from '../../types';
+import { ChordProEditor } from '../../components';
 import './Home.css';
 
 const Home: React.FC = () => {
@@ -155,15 +156,15 @@ const Home: React.FC = () => {
               />
             </div>
             <div style={{ marginBottom: '1rem' }}>
-              <label htmlFor="content">Content (Chords and Lyrics):</label>
-              <textarea
+              <label htmlFor="content">Content (ChordPro format):</label>
+              <ChordProEditor
                 id="content"
                 value={newSong.content}
-                onChange={(e) => setNewSong({ ...newSong, content: e.target.value })}
-                placeholder="Enter chords and lyrics (e.g., C G Am F&#10;Verse lyrics here)"
+                onChange={(value) => setNewSong({ ...newSong, content: value })}
+                placeholder="Enter chords and lyrics in ChordPro format&#10;Example:&#10;{title: My Song}&#10;{artist: Artist Name}&#10;# This is a comment&#10;[C]Here are the [G]lyrics [Am]with [F]chords"
                 required
                 rows={6}
-                style={{ width: '100%', padding: '0.5rem', margin: '0.5rem 0' }}
+                style={{ width: '100%', margin: '0.5rem 0' }}
               />
             </div>
             <div>
@@ -197,14 +198,14 @@ const Home: React.FC = () => {
             </div>
             <div style={{ marginBottom: '1rem' }}>
               <label htmlFor="edit-content">Content (ChordPro format):</label>
-              <textarea
+              <ChordProEditor
                 id="edit-content"
                 value={editSongData.content}
-                onChange={(e) => setEditSongData({ ...editSongData, content: e.target.value })}
-                placeholder="Enter chords and lyrics in ChordPro format&#10;Example:&#10;[C]Verse lyrics [G]with chords&#10;{chorus}&#10;[F]Chorus lyrics [C]here"
+                onChange={(value) => setEditSongData({ ...editSongData, content: value })}
+                placeholder="Enter chords and lyrics in ChordPro format&#10;Example:&#10;{title: My Song}&#10;{artist: Artist Name}&#10;# This is a comment&#10;[C]Here are the [G]lyrics [Am]with [F]chords"
                 required
                 rows={8}
-                style={{ width: '100%', padding: '0.5rem', margin: '0.5rem 0', fontFamily: 'monospace' }}
+                style={{ width: '100%', margin: '0.5rem 0' }}
               />
             </div>
             <div>
