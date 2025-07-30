@@ -1,12 +1,13 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('ChordMe Application', () => {
-  test('should load the home page', async ({ page }) => {
+test.describe('ChordMe Application - Basic Navigation', () => {
+  test('should load the home page and redirect to login', async ({ page }) => {
     await page.goto('/');
     
-    // Should show the login page since authentication is required
+    // Should redirect to login page since authentication is required
     await expect(page).toHaveTitle(/ChordMe/);
-    await expect(page.locator('h1')).toContainText('ChordMe');
+    await expect(page.locator('h1.header-title')).toContainText('ChordMe');
+    await expect(page.locator('h1').nth(1)).toContainText('Login to ChordMe');
   });
 
   test('should navigate to demo page without authentication', async ({ page }) => {
@@ -16,7 +17,7 @@ test.describe('ChordMe Application', () => {
     await page.click('a[href="#demo"]');
     
     // Should navigate to demo page
-    await expect(page.locator('h1')).toContainText('ChordPro Demo');
+    await expect(page.locator('h1').nth(1)).toContainText('ChordPro Syntax Highlighting Demo');
   });
 
   test('should show login form', async ({ page }) => {
@@ -24,7 +25,7 @@ test.describe('ChordMe Application', () => {
     
     // Should show login form elements
     await expect(page.locator('input[type="email"]')).toBeVisible();
-    await expect(page.locator('input[type="password"]')).toBeVisible();
+    await expect(page.locator('input[type="password"]').first()).toBeVisible();
     await expect(page.locator('button[type="submit"]')).toBeVisible();
   });
 
@@ -36,6 +37,7 @@ test.describe('ChordMe Application', () => {
     
     // Should show register form
     await expect(page.locator('input[type="email"]')).toBeVisible();
-    await expect(page.locator('input[type="password"]')).toBeVisible();
+    await expect(page.locator('input[name="password"]')).toBeVisible();
+    await expect(page.locator('input[name="confirmPassword"]')).toBeVisible();
   });
 });
