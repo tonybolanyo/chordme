@@ -507,7 +507,7 @@ describe('Home Component', () => {
     });
 
     it('displays user welcome message', () => {
-      expect(screen.getByText('Welcome back!')).toBeInTheDocument();
+      expect(screen.getByText('Welcome back, test@example.com!')).toBeInTheDocument();
     });
   });
 });

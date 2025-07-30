@@ -51,10 +51,7 @@ describe('Register Component', () => {
     it('has proper form structure', () => {
       render(<Register />);
 
-      const form =
-        screen.getByRole('form') ||
-        screen.getByTestId('register-form') ||
-        document.querySelector('form');
+      const form = document.querySelector('form');
       expect(form).toBeInTheDocument();
     });
   });
@@ -65,17 +62,24 @@ describe('Register Component', () => {
       render(<Register />);
 
       const emailInput = screen.getByLabelText('Email');
+      const passwordInput = screen.getByLabelText('Password');
+      const confirmPasswordInput = screen.getByLabelText('Confirm Password');
       const submitButton = screen.getByRole('button', {
         name: 'Create Account',
       });
 
+      // Fill in other required fields with valid data
+      await user.type(passwordInput, 'Password123!');
+      await user.type(confirmPasswordInput, 'Password123!');
       // Enter invalid email
       await user.type(emailInput, 'invalid-email');
       await user.click(submitButton);
 
-      expect(
-        screen.getByText('Please enter a valid email address')
-      ).toBeInTheDocument();
+      await waitFor(() => {
+        expect(
+          screen.getByText('Please enter a valid email address')
+        ).toBeInTheDocument();
+      });
       expect(mockApiService.register).not.toHaveBeenCalled();
     });
 
@@ -108,7 +112,7 @@ describe('Register Component', () => {
         name: 'Create Account',
       });
 
-      await user.type(passwordInput, 'password123');
+      await user.type(passwordInput, 'Password123!');
       await user.type(confirmPasswordInput, 'different123');
       await user.click(submitButton);
 
@@ -173,14 +177,14 @@ describe('Register Component', () => {
       });
 
       await user.type(emailInput, 'test@example.com');
-      await user.type(passwordInput, 'password123');
-      await user.type(confirmPasswordInput, 'password123');
+      await user.type(passwordInput, 'Password123!');
+      await user.type(confirmPasswordInput, 'Password123!');
       await user.click(submitButton);
 
       await waitFor(() => {
         expect(mockApiService.register).toHaveBeenCalledWith({
           email: 'test@example.com',
-          password: 'password123',
+          password: 'Password123!',
         });
       });
     });
@@ -198,12 +202,14 @@ describe('Register Component', () => {
       render(<Register />);
 
       await user.type(screen.getByLabelText('Email'), 'test@example.com');
-      await user.type(screen.getByLabelText('Password'), 'password123');
-      await user.type(screen.getByLabelText('Confirm Password'), 'password123');
+      await user.type(screen.getByLabelText('Password'), 'Password123!');
+      await user.type(screen.getByLabelText('Confirm Password'), 'Password123!');
       await user.click(screen.getByRole('button', { name: 'Create Account' }));
 
       await waitFor(() => {
-        expect(screen.getByText(successMessage)).toBeInTheDocument();
+        expect(
+          screen.getByText('Registration successful! You can now sign in with your account.')
+        ).toBeInTheDocument();
       });
     });
 
@@ -222,8 +228,8 @@ describe('Register Component', () => {
       const confirmPasswordInput = screen.getByLabelText('Confirm Password');
 
       await user.type(emailInput, 'test@example.com');
-      await user.type(passwordInput, 'password123');
-      await user.type(confirmPasswordInput, 'password123');
+      await user.type(passwordInput, 'Password123!');
+      await user.type(confirmPasswordInput, 'Password123!');
       await user.click(screen.getByRole('button', { name: 'Create Account' }));
 
       await waitFor(() => {
@@ -239,13 +245,16 @@ describe('Register Component', () => {
       const user = userEvent.setup();
       const errorMessage = 'Email already exists';
 
-      mockApiService.register.mockRejectedValue(new Error(errorMessage));
+      mockApiService.register.mockResolvedValue({
+        status: 'error',
+        error: errorMessage,
+      });
 
       render(<Register />);
 
       await user.type(screen.getByLabelText('Email'), 'existing@example.com');
-      await user.type(screen.getByLabelText('Password'), 'password123');
-      await user.type(screen.getByLabelText('Confirm Password'), 'password123');
+      await user.type(screen.getByLabelText('Password'), 'Password123!');
+      await user.type(screen.getByLabelText('Confirm Password'), 'Password123!');
       await user.click(screen.getByRole('button', { name: 'Create Account' }));
 
       await waitFor(() => {
@@ -261,13 +270,13 @@ describe('Register Component', () => {
       render(<Register />);
 
       await user.type(screen.getByLabelText('Email'), 'test@example.com');
-      await user.type(screen.getByLabelText('Password'), 'password123');
-      await user.type(screen.getByLabelText('Confirm Password'), 'password123');
+      await user.type(screen.getByLabelText('Password'), 'Password123!');
+      await user.type(screen.getByLabelText('Confirm Password'), 'Password123!');
       await user.click(screen.getByRole('button', { name: 'Create Account' }));
 
       await waitFor(() => {
         expect(
-          screen.getByText('Registration failed. Please try again.')
+          screen.getByText('An error occurred during registration. Please try again.')
         ).toBeInTheDocument();
       });
     });
@@ -283,8 +292,8 @@ describe('Register Component', () => {
       render(<Register />);
 
       await user.type(screen.getByLabelText('Email'), 'test@example.com');
-      await user.type(screen.getByLabelText('Password'), 'password123');
-      await user.type(screen.getByLabelText('Confirm Password'), 'password123');
+      await user.type(screen.getByLabelText('Password'), 'Password123!');
+      await user.type(screen.getByLabelText('Confirm Password'), 'Password123!');
       await user.click(screen.getByRole('button', { name: 'Create Account' }));
 
       await waitFor(() => {
@@ -316,16 +325,16 @@ describe('Register Component', () => {
       render(<Register />);
 
       await user.type(screen.getByLabelText('Email'), 'test@example.com');
-      await user.type(screen.getByLabelText('Password'), 'password123');
-      await user.type(screen.getByLabelText('Confirm Password'), 'password123');
+      await user.type(screen.getByLabelText('Password'), 'Password123!');
+      await user.type(screen.getByLabelText('Confirm Password'), 'Password123!');
       await user.click(screen.getByRole('button', { name: 'Create Account' }));
 
       // Check loading state
       expect(
-        screen.getByRole('button', { name: 'Creating Account...' })
+        screen.getByRole('button', { name: 'Creating account...' })
       ).toBeInTheDocument();
       expect(
-        screen.getByRole('button', { name: 'Creating Account...' })
+        screen.getByRole('button', { name: 'Creating account...' })
       ).toBeDisabled();
 
       // Resolve the promise
@@ -369,8 +378,8 @@ describe('Register Component', () => {
       const confirmPasswordInput = screen.getByLabelText('Confirm Password');
 
       await user.type(emailInput, 'test@example.com');
-      await user.type(passwordInput, 'password123');
-      await user.type(confirmPasswordInput, 'password123');
+      await user.type(passwordInput, 'Password123!');
+      await user.type(confirmPasswordInput, 'Password123!');
       await user.click(screen.getByRole('button', { name: 'Create Account' }));
 
       // Check that inputs are disabled during loading
@@ -437,10 +446,10 @@ describe('Register Component', () => {
       render(<Register />);
 
       await user.type(screen.getByLabelText('Email'), 'test@example.com');
-      await user.type(screen.getByLabelText('Password'), 'password123');
+      await user.type(screen.getByLabelText('Password'), 'Password123!');
       await user.type(
         screen.getByLabelText('Confirm Password'),
-        'password123{enter}'
+        'Password123!{enter}'
       );
 
       await waitFor(() => {
@@ -463,21 +472,22 @@ describe('Register Component', () => {
       const specialEmail = 'test+special@example-domain.co.uk';
 
       await user.type(screen.getByLabelText('Email'), specialEmail);
-      await user.type(screen.getByLabelText('Password'), 'password123');
-      await user.type(screen.getByLabelText('Confirm Password'), 'password123');
+      await user.type(screen.getByLabelText('Password'), 'Password123!');
+      await user.type(screen.getByLabelText('Confirm Password'), 'Password123!');
       await user.click(screen.getByRole('button', { name: 'Create Account' }));
 
       await waitFor(() => {
         expect(mockApiService.register).toHaveBeenCalledWith({
           email: specialEmail,
-          password: 'password123',
+          password: 'Password123!',
         });
       });
     });
 
     it('handles very long passwords', async () => {
       const user = userEvent.setup();
-      const longPassword = 'a'.repeat(100);
+      // Create a long valid password with all required character types
+      const longPassword = 'Password123!'.repeat(8); // 96 characters, contains all required types
 
       mockApiService.register.mockResolvedValue({
         status: 'success',
@@ -510,14 +520,14 @@ describe('Register Component', () => {
       render(<Register />);
 
       await user.type(screen.getByLabelText('Email'), '  test@example.com  ');
-      await user.type(screen.getByLabelText('Password'), 'password123');
-      await user.type(screen.getByLabelText('Confirm Password'), 'password123');
+      await user.type(screen.getByLabelText('Password'), 'Password123!');
+      await user.type(screen.getByLabelText('Confirm Password'), 'Password123!');
       await user.click(screen.getByRole('button', { name: 'Create Account' }));
 
       await waitFor(() => {
         expect(mockApiService.register).toHaveBeenCalledWith({
           email: 'test@example.com',
-          password: 'password123',
+          password: 'Password123!',
         });
       });
     });
