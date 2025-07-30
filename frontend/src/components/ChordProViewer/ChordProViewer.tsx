@@ -61,16 +61,24 @@ const ChordProViewer: React.FC<ChordProViewerProps> = ({
       // Parse directives
       if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
         const directive = trimmed.slice(1, -1);
-        
+
         // Check for section start/end directives
         if (directive.startsWith('start_of_')) {
           // Start new section
           if (currentSection.lines.length > 0) {
             sections.push(currentSection);
           }
-          const sectionType = directive.replace('start_of_', '') as Section['type'];
+          const sectionType = directive.replace(
+            'start_of_',
+            ''
+          ) as Section['type'];
           currentSection = {
-            type: sectionType === 'verse' || sectionType === 'chorus' || sectionType === 'bridge' ? sectionType : 'content',
+            type:
+              sectionType === 'verse' ||
+              sectionType === 'chorus' ||
+              sectionType === 'bridge'
+                ? sectionType
+                : 'content',
             name: sectionType,
             lines: [],
           };
@@ -90,7 +98,7 @@ const ChordProViewer: React.FC<ChordProViewerProps> = ({
           const [key, ...valueParts] = directive.split(':');
           const value = valueParts.join(':').trim();
           metadata[key.trim()] = value;
-          
+
           if (showMetadata) {
             currentSection.lines.push({
               type: 'directive',
@@ -129,15 +137,15 @@ const ChordProViewer: React.FC<ChordProViewerProps> = ({
       while ((match = chordPattern.exec(line)) !== null) {
         const chord = match[1];
         const chordStart = match.index;
-        
+
         // Position relative to lyrics (accounting for removed chord notation)
         const lyricsPosition = chordStart - offset;
-        
+
         chords.push({
           chord,
           position: lyricsPosition,
         });
-        
+
         // Update offset for next chord
         offset += match[0].length;
       }
@@ -177,7 +185,9 @@ const ChordProViewer: React.FC<ChordProViewerProps> = ({
     let lastPosition = 0;
 
     // Sort chords by position
-    const sortedChords = [...line.chords].sort((a, b) => a.position - b.position);
+    const sortedChords = [...line.chords].sort(
+      (a, b) => a.position - b.position
+    );
 
     for (const chordPos of sortedChords) {
       // Add lyrics segment before this chord
@@ -190,7 +200,9 @@ const ChordProViewer: React.FC<ChordProViewerProps> = ({
       // Add chord segment
       segments.push({
         chord: chordPos.chord,
-        lyrics: line.content.substring(chordPos.position, chordPos.position + 1) || ' ',
+        lyrics:
+          line.content.substring(chordPos.position, chordPos.position + 1) ||
+          ' ',
       });
 
       lastPosition = chordPos.position + 1;
@@ -208,18 +220,14 @@ const ChordProViewer: React.FC<ChordProViewerProps> = ({
         <div className="chordpro-chords-row">
           {segments.map((segment, segIndex) => (
             <span key={segIndex} className="chordpro-segment">
-              <span className="chordpro-chord">
-                {segment.chord || ''}
-              </span>
+              <span className="chordpro-chord">{segment.chord || ''}</span>
             </span>
           ))}
         </div>
         <div className="chordpro-lyrics-row">
           {segments.map((segment, segIndex) => (
             <span key={segIndex} className="chordpro-segment">
-              <span className="chordpro-lyric">
-                {segment.lyrics}
-              </span>
+              <span className="chordpro-lyric">{segment.lyrics}</span>
             </span>
           ))}
         </div>
@@ -228,10 +236,7 @@ const ChordProViewer: React.FC<ChordProViewerProps> = ({
   };
 
   return (
-    <div 
-      className={`chordpro-viewer ${className}`}
-      style={{ maxHeight }}
-    >
+    <div className={`chordpro-viewer ${className}`} style={{ maxHeight }}>
       {/* Metadata section */}
       {showMetadata && Object.keys(parsed.metadata).length > 0 && (
         <div className="chordpro-metadata">
@@ -246,10 +251,14 @@ const ChordProViewer: React.FC<ChordProViewerProps> = ({
               <span className="chordpro-key">Key: {parsed.metadata.key}</span>
             )}
             {parsed.metadata.capo && (
-              <span className="chordpro-capo">Capo: {parsed.metadata.capo}</span>
+              <span className="chordpro-capo">
+                Capo: {parsed.metadata.capo}
+              </span>
             )}
             {parsed.metadata.tempo && (
-              <span className="chordpro-tempo">Tempo: {parsed.metadata.tempo}</span>
+              <span className="chordpro-tempo">
+                Tempo: {parsed.metadata.tempo}
+              </span>
             )}
           </div>
         </div>
@@ -258,13 +267,18 @@ const ChordProViewer: React.FC<ChordProViewerProps> = ({
       {/* Sections */}
       <div className="chordpro-content">
         {parsed.sections.map((section, sectionIndex) => (
-          <div key={sectionIndex} className={`chordpro-section chordpro-section-${section.type}`}>
+          <div
+            key={sectionIndex}
+            className={`chordpro-section chordpro-section-${section.type}`}
+          >
             {section.name && section.type !== 'content' && (
               <div className="chordpro-section-header">
                 {section.name.charAt(0).toUpperCase() + section.name.slice(1)}
               </div>
             )}
-            {section.lines.map((line, lineIndex) => renderLineWithChords(line, lineIndex))}
+            {section.lines.map((line, lineIndex) =>
+              renderLineWithChords(line, lineIndex)
+            )}
           </div>
         ))}
       </div>

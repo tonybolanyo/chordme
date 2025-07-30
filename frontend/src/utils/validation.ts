@@ -33,37 +33,59 @@ export const validatePassword = (password: string): ValidationResult => {
   }
 
   if (password.length < 8) {
-    return { isValid: false, error: 'Password must be at least 8 characters long' };
+    return {
+      isValid: false,
+      error: 'Password must be at least 8 characters long',
+    };
   }
 
   if (password.length > 128) {
-    return { isValid: false, error: 'Password must be less than 128 characters' };
+    return {
+      isValid: false,
+      error: 'Password must be less than 128 characters',
+    };
   }
 
   // Check for at least one uppercase letter
   if (!/[A-Z]/.test(password)) {
-    return { isValid: false, error: 'Password must contain at least one uppercase letter' };
+    return {
+      isValid: false,
+      error: 'Password must contain at least one uppercase letter',
+    };
   }
 
   // Check for at least one lowercase letter
   if (!/[a-z]/.test(password)) {
-    return { isValid: false, error: 'Password must contain at least one lowercase letter' };
+    return {
+      isValid: false,
+      error: 'Password must contain at least one lowercase letter',
+    };
   }
 
   // Check for at least one number
   if (!/\d/.test(password)) {
-    return { isValid: false, error: 'Password must contain at least one number' };
+    return {
+      isValid: false,
+      error: 'Password must contain at least one number',
+    };
   }
 
   // Check for at least one special character
   if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-    return { isValid: false, error: 'Password must contain at least one special character (!@#$%^&*(),.?":{}|<>)' };
+    return {
+      isValid: false,
+      error:
+        'Password must contain at least one special character (!@#$%^&*(),.?":{}|<>)',
+    };
   }
 
   return { isValid: true };
 };
 
-export const validateRequired = (value: string, fieldName: string): ValidationResult => {
+export const validateRequired = (
+  value: string,
+  fieldName: string
+): ValidationResult => {
   if (!value || !value.trim()) {
     return { isValid: false, error: `${fieldName} is required` };
   }

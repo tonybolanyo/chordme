@@ -21,9 +21,9 @@ export const decodeJWT = (token: string): JWTPayload | null => {
 
     const payload = parts[1];
     // Add padding if needed for base64 decoding
-    const paddedPayload = payload + '='.repeat((4 - payload.length % 4) % 4);
+    const paddedPayload = payload + '='.repeat((4 - (payload.length % 4)) % 4);
     const decodedPayload = atob(paddedPayload);
-    
+
     return JSON.parse(decodedPayload) as JWTPayload;
   } catch (error) {
     console.error('Error decoding JWT:', error);
@@ -62,12 +62,15 @@ export const getTokenExpiration = (token: string): Date | null => {
 /**
  * Check if a token will expire within the given number of seconds
  */
-export const isTokenExpiringSoon = (token: string, secondsThreshold: number = 300): boolean => {
+export const isTokenExpiringSoon = (
+  token: string,
+  secondsThreshold: number = 300
+): boolean => {
   const payload = decodeJWT(token);
   if (!payload || !payload.exp) {
     return true;
   }
 
   const currentTime = Math.floor(Date.now() / 1000);
-  return (payload.exp - currentTime) <= secondsThreshold;
+  return payload.exp - currentTime <= secondsThreshold;
 };

@@ -31,10 +31,8 @@ const Header: React.FC<HeaderProps> = ({ title = 'ChordMe' }) => {
                 Songs
               </a>
               <div className="auth-links">
-                <span className="user-info">
-                  Welcome, {user?.email}
-                </span>
-                <button 
+                <span className="user-info">Welcome, {user?.email}</span>
+                <button
                   onClick={handleLogout}
                   className="nav-link auth-link btn-logout"
                 >
