@@ -1,5 +1,8 @@
 name: Release and Deploy
 
+permissions:
+  contents: read
+
 on:
   push:
     tags:
@@ -15,6 +18,8 @@ jobs:
   # Version synchronization and validation
   prepare:
     name: Prepare Release
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.version.outputs.version }}
