@@ -115,6 +115,7 @@ class ChordProValidator:
     def validate_content(content: str) -> Tuple[bool, List[str]]:
         """
         Validate ChordPro content and return validation results.
+        Enhanced with security checks for potential injection attempts.
         
         Args:
             content: The content to validate
@@ -123,6 +124,39 @@ class ChordProValidator:
             tuple: (is_valid, list_of_warnings)
         """
         warnings = []
+        
+        # Security checks for potential injection attempts
+        dangerous_patterns = [
+            r'<script[^>]*>',  # Script tags
+            r'javascript:',     # JavaScript protocol
+            r'on\w+\s*=',      # Event handlers
+            r'<iframe[^>]*>',   # Iframe tags  
+            r'<object[^>]*>',   # Object tags
+            r'<embed[^>]*>',    # Embed tags
+            r'<link[^>]*>',     # Link tags
+            r'<meta[^>]*>',     # Meta tags
+        ]
+        
+        for pattern in dangerous_patterns:
+            if re.search(pattern, content, re.IGNORECASE):
+                warnings.append(f"Potentially dangerous content detected: {pattern}")
+        
+        # Check for SQL injection patterns (basic detection)
+        sql_patterns = [
+            r"(union\s+select|drop\s+table|delete\s+from|insert\s+into)",
+            r"(-{2,}|\/\*|\*\/)",  # SQL comments
+            r"(\b(or|and)\s+['\"]?\w+['\"]?\s*=\s*['\"]?\w+['\"]?)",  # Basic SQL injection
+        ]
+        
+        for pattern in sql_patterns:
+            if re.search(pattern, content, re.IGNORECASE):
+                warnings.append(f"Potential SQL injection pattern detected")
+                break  # Only warn once for SQL patterns
+        
+        # Check for excessive special characters that might indicate malicious content
+        special_char_count = len(re.findall(r'[<>&"\']', content))
+        if special_char_count > len(content) * 0.1:  # More than 10% special chars
+            warnings.append("High concentration of special characters detected")
         
         # Check for unclosed brackets
         open_directives = content.count('{')

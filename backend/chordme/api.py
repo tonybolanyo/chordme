@@ -1,6 +1,6 @@
 from . import app, db
 from .models import User, Song
-from .utils import validate_email, validate_password, create_error_response, create_success_response, generate_jwt_token, sanitize_input, auth_required
+from .utils import validate_email, validate_password, create_error_response, create_success_response, generate_jwt_token, sanitize_input, auth_required, validate_positive_integer, validate_request_size
 from .rate_limiter import rate_limit
 from .csrf_protection import csrf_protect, get_csrf_token
 from .security_headers import security_headers, security_error_handler
@@ -245,6 +245,7 @@ def get_songs():
 
 @app.route('/api/v1/songs', methods=['POST'])
 @auth_required
+@validate_request_size(max_content_length=50*1024)  # 50KB for song content
 @rate_limit(max_requests=20, window_seconds=300)  # 20 songs per 5 minutes
 @csrf_protect(require_token=False)  # CSRF optional for API endpoints
 @security_headers
@@ -259,8 +260,8 @@ def create_song():
         if not data:
             return create_error_response("No data provided", 400)
         
-        # Sanitize input data
-        data = sanitize_input(data)
+        # Sanitize input data with increased length for song content
+        data = sanitize_input(data, max_string_length=15000)  # Allow more for song content
         
         title = data.get('title', '').strip()
         content = data.get('content', '').strip()
@@ -306,6 +307,7 @@ def create_song():
 
 @app.route('/api/v1/songs/<int:song_id>', methods=['GET'])
 @auth_required
+@validate_positive_integer('song_id')
 @security_headers
 def get_song(song_id):
     """
@@ -333,6 +335,8 @@ def get_song(song_id):
 
 @app.route('/api/v1/songs/<int:song_id>', methods=['PUT'])
 @auth_required
+@validate_positive_integer('song_id')
+@validate_request_size(max_content_length=50*1024)  # 50KB for song content
 @rate_limit(max_requests=30, window_seconds=300)  # 30 updates per 5 minutes
 @csrf_protect(require_token=False)  # CSRF optional for API endpoints
 @security_headers
@@ -353,8 +357,8 @@ def update_song(song_id):
         if not data:
             return create_error_response("No data provided", 400)
         
-        # Sanitize input data
-        data = sanitize_input(data)
+        # Sanitize input data with increased length for song content
+        data = sanitize_input(data, max_string_length=15000)  # Allow more for song content
         
         title = data.get('title', '').strip()
         content = data.get('content', '').strip()
@@ -389,6 +393,7 @@ def update_song(song_id):
 
 @app.route('/api/v1/songs/<int:song_id>', methods=['DELETE'])
 @auth_required
+@validate_positive_integer('song_id')
 @rate_limit(max_requests=10, window_seconds=300)  # 10 deletions per 5 minutes
 @csrf_protect(require_token=False)  # CSRF optional for API endpoints
 @security_headers
@@ -426,6 +431,7 @@ def delete_song(song_id):
 
 @app.route('/api/v1/songs/<int:song_id>/download', methods=['GET'])
 @auth_required
+@validate_positive_integer('song_id')
 @rate_limit(max_requests=10, window_seconds=60)  # 10 downloads per minute
 @security_headers
 def download_song(song_id):
@@ -475,6 +481,7 @@ def download_song(song_id):
 
 @app.route('/api/v1/songs/validate-chordpro', methods=['POST'])
 @auth_required
+@validate_request_size(max_content_length=50*1024)  # 50KB for validation content
 @rate_limit(max_requests=20, window_seconds=300)  # 20 validations per 5 minutes
 @csrf_protect(require_token=False)  # CSRF optional for API endpoints
 @security_headers
@@ -490,8 +497,8 @@ def validate_chordpro():
         if not data:
             return create_error_response("No data provided", 400)
         
-        # Sanitize input data
-        data = sanitize_input(data)
+        # Sanitize input data with increased length for validation content  
+        data = sanitize_input(data, max_string_length=15000)  # Allow more for validation content
         
         content = data.get('content', '').strip()
         
@@ -560,12 +567,21 @@ def upload_song_file():
         except UnicodeDecodeError:
             return create_error_response("File must be UTF-8 encoded text", 400)
         
-        # Basic content validation
+        # Enhanced content validation
         if not content.strip():
             return create_error_response("File is empty", 400)
         
         if len(content) > 10000:  # Same limit as manual song creation
             return create_error_response("File content too large. Maximum: 10,000 characters", 400)
+        
+        # Security validation for file content
+        validator = ChordProValidator()
+        is_valid, warnings = validator.validate_content(content)
+        
+        # Check for critical security warnings
+        critical_warnings = [w for w in warnings if any(term in w.lower() for term in ['dangerous', 'injection', 'script'])]
+        if critical_warnings:
+            return create_error_response(f"File contains potentially dangerous content: {'; '.join(critical_warnings)}", 400)
         
         # Extract title from filename or content
         base_filename = os.path.splitext(file.filename)[0]
