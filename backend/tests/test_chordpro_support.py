@@ -336,3 +336,86 @@ E|--0-----0--|
             assert song['content'] == expected_content
             assert '{title:' in song['content']
             assert '[' in song['content'] and ']' in song['content']
+
+    def test_chordpro_validation_endpoint(self, test_client, auth_token):
+        """Test the ChordPro validation API endpoint."""
+        headers = {'Authorization': f'Bearer {auth_token}'}
+        
+        # Valid ChordPro content
+        valid_content = """{title: Test Song}
+{artist: Test Artist}
+{key: C}
+
+[C]Test [G]lyrics [Am]here [F]
+{comment: This is valid ChordPro}"""
+        
+        validation_data = {'content': valid_content}
+        
+        response = test_client.post('/api/v1/songs/validate-chordpro',
+                               data=json.dumps(validation_data),
+                               content_type='application/json',
+                               headers=headers)
+        
+        assert response.status_code == 200
+        result = json.loads(response.data)
+        
+        assert result['status'] == 'success'
+        validation_result = result['data']
+        
+        # Check validation structure
+        assert 'is_valid' in validation_result
+        assert 'warnings' in validation_result
+        assert 'metadata' in validation_result
+        assert 'directives' in validation_result
+        assert 'chords' in validation_result
+        assert 'statistics' in validation_result
+        
+        # Check that content is valid
+        assert validation_result['is_valid']
+        assert len(validation_result['warnings']) == 0
+        
+        # Check extracted metadata
+        assert validation_result['metadata']['title'] == 'Test Song'
+        assert validation_result['metadata']['artist'] == 'Test Artist'
+        assert validation_result['metadata']['key'] == 'C'
+        
+        # Check extracted chords
+        expected_chords = ['Am', 'C', 'F', 'G']
+        assert validation_result['chords'] == expected_chords
+
+    def test_chordpro_validation_requires_auth(self, test_client):
+        """Test that ChordPro validation requires authentication."""
+        validation_data = {'content': '{title: Test}'}
+        
+        response = test_client.post('/api/v1/songs/validate-chordpro',
+                               data=json.dumps(validation_data),
+                               content_type='application/json')
+        
+        assert response.status_code == 401
+        data = json.loads(response.data)
+        assert data['status'] == 'error'
+        assert 'authorization header is required' in data['error'].lower()
+
+    def test_chordpro_validation_invalid_content(self, test_client, auth_token):
+        """Test ChordPro validation with problematic content."""
+        headers = {'Authorization': f'Bearer {auth_token}'}
+        
+        # Content with issues
+        problematic_content = """{title: Test Song}
+[C]Test [G lyrics [] here
+{comment: Missing closing bracket"""
+        
+        validation_data = {'content': problematic_content}
+        
+        response = test_client.post('/api/v1/songs/validate-chordpro',
+                               data=json.dumps(validation_data),
+                               content_type='application/json',
+                               headers=headers)
+        
+        assert response.status_code == 200
+        result = json.loads(response.data)
+        validation_result = result['data']
+        
+        # Should detect issues
+        assert not validation_result['is_valid']
+        assert len(validation_result['warnings']) > 0
