@@ -1,21 +1,33 @@
 import React, { useState } from 'react';
-import { ChordProEditor } from '../components';
+import { ChordProEditor, ChordProViewer } from '../components';
 
 const ChordProDemo: React.FC = () => {
   const [content, setContent] = useState(`{title: Amazing Grace}
 {artist: Traditional}
 {key: G}
+{capo: 0}
+{tempo: 90}
 
-# This is a comment - verse 1
+{start_of_verse}
+# Verse 1
 [G]Amazing [G7]grace, how [C]sweet the [G]sound
-That [G]saved a [D]wretch like [G]me
-[G]I [G7]once was [C]lost, but [G]now am [Em]found
+That [G]saved a [Em]wretch like [D]me
+[G]I [G7]once was [C]lost, but [G]now I'm [Em]found
 Was [G]blind but [D]now I [G]see
+{end_of_verse}
 
-{chorus}
-# Chorus section
+{start_of_chorus}
 [C]How [G]precious [Em]did [G]that [C]grace [G]appear
-The [G]hour I [D]first be[G]lieved`);
+The [G]hour I [D]first be[G]lieved
+{end_of_chorus}
+
+{start_of_verse}
+# Verse 2
+'Twas [G]grace that [G7]taught my [C]heart to [G]fear
+And [G]grace my [Em]fears re[D]lieved
+How [G]precious [G7]did that [C]grace ap[G]pear
+The [Em]hour I [D]first be[G]lieved
+{end_of_verse}`);
 
   return (
     <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
@@ -36,6 +48,11 @@ The [G]hour I [D]first be[G]lieved`);
         placeholder="Enter your ChordPro content here..."
         style={{ width: '100%', marginTop: '10px' }}
       />
+      
+      <h2>Rendered Output</h2>
+      <div style={{ border: '1px solid #ddd', borderRadius: '4px', marginTop: '10px' }}>
+        <ChordProViewer content={content} />
+      </div>
       
       <h2>Raw Content</h2>
       <pre style={{ 
