@@ -95,7 +95,19 @@
   --accent-text-color: #0d1117;
 }
 
+// Apply dark theme to html and body
 [data-theme="dark"] {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+// Main content areas
+[data-theme="dark"] .page-content {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+[data-theme="dark"] .wrapper {
   background-color: var(--bg-color);
   color: var(--text-color);
 }
@@ -106,45 +118,60 @@
   border-color: var(--border-color);
 }
 
+// Content styling for both post-content and main content areas
 [data-theme="dark"] .post-content h1,
 [data-theme="dark"] .post-content h2,
 [data-theme="dark"] .post-content h3,
 [data-theme="dark"] .post-content h4,
 [data-theme="dark"] .post-content h5,
-[data-theme="dark"] .post-content h6 {
+[data-theme="dark"] .post-content h6,
+[data-theme="dark"] .page-content h1,
+[data-theme="dark"] .page-content h2,
+[data-theme="dark"] .page-content h3,
+[data-theme="dark"] .page-content h4,
+[data-theme="dark"] .page-content h5,
+[data-theme="dark"] .page-content h6 {
   color: var(--text-color);
 }
 
-[data-theme="dark"] .post-content a {
+[data-theme="dark"] .post-content a,
+[data-theme="dark"] .page-content a {
   color: var(--link-color);
 }
 
-[data-theme="dark"] .post-content code {
+[data-theme="dark"] .post-content code,
+[data-theme="dark"] .page-content code {
   background-color: var(--bg-color-secondary);
   color: var(--text-color);
 }
 
-[data-theme="dark"] .post-content pre {
+[data-theme="dark"] .post-content pre,
+[data-theme="dark"] .page-content pre {
   background-color: var(--bg-color-secondary);
   border: 1px solid var(--border-color);
 }
 
-[data-theme="dark"] .post-content blockquote {
+[data-theme="dark"] .post-content blockquote,
+[data-theme="dark"] .page-content blockquote {
   border-left: 4px solid var(--border-color);
   background-color: var(--bg-color-secondary);
 }
 
-[data-theme="dark"] .post-content table {
+[data-theme="dark"] .post-content table,
+[data-theme="dark"] .page-content table {
   border-collapse: collapse;
 }
 
 [data-theme="dark"] .post-content table th,
-[data-theme="dark"] .post-content table td {
+[data-theme="dark"] .post-content table td,
+[data-theme="dark"] .page-content table th,
+[data-theme="dark"] .page-content table td {
   border: 1px solid var(--border-color);
   background-color: var(--bg-color);
 }
 
-[data-theme="dark"] .post-content table th {
+[data-theme="dark"] .post-content table th,
+[data-theme="dark"] .page-content table th {
   background-color: var(--bg-color-secondary);
 }
 
