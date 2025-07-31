@@ -1,5 +1,5 @@
 {% assign lang = page.lang | default: site.default_lang %}
-{% assign page_name = page.name | remove: '.md' | remove: '-es' %}
+{% assign page_name = page.name | split: '.' | first | remove: '-es' %}
 
 <div class="language-selector">
   <span class="language-label">
