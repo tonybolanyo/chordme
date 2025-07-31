@@ -703,7 +703,7 @@
         ]
       },
       "put": {
-        "description": "    ",
+        "description": "Update the details of a specific song by its ID (only if owned by the authenticated user).",
         "parameters": [
           {
             "description": "Song ID",
