@@ -479,7 +479,7 @@
     },
     "/songs/validate-chordpro": {
       "post": {
-        "description": "    ",
+        "description": "Validates the provided ChordPro content for syntax and structure.",
         "parameters": [
           {
             "description": "ChordPro content to validate",
