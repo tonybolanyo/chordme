@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { 
-  decodeJWT, 
-  isTokenExpired, 
-  getTokenExpiration, 
+import {
+  decodeJWT,
+  isTokenExpired,
+  getTokenExpiration,
   isTokenExpiringSoon,
-  type JWTPayload 
+  type JWTPayload,
 } from './jwt';
 
 describe('JWT Utilities', () => {
@@ -20,12 +20,16 @@ describe('JWT Utilities', () => {
   describe('decodeJWT', () => {
     it('decodes a valid JWT token', () => {
       // Create a valid JWT-like token (header.payload.signature)
-      const payload = { sub: '123', email: 'test@example.com', exp: 1234567890 };
+      const payload = {
+        sub: '123',
+        email: 'test@example.com',
+        exp: 1234567890,
+      };
       const encodedPayload = btoa(JSON.stringify(payload));
       const token = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${encodedPayload}.signature`;
 
       const result = decodeJWT(token);
-      
+
       expect(result).toEqual(payload);
     });
 
@@ -36,31 +40,31 @@ describe('JWT Utilities', () => {
       const token = `header.${encodedPayload}.signature`;
 
       const result = decodeJWT(token);
-      
+
       expect(result).toEqual(payload);
     });
 
     it('returns null for invalid token format', () => {
       const invalidToken = 'not.a.valid.jwt.token';
-      
+
       const result = decodeJWT(invalidToken);
-      
+
       expect(result).toBeNull();
     });
 
     it('returns null for token with missing parts', () => {
       const incompleteToken = 'header.payload'; // Missing signature
-      
+
       const result = decodeJWT(incompleteToken);
-      
+
       expect(result).toBeNull();
     });
 
     it('returns null for token with invalid base64 payload', () => {
       const tokenWithInvalidPayload = 'header.invalid-base64!@#.signature';
-      
+
       const result = decodeJWT(tokenWithInvalidPayload);
-      
+
       expect(result).toBeNull();
       expect(console.error).toHaveBeenCalled();
     });
@@ -68,24 +72,24 @@ describe('JWT Utilities', () => {
     it('returns null for token with invalid JSON payload', () => {
       const invalidJson = btoa('{ invalid json }');
       const token = `header.${invalidJson}.signature`;
-      
+
       const result = decodeJWT(token);
-      
+
       expect(result).toBeNull();
       expect(console.error).toHaveBeenCalled();
     });
 
     it('handles empty token', () => {
       const result = decodeJWT('');
-      
+
       expect(result).toBeNull();
     });
 
     it('handles token with extra dots', () => {
       const token = 'part1.part2.part3.part4.part5';
-      
+
       const result = decodeJWT(token);
-      
+
       expect(result).toBeNull();
     });
   });
@@ -98,7 +102,7 @@ describe('JWT Utilities', () => {
       const token = `header.${encodedPayload}.signature`;
 
       const result = isTokenExpired(token);
-      
+
       expect(result).toBe(false);
     });
 
@@ -109,7 +113,7 @@ describe('JWT Utilities', () => {
       const token = `header.${encodedPayload}.signature`;
 
       const result = isTokenExpired(token);
-      
+
       expect(result).toBe(true);
     });
 
@@ -119,7 +123,7 @@ describe('JWT Utilities', () => {
       const token = `header.${encodedPayload}.signature`;
 
       const result = isTokenExpired(token);
-      
+
       expect(result).toBe(true);
     });
 
@@ -127,7 +131,7 @@ describe('JWT Utilities', () => {
       const invalidToken = 'invalid.token';
 
       const result = isTokenExpired(invalidToken);
-      
+
       expect(result).toBe(true);
     });
 
@@ -138,7 +142,7 @@ describe('JWT Utilities', () => {
       const token = `header.${encodedPayload}.signature`;
 
       const result = isTokenExpired(token);
-      
+
       expect(result).toBe(true);
     });
 
@@ -148,7 +152,7 @@ describe('JWT Utilities', () => {
       const token = `header.${encodedPayload}.signature`;
 
       const result = isTokenExpired(token);
-      
+
       // Should return false for non-numeric expiration (comparison fails)
       expect(result).toBe(false);
     });
@@ -162,7 +166,7 @@ describe('JWT Utilities', () => {
       const token = `header.${encodedPayload}.signature`;
 
       const result = getTokenExpiration(token);
-      
+
       expect(result).toEqual(new Date(expTimestamp * 1000));
     });
 
@@ -172,7 +176,7 @@ describe('JWT Utilities', () => {
       const token = `header.${encodedPayload}.signature`;
 
       const result = getTokenExpiration(token);
-      
+
       expect(result).toBeNull();
     });
 
@@ -180,7 +184,7 @@ describe('JWT Utilities', () => {
       const invalidToken = 'invalid.token';
 
       const result = getTokenExpiration(invalidToken);
-      
+
       expect(result).toBeNull();
     });
 
@@ -190,7 +194,7 @@ describe('JWT Utilities', () => {
       const token = `header.${encodedPayload}.signature`;
 
       const result = getTokenExpiration(token);
-      
+
       // Zero timestamp is falsy, so it returns null
       expect(result).toBeNull();
     });
@@ -202,7 +206,7 @@ describe('JWT Utilities', () => {
       const token = `header.${encodedPayload}.signature`;
 
       const result = getTokenExpiration(token);
-      
+
       expect(result).toEqual(new Date(largeExp * 1000));
     });
   });
@@ -215,7 +219,7 @@ describe('JWT Utilities', () => {
       const token = `header.${encodedPayload}.signature`;
 
       const result = isTokenExpiringSoon(token, 300); // 5 minute threshold
-      
+
       expect(result).toBe(false);
     });
 
@@ -226,7 +230,7 @@ describe('JWT Utilities', () => {
       const token = `header.${encodedPayload}.signature`;
 
       const result = isTokenExpiringSoon(token, 300); // 5 minute threshold
-      
+
       expect(result).toBe(true);
     });
 
@@ -237,7 +241,7 @@ describe('JWT Utilities', () => {
       const token = `header.${encodedPayload}.signature`;
 
       const result = isTokenExpiringSoon(token); // No threshold specified
-      
+
       expect(result).toBe(true);
     });
 
@@ -248,7 +252,7 @@ describe('JWT Utilities', () => {
       const token = `header.${encodedPayload}.signature`;
 
       const result = isTokenExpiringSoon(token);
-      
+
       expect(result).toBe(true);
     });
 
@@ -258,7 +262,7 @@ describe('JWT Utilities', () => {
       const token = `header.${encodedPayload}.signature`;
 
       const result = isTokenExpiringSoon(token);
-      
+
       expect(result).toBe(true);
     });
 
@@ -266,7 +270,7 @@ describe('JWT Utilities', () => {
       const invalidToken = 'invalid.token';
 
       const result = isTokenExpiringSoon(invalidToken);
-      
+
       expect(result).toBe(true);
     });
 
@@ -278,7 +282,7 @@ describe('JWT Utilities', () => {
 
       // Should not be expiring soon with 60 second threshold
       expect(isTokenExpiringSoon(token, 60)).toBe(false);
-      
+
       // Should be expiring soon with 3600 second (1 hour) threshold
       expect(isTokenExpiringSoon(token, 3600)).toBe(true);
     });
@@ -290,7 +294,7 @@ describe('JWT Utilities', () => {
       const token = `header.${encodedPayload}.signature`;
 
       const result = isTokenExpiringSoon(token, 0); // Zero threshold
-      
+
       expect(result).toBe(false);
     });
 
@@ -301,7 +305,7 @@ describe('JWT Utilities', () => {
       const token = `header.${encodedPayload}.signature`;
 
       const result = isTokenExpiringSoon(token, -100); // Negative threshold
-      
+
       expect(result).toBe(false);
     });
   });
@@ -314,19 +318,19 @@ describe('JWT Utilities', () => {
         iat: Math.floor(Date.now() / 1000) - 300, // Issued 5 minutes ago
         exp: Math.floor(Date.now() / 1000) + 3600, // Expires in 1 hour
         role: 'user',
-        custom_claim: 'some_value'
+        custom_claim: 'some_value',
       };
-      
+
       const encodedPayload = btoa(JSON.stringify(payload));
       const token = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${encodedPayload}.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c`;
 
       const decoded = decodeJWT(token);
       expect(decoded).toEqual(payload);
-      
+
       expect(isTokenExpired(token)).toBe(false);
       expect(isTokenExpiringSoon(token, 7200)).toBe(true); // 2 hour threshold
       expect(isTokenExpiringSoon(token, 1800)).toBe(false); // 30 minute threshold
-      
+
       const expiration = getTokenExpiration(token);
       expect(expiration).toEqual(new Date(payload.exp! * 1000));
     });

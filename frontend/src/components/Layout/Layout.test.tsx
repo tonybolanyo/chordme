@@ -4,7 +4,7 @@ import Layout from './Layout';
 
 // Mock the Header component to avoid AuthContext dependency
 vi.mock('../Header', () => ({
-  default: () => <header data-testid="header">Header</header>
+  default: () => <header data-testid="header">Header</header>,
 }));
 
 describe('Layout', () => {
@@ -47,8 +47,10 @@ describe('Layout', () => {
 
     const layout = screen.getByText('Test content').closest('.layout');
     expect(layout).toBeInTheDocument();
-    
-    const mainContent = screen.getByText('Test content').closest('.main-content');
+
+    const mainContent = screen
+      .getByText('Test content')
+      .closest('.main-content');
     expect(mainContent).toBeInTheDocument();
   });
 });

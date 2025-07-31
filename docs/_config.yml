@@ -1,20 +1,63 @@
-theme: jekyll-theme-minimal
-title: ChordMe API Documentation
-description: API documentation for ChordMe - A ChordPro song management application
-show_downloads: false
-google_analytics: 
-repository: tonybolanyo/chordme
-
+title: ChordMe User Manual
+description: Comprehensive documentation for ChordMe - Lyrics and chords in a simple way
+theme: minima
+show_downloads: true
+github:
+  repository_url: https://github.com/tonybolanyo/chordme
+  
 plugins:
-  - jekyll-default-layout
+  - jekyll-optional-front-matter
   - jekyll-readme-index
+  - jekyll-default-layout
+  - jekyll-titles-from-headings
 
-readme_index:
-  enabled: true
-  remove_originals: false
+markdown: kramdown
+highlighter: rouge
+
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+  syntax_highlighter_opts:
+    block:
+      line_numbers: false
+
+exclude:
+  - vendor/
+  - Gemfile
+  - Gemfile.lock
+  - README.md
+
+include:
+  - .nojekyll
+
+# Multi-language configuration
+languages: ["en", "es"]
+default_lang: "en"
+
+header_pages:
+  - getting-started.md
+  - user-guide.md
+  - chordpro-format.md
+  - api-reference.md
+  - developer-guide.md
+  - troubleshooting.md
+
+header_pages_es:
+  - getting-started-es.md
+  - user-guide-es.md
+  - chordpro-format-es.md
+  - api-reference-es.md
+  - developer-guide-es.md
+  - troubleshooting-es.md
 
 defaults:
   - scope:
       path: ""
+      type: "pages"
     values:
       layout: "default"
+  - scope:
+      path: "*-es.md"
+    values:
+      lang: "es"
+

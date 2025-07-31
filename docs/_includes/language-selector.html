@@ -1,0 +1,23 @@
+{% assign lang = page.lang | default: site.default_lang %}
+{% assign page_name = page.name | split: '.' | first | remove: '-es' %}
+
+<div class="language-selector">
+  <span class="language-label">
+    {% if lang == 'es' %}
+      Idioma:
+    {% else %}
+      Language:
+    {% endif %}
+  </span>
+  
+  {% assign en_page = page_name | append: '.html' %}
+  {% assign es_page = page_name | append: '-es.html' %}
+  
+  {% if lang == 'es' %}
+    <a href="{{ en_page | relative_url }}" class="lang-link">English</a>
+    <span class="lang-current">Español</span>
+  {% else %}
+    <span class="lang-current">English</span>
+    <a href="{{ es_page | relative_url }}" class="lang-link">Español</a>
+  {% endif %}
+</div>

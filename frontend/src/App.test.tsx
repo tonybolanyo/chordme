@@ -4,7 +4,9 @@ import App from './App';
 
 // Mock all the components and contexts
 vi.mock('./contexts/AuthContext', () => ({
-  AuthProvider: ({ children }: { children: React.ReactNode }) => <div data-testid="auth-provider">{children}</div>,
+  AuthProvider: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="auth-provider">{children}</div>
+  ),
   useAuth: () => ({
     isAuthenticated: false,
     isLoading: false,
@@ -16,23 +18,25 @@ vi.mock('./contexts/AuthContext', () => ({
 }));
 
 vi.mock('./components/Layout', () => ({
-  default: ({ children }: { children: React.ReactNode }) => <div data-testid="layout">{children}</div>
+  default: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="layout">{children}</div>
+  ),
 }));
 
 vi.mock('./pages/Login', () => ({
-  default: () => <div data-testid="login-page">Login Page</div>
+  default: () => <div data-testid="login-page">Login Page</div>,
 }));
 
 vi.mock('./pages/Register', () => ({
-  default: () => <div data-testid="register-page">Register Page</div>
+  default: () => <div data-testid="register-page">Register Page</div>,
 }));
 
 vi.mock('./pages/Home', () => ({
-  default: () => <div data-testid="home-page">Home Page</div>
+  default: () => <div data-testid="home-page">Home Page</div>,
 }));
 
 vi.mock('./pages/ChordProDemo', () => ({
-  default: () => <div data-testid="demo-page">Demo Page</div>
+  default: () => <div data-testid="demo-page">Demo Page</div>,
 }));
 
 describe('App', () => {

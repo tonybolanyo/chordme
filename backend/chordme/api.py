@@ -1,4 +1,4 @@
-from . import app, db
+from . import app, db, __version__
 from .models import User, Song
 from .utils import validate_email, validate_password, create_error_response, create_success_response, generate_jwt_token, sanitize_input, auth_required, validate_positive_integer, validate_request_size, sanitize_html_content
 from .rate_limiter import rate_limit
@@ -13,6 +13,19 @@ import re
 
 # ChordPro directive patterns
 TITLE_DIRECTIVE_REGEX = r'^\{title:\s*.*\}$'
+
+
+@app.route('/api/v1/version', methods=['GET'])
+@security_headers
+def version():
+    """
+    Get application version information.
+    """
+    return {
+        'version': __version__,
+        'name': 'ChordMe Backend',
+        'status': 'ok'
+    }, 200
 
 
 @app.route('/api/v1/health', methods=['GET'])
