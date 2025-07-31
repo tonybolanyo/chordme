@@ -581,7 +581,7 @@
             "Bearer": []
           }
         ],
-        "summary": "    Validate ChordPro content",
+        "summary": "Validate ChordPro content",
         "tags": [
           "Songs"
         ]
