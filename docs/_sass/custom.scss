@@ -101,11 +101,6 @@
   color: var(--text-color);
 }
 
-[data-theme="dark"] body {
-  background-color: var(--bg-color);
-  color: var(--text-color);
-}
-
 // Main content areas
 [data-theme="dark"] .page-content {
   background-color: var(--bg-color);
