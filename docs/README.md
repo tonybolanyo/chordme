@@ -1,58 +1,38 @@
-# ChordMe User Manual
+# ChordMe API Documentation
 
-Welcome to ChordMe, a modern web application for managing lyrics and chords in a simple, intuitive way. This comprehensive user manual will guide you through all aspects of using and contributing to ChordMe.
+This directory contains the auto-generated API documentation for ChordMe.
 
-## Quick Links
+## Files
 
-- [Getting Started](getting-started.md) - Set up and run ChordMe
-- [User Guide](user-guide.md) - Learn how to use ChordMe's features
-- [ChordPro Format](chordpro-format.md) - Understanding the ChordPro format
-- [API Reference](api-reference.md) - Complete API documentation
-- [Developer Guide](developer-guide.md) - Contributing and development setup
-- [Troubleshooting](troubleshooting.md) - Common issues and solutions
+- `swagger.json` - OpenAPI/Swagger specification
+- `index.html` - Swagger UI interface
 
-## What is ChordMe?
+## Viewing Documentation
 
-ChordMe is a full-stack web application that allows musicians, songwriters, and music enthusiasts to:
+You can view the API documentation at: https://tonybolanyo.github.io/chordme/
 
-- **Store and organize** songs with lyrics and chords
-- **Use the ChordPro format** for professional chord notation
-- **Create and edit** songs with an intuitive web interface
-- **Share and collaborate** on musical content
-- **Access via API** for integration with other tools
+## API Overview
 
-## Key Features
+ChordMe is a ChordPro song management application that provides:
 
-### 🎵 ChordPro Format Support
-Full support for the industry-standard ChordPro format, preserving all formatting, directives, and chord notations exactly as entered.
+- **Authentication**: User registration and login with JWT tokens
+- **Song Management**: Create, read, update, and delete ChordPro songs
+- **File Operations**: Upload/download songs as ChordPro files
+- **Validation**: ChordPro content validation and analysis
 
-### 🔐 User Authentication
-Secure user registration and login system with JWT token-based authentication.
+## API Base URL
 
-### 🎨 Modern Web Interface
-React-based frontend with TypeScript for a smooth, responsive user experience.
+- Development: `http://localhost:5000/api/v1`
+- Production: `https://your-domain.com/api/v1`
 
-### 🚀 RESTful API
-Comprehensive REST API for programmatic access to all features.
+## Authentication
 
-### 🧪 Comprehensive Testing
-Full test coverage for both frontend and backend components.
+Most endpoints require authentication using JWT tokens:
 
-### ⚡ CI/CD Pipeline
-Automated testing, building, and deployment using GitHub Actions.
+```
+Authorization: Bearer <your-jwt-token>
+```
 
-## Architecture
+Get a token by registering and logging in through the `/auth/register` and `/auth/login` endpoints.
 
-ChordMe consists of two main components:
-
-- **Frontend**: React 19 with TypeScript, built with Vite
-- **Backend**: Python Flask API with SQLAlchemy and JWT authentication
-
-## Documentation Version
-
-This documentation is automatically updated with each new release of ChordMe.
-
----
-
-*For the most up-to-date information, visit the [ChordMe repository](https://github.com/tonybolanyo/chordme).*
-
+## Generated: 2025-07-31 14:53:26 UTC

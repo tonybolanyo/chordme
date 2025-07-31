@@ -388,7 +388,7 @@
         ]
       },
       "post": {
-        "description": "Create a new song by providing song details such as the title and ChordPro content. Authentication is required.",
+        "description": "    ",
         "parameters": [
           {
             "description": "Song details",
@@ -471,7 +471,7 @@
             "Bearer": []
           }
         ],
-        "summary": "Create a new song",
+        "summary": "    Create a new song",
         "tags": [
           "Songs"
         ]
@@ -479,7 +479,7 @@
     },
     "/songs/validate-chordpro": {
       "post": {
-        "description": "Validates the provided ChordPro content for syntax and structure.",
+        "description": "    ",
         "parameters": [
           {
             "description": "ChordPro content to validate",
@@ -581,7 +581,7 @@
             "Bearer": []
           }
         ],
-        "summary": "Validate ChordPro content",
+        "summary": "    Validate ChordPro content",
         "tags": [
           "Songs"
         ]
@@ -703,7 +703,7 @@
         ]
       },
       "put": {
-        "description": "Update the details of a specific song by its ID (only if owned by the authenticated user).",
+        "description": "    ",
         "parameters": [
           {
             "description": "Song ID",
@@ -796,7 +796,7 @@
             "Bearer": []
           }
         ],
-        "summary": "Update a specific song by ID",
+        "summary": "    Update a specific song by ID",
         "tags": [
           "Songs"
         ]
