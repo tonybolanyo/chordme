@@ -388,7 +388,7 @@
         ]
       },
       "post": {
-        "description": "    ",
+        "description": "Create a new song by providing song details such as the title and ChordPro content. Authentication is required.",
         "parameters": [
           {
             "description": "Song details",
