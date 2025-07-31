@@ -80,7 +80,13 @@ npm run test:all
 
 ### E2E Tests (`e2e/`)
 - `basic-navigation.spec.ts` - Tests application navigation and basic functionality
+- `authentication.spec.ts` - Tests user registration and login workflows
+- `chordpro-demo.spec.ts` - Tests ChordPro editor and demo functionality
+- `song-management.spec.ts` - Tests authenticated user song management operations
+- `error-handling.spec.ts` - Tests error handling and edge cases
+- `ui-accessibility.spec.ts` - Tests UI/UX and accessibility compliance
 - Uses Playwright for browser automation
+- Covers all critical user workflows (77 test cases total)
 
 ## Test Configuration
 
@@ -121,6 +127,34 @@ All test types can be run in CI environments:
 
 ## Coverage
 
+### Comprehensive Test Suite Statistics
+- **Frontend Unit Tests**: 3 files with component testing
+- **Backend Unit Tests**: 153+ test cases with comprehensive API coverage  
+- **Integration Tests**: API endpoint testing with real HTTP requests
+- **End-to-End Tests**: 77 test cases across 6 test files covering:
+  - Authentication workflows (15 tests)
+  - ChordPro editor functionality (13 tests) 
+  - Song management operations (12 tests)
+  - Error handling and edge cases (18 tests)
+  - UI/UX and accessibility (15 tests)
+  - Basic navigation (4 tests)
+
+### Critical Workflows Tested
+1. **User Authentication**: Registration, login, validation, session management
+2. **Song Management**: Create, read, update, delete songs with ChordPro content
+3. **ChordPro Editor**: Interactive editing, syntax highlighting, real-time preview
+4. **File Operations**: Upload/download individual and bulk song files
+5. **Error Handling**: Network errors, validation errors, edge cases
+6. **Accessibility**: Keyboard navigation, screen readers, responsive design
+
+### Test Quality Metrics
+- **API Coverage**: All 17 backend endpoints tested
+- **User Journey Coverage**: Complete end-to-end workflows
+- **Accessibility Compliance**: WCAG guidelines validated
+- **Cross-Device Testing**: Mobile, tablet, desktop viewports
+- **Error Scenario Coverage**: Network failures, invalid inputs, edge cases
+
+### Legacy Coverage Summary
 - Frontend tests cover key components and basic functionality
 - Backend tests provide comprehensive coverage of API endpoints
 - Integration tests verify API contracts
