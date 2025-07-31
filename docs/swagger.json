@@ -471,7 +471,7 @@
             "Bearer": []
           }
         ],
-        "summary": "    Create a new song",
+        "summary": "Create a new song",
         "tags": [
           "Songs"
         ]
