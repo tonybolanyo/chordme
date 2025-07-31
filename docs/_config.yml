@@ -60,3 +60,4 @@ defaults:
       path: "*-es.md"
     values:
       lang: "es"
+

@@ -28,6 +28,87 @@ cors = CORS(app, resources={
 # Initialize database
 db = SQLAlchemy(app)
 
+# Initialize Swagger documentation
+from flasgger import Swagger
+swagger_config = {
+    "headers": [],
+    "specs": [
+        {
+            "endpoint": 'apispec',
+            "route": '/apispec.json',
+            "rule_filter": lambda rule: True,  # all in
+            "model_filter": lambda tag: True,  # all in
+        }
+    ],
+    "static_url_path": "/flasgger_static",
+    "swagger_ui": True,
+    "specs_route": "/apidocs/"
+}
+
+swagger_template = {
+    "swagger": "2.0",
+    "info": {
+        "title": "ChordMe API",
+        "description": "API for ChordMe - A ChordPro song management application",
+        "version": "1.0.0",
+        "contact": {
+            "name": "ChordMe",
+            "url": "https://github.com/tonybolanyo/chordme"
+        }
+    },
+    "basePath": "/api/v1",
+    "schemes": ["http", "https"],
+    "consumes": ["application/json"],
+    "produces": ["application/json"],
+    "securityDefinitions": {
+        "Bearer": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header",
+            "description": "JWT token. Format: Bearer {token}"
+        }
+    },
+    "definitions": {
+        "User": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "integer", "description": "User ID"},
+                "email": {"type": "string", "format": "email", "description": "User email address"},
+                "created_at": {"type": "string", "format": "date-time", "description": "Account creation timestamp"}
+            }
+        },
+        "Song": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "integer", "description": "Song ID"},
+                "title": {"type": "string", "description": "Song title"},
+                "content": {"type": "string", "description": "ChordPro content"},
+                "author_id": {"type": "integer", "description": "ID of the user who created the song"},
+                "created_at": {"type": "string", "format": "date-time", "description": "Song creation timestamp"},
+                "updated_at": {"type": "string", "format": "date-time", "description": "Song last update timestamp"}
+            }
+        },
+        "Error": {
+            "type": "object",
+            "properties": {
+                "success": {"type": "boolean", "example": False},
+                "message": {"type": "string", "description": "Error message"},
+                "status_code": {"type": "integer", "description": "HTTP status code"}
+            }
+        },
+        "Success": {
+            "type": "object", 
+            "properties": {
+                "success": {"type": "boolean", "example": True},
+                "message": {"type": "string", "description": "Success message"},
+                "data": {"type": "object", "description": "Response data"}
+            }
+        }
+    }
+}
+
+swagger = Swagger(app, config=swagger_config, template=swagger_template)
+
 # Initialize HTTPS enforcement
 from .https_enforcement import HTTPSEnforcement
 https_enforcement = HTTPSEnforcement(app)

@@ -55,3 +55,4 @@ This documentation is automatically updated with each new release of ChordMe.
 ---
 
 *For the most up-to-date information, visit the [ChordMe repository](https://github.com/tonybolanyo/chordme).*
+
