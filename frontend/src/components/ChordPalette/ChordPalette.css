@@ -1,0 +1,365 @@
+/* ChordPalette Styles */
+.chord-palette {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1rem;
+  font-family: Arial, sans-serif;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+/* Header */
+.chord-palette-header {
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 0.5rem;
+}
+
+.chord-palette-title {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.chord-palette-subtitle {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #666;
+  font-style: italic;
+}
+
+/* Controls */
+.chord-palette-controls {
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.chord-search-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.chord-search-input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  box-sizing: border-box;
+}
+
+.chord-search-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.chord-search-clear {
+  position: absolute;
+  right: 8px;
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: #999;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 2px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+}
+
+.chord-search-clear:hover {
+  background-color: #f0f0f0;
+  color: #666;
+}
+
+.chord-category-container {
+  width: 100%;
+}
+
+.chord-category-select {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  background-color: #fff;
+  box-sizing: border-box;
+}
+
+.chord-category-select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+/* Content */
+.chord-palette-content {
+  margin-bottom: 1rem;
+}
+
+.chord-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+  gap: 0.5rem;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 0.25rem;
+}
+
+.chord-button {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 0.5rem 0.25rem;
+  font-size: 0.85rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  color: #495057;
+}
+
+.chord-button:hover {
+  background-color: #e9ecef;
+  border-color: #adb5bd;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.chord-button:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.chord-name {
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+}
+
+/* Category-specific styling */
+.chord-button-major {
+  background-color: #e3f2fd;
+  border-color: #2196f3;
+  color: #1976d2;
+}
+
+.chord-button-major:hover {
+  background-color: #bbdefb;
+  border-color: #1976d2;
+}
+
+.chord-button-minor {
+  background-color: #f3e5f5;
+  border-color: #9c27b0;
+  color: #7b1fa2;
+}
+
+.chord-button-minor:hover {
+  background-color: #e1bee7;
+  border-color: #7b1fa2;
+}
+
+.chord-button-seventh {
+  background-color: #fff3e0;
+  border-color: #ff9800;
+  color: #f57c00;
+}
+
+.chord-button-seventh:hover {
+  background-color: #ffe0b2;
+  border-color: #f57c00;
+}
+
+.chord-button-minor7 {
+  background-color: #fce4ec;
+  border-color: #e91e63;
+  color: #c2185b;
+}
+
+.chord-button-minor7:hover {
+  background-color: #f8bbd9;
+  border-color: #c2185b;
+}
+
+.chord-button-major7 {
+  background-color: #e8f5e8;
+  border-color: #4caf50;
+  color: #388e3c;
+}
+
+.chord-button-major7:hover {
+  background-color: #c8e6c9;
+  border-color: #388e3c;
+}
+
+.chord-button-sus {
+  background-color: #fff8e1;
+  border-color: #ffc107;
+  color: #f9a825;
+}
+
+.chord-button-sus:hover {
+  background-color: #ffecb3;
+  border-color: #f9a825;
+}
+
+.chord-button-slash {
+  background-color: #f1f8e9;
+  border-color: #8bc34a;
+  color: #689f38;
+}
+
+.chord-button-slash:hover {
+  background-color: #dcedc8;
+  border-color: #689f38;
+}
+
+.chord-button-diminished {
+  background-color: #ffebee;
+  border-color: #f44336;
+  color: #d32f2f;
+}
+
+.chord-button-diminished:hover {
+  background-color: #ffcdd2;
+  border-color: #d32f2f;
+}
+
+.chord-button-augmented {
+  background-color: #fafafa;
+  border-color: #607d8b;
+  color: #455a64;
+}
+
+.chord-button-augmented:hover {
+  background-color: #eeeeee;
+  border-color: #455a64;
+}
+
+/* Empty state */
+.chord-palette-empty {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: #666;
+}
+
+.chord-clear-search-btn {
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  transition: background-color 0.2s ease;
+}
+
+.chord-clear-search-btn:hover {
+  background-color: #2563eb;
+}
+
+/* Footer */
+.chord-palette-footer {
+  border-top: 1px solid #eee;
+  padding-top: 0.5rem;
+}
+
+.chord-count {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #666;
+  text-align: center;
+}
+
+/* Responsive design */
+@media (min-width: 768px) {
+  .chord-palette-controls {
+    flex-direction: row;
+    gap: 1rem;
+  }
+
+  .chord-search-container {
+    flex: 2;
+  }
+
+  .chord-category-container {
+    flex: 1;
+  }
+
+  .chord-grid {
+    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .chord-palette {
+    background-color: #1f2937;
+    border-color: #4b5563;
+    color: #f9fafb;
+  }
+
+  .chord-palette-title {
+    color: #f9fafb;
+  }
+
+  .chord-palette-subtitle {
+    color: #9ca3af;
+  }
+
+  .chord-search-input,
+  .chord-category-select {
+    background-color: #374151;
+    border-color: #4b5563;
+    color: #f9fafb;
+  }
+
+  .chord-search-input:focus,
+  .chord-category-select:focus {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.1);
+  }
+
+  .chord-search-clear {
+    color: #9ca3af;
+  }
+
+  .chord-search-clear:hover {
+    background-color: #374151;
+    color: #d1d5db;
+  }
+
+  .chord-button {
+    background-color: #374151;
+    border-color: #4b5563;
+    color: #e5e7eb;
+  }
+
+  .chord-button:hover {
+    background-color: #4b5563;
+    border-color: #6b7280;
+  }
+
+  .chord-palette-empty {
+    color: #9ca3af;
+  }
+
+  .chord-count {
+    color: #9ca3af;
+  }
+}
