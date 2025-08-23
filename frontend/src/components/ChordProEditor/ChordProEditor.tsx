@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, forwardRef } from 'react';
 import './ChordProEditor.css';
 
 interface ChordProEditorProps {
@@ -18,7 +18,7 @@ interface Token {
   end: number;
 }
 
-const ChordProEditor: React.FC<ChordProEditorProps> = ({
+const ChordProEditor = forwardRef<HTMLTextAreaElement, ChordProEditorProps>(({
   value,
   onChange,
   placeholder = '',
@@ -26,8 +26,9 @@ const ChordProEditor: React.FC<ChordProEditorProps> = ({
   id,
   style,
   required = false,
-}) => {
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+}, ref) => {
+  const internalRef = useRef<HTMLTextAreaElement>(null);
+  const textareaRef = (ref as React.RefObject<HTMLTextAreaElement>) || internalRef;
   const highlightRef = useRef<HTMLDivElement>(null);
   const [isScrolling, setIsScrolling] = useState(false);
 
@@ -232,6 +233,8 @@ const ChordProEditor: React.FC<ChordProEditorProps> = ({
       />
     </div>
   );
-};
+});
+
+ChordProEditor.displayName = 'ChordProEditor';
 
 export default ChordProEditor;
