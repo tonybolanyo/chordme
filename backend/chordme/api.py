@@ -1,5 +1,5 @@
 from . import app, db, __version__
-from .models import User, Song
+from .models import User, Song, Chord
 from .utils import validate_email, validate_password, create_error_response, create_success_response, generate_jwt_token, sanitize_input, auth_required, validate_positive_integer, validate_request_size, sanitize_html_content
 from .rate_limiter import rate_limit
 from .csrf_protection import csrf_protect, get_csrf_token
@@ -1348,6 +1348,504 @@ def download_all_songs():
     except Exception as e:
         return security_error_handler.handle_server_error(
             "An error occurred while downloading songs",
+            exception=e,
+            ip_address=request.remote_addr
+        )
+
+
+# Chord management endpoints - all require authentication
+
+@app.route('/api/v1/chords', methods=['GET'])
+@auth_required
+@security_headers
+def get_chords():
+    """
+    Get all custom chords for authenticated user
+    ---
+    tags:
+      - Chords
+    summary: List user's custom chords
+    description: Retrieve all custom chords owned by the authenticated user
+    security:
+      - Bearer: []
+    responses:
+      200:
+        description: Chords retrieved successfully
+        schema:
+          allOf:
+            - $ref: '#/definitions/Success'
+            - type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    chords:
+                      type: array
+                      items:
+                        $ref: '#/definitions/Chord'
+      401:
+        description: Authentication required
+        schema:
+          $ref: '#/definitions/Error'
+      500:
+        description: Internal server error
+        schema:
+          $ref: '#/definitions/Error'
+    """
+    try:
+        # Get chords for the current user
+        chords = Chord.query.filter_by(user_id=g.current_user_id).all()
+        
+        # Convert to dict format
+        chords_data = [chord.to_dict() for chord in chords]
+        
+        return create_success_response(
+            data={'chords': chords_data},
+            message=f"Retrieved {len(chords_data)} chords"
+        )
+        
+    except Exception as e:
+        return security_error_handler.handle_server_error(
+            "An error occurred while retrieving chords",
+            exception=e,
+            ip_address=request.remote_addr
+        )
+
+
+@app.route('/api/v1/chords', methods=['POST'])
+@auth_required
+@validate_request_size(max_content_length=10*1024)  # 10KB for chord definition
+@rate_limit(max_requests=30, window_seconds=300)  # 30 chords per 5 minutes
+@csrf_protect(require_token=False)  # CSRF optional for API endpoints
+@security_headers
+def create_chord():
+    """
+    Create a new custom chord
+    ---
+    tags:
+      - Chords
+    summary: Create new custom chord
+    description: Create a new custom chord definition for the authenticated user
+    security:
+      - Bearer: []
+    parameters:
+      - in: body
+        name: body
+        description: Chord details
+        required: true
+        schema:
+          type: object
+          required:
+            - name
+            - definition
+          properties:
+            name:
+              type: string
+              description: Chord name (max 50 characters)
+              example: "Cmaj7"
+            definition:
+              type: string
+              description: Chord definition/fingering (max 1,000 characters)
+              example: "x32000"
+            description:
+              type: string
+              description: Optional description or notes (max 500 characters)
+              example: "Easy open chord voicing"
+    responses:
+      201:
+        description: Chord created successfully
+        schema:
+          allOf:
+            - $ref: '#/definitions/Success'
+            - type: object
+              properties:
+                data:
+                  $ref: '#/definitions/Chord'
+      400:
+        description: Invalid input or validation error
+        schema:
+          $ref: '#/definitions/Error'
+      401:
+        description: Authentication required
+        schema:
+          $ref: '#/definitions/Error'
+      413:
+        description: Request entity too large
+        schema:
+          $ref: '#/definitions/Error'
+      429:
+        description: Too many requests
+        schema:
+          $ref: '#/definitions/Error'
+      500:
+        description: Internal server error
+        schema:
+          $ref: '#/definitions/Error'
+    """
+    try:
+        # Get JSON data from request
+        data = request.get_json()
+        
+        if not data:
+            return create_error_response("No data provided", 400)
+        
+        # Sanitize input data but don't truncate yet - we need to validate length first
+        data = sanitize_input(data, max_string_length=1500)  # Allow more for validation
+        
+        name = data.get('name', '').strip()
+        definition = data.get('definition', '').strip()
+        description = data.get('description', '').strip()
+        
+        # Additional HTML sanitization for content
+        name = sanitize_html_content(name)
+        definition = sanitize_html_content(definition)
+        if description:
+            description = sanitize_html_content(description)
+        
+        # Validate required fields
+        if not name:
+            return create_error_response("Name is required", 400)
+        
+        if not definition:
+            return create_error_response("Definition is required", 400)
+        
+        # Validate field lengths
+        if len(name) > 50:
+            return create_error_response("Name must be 50 characters or less", 400)
+        
+        if len(definition) > 1000:
+            return create_error_response("Definition must be 1,000 characters or less", 400)
+        
+        if description and len(description) > 500:
+            return create_error_response("Description must be 500 characters or less", 400)
+        
+        # Check for duplicate chord names for the same user
+        existing_chord = Chord.query.filter_by(
+            user_id=g.current_user_id, 
+            name=name
+        ).first()
+        
+        if existing_chord:
+            return create_error_response(
+                f"You already have a chord named '{name}'. Please use a different name.", 
+                400
+            )
+        
+        # Create new chord
+        new_chord = Chord(
+            name=name, 
+            definition=definition, 
+            user_id=g.current_user_id,
+            description=description if description else None
+        )
+        
+        # Save to database
+        db.session.add(new_chord)
+        db.session.commit()
+        
+        app.logger.info(f"Chord created: {name} by user {g.current_user_id} from IP {request.remote_addr}")
+        
+        return create_success_response(
+            data=new_chord.to_dict(),
+            message="Chord created successfully",
+            status_code=201
+        )
+        
+    except Exception as e:
+        db.session.rollback()
+        return security_error_handler.handle_server_error(
+            "An error occurred while creating the chord",
+            exception=e,
+            ip_address=request.remote_addr
+        )
+
+
+@app.route('/api/v1/chords/<int:chord_id>', methods=['GET'])
+@auth_required
+@validate_positive_integer('chord_id')
+@security_headers
+def get_chord(chord_id):
+    """
+    Get a specific chord by ID
+    ---
+    tags:
+      - Chords
+    summary: Get chord by ID
+    description: Retrieve a specific chord by its ID (only if owned by authenticated user)
+    security:
+      - Bearer: []
+    parameters:
+      - in: path
+        name: chord_id
+        description: Chord ID
+        required: true
+        type: integer
+        minimum: 1
+    responses:
+      200:
+        description: Chord retrieved successfully
+        schema:
+          allOf:
+            - $ref: '#/definitions/Success'
+            - type: object
+              properties:
+                data:
+                  $ref: '#/definitions/Chord'
+      401:
+        description: Authentication required
+        schema:
+          $ref: '#/definitions/Error'
+      404:
+        description: Chord not found
+        schema:
+          $ref: '#/definitions/Error'
+      500:
+        description: Internal server error
+        schema:
+          $ref: '#/definitions/Error'
+    """
+    try:
+        # Find chord by ID and ensure it belongs to the current user
+        chord = Chord.query.filter_by(id=chord_id, user_id=g.current_user_id).first()
+        
+        if not chord:
+            return create_error_response("Chord not found", 404)
+        
+        return create_success_response(
+            data=chord.to_dict(),
+            message="Chord retrieved successfully"
+        )
+        
+    except Exception as e:
+        return security_error_handler.handle_server_error(
+            "An error occurred while retrieving the chord",
+            exception=e,
+            ip_address=request.remote_addr
+        )
+
+
+@app.route('/api/v1/chords/<int:chord_id>', methods=['PUT'])
+@auth_required
+@validate_positive_integer('chord_id')
+@validate_request_size(max_content_length=10*1024)  # 10KB for chord definition
+@rate_limit(max_requests=50, window_seconds=300)  # 50 updates per 5 minutes
+@csrf_protect(require_token=False)  # CSRF optional for API endpoints
+@security_headers
+def update_chord(chord_id):
+    """
+    Update a specific chord by ID
+    ---
+    tags:
+      - Chords
+    summary: Update chord
+    description: Update a specific chord by its ID (only if owned by authenticated user)
+    security:
+      - Bearer: []
+    parameters:
+      - in: path
+        name: chord_id
+        description: Chord ID
+        required: true
+        type: integer
+        minimum: 1
+      - in: body
+        name: body
+        description: Updated chord details
+        required: true
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+              description: Chord name (max 50 characters)
+              example: "Cmaj7_updated"
+            definition:
+              type: string
+              description: Chord definition/fingering (max 1,000 characters)
+              example: "x35453"
+            description:
+              type: string
+              description: Optional description or notes (max 500 characters)
+              example: "Barre chord voicing"
+    responses:
+      200:
+        description: Chord updated successfully
+        schema:
+          allOf:
+            - $ref: '#/definitions/Success'
+            - type: object
+              properties:
+                data:
+                  $ref: '#/definitions/Chord'
+      400:
+        description: Invalid input or validation error
+        schema:
+          $ref: '#/definitions/Error'
+      401:
+        description: Authentication required
+        schema:
+          $ref: '#/definitions/Error'
+      404:
+        description: Chord not found
+        schema:
+          $ref: '#/definitions/Error'
+      413:
+        description: Request entity too large
+        schema:
+          $ref: '#/definitions/Error'
+      429:
+        description: Too many requests
+        schema:
+          $ref: '#/definitions/Error'
+      500:
+        description: Internal server error
+        schema:
+          $ref: '#/definitions/Error'
+    """
+    try:
+        # Find chord by ID and ensure it belongs to the current user
+        chord = Chord.query.filter_by(id=chord_id, user_id=g.current_user_id).first()
+        
+        if not chord:
+            return create_error_response("Chord not found", 404)
+        
+        # Get JSON data from request
+        data = request.get_json()
+        
+        if not data:
+            return create_error_response("No data provided", 400)
+        
+        # Sanitize input data but don't truncate yet - we need to validate length first
+        data = sanitize_input(data, max_string_length=1500)  # Allow more for validation
+        
+        name = data.get('name', '').strip()
+        definition = data.get('definition', '').strip()
+        description = data.get('description', '').strip()
+        
+        # Additional HTML sanitization for content
+        if name:
+            name = sanitize_html_content(name)
+        if definition:
+            definition = sanitize_html_content(definition)
+        if description:
+            description = sanitize_html_content(description)
+        
+        # Update fields if provided
+        if name:
+            if len(name) > 50:
+                return create_error_response("Name must be 50 characters or less", 400)
+            
+            # Check for duplicate chord names for the same user (excluding current chord)
+            existing_chord = Chord.query.filter_by(
+                user_id=g.current_user_id, 
+                name=name
+            ).filter(Chord.id != chord_id).first()
+            
+            if existing_chord:
+                return create_error_response(
+                    f"You already have a chord named '{name}'. Please use a different name.", 
+                    400
+                )
+            
+            chord.name = name
+        
+        if definition:
+            if len(definition) > 1000:
+                return create_error_response("Definition must be 1,000 characters or less", 400)
+            chord.definition = definition
+        
+        if 'description' in data:  # Allow setting description to empty string
+            if description and len(description) > 500:
+                return create_error_response("Description must be 500 characters or less", 400)
+            chord.description = description if description else None
+        
+        # Save changes
+        db.session.commit()
+        
+        app.logger.info(f"Chord updated: {chord.name} by user {g.current_user_id} from IP {request.remote_addr}")
+        
+        return create_success_response(
+            data=chord.to_dict(),
+            message="Chord updated successfully"
+        )
+        
+    except Exception as e:
+        db.session.rollback()
+        return security_error_handler.handle_server_error(
+            "An error occurred while updating the chord",
+            exception=e,
+            ip_address=request.remote_addr
+        )
+
+
+@app.route('/api/v1/chords/<int:chord_id>', methods=['DELETE'])
+@auth_required
+@validate_positive_integer('chord_id')
+@rate_limit(max_requests=20, window_seconds=300)  # 20 deletions per 5 minutes
+@csrf_protect(require_token=False)  # CSRF optional for API endpoints
+@security_headers
+def delete_chord(chord_id):
+    """
+    Delete a specific chord by ID
+    ---
+    tags:
+      - Chords
+    summary: Delete chord
+    description: Delete a specific chord by its ID (only if owned by authenticated user)
+    security:
+      - Bearer: []
+    parameters:
+      - in: path
+        name: chord_id
+        description: Chord ID
+        required: true
+        type: integer
+        minimum: 1
+    responses:
+      200:
+        description: Chord deleted successfully
+        schema:
+          $ref: '#/definitions/Success'
+      401:
+        description: Authentication required
+        schema:
+          $ref: '#/definitions/Error'
+      404:
+        description: Chord not found
+        schema:
+          $ref: '#/definitions/Error'
+      429:
+        description: Too many requests
+        schema:
+          $ref: '#/definitions/Error'
+      500:
+        description: Internal server error
+        schema:
+          $ref: '#/definitions/Error'
+    """
+    try:
+        # Find chord by ID and ensure it belongs to the current user
+        chord = Chord.query.filter_by(id=chord_id, user_id=g.current_user_id).first()
+        
+        if not chord:
+            return create_error_response("Chord not found", 404)
+        
+        chord_name = chord.name  # Store for logging
+        
+        # Delete the chord
+        db.session.delete(chord)
+        db.session.commit()
+        
+        app.logger.info(f"Chord deleted: {chord_name} by user {g.current_user_id} from IP {request.remote_addr}")
+        
+        return create_success_response(
+            message="Chord deleted successfully"
+        )
+        
+    except Exception as e:
+        db.session.rollback()
+        return security_error_handler.handle_server_error(
+            "An error occurred while deleting the chord",
             exception=e,
             ip_address=request.remote_addr
         )
