@@ -276,6 +276,94 @@ Intro content
         .closest('.chordpro-section');
       expect(introSection).toHaveClass('chordpro-section-content');
     });
+
+    it('handles abbreviated section directives', () => {
+      const content = `{sov}
+Verse content with abbreviated form
+{eov}
+{soc}
+Chorus content with abbreviated form
+{eoc}
+{sob}
+Bridge content with abbreviated form
+{eob}`;
+
+      render(<ChordProViewer content={content} />);
+
+      // Check that sections are created correctly
+      expect(screen.getByText('Verse')).toHaveClass('chordpro-section-header');
+      expect(screen.getByText('Chorus')).toHaveClass('chordpro-section-header');
+      expect(screen.getByText('Bridge')).toHaveClass('chordpro-section-header');
+
+      // Check content is in the right sections
+      const verseSection = screen
+        .getByText('Verse content with abbreviated form')
+        .closest('.chordpro-section');
+      expect(verseSection).toHaveClass('chordpro-section-verse');
+
+      const chorusSection = screen
+        .getByText('Chorus content with abbreviated form')
+        .closest('.chordpro-section');
+      expect(chorusSection).toHaveClass('chordpro-section-chorus');
+
+      const bridgeSection = screen
+        .getByText('Bridge content with abbreviated form')
+        .closest('.chordpro-section');
+      expect(bridgeSection).toHaveClass('chordpro-section-bridge');
+    });
+
+    it('handles numbered section directives', () => {
+      const content = `{start_of_verse: 1}
+First verse content
+{end_of_verse}
+{start_of_verse: 2}
+Second verse content
+{end_of_verse}`;
+
+      render(<ChordProViewer content={content} />);
+
+      // Should show section headers with numbers
+      expect(screen.getByText('Verse 1')).toHaveClass('chordpro-section-header');
+      expect(screen.getByText('Verse 2')).toHaveClass('chordpro-section-header');
+
+      // Check content is in verse sections
+      const firstVerseSection = screen
+        .getByText('First verse content')
+        .closest('.chordpro-section');
+      expect(firstVerseSection).toHaveClass('chordpro-section-verse');
+
+      const secondVerseSection = screen
+        .getByText('Second verse content')
+        .closest('.chordpro-section');
+      expect(secondVerseSection).toHaveClass('chordpro-section-verse');
+    });
+
+    it('handles custom section types with headers', () => {
+      const content = `{start_of_tab}
+E|--0--2--3--|
+B|--0--1--0--|
+{end_of_tab}
+{start_of_grid}
+| G | G | C | C |
+{end_of_grid}`;
+
+      render(<ChordProViewer content={content} />);
+
+      // Custom sections should show headers
+      expect(screen.getByText('Tab')).toHaveClass('chordpro-section-header');
+      expect(screen.getByText('Grid')).toHaveClass('chordpro-section-header');
+
+      // Check content is in content sections (since they're not standard types)
+      const tabSection = screen
+        .getByText('E|--0--2--3--|')
+        .closest('.chordpro-section');
+      expect(tabSection).toHaveClass('chordpro-section-content');
+
+      const gridSection = screen
+        .getByText('| G | G | C | C |')
+        .closest('.chordpro-section');
+      expect(gridSection).toHaveClass('chordpro-section-content');
+    });
   });
 
   describe('Edge Cases', () => {
