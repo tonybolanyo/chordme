@@ -6,7 +6,7 @@ describe('ChordPalette', () => {
   it('renders chord library title', () => {
     render(<ChordPalette />);
     expect(screen.getByText('Chord Library')).toBeInTheDocument();
-    expect(screen.getByText('Click to insert chord')).toBeInTheDocument();
+    expect(screen.getByText('Click to insert chord or drag to position')).toBeInTheDocument();
   });
 
   it('displays search input and category select', () => {
@@ -113,5 +113,29 @@ describe('ChordPalette', () => {
     
     expect(searchInput).toHaveValue('Am');
     expect(screen.getByRole('button', { name: /Insert Am chord/i })).toBeInTheDocument();
+  });
+
+  it('supports drag and drop functionality', () => {
+    const mockOnChordSelect = vi.fn();
+    render(<ChordPalette onChordSelect={mockOnChordSelect} />);
+    
+    const chordButton = screen.getByRole('button', { name: /Insert C chord/i });
+    
+    // Check that the button is draggable
+    expect(chordButton).toHaveAttribute('draggable', 'true');
+    
+    // Test drag start event using fireEvent
+    const mockDataTransfer = {
+      setData: vi.fn(),
+      effectAllowed: '',
+    };
+    
+    fireEvent.dragStart(chordButton, {
+      dataTransfer: mockDataTransfer,
+    });
+    
+    // Verify data transfer was called with correct data
+    expect(mockDataTransfer.setData).toHaveBeenCalledWith('text/plain', '[C]');
+    expect(mockDataTransfer.setData).toHaveBeenCalledWith('application/chord', 'C');
   });
 });

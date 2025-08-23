@@ -76,6 +76,10 @@ The [Em]hour I [D]first be[G]lieved
           <strong>Lyrics</strong> as regular text - highlighted in dark gray
         </li>
       </ul>
+      <p>
+        <strong>Interactive Features:</strong> Click any chord button to insert at cursor position, 
+        or drag and drop chords directly onto specific positions in the lyrics!
+      </p>
 
       <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start', marginTop: '20px' }}>
         <div style={{ flex: '1' }}>

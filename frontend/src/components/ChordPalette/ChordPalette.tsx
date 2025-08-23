@@ -121,6 +121,23 @@ const ChordPalette: React.FC<ChordPaletteProps> = ({
     }
   };
 
+  const handleDragStart = (e: React.DragEvent, chordName: string) => {
+    // Store the chord data for the drop handler
+    e.dataTransfer.setData('text/plain', `[${chordName}]`);
+    e.dataTransfer.setData('application/chord', chordName);
+    e.dataTransfer.effectAllowed = 'copy';
+    
+    // Add visual feedback class to the dragged element
+    const target = e.target as HTMLElement;
+    target.classList.add('chord-dragging');
+  };
+
+  const handleDragEnd = (e: React.DragEvent) => {
+    // Remove visual feedback class
+    const target = e.target as HTMLElement;
+    target.classList.remove('chord-dragging');
+  };
+
   const handleClearSearch = () => {
     setSearchTerm('');
     setSelectedCategory('all');
@@ -130,7 +147,7 @@ const ChordPalette: React.FC<ChordPaletteProps> = ({
     <div className={`chord-palette ${className}`} style={style}>
       <div className="chord-palette-header">
         <h3 className="chord-palette-title">Chord Library</h3>
-        <p className="chord-palette-subtitle">Click to insert chord</p>
+        <p className="chord-palette-subtitle">Click to insert chord or drag to position</p>
       </div>
 
       <div className="chord-palette-controls">
@@ -181,6 +198,9 @@ const ChordPalette: React.FC<ChordPaletteProps> = ({
                 type="button"
                 className={`chord-button chord-button-${chord.category}`}
                 onClick={() => handleChordClick(chord.name)}
+                onDragStart={(e) => handleDragStart(e, chord.name)}
+                onDragEnd={handleDragEnd}
+                draggable={true}
                 title={chord.description || chord.name}
                 aria-label={`Insert ${chord.name} chord`}
               >

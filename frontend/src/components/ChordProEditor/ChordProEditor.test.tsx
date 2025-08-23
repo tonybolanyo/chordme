@@ -314,4 +314,50 @@ Chorus [Am]line with [F]chords
       expect(textarea).toHaveFocus();
     });
   });
+
+  describe('Drag and Drop', () => {
+    it('supports drag and drop functionality', () => {
+      const mockOnChange = vi.fn();
+      const { container } = render(
+        <ChordProEditor 
+          value="Test content"
+          onChange={mockOnChange}
+          allowDrop={true}
+        />
+      );
+
+      const editorContainer = container.querySelector('.chordpro-editor-container');
+      expect(editorContainer).toBeInTheDocument();
+
+      // Test drag over event using fireEvent
+      const mockDataTransfer = { dropEffect: '' };
+      
+      fireEvent.dragOver(editorContainer!, {
+        dataTransfer: mockDataTransfer,
+      });
+      
+      // Should add drag-over class
+      expect(editorContainer).toHaveClass('drag-over');
+    });
+
+    it('can disable drag and drop functionality', () => {
+      const { container } = render(
+        <ChordProEditor 
+          value="Test content"
+          onChange={vi.fn()}
+          allowDrop={false}
+        />
+      );
+
+      const editorContainer = container.querySelector('.chordpro-editor-container');
+      
+      // Test drag over event when disabled
+      fireEvent.dragOver(editorContainer!, {
+        dataTransfer: { dropEffect: '' },
+      });
+      
+      // Should not add drag-over class when disabled
+      expect(editorContainer).not.toHaveClass('drag-over');
+    });
+  });
 });
