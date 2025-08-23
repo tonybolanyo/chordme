@@ -145,6 +145,21 @@
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
+/* Drag and drop styles */
+.chord-button[draggable="true"] {
+  cursor: grab;
+}
+
+.chord-button[draggable="true"]:active {
+  cursor: grabbing;
+}
+
+.chord-dragging {
+  opacity: 0.6;
+  transform: rotate(3deg);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
 .chord-name {
   font-family: 'Courier New', monospace;
   font-size: 0.9rem;
