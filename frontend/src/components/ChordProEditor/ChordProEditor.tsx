@@ -16,10 +16,11 @@ interface ChordProEditorProps {
 }
 
 interface Token {
-  type: 'chord' | 'directive' | 'comment' | 'lyrics';
+  type: 'chord' | 'directive' | 'comment' | 'lyrics' | 'section-start' | 'section-end';
   content: string;
   start: number;
   end: number;
+  sectionType?: 'verse' | 'chorus' | 'bridge' | 'content';
 }
 
 const ChordProEditor = forwardRef<HTMLTextAreaElement, ChordProEditorProps>(({
@@ -83,12 +84,46 @@ const ChordProEditor = forwardRef<HTMLTextAreaElement, ChordProEditorProps>(({
               });
             }
 
-            // Add directive
+            // Add directive - check if it's a section directive
+            const directiveContent = tempContent.substring(startBrace, endBrace + 1);
+            const directive = directiveContent.slice(1, -1); // Remove braces
+            
+            let tokenType: Token['type'] = 'directive';
+            let sectionType: Token['sectionType'] = undefined;
+            
+            // Check for section start directives
+            if (directive.startsWith('start_of_') || directive === 'sov' || directive === 'soc' || directive === 'sob') {
+              tokenType = 'section-start';
+              
+              let sectionName: string;
+              if (directive.startsWith('start_of_')) {
+                sectionName = directive.replace('start_of_', '').split(':')[0];
+              } else {
+                const abbreviationMap: Record<string, string> = {
+                  'sov': 'verse',
+                  'soc': 'chorus', 
+                  'sob': 'bridge'
+                };
+                sectionName = abbreviationMap[directive] || 'content';
+              }
+              
+              if (sectionName === 'verse' || sectionName === 'chorus' || sectionName === 'bridge') {
+                sectionType = sectionName;
+              } else {
+                sectionType = 'content';
+              }
+            }
+            // Check for section end directives
+            else if (directive.startsWith('end_of_') || directive === 'eov' || directive === 'eoc' || directive === 'eob') {
+              tokenType = 'section-end';
+            }
+            
             tokens.push({
-              type: 'directive',
-              content: tempContent.substring(startBrace, endBrace + 1),
+              type: tokenType,
+              content: directiveContent,
               start: tempStart + startBrace,
               end: tempStart + endBrace + 1,
+              sectionType,
             });
 
             tempStart = tempStart + endBrace + 1;
@@ -197,6 +232,11 @@ const ChordProEditor = forwardRef<HTMLTextAreaElement, ChordProEditorProps>(({
         const validityClass = isValidChordToken ? '' : ' invalid';
         
         highlightedHTML += `<span class="chordpro-${token.type}${validityClass}">${escapedContent}</span>`;
+      } else if (token.type === 'section-start') {
+        const sectionClass = token.sectionType ? ` chordpro-section-${token.sectionType}` : '';
+        highlightedHTML += `<span class="chordpro-${token.type}${sectionClass}">${escapedContent}</span>`;
+      } else if (token.type === 'section-end') {
+        highlightedHTML += `<span class="chordpro-${token.type}">${escapedContent}</span>`;
       } else {
         highlightedHTML += `<span class="chordpro-${token.type}">${escapedContent}</span>`;
       }

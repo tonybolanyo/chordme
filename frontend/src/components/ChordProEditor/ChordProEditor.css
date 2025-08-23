@@ -64,6 +64,36 @@
   border-radius: 2px;
 }
 
+/* Section directive styling */
+.chordpro-section-start,
+.chordpro-section-end {
+  color: #8b5cf6; /* Purple for section directives */
+  font-weight: bold;
+  background-color: rgba(139, 92, 246, 0.15);
+  padding: 2px 4px;
+  border-radius: 4px;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+/* Section-specific colors for start directives */
+.chordpro-section-start.chordpro-section-verse {
+  color: #27ae60;
+  background-color: rgba(39, 174, 96, 0.15);
+  border-color: rgba(39, 174, 96, 0.3);
+}
+
+.chordpro-section-start.chordpro-section-chorus {
+  color: #e74c3c;
+  background-color: rgba(231, 76, 60, 0.15);
+  border-color: rgba(231, 76, 60, 0.3);
+}
+
+.chordpro-section-start.chordpro-section-bridge {
+  color: #f39c12;
+  background-color: rgba(243, 156, 18, 0.15);
+  border-color: rgba(243, 156, 18, 0.3);
+}
+
 .chordpro-comment {
   color: #6b7280; /* Gray for comments */
   font-style: italic;
