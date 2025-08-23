@@ -272,6 +272,374 @@
         ]
       }
     },
+    "/chords": {
+      "get": {
+        "description": "Retrieve all custom chords owned by the authenticated user",
+        "responses": {
+          "200": {
+            "description": "Chords retrieved successfully",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Success"
+                },
+                {
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "chords": {
+                          "items": {
+                            "$ref": "#/definitions/Chord"
+                          },
+                          "type": "array"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              ]
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Get all custom chords for authenticated user",
+        "tags": [
+          "Chords"
+        ]
+      },
+      "post": {
+        "description": "Create a new custom chord definition for the authenticated user",
+        "parameters": [
+          {
+            "description": "Chord details",
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "properties": {
+                "definition": {
+                  "description": "Chord definition/fingering (max 1,000 characters)",
+                  "example": "x32000",
+                  "type": "string"
+                },
+                "description": {
+                  "description": "Optional description or notes (max 500 characters)",
+                  "example": "Easy open chord voicing",
+                  "type": "string"
+                },
+                "name": {
+                  "description": "Chord name (max 50 characters)",
+                  "example": "Cmaj7",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name",
+                "definition"
+              ],
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Chord created successfully",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Success"
+                },
+                {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/Chord"
+                    }
+                  },
+                  "type": "object"
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Invalid input or validation error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "413": {
+            "description": "Request entity too large",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Create a new custom chord",
+        "tags": [
+          "Chords"
+        ]
+      }
+    },
+    "/chords/{chord_id}": {
+      "delete": {
+        "description": "Delete a specific chord by its ID (only if owned by authenticated user)",
+        "parameters": [
+          {
+            "description": "Chord ID",
+            "in": "path",
+            "minimum": 1,
+            "name": "chord_id",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Chord deleted successfully",
+            "schema": {
+              "$ref": "#/definitions/Success"
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Chord not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Delete a specific chord by ID",
+        "tags": [
+          "Chords"
+        ]
+      },
+      "get": {
+        "description": "Retrieve a specific chord by its ID (only if owned by authenticated user)",
+        "parameters": [
+          {
+            "description": "Chord ID",
+            "in": "path",
+            "minimum": 1,
+            "name": "chord_id",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Chord retrieved successfully",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Success"
+                },
+                {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/Chord"
+                    }
+                  },
+                  "type": "object"
+                }
+              ]
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Chord not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Get a specific chord by ID",
+        "tags": [
+          "Chords"
+        ]
+      },
+      "put": {
+        "description": "Update a specific chord by its ID (only if owned by authenticated user)",
+        "parameters": [
+          {
+            "description": "Chord ID",
+            "in": "path",
+            "minimum": 1,
+            "name": "chord_id",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "description": "Updated chord details",
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "properties": {
+                "definition": {
+                  "description": "Chord definition/fingering (max 1,000 characters)",
+                  "example": "x35453",
+                  "type": "string"
+                },
+                "description": {
+                  "description": "Optional description or notes (max 500 characters)",
+                  "example": "Barre chord voicing",
+                  "type": "string"
+                },
+                "name": {
+                  "description": "Chord name (max 50 characters)",
+                  "example": "Cmaj7_updated",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Chord updated successfully",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Success"
+                },
+                {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/Chord"
+                    }
+                  },
+                  "type": "object"
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Invalid input or validation error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Chord not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "413": {
+            "description": "Request entity too large",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Update a specific chord by ID",
+        "tags": [
+          "Chords"
+        ]
+      }
+    },
     "/csrf-token": {
       "get": {
         "description": "Returns a CSRF token that must be included in form submissions for security",
