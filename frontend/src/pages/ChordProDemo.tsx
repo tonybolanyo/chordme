@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { ChordProEditor, ChordProViewer, ChordPalette } from '../components';
+import { ChordProEditor, ChordProViewer, ChordPalette, TranspositionControls } from '../components';
+import { transposeChordProContent } from '../services/chordService';
 
 const ChordProDemo: React.FC = () => {
   const [content, setContent] = useState(`{title: Amazing Grace}
@@ -54,6 +55,11 @@ The [Em]hour I [D]first be[G]lieved
     }
   };
 
+  const handleTranspose = (semitones: number) => {
+    const transposedContent = transposeChordProContent(content, semitones);
+    setContent(transposedContent);
+  };
+
   return (
     <div style={{ padding: '20px', maxWidth: '1400px', margin: '0 auto' }}>
       <h1>ChordPro Syntax Highlighting Demo</h1>
@@ -84,12 +90,19 @@ The [Em]hour I [D]first be[G]lieved
         <li><strong>Autocomplete:</strong> Start typing a chord like <code>[C</code> to see suggestions</li>
         <li><strong>Chord Palette:</strong> Click any chord button to insert at cursor position</li> 
         <li><strong>Drag & Drop:</strong> Drag chords from the palette directly onto specific positions in the lyrics</li>
+        <li><strong>Chord Transposition:</strong> Use the transpose buttons (♭/♯) to transpose all chords up or down by semitones</li>
         <li><strong>Visual Feedback:</strong> Invalid chord names are highlighted with red underlines</li>
       </ul>
 
       <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start', marginTop: '20px' }}>
         <div style={{ flex: '1' }}>
-          <h2>Interactive Editor</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+            <h2>Interactive Editor</h2>
+            <TranspositionControls 
+              onTranspose={handleTranspose}
+              style={{ marginLeft: 'auto' }}
+            />
+          </div>
           <ChordProEditor
             ref={editorRef}
             value={content}

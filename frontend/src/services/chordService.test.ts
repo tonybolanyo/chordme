@@ -3,6 +3,8 @@ import {
   isValidChord,
   getChordSuggestions,
   detectChordInput,
+  transposeChord,
+  transposeChordProContent,
   type ChordSuggestion
 } from './chordService';
 
@@ -164,6 +166,100 @@ describe('ChordService', () => {
       // Invalid cursor positions
       expect(detectChordInput(text, -1).isInChord).toBe(false);
       expect(detectChordInput(text, 10).isInChord).toBe(false);
+    });
+  });
+
+  describe('transposeChord', () => {
+    it('transposes basic major chords up', () => {
+      expect(transposeChord('C', 1)).toBe('C#');
+      expect(transposeChord('C', 2)).toBe('D');
+      expect(transposeChord('C', 12)).toBe('C'); // Full octave
+    });
+
+    it('transposes basic major chords down', () => {
+      expect(transposeChord('C', -1)).toBe('B');
+      expect(transposeChord('C', -2)).toBe('A#');
+      expect(transposeChord('C', -12)).toBe('C'); // Full octave down
+    });
+
+    it('transposes minor chords', () => {
+      expect(transposeChord('Am', 2)).toBe('Bm');
+      expect(transposeChord('Dm', 3)).toBe('Fm');
+      expect(transposeChord('Em', -1)).toBe('D#m');
+    });
+
+    it('transposes complex chords', () => {
+      expect(transposeChord('Cmaj7', 2)).toBe('Dmaj7');
+      expect(transposeChord('Gsus4', 1)).toBe('G#sus4');
+      expect(transposeChord('F#m7', 3)).toBe('Am7');
+    });
+
+    it('handles flat notes (converts to sharps)', () => {
+      expect(transposeChord('Bb', 1)).toBe('B');
+      expect(transposeChord('Db', 2)).toBe('D#');
+      expect(transposeChord('Eb', -1)).toBe('D');
+    });
+
+    it('handles slash chords', () => {
+      expect(transposeChord('C/E', 2)).toBe('D/E');
+      expect(transposeChord('G/B', 1)).toBe('G#/B');
+    });
+
+    it('returns unchanged for invalid chords', () => {
+      expect(transposeChord('', 2)).toBe('');
+      expect(transposeChord('invalid', 2)).toBe('invalid');
+      expect(transposeChord('H', 2)).toBe('H'); // Invalid note
+    });
+
+    it('handles zero transposition', () => {
+      expect(transposeChord('C', 0)).toBe('C');
+      expect(transposeChord('Am7', 0)).toBe('Am7');
+    });
+  });
+
+  describe('transposeChordProContent', () => {
+    it('transposes all chords in ChordPro content', () => {
+      const content = '[C]Hello [G]world [Am]test';
+      const result = transposeChordProContent(content, 2);
+      expect(result).toBe('[D]Hello [A]world [Bm]test');
+    });
+
+    it('preserves lyrics and other content', () => {
+      const content = `{title: Test Song}
+# Verse 1
+[C]Amazing [G]grace
+Some lyrics without chords
+{chorus}`;
+      
+      const result = transposeChordProContent(content, 1);
+      expect(result).toContain('{title: Test Song}');
+      expect(result).toContain('# Verse 1');
+      expect(result).toContain('[C#]Amazing [G#]grace');
+      expect(result).toContain('Some lyrics without chords');
+      expect(result).toContain('{chorus}');
+    });
+
+    it('handles complex chord progressions', () => {
+      const content = '[Cmaj7]Test [F#m7]progression [Bb]with [G/B]various chords';
+      const result = transposeChordProContent(content, 3);
+      expect(result).toBe('[D#maj7]Test [Am7]progression [C#]with [A#/B]various chords');
+    });
+
+    it('returns unchanged for zero transposition', () => {
+      const content = '[C]Test [G]content';
+      const result = transposeChordProContent(content, 0);
+      expect(result).toBe(content);
+    });
+
+    it('returns unchanged for empty content', () => {
+      expect(transposeChordProContent('', 2)).toBe('');
+      expect(transposeChordProContent('No chords here', 2)).toBe('No chords here');
+    });
+
+    it('handles negative transposition', () => {
+      const content = '[C]Hello [G]world';
+      const result = transposeChordProContent(content, -1);
+      expect(result).toBe('[B]Hello [F#]world');
     });
   });
 });
