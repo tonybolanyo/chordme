@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ChordProDemo from './pages/ChordProDemo';
+import AuthCallback from './pages/AuthCallback';
 import './App.css';
 
 // Main app content that uses auth context
@@ -57,6 +58,8 @@ function AppContent() {
         return <Register />;
       case 'demo':
         return <ChordProDemo />;
+      case 'auth/google/callback':
+        return <AuthCallback />;
       case 'home':
       default:
         // Protect home page - redirect to login if not authenticated

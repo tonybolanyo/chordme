@@ -41,3 +41,48 @@ export interface AuthResponse {
   };
   error?: string;
 }
+
+// Google OAuth2 types
+export interface GoogleOAuth2Config {
+  clientId: string;
+  redirectUri: string;
+  scopes: string[];
+}
+
+export interface GoogleTokens {
+  access_token: string;
+  refresh_token?: string;
+  expires_in: number;
+  expires_at: number;
+  token_type: string;
+  scope: string;
+}
+
+export interface GoogleUserInfo {
+  id: string;
+  email: string;
+  name: string;
+  picture?: string;
+}
+
+export interface GoogleAuthResponse {
+  tokens: GoogleTokens;
+  userInfo: GoogleUserInfo;
+}
+
+// Google Drive file types
+export interface DriveFile {
+  id: string;
+  name: string;
+  mimeType: string;
+  modifiedTime: string;
+  size?: string;
+  webViewLink?: string;
+  parents?: string[];
+}
+
+export interface DriveFileList {
+  files: DriveFile[];
+  nextPageToken?: string;
+  incompleteSearch?: boolean;
+}
