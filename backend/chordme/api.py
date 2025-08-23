@@ -1049,6 +1049,183 @@ def validate_chordpro():
         )
 
 
+@app.route('/api/v1/songs/transpose-chordpro', methods=['POST'])
+@auth_required
+@validate_request_size(max_content_length=50*1024)  # 50KB for song content
+@rate_limit(max_requests=30, window_seconds=300)  # 30 transpositions per 5 minutes
+@csrf_protect(require_token=False)  # CSRF optional for API endpoints
+@security_headers
+def transpose_chordpro():
+    """
+    Transpose all chords in ChordPro content by a specified number of semitones
+    ---
+    tags:
+      - Songs
+    summary: Transpose ChordPro content
+    description: Transpose all chord symbols in ChordPro formatted content according to musical theory rules
+    security:
+      - Bearer: []
+    parameters:
+      - in: body
+        name: body
+        description: Content and transposition parameters
+        required: true
+        schema:
+          type: object
+          required:
+            - content
+            - semitones
+          properties:
+            content:
+              type: string
+              description: ChordPro content to transpose
+              example: "{title: Test Song}\n[C]Hello [G]world [Am]test"
+            semitones:
+              type: integer
+              description: Number of semitones to transpose (positive = up, negative = down)
+              minimum: -11
+              maximum: 11
+              example: 2
+    responses:
+      200:
+        description: Content transposed successfully
+        schema:
+          allOf:
+            - $ref: '#/definitions/Success'
+            - type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    original_content:
+                      type: string
+                      description: Original ChordPro content
+                    transposed_content:
+                      type: string
+                      description: Transposed ChordPro content
+                    semitones:
+                      type: integer
+                      description: Number of semitones transposed
+                    chords_changed:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          original:
+                            type: string
+                          transposed:
+                            type: string
+                      description: List of chord changes made
+      400:
+        description: Invalid input or validation error
+        schema:
+          $ref: '#/definitions/Error'
+      401:
+        description: Authentication required
+        schema:
+          $ref: '#/definitions/Error'
+      413:
+        description: Request entity too large
+        schema:
+          $ref: '#/definitions/Error'
+      429:
+        description: Too many requests
+        schema:
+          $ref: '#/definitions/Error'
+      500:
+        description: Internal server error
+        schema:
+          $ref: '#/definitions/Error'
+    """
+    try:
+        # Get JSON data from request
+        data = request.get_json()
+        
+        # Validate request data
+        if not data:
+            return create_error_response("Request body must be valid JSON", 400)
+        
+        content = data.get('content')
+        semitones = data.get('semitones')
+        
+        # Validate required fields
+        if content is None:
+            return create_error_response("Content is required", 400)
+        
+        if semitones is None:
+            return create_error_response("Semitones value is required", 400)
+        
+        # Validate content
+        content = sanitize_input(content)
+        if not content:
+            return create_error_response("Content cannot be empty", 400)
+        
+        # Validate semitones
+        try:
+            semitones = int(semitones)
+        except (ValueError, TypeError):
+            return create_error_response("Semitones must be an integer", 400)
+        
+        if semitones < -11 or semitones > 11:
+            return create_error_response("Semitones must be between -11 and 11", 400)
+        
+        # Import transposition functions
+        from .chordpro_utils import transpose_chordpro_content, ChordProValidator
+        
+        # Perform transposition
+        transposed_content = transpose_chordpro_content(content, semitones)
+        
+        # Find chord changes by comparing individual chords in content
+        import re
+        chord_pattern = re.compile(r'\[([^\]]+)\]')
+        
+        original_matches = list(chord_pattern.finditer(content))
+        transposed_matches = list(chord_pattern.finditer(transposed_content))
+        
+        chords_changed = []
+        seen_changes = set()
+        
+        # Compare each chord occurrence
+        for orig_match, trans_match in zip(original_matches, transposed_matches):
+            original_chord = orig_match.group(1)
+            transposed_chord = trans_match.group(1)
+            
+            if original_chord != transposed_chord:
+                change_pair = (original_chord, transposed_chord)
+                if change_pair not in seen_changes:
+                    chords_changed.append({
+                        'original': original_chord,
+                        'transposed': transposed_chord
+                    })
+                    seen_changes.add(change_pair)
+        
+        # If no semitones change, add note about no change
+        if semitones == 0:
+            message = "No transposition applied (0 semitones)"
+        else:
+            direction = "up" if semitones > 0 else "down"
+            message = f"Content transposed {abs(semitones)} semitones {direction}"
+        
+        app.logger.info(f"ChordPro transposition performed: {semitones} semitones by user {g.current_user_id} from IP {request.remote_addr}")
+        
+        return create_success_response(
+            data={
+                'original_content': content,
+                'transposed_content': transposed_content,
+                'semitones': semitones,
+                'chords_changed': chords_changed
+            },
+            message=message
+        )
+        
+    except Exception as e:
+        return security_error_handler.handle_server_error(
+            "An error occurred while transposing ChordPro content",
+            exception=e,
+            ip_address=request.remote_addr
+        )
+
+
 @app.route('/api/v1/songs/upload', methods=['POST'])
 @auth_required
 @rate_limit(max_requests=10, window_seconds=300)  # 10 uploads per 5 minutes

@@ -100,6 +100,7 @@ Actions:
 - `DELETE /api/v1/songs/{id}` - Delete song
 - `GET /api/v1/songs/{id}/download` - Download song file
 - `POST /api/v1/songs/validate-chordpro` - Validate ChordPro content
+- `POST /api/v1/songs/transpose-chordpro` - Transpose ChordPro content
 
 ## Data Models
 
