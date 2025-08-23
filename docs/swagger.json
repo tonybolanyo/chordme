@@ -1239,6 +1239,206 @@
           "Songs"
         ]
       }
+    },
+    "/songs/{song_id}/sections": {
+      "get": {
+        "description": "Retrieve all sections for a specific song (only if owned by authenticated user)",
+        "parameters": [
+          {
+            "description": "Song ID",
+            "in": "path",
+            "minimum": 1,
+            "name": "song_id",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Song sections retrieved successfully",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Success"
+                },
+                {
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "sections": {
+                          "items": {
+                            "properties": {
+                              "content": {
+                                "description": "Raw ChordPro content for this section",
+                                "type": "string"
+                              },
+                              "created_at": {
+                                "format": "date-time",
+                                "type": "string"
+                              },
+                              "id": {
+                                "description": "Section ID",
+                                "type": "integer"
+                              },
+                              "order_index": {
+                                "description": "Order of section in the song",
+                                "type": "integer"
+                              },
+                              "section_number": {
+                                "description": "Section number (if applicable)",
+                                "type": "string"
+                              },
+                              "section_type": {
+                                "description": "Type of section (verse, chorus, bridge, etc.)",
+                                "type": "string"
+                              },
+                              "updated_at": {
+                                "format": "date-time",
+                                "type": "string"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "type": "array"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              ]
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Song not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Get all sections for a specific song",
+        "tags": [
+          "Songs"
+        ]
+      }
+    },
+    "/songs/{song_id}/sections/{section_id}": {
+      "get": {
+        "description": "Retrieve a specific section by its ID (only if song is owned by authenticated user)",
+        "parameters": [
+          {
+            "description": "Song ID",
+            "in": "path",
+            "minimum": 1,
+            "name": "song_id",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "description": "Section ID",
+            "in": "path",
+            "minimum": 1,
+            "name": "section_id",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Song section retrieved successfully",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Success"
+                },
+                {
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "content": {
+                          "description": "Raw ChordPro content for this section",
+                          "type": "string"
+                        },
+                        "created_at": {
+                          "format": "date-time",
+                          "type": "string"
+                        },
+                        "id": {
+                          "description": "Section ID",
+                          "type": "integer"
+                        },
+                        "order_index": {
+                          "description": "Order of section in the song",
+                          "type": "integer"
+                        },
+                        "section_number": {
+                          "description": "Section number (if applicable)",
+                          "type": "string"
+                        },
+                        "section_type": {
+                          "description": "Type of section (verse, chorus, bridge, etc.)",
+                          "type": "string"
+                        },
+                        "updated_at": {
+                          "format": "date-time",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              ]
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Song or section not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Get a specific section by ID",
+        "tags": [
+          "Songs"
+        ]
+      }
     }
   },
   "produces": [
