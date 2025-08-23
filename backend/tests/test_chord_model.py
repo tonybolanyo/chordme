@@ -12,7 +12,7 @@ class TestChordModel:
         """Test creating a chord instance."""
         with app.app_context():
             # Create a user first
-            user = User(email='test@example.com', password='TestPassword123')
+            user = User(email='test_chord_creation@example.com', password='TestPassword123')
             db.session.add(user)
             db.session.commit()
             
