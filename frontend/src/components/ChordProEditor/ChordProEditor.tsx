@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback, forwardRef } from 'react';
 import './ChordProEditor.css';
+import ChordAutocomplete from '../ChordAutocomplete';
+import { detectChordInput, isValidChord } from '../../services/chordService';
 
 interface ChordProEditorProps {
   value: string;
@@ -10,6 +12,7 @@ interface ChordProEditorProps {
   style?: React.CSSProperties;
   required?: boolean;
   allowDrop?: boolean; // New prop to enable/disable drop functionality
+  enableAutocomplete?: boolean; // New prop to enable/disable autocomplete
 }
 
 interface Token {
@@ -28,12 +31,19 @@ const ChordProEditor = forwardRef<HTMLTextAreaElement, ChordProEditorProps>(({
   style,
   required = false,
   allowDrop = true, // Enable drop by default
+  enableAutocomplete = true, // Enable autocomplete by default
 }, ref) => {
   const internalRef = useRef<HTMLTextAreaElement>(null);
   const textareaRef = (ref as React.RefObject<HTMLTextAreaElement>) || internalRef;
   const highlightRef = useRef<HTMLDivElement>(null);
   const [isScrolling, setIsScrolling] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
+  
+  // Autocomplete state
+  const [autocompleteVisible, setAutocompleteVisible] = useState(false);
+  const [autocompletePosition, setAutocompletePosition] = useState({ top: 0, left: 0 });
+  const [currentChordInput, setCurrentChordInput] = useState('');
+  const [chordInputPosition, setChordInputPosition] = useState<{ start: number; end: number } | null>(null);
 
   // Parse ChordPro content and identify tokens
   const parseChordPro = (text: string): Token[] => {
@@ -178,7 +188,18 @@ const ChordProEditor = forwardRef<HTMLTextAreaElement, ChordProEditorProps>(({
 
       // Add the token with its CSS class
       const escapedContent = escapeHtml(token.content);
-      highlightedHTML += `<span class="chordpro-${token.type}">${escapedContent}</span>`;
+      
+      if (token.type === 'chord') {
+        // Extract chord content without brackets for validation
+        const chordMatch = token.content.match(/\[([^\]]*)\]/);
+        const chordName = chordMatch ? chordMatch[1] : '';
+        const isValidChordToken = chordName ? isValidChord(chordName) : false;
+        const validityClass = isValidChordToken ? '' : ' invalid';
+        
+        highlightedHTML += `<span class="chordpro-${token.type}${validityClass}">${escapedContent}</span>`;
+      } else {
+        highlightedHTML += `<span class="chordpro-${token.type}">${escapedContent}</span>`;
+      }
 
       lastEnd = token.end;
     });
@@ -284,6 +305,132 @@ const ChordProEditor = forwardRef<HTMLTextAreaElement, ChordProEditorProps>(({
     }
   }, [value, textareaRef]);
 
+  // Calculate cursor position for autocomplete positioning
+  const calculateAutocompletePosition = useCallback((cursorPosition: number): { top: number; left: number } => {
+    const textarea = textareaRef.current;
+    if (!textarea) return { top: 0, left: 0 };
+
+    const rect = textarea.getBoundingClientRect();
+    const computedStyle = getComputedStyle(textarea);
+    const lineHeight = parseFloat(computedStyle.lineHeight);
+    
+    // Calculate the line number
+    const textBeforeCursor = value.substring(0, cursorPosition);
+    const lineNumber = (textBeforeCursor.match(/\n/g) || []).length;
+    
+    // Calculate position within the current line
+    const currentLineStart = textBeforeCursor.lastIndexOf('\n') + 1;
+    const currentLineText = textBeforeCursor.substring(currentLineStart);
+    
+    // Create a temporary element to measure text width
+    const tempElement = document.createElement('span');
+    tempElement.style.visibility = 'hidden';
+    tempElement.style.position = 'absolute';
+    tempElement.style.whiteSpace = 'pre';
+    tempElement.style.fontFamily = computedStyle.fontFamily;
+    tempElement.style.fontSize = computedStyle.fontSize;
+    tempElement.textContent = currentLineText;
+    
+    document.body.appendChild(tempElement);
+    const textWidth = tempElement.offsetWidth;
+    document.body.removeChild(tempElement);
+    
+    return {
+      top: rect.top + window.scrollY + lineHeight * (lineNumber + 1) + parseFloat(computedStyle.paddingTop),
+      left: rect.left + window.scrollX + textWidth + parseFloat(computedStyle.paddingLeft)
+    };
+  }, [value, textareaRef]);
+
+  // Handle chord input detection and autocomplete
+  const handleChordInput = useCallback((cursorPosition: number) => {
+    if (!enableAutocomplete) return;
+    
+    const chordInfo = detectChordInput(value, cursorPosition);
+    
+    if (chordInfo.isInChord && chordInfo.chordText !== undefined) {
+      setCurrentChordInput(chordInfo.chordText);
+      setChordInputPosition({
+        start: chordInfo.chordStart!,
+        end: chordInfo.chordEnd!
+      });
+      
+      // Only show autocomplete if there's some input and it's not just spaces
+      if (chordInfo.chordText.trim().length > 0) {
+        const position = calculateAutocompletePosition(cursorPosition);
+        setAutocompletePosition(position);
+        setAutocompleteVisible(true);
+      } else {
+        setAutocompleteVisible(false);
+      }
+    } else {
+      setAutocompleteVisible(false);
+      setCurrentChordInput('');
+      setChordInputPosition(null);
+    }
+  }, [value, enableAutocomplete, calculateAutocompletePosition]);
+
+  // Handle chord selection from autocomplete
+  const handleChordSelect = useCallback((selectedChord: string) => {
+    if (!chordInputPosition || !textareaRef.current) return;
+    
+    const newValue = 
+      value.substring(0, chordInputPosition.start) +
+      selectedChord +
+      value.substring(chordInputPosition.end);
+    
+    onChange(newValue);
+    
+    // Position cursor after the inserted chord
+    const newCursorPos = chordInputPosition.start + selectedChord.length;
+    setTimeout(() => {
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+        textareaRef.current.setSelectionRange(newCursorPos, newCursorPos);
+      }
+    }, 0);
+    
+    setAutocompleteVisible(false);
+  }, [chordInputPosition, value, onChange, textareaRef]);
+
+  // Handle input changes with chord detection
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newValue = e.target.value;
+    onChange(newValue);
+    
+    // Check for chord input after a short delay to allow cursor position to update
+    setTimeout(() => {
+      if (textareaRef.current) {
+        handleChordInput(textareaRef.current.selectionStart);
+      }
+    }, 0);
+  }, [onChange, handleChordInput, textareaRef]);
+
+  // Handle cursor position changes (clicks, arrow keys, etc.)
+  const handleSelectionChange = useCallback(() => {
+    if (textareaRef.current) {
+      handleChordInput(textareaRef.current.selectionStart);
+    }
+  }, [handleChordInput, textareaRef]);
+
+  // Handle special keys that might affect autocomplete
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Allow autocomplete to handle its own key events when visible
+    if (autocompleteVisible) {
+      // Only handle keys that should close autocomplete or be passed through
+      if (['Escape', 'ArrowDown', 'ArrowUp', 'Enter', 'Tab'].includes(e.key)) {
+        // Let the autocomplete component handle these
+        return;
+      }
+    }
+    
+    // Update chord input detection on any key that might change cursor position
+    setTimeout(() => {
+      if (textareaRef.current) {
+        handleChordInput(textareaRef.current.selectionStart);
+      }
+    }, 0);
+  }, [autocompleteVisible, handleChordInput, textareaRef]);
+
   // Drop event handlers
   const handleDragOver = useCallback((e: React.DragEvent) => {
     if (!allowDrop) return;
@@ -354,31 +501,46 @@ const ChordProEditor = forwardRef<HTMLTextAreaElement, ChordProEditorProps>(({
   }, [handleScroll, textareaRef]);
 
   return (
-    <div 
-      className={`chordpro-editor-container ${isDragOver ? 'drag-over' : ''}`} 
-      style={style}
-      onDragOver={handleDragOver}
-      onDragEnter={handleDragEnter}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
-    >
-      <div
-        ref={highlightRef}
-        className="chordpro-highlight-layer"
-        dangerouslySetInnerHTML={{ __html: generateHighlightedHTML(value) }}
-      />
-      <textarea
-        ref={textareaRef}
-        id={id}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        rows={rows}
-        required={required}
-        className="chordpro-textarea"
-        spellCheck={false}
-      />
-    </div>
+    <>
+      <div 
+        className={`chordpro-editor-container ${isDragOver ? 'drag-over' : ''}`} 
+        style={style}
+        onDragOver={handleDragOver}
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
+        <div
+          ref={highlightRef}
+          className="chordpro-highlight-layer"
+          dangerouslySetInnerHTML={{ __html: generateHighlightedHTML(value) }}
+        />
+        <textarea
+          ref={textareaRef}
+          id={id}
+          value={value}
+          onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
+          onSelect={handleSelectionChange}
+          onClick={handleSelectionChange}
+          placeholder={placeholder}
+          rows={rows}
+          required={required}
+          className="chordpro-textarea"
+          spellCheck={false}
+        />
+      </div>
+      
+      {enableAutocomplete && (
+        <ChordAutocomplete
+          inputText={currentChordInput}
+          onSelectChord={handleChordSelect}
+          onClose={() => setAutocompleteVisible(false)}
+          position={autocompletePosition}
+          visible={autocompleteVisible}
+        />
+      )}
+    </>
   );
 });
 

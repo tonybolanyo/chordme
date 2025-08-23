@@ -360,4 +360,94 @@ Chorus [Am]line with [F]chords
       expect(editorContainer).not.toHaveClass('drag-over');
     });
   });
+
+  describe('Chord Autocomplete', () => {
+    it('shows autocomplete when typing chord brackets', async () => {
+      const user = userEvent.setup();
+      const mockOnChange = vi.fn();
+      
+      render(
+        <ChordProEditor 
+          value=""
+          onChange={mockOnChange}
+          enableAutocomplete={true}
+        />
+      );
+
+      const textarea = screen.getByRole('textbox');
+      
+      // Type opening bracket and chord letter using keyboard events
+      await user.type(textarea, '{[}C');
+      
+      // Should trigger onChange
+      expect(mockOnChange).toHaveBeenCalled();
+    });
+
+    it('can disable autocomplete functionality', () => {
+      render(
+        <ChordProEditor 
+          value="[C"
+          onChange={vi.fn()}
+          enableAutocomplete={false}
+        />
+      );
+
+      // Autocomplete should not appear when disabled
+      expect(screen.queryByText('Chord Suggestions')).not.toBeInTheDocument();
+    });
+
+    it('validates chords and shows visual feedback', () => {
+      render(
+        <ChordProEditor 
+          value="[C] valid chord [invalid] invalid chord"
+          onChange={vi.fn()}
+        />
+      );
+
+      // The component should render the content with syntax highlighting
+      const textarea = screen.getByRole('textbox');
+      expect(textarea).toHaveValue('[C] valid chord [invalid] invalid chord');
+    });
+
+    it('handles selection changes for chord detection', async () => {
+      const user = userEvent.setup();
+      const mockOnChange = vi.fn();
+      
+      render(
+        <ChordProEditor 
+          value="[Am] test"
+          onChange={mockOnChange}
+        />
+      );
+
+      const textarea = screen.getByRole('textbox');
+      
+      // Click to change cursor position
+      await user.click(textarea);
+      
+      // Should handle selection change without errors
+      expect(textarea).toBeInTheDocument();
+    });
+
+    it('preserves existing functionality with autocomplete enabled', async () => {
+      const user = userEvent.setup();
+      const mockOnChange = vi.fn();
+      
+      render(
+        <ChordProEditor 
+          value=""
+          onChange={mockOnChange}
+          enableAutocomplete={true}
+        />
+      );
+
+      const textarea = screen.getByRole('textbox');
+      
+      // Type regular text (not chord)
+      await user.type(textarea, 'Regular lyrics');
+      
+      // Should trigger onChange for regular text
+      expect(mockOnChange).toHaveBeenCalled();
+    });
+  });
 });

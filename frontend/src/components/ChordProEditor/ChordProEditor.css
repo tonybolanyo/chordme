@@ -50,6 +50,12 @@
   border-radius: 2px;
 }
 
+.chordpro-chord.invalid {
+  color: #dc2626; /* Red for invalid chords */
+  background-color: rgba(220, 38, 38, 0.1);
+  text-decoration: underline wavy #dc2626;
+}
+
 .chordpro-directive {
   color: #dc2626; /* Red for directives */
   font-weight: bold;
@@ -110,6 +116,12 @@
   .chordpro-chord {
     color: #60a5fa;
     background-color: rgba(96, 165, 250, 0.1);
+  }
+
+  .chordpro-chord.invalid {
+    color: #f87171;
+    background-color: rgba(248, 113, 113, 0.1);
+    text-decoration: underline wavy #f87171;
   }
 
   .chordpro-directive {
