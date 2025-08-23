@@ -33,7 +33,7 @@ vi.mock('../../services/googleOAuth', () => ({
 }));
 
 vi.mock('../../components/GoogleAuth', () => ({
-  GoogleAuthButton: ({ onAuthSuccess, onAuthError }: any) => (
+  GoogleAuthButton: ({ onAuthSuccess }: { onAuthSuccess?: (userInfo: { id: string; email: string; name: string }) => void; onAuthError?: (error: string) => void }) => (
     <button
       onClick={() => {
         // Mock successful auth for testing

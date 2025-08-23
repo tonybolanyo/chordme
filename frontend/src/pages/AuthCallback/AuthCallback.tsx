@@ -12,7 +12,7 @@ const AuthCallback: React.FC = () => {
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');
         const error = urlParams.get('error');
-        const state = urlParams.get('state');
+        // const state = urlParams.get('state'); // Future use for CSRF validation
 
         if (error) {
           setStatus('error');

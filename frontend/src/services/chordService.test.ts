@@ -5,7 +5,6 @@ import {
   detectChordInput,
   transposeChord,
   transposeChordProContent,
-  type ChordSuggestion
 } from './chordService';
 
 describe('ChordService', () => {

@@ -10,7 +10,8 @@ interface GoogleAuthButtonProps {
 }
 
 export const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
-  onAuthSuccess,
+  // onAuthSuccess is kept for future use but not currently needed since auth is handled via redirect
+  // onAuthSuccess,
   onAuthError,
   className = '',
   disabled = false,

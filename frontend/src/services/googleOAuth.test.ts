@@ -137,17 +137,20 @@ describe('GoogleOAuth2Service', () => {
   describe('OAuth2 Flow', () => {
     it('should throw error when client ID is not configured', async () => {
       // Create a new service instance with empty client ID
-      const service = new (await import('./googleOAuth')).googleOAuth2Service.constructor();
+      const GoogleOAuth2ServiceClass = (await import('./googleOAuth')).googleOAuth2Service.constructor as new () => typeof googleOAuth2Service;
+      const service = new GoogleOAuth2ServiceClass();
       // Override the config for this test
-      (service as any).config.clientId = '';
+      (service as unknown as { config: { clientId: string } }).config.clientId = '';
       
       await expect(service.startAuthFlow()).rejects.toThrow('Google Client ID not configured');
     });
 
     it('should start auth flow and redirect to Google', async () => {
-      const originalLocation = window.location;
-      delete (window as any).location;
-      window.location = { ...originalLocation, href: '' } as any;
+      // Mock window.location
+      Object.defineProperty(window, 'location', {
+        value: { href: '', origin: 'http://localhost:5173' },
+        writable: true,
+      });
 
       await googleOAuth2Service.startAuthFlow();
 
@@ -156,8 +159,6 @@ describe('GoogleOAuth2Service', () => {
       expect(window.location.href).toContain('code_challenge=');
       expect(window.location.href).toContain('code_challenge_method=S256');
       expect(sessionStorage.getItem('googleCodeVerifier')).toBeTruthy();
-
-      window.location = originalLocation;
     });
 
     it('should handle auth callback successfully', async () => {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { googleOAuth2Service } from '../../services/googleOAuth';
 import type { DriveFile, DriveFileList } from '../../types';
 
@@ -26,14 +26,14 @@ export const GoogleDriveFileList: React.FC<GoogleDriveFileListProps> = ({
     if (googleOAuth2Service.isAuthenticated()) {
       loadFiles();
     }
-  }, []);
+  }, [loadFiles]);
 
-  const buildQuery = () => {
+  const buildQuery = useCallback(() => {
     const mimeTypeQuery = fileTypes.map(type => `mimeType='${type}'`).join(' or ');
     return `(${mimeTypeQuery}) and trashed=false`;
-  };
+  }, [fileTypes]);
 
-  const loadFiles = async (pageToken?: string) => {
+  const loadFiles = useCallback(async (pageToken?: string) => {
     try {
       setIsLoading(true);
       
@@ -58,7 +58,7 @@ export const GoogleDriveFileList: React.FC<GoogleDriveFileListProps> = ({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [maxResults, buildQuery, onError]);
 
   const loadMoreFiles = () => {
     if (nextPageToken && !isLoading) {
