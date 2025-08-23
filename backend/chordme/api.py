@@ -1,5 +1,5 @@
 from . import app, db, __version__
-from .models import User, Song, Chord
+from .models import User, Song, Chord, SongSection
 from .utils import validate_email, validate_password, create_error_response, create_success_response, generate_jwt_token, sanitize_input, auth_required, validate_positive_integer, validate_request_size, sanitize_html_content
 from .rate_limiter import rate_limit
 from .csrf_protection import csrf_protect, get_csrf_token
@@ -530,8 +530,22 @@ def create_song():
         # Create new song
         new_song = Song(title=title, author_id=g.current_user_id, content=content)
         
-        # Save to database
+        # Save to database first to get song ID
         db.session.add(new_song)
+        db.session.flush()  # This assigns the ID without committing
+        
+        # Parse and store sections
+        sections = ChordProValidator.extract_sections(content)
+        for section_data in sections:
+            section = SongSection(
+                song_id=new_song.id,
+                section_type=section_data['section_type'],
+                section_number=section_data['section_number'],
+                content=section_data['content'],
+                order_index=section_data['order_index']
+            )
+            db.session.add(section)
+        
         db.session.commit()
         
         app.logger.info(f"Song created: {title} by user {g.current_user_id} from IP {request.remote_addr}")
@@ -720,6 +734,21 @@ def update_song(song_id):
         
         if content:
             song.content = content
+            
+            # Delete existing sections for this song
+            SongSection.query.filter_by(song_id=song.id).delete()
+            
+            # Parse and store new sections
+            sections = ChordProValidator.extract_sections(content)
+            for section_data in sections:
+                section = SongSection(
+                    song_id=song.id,
+                    section_type=section_data['section_type'],
+                    section_number=section_data['section_number'],
+                    content=section_data['content'],
+                    order_index=section_data['order_index']
+                )
+                db.session.add(section)
         
         # Save changes
         db.session.commit()
@@ -1106,8 +1135,22 @@ def upload_song_file():
         # Create new song
         new_song = Song(title=title, author_id=g.current_user_id, content=content)
         
-        # Save to database
+        # Save to database first to get song ID
         db.session.add(new_song)
+        db.session.flush()  # This assigns the ID without committing
+        
+        # Parse and store sections
+        sections = ChordProValidator.extract_sections(content)
+        for section_data in sections:
+            section = SongSection(
+                song_id=new_song.id,
+                section_type=section_data['section_type'],
+                section_number=section_data['section_number'],
+                content=section_data['content'],
+                order_index=section_data['order_index']
+            )
+            db.session.add(section)
+        
         db.session.commit()
         
         app.logger.info(f"Song uploaded: {title} by user {g.current_user_id} from IP {request.remote_addr}")
@@ -1217,6 +1260,19 @@ def upload_multiple_song_files():
                 # Create new song
                 new_song = Song(title=title, author_id=g.current_user_id, content=content)
                 db.session.add(new_song)
+                db.session.flush()  # Get the ID for sections
+                
+                # Parse and store sections for this song
+                sections = ChordProValidator.extract_sections(content)
+                for section_data in sections:
+                    section = SongSection(
+                        song_id=new_song.id,
+                        section_type=section_data['section_type'],
+                        section_number=section_data['section_number'],
+                        content=section_data['content'],
+                        order_index=section_data['order_index']
+                    )
+                    db.session.add(section)
                 
                 uploaded_songs.append({
                     'filename': file.filename,
@@ -1228,7 +1284,7 @@ def upload_multiple_song_files():
                 errors.append(f"{file.filename}: {str(e)}")
                 continue
         
-        # Commit all valid songs
+        # Commit all valid songs and their sections
         if uploaded_songs:
             db.session.commit()
             
@@ -1348,6 +1404,205 @@ def download_all_songs():
     except Exception as e:
         return security_error_handler.handle_server_error(
             "An error occurred while downloading songs",
+            exception=e,
+            ip_address=request.remote_addr
+        )
+
+
+
+# Song sections endpoints - all require authentication
+
+@app.route('/api/v1/songs/<int:song_id>/sections', methods=['GET'])
+@auth_required
+@validate_positive_integer('song_id')
+@security_headers
+def get_song_sections(song_id):
+    """
+    Get all sections for a specific song
+    ---
+    tags:
+      - Songs
+    summary: Get song sections
+    description: Retrieve all sections for a specific song (only if owned by authenticated user)
+    security:
+      - Bearer: []
+    parameters:
+      - in: path
+        name: song_id
+        description: Song ID
+        required: true
+        type: integer
+        minimum: 1
+    responses:
+      200:
+        description: Song sections retrieved successfully
+        schema:
+          allOf:
+            - $ref: '#/definitions/Success'
+            - type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    sections:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                            description: Section ID
+                          section_type:
+                            type: string
+                            description: Type of section (verse, chorus, bridge, etc.)
+                          section_number:
+                            type: string
+                            description: Section number (if applicable)
+                          content:
+                            type: string
+                            description: Raw ChordPro content for this section
+                          order_index:
+                            type: integer
+                            description: Order of section in the song
+                          created_at:
+                            type: string
+                            format: date-time
+                          updated_at:
+                            type: string
+                            format: date-time
+      401:
+        description: Authentication required
+        schema:
+          $ref: '#/definitions/Error'
+      404:
+        description: Song not found
+        schema:
+          $ref: '#/definitions/Error'
+      500:
+        description: Internal server error
+        schema:
+          $ref: '#/definitions/Error'
+    """
+    try:
+        # Find song by ID and ensure it belongs to the current user
+        song = Song.query.filter_by(id=song_id, author_id=g.current_user_id).first()
+        
+        if not song:
+            return create_error_response("Song not found", 404)
+        
+        # Get sections ordered by their index
+        sections = SongSection.query.filter_by(song_id=song_id).order_by(SongSection.order_index).all()
+        
+        # Convert to dict format
+        sections_data = [section.to_dict() for section in sections]
+        
+        return create_success_response(
+            data={'sections': sections_data},
+            message=f"Retrieved {len(sections_data)} sections for song"
+        )
+        
+    except Exception as e:
+        return security_error_handler.handle_server_error(
+            "An error occurred while retrieving song sections",
+            exception=e,
+            ip_address=request.remote_addr
+        )
+
+
+@app.route('/api/v1/songs/<int:song_id>/sections/<int:section_id>', methods=['GET'])
+@auth_required
+@validate_positive_integer('song_id')
+@validate_positive_integer('section_id')
+@security_headers
+def get_song_section(song_id, section_id):
+    """
+    Get a specific section by ID
+    ---
+    tags:
+      - Songs
+    summary: Get specific song section
+    description: Retrieve a specific section by its ID (only if song is owned by authenticated user)
+    security:
+      - Bearer: []
+    parameters:
+      - in: path
+        name: song_id
+        description: Song ID
+        required: true
+        type: integer
+        minimum: 1
+      - in: path
+        name: section_id
+        description: Section ID
+        required: true
+        type: integer
+        minimum: 1
+    responses:
+      200:
+        description: Song section retrieved successfully
+        schema:
+          allOf:
+            - $ref: '#/definitions/Success'
+            - type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      description: Section ID
+                    section_type:
+                      type: string
+                      description: Type of section (verse, chorus, bridge, etc.)
+                    section_number:
+                      type: string
+                      description: Section number (if applicable)
+                    content:
+                      type: string
+                      description: Raw ChordPro content for this section
+                    order_index:
+                      type: integer
+                      description: Order of section in the song
+                    created_at:
+                      type: string
+                      format: date-time
+                    updated_at:
+                      type: string
+                      format: date-time
+      401:
+        description: Authentication required
+        schema:
+          $ref: '#/definitions/Error'
+      404:
+        description: Song or section not found
+        schema:
+          $ref: '#/definitions/Error'
+      500:
+        description: Internal server error
+        schema:
+          $ref: '#/definitions/Error'
+    """
+    try:
+        # Find song by ID and ensure it belongs to the current user
+        song = Song.query.filter_by(id=song_id, author_id=g.current_user_id).first()
+        
+        if not song:
+            return create_error_response("Song not found", 404)
+        
+        # Find specific section for this song
+        section = SongSection.query.filter_by(id=section_id, song_id=song_id).first()
+        
+        if not section:
+            return create_error_response("Section not found", 404)
+        
+        return create_success_response(
+            data=section.to_dict(),
+            message="Section retrieved successfully"
+        )
+        
+    except Exception as e:
+        return security_error_handler.handle_server_error(
+            "An error occurred while retrieving the section",
             exception=e,
             ip_address=request.remote_addr
         )
