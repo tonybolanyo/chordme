@@ -1,0 +1,108 @@
+.chord-autocomplete {
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-width: 300px;
+  min-width: 200px;
+  font-family: inherit;
+}
+
+.chord-autocomplete-header {
+  padding: 8px 12px;
+  background: #f5f5f5;
+  border-bottom: 1px solid #ddd;
+  border-radius: 4px 4px 0 0;
+}
+
+.chord-autocomplete-title {
+  font-weight: 600;
+  font-size: 12px;
+  color: #333;
+  display: block;
+}
+
+.chord-autocomplete-hint {
+  font-size: 10px;
+  color: #666;
+  font-style: italic;
+  margin-top: 2px;
+  display: block;
+}
+
+.chord-autocomplete-list {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.chord-autocomplete-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background-color 0.15s ease;
+  font-size: 14px;
+}
+
+.chord-autocomplete-item:hover {
+  background-color: #f0f0f0;
+}
+
+.chord-autocomplete-item.selected {
+  background-color: #e6f3ff;
+  color: #0066cc;
+}
+
+.chord-autocomplete-item.valid .chord-name {
+  color: #333;
+}
+
+.chord-autocomplete-item.invalid .chord-name {
+  color: #d32f2f;
+  text-decoration: line-through;
+}
+
+.chord-name {
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+}
+
+.chord-validity-indicator {
+  font-size: 12px;
+  font-weight: bold;
+  min-width: 16px;
+  text-align: center;
+}
+
+.chord-autocomplete-item.valid .chord-validity-indicator {
+  color: #4caf50;
+}
+
+.chord-autocomplete-item.invalid .chord-validity-indicator {
+  color: #d32f2f;
+}
+
+/* Responsive design */
+@media (max-width: 480px) {
+  .chord-autocomplete {
+    max-width: 250px;
+    min-width: 180px;
+  }
+  
+  .chord-autocomplete-item {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+  
+  .chord-autocomplete-title {
+    font-size: 11px;
+  }
+  
+  .chord-autocomplete-hint {
+    font-size: 9px;
+  }
+}
