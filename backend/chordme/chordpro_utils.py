@@ -347,6 +347,116 @@ class ChordProValidator:
         return section_type, section_number
 
 
+# Chord transposition utilities
+# Chromatic scale for chord transposition (matching frontend implementation)
+CHROMATIC_SCALE = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+
+# Enharmonic equivalents mapping (flats to sharps)
+ENHARMONIC_MAP = {
+    'Db': 'C#',
+    'Eb': 'D#', 
+    'Gb': 'F#',
+    'Ab': 'G#',
+    'Bb': 'A#'
+}
+
+
+def parse_chord(chord: str) -> Dict[str, str]:
+    """
+    Parse a chord name into root note and modifiers.
+    
+    Args:
+        chord: The chord string (e.g., "C", "Am", "F#m7")
+        
+    Returns:
+        dict: Dictionary with 'root' and 'modifiers' keys
+    """
+    trimmed = chord.strip()
+    if not trimmed:
+        return {'root': '', 'modifiers': ''}
+    
+    # Handle flat notes (e.g., Bb, Db)
+    if len(trimmed) >= 2 and trimmed[1] == 'b':
+        return {
+            'root': trimmed[:2],
+            'modifiers': trimmed[2:]
+        }
+    
+    # Handle sharp notes (e.g., C#, F#)
+    if len(trimmed) >= 2 and trimmed[1] == '#':
+        return {
+            'root': trimmed[:2],
+            'modifiers': trimmed[2:]
+        }
+    
+    # Handle natural notes (e.g., C, D, E)
+    return {
+        'root': trimmed[:1],
+        'modifiers': trimmed[1:]
+    }
+
+
+def transpose_chord(chord: str, semitones: int) -> str:
+    """
+    Transpose a single chord by a given number of semitones.
+    
+    Args:
+        chord: The chord string (e.g., "C", "Am", "F#m7")
+        semitones: Number of semitones to transpose (positive = up, negative = down)
+        
+    Returns:
+        str: The transposed chord
+    """
+    if not chord or not ChordProValidator.is_valid_chord(chord):
+        return chord  # Return unchanged if invalid
+    
+    parsed = parse_chord(chord)
+    root = parsed['root']
+    modifiers = parsed['modifiers']
+    
+    # Convert flat to sharp for easier processing
+    normalized_root = ENHARMONIC_MAP.get(root, root)
+    
+    # Find current position in chromatic scale
+    try:
+        current_index = CHROMATIC_SCALE.index(normalized_root)
+    except ValueError:
+        return chord  # Return unchanged if root note not found
+    
+    # Calculate new position (handle negative transposition and wrap around)
+    new_index = (current_index + semitones) % 12
+    if new_index < 0:
+        new_index += 12
+    
+    new_root = CHROMATIC_SCALE[new_index]
+    return new_root + modifiers
+
+
+def transpose_chordpro_content(content: str, semitones: int) -> str:
+    """
+    Transpose all chords in ChordPro content by a given number of semitones.
+    
+    Args:
+        content: The ChordPro formatted content
+        semitones: Number of semitones to transpose (positive = up, negative = down)
+        
+    Returns:
+        str: The content with all chords transposed
+    """
+    if not content or semitones == 0:
+        return content
+    
+    # Regular expression to find chord notation in ChordPro format [ChordName]
+    chord_pattern = re.compile(r'\[([^\]]+)\]')
+    
+    def transpose_match(match):
+        chord_name = match.group(1)
+        transposed_chord = transpose_chord(chord_name, semitones)
+        return f'[{transposed_chord}]'
+    
+    return chord_pattern.sub(transpose_match, content)
+
+
 def validate_chordpro_content(content: str) -> Dict:
     """
     Comprehensive ChordPro content validation.
