@@ -19,6 +19,9 @@ class User(db.Model):
     # Relationship to songs
     songs = db.relationship('Song', backref='author', lazy=True, cascade='all, delete-orphan')
     
+    # Relationship to custom chords
+    chords = db.relationship('Chord', backref='owner', lazy=True, cascade='all, delete-orphan')
+    
     def __init__(self, email, password):
         self.email = email
         self.set_password(password)
@@ -141,3 +144,36 @@ class Song(db.Model):
     
     def __repr__(self):
         return f'<Song {self.title}>'
+
+
+class Chord(db.Model):
+    __tablename__ = 'chords'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
+    definition = db.Column(db.Text, nullable=False)
+    description = db.Column(db.Text)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def __init__(self, name, definition, user_id, description=None):
+        self.name = name
+        self.definition = definition
+        self.user_id = user_id
+        self.description = description
+    
+    def to_dict(self):
+        """Convert chord to dictionary."""
+        return {
+            'id': self.id,
+            'name': self.name,
+            'definition': self.definition,
+            'description': self.description,
+            'user_id': self.user_id,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+    
+    def __repr__(self):
+        return f'<Chord {self.name}>'
