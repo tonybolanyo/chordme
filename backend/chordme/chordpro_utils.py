@@ -215,6 +215,137 @@ class ChordProValidator:
         
         return metadata
 
+    @staticmethod
+    def extract_sections(content: str) -> List[Dict[str, str]]:
+        """
+        Extract song sections from ChordPro content.
+        
+        Args:
+            content: The ChordPro formatted content
+            
+        Returns:
+            list: List of section dictionaries with type, number, content, and order
+        """
+        if not content:
+            return []
+            
+        lines = content.split('\n')
+        sections = []
+        current_section = None
+        current_content = []
+        order_index = 0
+        
+        for line in lines:
+            stripped = line.strip()
+            
+            # Check for section start directive
+            if stripped.startswith('{start_of_'):
+                # Save previous section if exists
+                if current_section is not None:
+                    sections.append({
+                        'section_type': current_section['type'],
+                        'section_number': current_section.get('number'),
+                        'content': '\n'.join(current_content),
+                        'order_index': order_index
+                    })
+                    order_index += 1
+                
+                # Parse new section
+                directive = stripped[1:-1]  # Remove { and }
+                section_type, section_number = ChordProValidator._parse_section_directive(directive)
+                
+                current_section = {
+                    'type': section_type,
+                    'number': section_number
+                }
+                current_content = []
+                
+            elif stripped.startswith('{end_of_'):
+                # End current section
+                if current_section is not None:
+                    sections.append({
+                        'section_type': current_section['type'],
+                        'section_number': current_section.get('number'),
+                        'content': '\n'.join(current_content),
+                        'order_index': order_index
+                    })
+                    order_index += 1
+                    current_section = None
+                    current_content = []
+                    
+            elif stripped.startswith('{') and stripped.endswith('}'):
+                # Other directives (not section-related)
+                if current_section is None:
+                    # Add as a metadata section if we're not in a song section
+                    sections.append({
+                        'section_type': 'metadata',
+                        'section_number': None,
+                        'content': line,
+                        'order_index': order_index
+                    })
+                    order_index += 1
+                else:
+                    # Add to current section content
+                    current_content.append(line)
+                    
+            else:
+                # Regular content line
+                if current_section is not None:
+                    # Add to current section
+                    current_content.append(line)
+                else:
+                    # Add as general content section
+                    if current_content or line.strip():  # Only create section if there's content
+                        if current_content:
+                            current_content.append(line)
+                        else:
+                            current_content = [line]
+                        
+                        # Check if this is the end of a standalone content block
+                        # We'll finalize it when we hit a section directive or end of content
+        
+        # Handle any remaining content
+        if current_section is not None:
+            sections.append({
+                'section_type': current_section['type'],
+                'section_number': current_section.get('number'),
+                'content': '\n'.join(current_content),
+                'order_index': order_index
+            })
+        elif current_content and any(line.strip() for line in current_content):
+            # Standalone content without section markers
+            sections.append({
+                'section_type': 'content',
+                'section_number': None,
+                'content': '\n'.join(current_content),
+                'order_index': order_index
+            })
+        
+        return sections
+
+    @staticmethod
+    def _parse_section_directive(directive: str) -> tuple:
+        """
+        Parse a section directive to extract type and number.
+        
+        Args:
+            directive: Section directive like "start_of_verse" or "start_of_verse: 1"
+            
+        Returns:
+            tuple: (section_type, section_number) where section_number may be None
+        """
+        if ':' in directive:
+            # Handle parameterized sections like "start_of_verse: 1"
+            full_type, param = directive.split(':', 2)
+            section_type = full_type.replace('start_of_', '').replace('end_of_', '')
+            section_number = param.strip()
+        else:
+            # Handle simple sections like "start_of_verse"
+            section_type = directive.replace('start_of_', '').replace('end_of_', '')
+            section_number = None
+            
+        return section_type, section_number
+
 
 def validate_chordpro_content(content: str) -> Dict:
     """

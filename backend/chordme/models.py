@@ -126,6 +126,9 @@ class Song(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
+    # Relationship to song sections
+    sections = db.relationship('SongSection', backref='song', lazy=True, cascade='all, delete-orphan', order_by='SongSection.order_index')
+    
     def __init__(self, title, author_id, content):
         self.title = title
         self.author_id = author_id
@@ -144,6 +147,45 @@ class Song(db.Model):
     
     def __repr__(self):
         return f'<Song {self.title}>'
+
+
+class SongSection(db.Model):
+    __tablename__ = 'song_sections'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    song_id = db.Column(db.Integer, db.ForeignKey('songs.id'), nullable=False)
+    section_type = db.Column(db.String(50), nullable=False)  # verse, chorus, bridge, etc.
+    section_number = db.Column(db.String(10))  # For numbered sections like "verse 1", "chorus 2"
+    content = db.Column(db.Text, nullable=False)  # Raw ChordPro content for this section
+    order_index = db.Column(db.Integer, nullable=False)  # Order in the song
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def __init__(self, song_id, section_type, content, order_index, section_number=None):
+        self.song_id = song_id
+        self.section_type = section_type
+        self.section_number = section_number
+        self.content = content
+        self.order_index = order_index
+    
+    def to_dict(self):
+        """Convert section to dictionary."""
+        return {
+            'id': self.id,
+            'song_id': self.song_id,
+            'section_type': self.section_type,
+            'section_number': self.section_number,
+            'content': self.content,
+            'order_index': self.order_index,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+    
+    def __repr__(self):
+        section_name = f"{self.section_type}"
+        if self.section_number:
+            section_name += f" {self.section_number}"
+        return f'<SongSection {section_name}>'
 
 
 class Chord(db.Model):
