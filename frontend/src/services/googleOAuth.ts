@@ -29,6 +29,13 @@ class GoogleOAuth2Service {
   }
 
   /**
+   * Check if Google OAuth is properly configured
+   */
+  isConfigured(): boolean {
+    return Boolean(this.config.clientId);
+  }
+
+  /**
    * Generate a cryptographically secure random string for PKCE
    */
   private generateCodeVerifier(): string {

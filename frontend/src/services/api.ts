@@ -9,6 +9,7 @@ import type {
 import { isTokenExpired } from '../utils/jwt';
 import { firebaseService } from './firebase';
 import { firestoreService } from './firestore';
+import { storagePreferenceService, type StorageBackendType } from './storagePreference';
 import type { Unsubscribe } from 'firebase/firestore';
 
 const API_BASE_URL =
@@ -16,10 +17,45 @@ const API_BASE_URL =
 
 class ApiService {
   /**
-   * Determine if we should use Firebase/Firestore or the Flask backend
+   * Get the current storage backend preference
+   */
+  getCurrentBackend(): StorageBackendType {
+    return storagePreferenceService.getPreference();
+  }
+
+  /**
+   * Set the storage backend preference
+   */
+  setStorageBackend(backend: StorageBackendType): void {
+    storagePreferenceService.setPreference(backend);
+  }
+
+  /**
+   * Determine if we should use Firebase/Firestore based on user preference and availability
    */
   private shouldUseFirebase(): boolean {
-    return firebaseService.isEnabled();
+    const userPreference = storagePreferenceService.getPreference();
+    return userPreference === 'firebase' && firebaseService.isEnabled();
+  }
+
+  /**
+   * Check if a specific backend is available for use
+   */
+  isBackendAvailable(backend: StorageBackendType): boolean {
+    switch (backend) {
+      case 'api':
+        return true; // Always available
+      case 'firebase':
+        return firebaseService.isEnabled();
+      case 'googledrive':
+        // This will be implemented when Google Drive storage is fully added
+        return false;
+      case 'localstorage':
+        // This will be implemented when local storage backend is added
+        return false;
+      default:
+        return false;
+    }
   }
 
   /**
