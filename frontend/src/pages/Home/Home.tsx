@@ -515,6 +515,43 @@ const Home: React.FC = () => {
     });
   };
 
+  // Sorting and filtering state for dashboard sections
+  const [mySongsSort, setMySongsSort] = useState<'title' | 'date' | 'updated'>('updated');
+  const [sharedSongsSort, setSharedSongsSort] = useState<'title' | 'date' | 'updated'>('updated');
+  const [sharedSongsFilter, setSharedSongsFilter] = useState<'all' | 'read' | 'edit' | 'admin'>('all');
+
+  // Apply sorting to songs
+  const sortSongs = (songList: Song[], sortBy: 'title' | 'date' | 'updated'): Song[] => {
+    return [...songList].sort((a, b) => {
+      switch (sortBy) {
+        case 'title':
+          return a.title.localeCompare(b.title);
+        case 'date':
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        case 'updated':
+          return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+        default:
+          return 0;
+      }
+    });
+  };
+
+  // Apply filtering to shared songs
+  const filterSharedSongs = (songList: Song[], filterBy: 'all' | 'read' | 'edit' | 'admin'): Song[] => {
+    if (filterBy === 'all') return songList;
+    return songList.filter(song => getUserPermission(song) === filterBy);
+  };
+
+  // Get processed song lists
+  const getMySongsSorted = (): Song[] => {
+    return sortSongs(getMySongs(), mySongsSort);
+  };
+
+  const getSharedSongsSorted = (): Song[] => {
+    const filtered = filterSharedSongs(getSharedSongs(), sharedSongsFilter);
+    return sortSongs(filtered, sharedSongsSort);
+  };
+
   if (isLoading) {
     return (
       <div className="home">
@@ -1047,6 +1084,33 @@ const Home: React.FC = () => {
           )}
         </div>
 
+        {/* My Songs Controls */}
+        {getMySongs().length > 0 && (
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '1rem', 
+            marginBottom: '1rem',
+            padding: '0.5rem',
+            backgroundColor: '#f8f9fa',
+            borderRadius: '4px',
+            border: '1px solid #dee2e6'
+          }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>
+              Sort by:
+              <select 
+                value={mySongsSort} 
+                onChange={(e) => setMySongsSort(e.target.value as 'title' | 'date' | 'updated')}
+                style={{ padding: '0.25rem', fontSize: '0.9rem', borderRadius: '3px', border: '1px solid #ccc' }}
+              >
+                <option value="updated">Last Modified</option>
+                <option value="title">Title</option>
+                <option value="date">Created Date</option>
+              </select>
+            </label>
+          </div>
+        )}
+
         {getMySongs().length === 0 ? (
           <div className="no-songs">
             <p>
@@ -1056,7 +1120,7 @@ const Home: React.FC = () => {
           </div>
         ) : (
           <div className="songs-grid">
-            {getMySongs().map((song) => (
+            {getMySongsSorted().map((song) => (
               <div
                 key={song.id}
                 className="song-card"
@@ -1287,6 +1351,46 @@ const Home: React.FC = () => {
           )}
         </div>
 
+        {/* Shared Songs Controls */}
+        {getSharedSongs().length > 0 && (
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '1rem', 
+            marginBottom: '1rem',
+            padding: '0.5rem',
+            backgroundColor: '#f8f9fa',
+            borderRadius: '4px',
+            border: '1px solid #dee2e6'
+          }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>
+              Filter by permission:
+              <select 
+                value={sharedSongsFilter} 
+                onChange={(e) => setSharedSongsFilter(e.target.value as 'all' | 'read' | 'edit' | 'admin')}
+                style={{ padding: '0.25rem', fontSize: '0.9rem', borderRadius: '3px', border: '1px solid #ccc' }}
+              >
+                <option value="all">All Permissions</option>
+                <option value="admin">Admin Access</option>
+                <option value="edit">Edit Access</option>
+                <option value="read">Read Only</option>
+              </select>
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>
+              Sort by:
+              <select 
+                value={sharedSongsSort} 
+                onChange={(e) => setSharedSongsSort(e.target.value as 'title' | 'date' | 'updated')}
+                style={{ padding: '0.25rem', fontSize: '0.9rem', borderRadius: '3px', border: '1px solid #ccc' }}
+              >
+                <option value="updated">Last Modified</option>
+                <option value="title">Title</option>
+                <option value="date">Created Date</option>
+              </select>
+            </label>
+          </div>
+        )}
+
         {getSharedSongs().length === 0 ? (
           <div className="no-shared-songs" style={{ 
             padding: '2rem', 
@@ -1301,7 +1405,7 @@ const Home: React.FC = () => {
           </div>
         ) : (
           <div className="songs-grid">
-            {getSharedSongs().map((song) => (
+            {getSharedSongsSorted().map((song) => (
               <div
                 key={song.id}
                 className="song-card"
