@@ -12,7 +12,6 @@ import {
   orderBy,
   Timestamp,
   DocumentReference,
-  QuerySnapshot,
   DocumentSnapshot,
 } from 'firebase/firestore';
 import { firebaseService } from './firebase';
