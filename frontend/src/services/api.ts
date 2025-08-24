@@ -4,7 +4,7 @@ import type {
   LoginRequest,
   RegisterRequest,
   AuthResponse,
-  User,
+  // User, // removed as it is unused
 } from '../types';
 import { isTokenExpired } from '../utils/jwt';
 import { firebaseService } from './firebase';
