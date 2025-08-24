@@ -63,7 +63,7 @@ class StoragePreferenceService {
   hasExplicitPreference(): boolean {
     try {
       return localStorage.getItem(STORAGE_PREFERENCE_KEY) !== null;
-    } catch (error) {
+    } catch {
       return false;
     }
   }
