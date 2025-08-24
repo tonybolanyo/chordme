@@ -20,6 +20,8 @@ const Home: React.FC = () => {
   const [isFileUploading, setIsFileUploading] = useState(false);
   const [showGoogleDrive, setShowGoogleDrive] = useState(false);
   const [driveError, setDriveError] = useState<string | null>(null);
+  const [exportingToGoogle, setExportingToGoogle] = useState<string | null>(null);
+  const [exportSuccess, setExportSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     loadSongs();
@@ -239,6 +241,111 @@ const Home: React.FC = () => {
     setDriveError(error);
   };
 
+  const handleExportToGoogleDrive = async (song: Song) => {
+    if (!googleOAuth2Service.isAuthenticated()) {
+      setDriveError('Please authenticate with Google Drive first');
+      return;
+    }
+
+    try {
+      setExportingToGoogle(song.id);
+      setDriveError(null);
+      setExportSuccess(null);
+
+      // Create filename with .cho extension
+      const filename = `${song.title.replace(/[^\w\s-]/g, '').replace(/\s+/g, '_')}.cho`;
+      
+      // Export the song to Google Drive
+      const exportedFile = await googleOAuth2Service.createFile(
+        filename,
+        song.content,
+        'text/plain'
+      );
+
+      setExportSuccess(`Song "${song.title}" successfully exported to Google Drive as "${exportedFile.name}"`);
+    } catch (error) {
+      console.error('Error exporting to Google Drive:', error);
+      setDriveError(error instanceof Error ? error.message : 'Failed to export to Google Drive');
+    } finally {
+      setExportingToGoogle(null);
+    }
+  };
+
+  const handleSaveNewSongToGoogleDrive = async () => {
+    if (!googleOAuth2Service.isAuthenticated()) {
+      setDriveError('Please authenticate with Google Drive first');
+      return;
+    }
+
+    if (!newSong.title || !newSong.content) {
+      setDriveError('Please enter both title and content before saving to Google Drive');
+      return;
+    }
+
+    try {
+      setExportingToGoogle('new-song');
+      setDriveError(null);
+      setExportSuccess(null);
+
+      // Create filename with .cho extension
+      const filename = `${newSong.title.replace(/[^\w\s-]/g, '').replace(/\s+/g, '_')}.cho`;
+      
+      // Save the new song to Google Drive
+      const savedFile = await googleOAuth2Service.createFile(
+        filename,
+        newSong.content,
+        'text/plain'
+      );
+
+      setExportSuccess(`Song "${newSong.title}" successfully saved to Google Drive as "${savedFile.name}"`);
+    } catch (error) {
+      console.error('Error saving to Google Drive:', error);
+      setDriveError(error instanceof Error ? error.message : 'Failed to save to Google Drive');
+    } finally {
+      setExportingToGoogle(null);
+    }
+  };
+
+  const handleSaveEditedSongToGoogleDrive = async () => {
+    if (!googleOAuth2Service.isAuthenticated()) {
+      setDriveError('Please authenticate with Google Drive first');
+      return;
+    }
+
+    if (!editSongData.title || !editSongData.content) {
+      setDriveError('Please enter both title and content before saving to Google Drive');
+      return;
+    }
+
+    try {
+      setExportingToGoogle(editingSong?.id || 'edit-song');
+      setDriveError(null);
+      setExportSuccess(null);
+
+      // Create filename with .cho extension
+      const filename = `${editSongData.title.replace(/[^\w\s-]/g, '').replace(/\s+/g, '_')}.cho`;
+      
+      // Save the edited song to Google Drive
+      const savedFile = await googleOAuth2Service.createFile(
+        filename,
+        editSongData.content,
+        'text/plain'
+      );
+
+      setExportSuccess(`Song "${editSongData.title}" successfully saved to Google Drive as "${savedFile.name}"`);
+    } catch (error) {
+      console.error('Error saving to Google Drive:', error);
+      setDriveError(error instanceof Error ? error.message : 'Failed to save to Google Drive');
+    } finally {
+      setExportingToGoogle(null);
+    }
+  };
+
+  const clearNotifications = () => {
+    setExportSuccess(null);
+    setDriveError(null);
+  };
+
   if (isLoading) {
     return (
       <div className="home">
@@ -267,6 +374,38 @@ const Home: React.FC = () => {
             }}
           >
             {error}
+          </div>
+        )}
+
+        {exportSuccess && (
+          <div
+            className="success-message"
+            style={{
+              margin: '1rem 0',
+              padding: '1rem',
+              backgroundColor: '#dfd',
+              border: '1px solid #bfb',
+              borderRadius: '4px',
+              position: 'relative',
+            }}
+          >
+            {exportSuccess}
+            <button
+              onClick={clearNotifications}
+              style={{
+                position: 'absolute',
+                top: '0.5rem',
+                right: '0.5rem',
+                background: 'none',
+                border: 'none',
+                fontSize: '16px',
+                cursor: 'pointer',
+                color: '#666',
+              }}
+              title="Close notification"
+            >
+              ×
+            </button>
           </div>
         )}
 
@@ -431,6 +570,23 @@ const Home: React.FC = () => {
               <button type="submit" className="btn btn-primary">
                 Create Song
               </button>
+              {googleOAuth2Service.isAuthenticated() && (
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={handleSaveNewSongToGoogleDrive}
+                  disabled={exportingToGoogle === 'new-song'}
+                  style={{
+                    marginLeft: '1rem',
+                    backgroundColor: '#4285f4',
+                    color: 'white',
+                    opacity: exportingToGoogle === 'new-song' ? 0.6 : 1,
+                  }}
+                  title="Save to Google Drive"
+                >
+                  {exportingToGoogle === 'new-song' ? 'Saving...' : 'Save to Drive'}
+                </button>
+              )}
               <button
                 type="button"
                 className="btn btn-secondary"
@@ -488,6 +644,23 @@ const Home: React.FC = () => {
               <button type="submit" className="btn btn-primary">
                 Save Changes
               </button>
+              {googleOAuth2Service.isAuthenticated() && (
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={handleSaveEditedSongToGoogleDrive}
+                  disabled={exportingToGoogle === editingSong?.id || exportingToGoogle === 'edit-song'}
+                  style={{
+                    marginLeft: '1rem',
+                    backgroundColor: '#4285f4',
+                    color: 'white',
+                    opacity: (exportingToGoogle === editingSong?.id || exportingToGoogle === 'edit-song') ? 0.6 : 1,
+                  }}
+                  title="Save to Google Drive"
+                >
+                  {(exportingToGoogle === editingSong?.id || exportingToGoogle === 'edit-song') ? 'Saving...' : 'Save to Drive'}
+                </button>
+              )}
               <button
                 type="button"
                 className="btn btn-secondary"
@@ -531,6 +704,23 @@ const Home: React.FC = () => {
                 >
                   Download
                 </button>
+                {googleOAuth2Service.isAuthenticated() && (
+                  <button
+                    type="button"
+                    className="btn"
+                    onClick={() => handleExportToGoogleDrive(viewingSong)}
+                    disabled={exportingToGoogle === viewingSong.id}
+                    style={{
+                      marginRight: '0.5rem',
+                      backgroundColor: '#4285f4',
+                      color: 'white',
+                      opacity: exportingToGoogle === viewingSong.id ? 0.6 : 1,
+                    }}
+                    title="Export to Google Drive"
+                  >
+                    {exportingToGoogle === viewingSong.id ? 'Exporting...' : 'Export to Drive'}
+                  </button>
+                )}
                 <button
                   type="button"
                   className="btn btn-secondary"
@@ -648,6 +838,22 @@ const Home: React.FC = () => {
                   >
                     Download
                   </button>
+                  {googleOAuth2Service.isAuthenticated() && (
+                    <button
+                      className="btn"
+                      onClick={() => handleExportToGoogleDrive(song)}
+                      disabled={exportingToGoogle === song.id}
+                      style={{
+                        marginRight: '0.5rem',
+                        backgroundColor: '#4285f4',
+                        color: 'white',
+                        opacity: exportingToGoogle === song.id ? 0.6 : 1,
+                      }}
+                      title="Export to Google Drive"
+                    >
+                      {exportingToGoogle === song.id ? 'Exporting...' : 'Export to Drive'}
+                    </button>
+                  )}
                   <button
                     className="btn btn-danger"
                     onClick={() => handleDeleteSong(song.id)}
