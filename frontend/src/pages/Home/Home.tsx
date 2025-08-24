@@ -503,6 +503,18 @@ const Home: React.FC = () => {
     return permission === 'owner' || permission === 'admin';
   };
 
+  // Helper functions to categorize songs
+  const getMySongs = (): Song[] => {
+    return songs.filter(song => getUserPermission(song) === 'owner');
+  };
+
+  const getSharedSongs = (): Song[] => {
+    return songs.filter(song => {
+      const permission = getUserPermission(song);
+      return permission === 'read' || permission === 'edit' || permission === 'admin';
+    });
+  };
+
   if (isLoading) {
     return (
       <div className="home">
@@ -1014,9 +1026,10 @@ const Home: React.FC = () => {
         )}
       </div>
 
-      <div className="songs-section">
+      {/* My Songs Section */}
+      <div className="my-songs-section">
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-          <h2>Your Songs ({songs.length})</h2>
+          <h2>My Songs ({getMySongs().length})</h2>
           {isRealTime && (
             <span 
               style={{ 
@@ -1034,7 +1047,7 @@ const Home: React.FC = () => {
           )}
         </div>
 
-        {songs.length === 0 ? (
+        {getMySongs().length === 0 ? (
           <div className="no-songs">
             <p>
               You haven't created any songs yet. Create your first song to get
@@ -1043,7 +1056,7 @@ const Home: React.FC = () => {
           </div>
         ) : (
           <div className="songs-grid">
-            {songs.map((song) => (
+            {getMySongs().map((song) => (
               <div
                 key={song.id}
                 className="song-card"
@@ -1246,6 +1259,243 @@ const Home: React.FC = () => {
                   >
                     Delete
                   </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Shared with Me Section */}
+      <div className="shared-songs-section" style={{ marginTop: '3rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+          <h2>Shared with Me ({getSharedSongs().length})</h2>
+          {isRealTime && (
+            <span 
+              style={{ 
+                fontSize: '12px', 
+                color: '#28a745', 
+                backgroundColor: '#e8f5e8', 
+                padding: '2px 8px', 
+                borderRadius: '12px',
+                border: '1px solid #28a745'
+              }}
+              title="Shared songs update automatically when changes are made"
+            >
+              🔄 Real-time
+            </span>
+          )}
+        </div>
+
+        {getSharedSongs().length === 0 ? (
+          <div className="no-shared-songs" style={{ 
+            padding: '2rem', 
+            textAlign: 'center', 
+            backgroundColor: '#f8f9fa', 
+            borderRadius: '8px',
+            border: '1px solid #dee2e6'
+          }}>
+            <p style={{ margin: 0, color: '#6c757d' }}>
+              No songs have been shared with you yet. When other users share songs with you, they'll appear here.
+            </p>
+          </div>
+        ) : (
+          <div className="songs-grid">
+            {getSharedSongs().map((song) => (
+              <div
+                key={song.id}
+                className="song-card"
+                style={{
+                  border: '1px solid #ddd',
+                  borderRadius: '8px',
+                  padding: '1rem',
+                  margin: '1rem 0',
+                  backgroundColor: '#fff',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                  <h3 style={{ margin: 0 }}>{song.title}</h3>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    {/* Permission indicator for shared songs */}
+                    {getUserPermission(song) === 'admin' && (
+                      <span 
+                        style={{ 
+                          fontSize: '0.75rem', 
+                          backgroundColor: '#dc3545', 
+                          color: 'white', 
+                          padding: '0.2rem 0.5rem', 
+                          borderRadius: '10px',
+                          fontWeight: '500'
+                        }}
+                        title="You have admin access to this song"
+                      >
+                        Admin
+                      </span>
+                    )}
+                    {getUserPermission(song) === 'edit' && (
+                      <span 
+                        style={{ 
+                          fontSize: '0.75rem', 
+                          backgroundColor: '#7b1fa2', 
+                          color: 'white', 
+                          padding: '0.2rem 0.5rem', 
+                          borderRadius: '10px',
+                          fontWeight: '500'
+                        }}
+                        title="You can edit this song"
+                      >
+                        Editor
+                      </span>
+                    )}
+                    {getUserPermission(song) === 'read' && (
+                      <span 
+                        style={{ 
+                          fontSize: '0.75rem', 
+                          backgroundColor: '#1976d2', 
+                          color: 'white', 
+                          padding: '0.2rem 0.5rem', 
+                          borderRadius: '10px',
+                          fontWeight: '500'
+                        }}
+                        title="You have read-only access to this song"
+                      >
+                        Reader
+                      </span>
+                    )}
+                    {/* Collaboration indicator */}
+                    {song.shared_with && song.shared_with.length > 0 && (
+                      <span 
+                        style={{ 
+                          fontSize: '0.75rem', 
+                          backgroundColor: '#28a745', 
+                          color: 'white', 
+                          padding: '0.2rem 0.5rem', 
+                          borderRadius: '10px',
+                          fontWeight: '500'
+                        }}
+                        title={`Shared with ${song.shared_with.length} collaborator${song.shared_with.length === 1 ? '' : 's'}`}
+                      >
+                        👥 {song.shared_with.length}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div
+                  className="song-metadata"
+                  style={{
+                    fontSize: '0.8rem',
+                    color: '#888',
+                    marginBottom: '0.5rem',
+                  }}
+                >
+                  Last modified: {formatRelativeTime(song.updated_at)}
+                </div>
+                <div
+                  className="song-content"
+                  style={{
+                    marginBottom: '1rem',
+                    border: '1px solid #eee',
+                    borderRadius: '4px',
+                    padding: '0.5rem',
+                    backgroundColor: '#fafafa',
+                  }}
+                >
+                  <ChordProViewer
+                    content={
+                      song.content.length > 300
+                        ? `${song.content.substring(0, 300)}...`
+                        : song.content
+                    }
+                    showMetadata={false}
+                    maxHeight="150px"
+                    className="song-preview"
+                  />
+                  {song.content.length > 300 && (
+                    <div
+                      style={{
+                        fontSize: '0.8rem',
+                        color: '#888',
+                        marginTop: '0.5rem',
+                        fontStyle: 'italic',
+                      }}
+                    >
+                      Content truncated... Click "View" to see full song
+                    </div>
+                  )}
+                </div>
+                <div className="song-actions">
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => handleViewSong(song)}
+                    style={{ marginRight: '0.5rem' }}
+                  >
+                    View
+                  </button>
+                  {/* Only show edit button if user has edit or admin permission */}
+                  {(getUserPermission(song) === 'edit' || getUserPermission(song) === 'admin') && (
+                    <button
+                      className="btn btn-secondary"
+                      onClick={() => handleEditSong(song)}
+                      style={{ marginRight: '0.5rem' }}
+                    >
+                      Edit
+                    </button>
+                  )}
+                  <button
+                    className="btn"
+                    onClick={() => handleDownloadSong(song.id)}
+                    style={{
+                      marginRight: '0.5rem',
+                      backgroundColor: '#28a745',
+                      color: 'white',
+                    }}
+                    title="Download as ChordPro file"
+                  >
+                    Download
+                  </button>
+                  {googleOAuth2Service.isAuthenticated() && (
+                    <button
+                      className="btn"
+                      onClick={() => handleExportToGoogleDrive(song)}
+                      disabled={exportingToGoogle === song.id}
+                      style={{
+                        marginRight: '0.5rem',
+                        backgroundColor: '#4285f4',
+                        color: 'white',
+                        opacity: exportingToGoogle === song.id ? 0.6 : 1,
+                      }}
+                      title="Export to Google Drive"
+                    >
+                      {exportingToGoogle === song.id
+                        ? 'Exporting...'
+                        : 'Export to Drive'}
+                    </button>
+                  )}
+                  {/* Only allow sharing if user has admin permission */}
+                  {canUserShare(song) && (
+                    <button
+                      className="btn"
+                      onClick={() => handleShareSong(song)}
+                      style={{
+                        marginRight: '0.5rem',
+                        backgroundColor: '#17a2b8',
+                        color: 'white',
+                      }}
+                      title="Share this song with others"
+                    >
+                      Share
+                    </button>
+                  )}
+                  {/* Only allow deletion if user is owner (shouldn't happen in shared section, but good safety check) */}
+                  {getUserPermission(song) === 'owner' && (
+                    <button
+                      className="btn btn-danger"
+                      onClick={() => handleDeleteSong(song.id)}
+                      style={{ backgroundColor: '#dc3545', color: 'white' }}
+                    >
+                      Delete
+                    </button>
+                  )}
                 </div>
               </div>
             ))}

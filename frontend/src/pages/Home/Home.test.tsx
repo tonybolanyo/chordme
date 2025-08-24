@@ -19,6 +19,24 @@ vi.mock('../../services/api', () => ({
   },
 }));
 
+// Mock the real-time hooks
+vi.mock('../../hooks/useRealtimeSongs', () => ({
+  useRealtimeSongs: vi.fn(() => ({
+    songs: [],
+    loading: false,
+    error: null,
+    isRealTime: false,
+    refetch: vi.fn(),
+  })),
+}));
+
+vi.mock('../../hooks/useRealtimeSong', () => ({
+  useRealtimeSong: vi.fn(() => ({
+    song: null,
+    isRealTime: false,
+  })),
+}));
+
 // Mock the components
 vi.mock('../../components', () => ({
   ChordProEditor: ({
@@ -37,6 +55,9 @@ vi.mock('../../components', () => ({
   ChordProViewer: ({ content }: { content: string }) => (
     <div data-testid="chordpro-viewer">{content}</div>
   ),
+  GoogleDriveFileList: () => <div data-testid="google-drive-file-list">Google Drive Files</div>,
+  SongSharingModal: () => <div data-testid="song-sharing-modal">Sharing Modal</div>,
+  NotificationContainer: () => <div data-testid="notification-container">Notifications</div>,
 }));
 
 // Mock the jwt utility
@@ -44,12 +65,36 @@ vi.mock('../../utils/jwt', () => ({
   isTokenExpired: vi.fn(() => false),
 }));
 
+// Mock the Google OAuth service
+vi.mock('../../services/googleOAuth', () => ({
+  googleOAuth2Service: {
+    isAuthenticated: vi.fn(() => false),
+    createFile: vi.fn(),
+  },
+}));
+
+// Mock the AuthContext
+vi.mock('../../contexts/AuthContext', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    useAuth: () => ({
+      user: mockUser,
+      login: vi.fn(),
+      logout: vi.fn(),
+      isLoading: false,
+    }),
+  };
+});
+
 import { apiService } from '../../services/api';
+import { useRealtimeSongs } from '../../hooks/useRealtimeSongs';
 
 const mockApiService = vi.mocked(apiService);
+const mockUseRealtimeSongs = vi.mocked(useRealtimeSongs);
 
 // Mock user for auth context
-const mockUser: User = { id: '1', email: 'test@example.com' };
+const mockUser: User = { id: '1', email: 'test@example.com', created_at: '2023-01-01T00:00:00Z', updated_at: '2023-01-01T00:00:00Z' };
 
 // Helper to render Home component with AuthProvider
 const renderHome = () => {
@@ -71,13 +116,29 @@ describe('Home Component', () => {
     localStorage.setItem('authUser', JSON.stringify(mockUser));
     mockConfirm.mockReturnValue(true);
 
+    // Setup default mock for useRealtimeSongs hook
+    mockUseRealtimeSongs.mockReturnValue({
+      songs: [],
+      loading: false,
+      error: null,
+      isRealTime: false,
+      refetch: vi.fn(),
+    });
+
     // Mock console methods
     vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   describe('Initial Loading', () => {
     it('renders loading state initially', () => {
-      mockApiService.getSongs.mockImplementation(() => new Promise(() => {})); // Never resolves
+      // Setup loading state in useRealtimeSongs hook
+      mockUseRealtimeSongs.mockReturnValue({
+        songs: [],
+        loading: true,
+        error: null,
+        isRealTime: false,
+        refetch: vi.fn(),
+      });
 
       renderHome();
 
@@ -89,6 +150,7 @@ describe('Home Component', () => {
         {
           id: '1',
           title: 'Test Song 1',
+          author_id: '1', // Owned by current user
           content: '[C]Test content 1',
           created_at: '2023-01-01T00:00:00Z',
           updated_at: '2023-01-01T00:00:00Z',
@@ -96,15 +158,20 @@ describe('Home Component', () => {
         {
           id: '2',
           title: 'Test Song 2',
+          author_id: '1', // Owned by current user
           content: '[G]Test content 2',
           created_at: '2023-01-02T00:00:00Z',
           updated_at: '2023-01-02T00:00:00Z',
         },
       ];
 
-      mockApiService.getSongs.mockResolvedValue({
-        status: 'success',
-        data: { songs: mockSongs },
+      // Setup songs data in useRealtimeSongs hook
+      mockUseRealtimeSongs.mockReturnValue({
+        songs: mockSongs,
+        loading: false,
+        error: null,
+        isRealTime: false,
+        refetch: vi.fn(),
       });
 
       renderHome();
@@ -113,12 +180,17 @@ describe('Home Component', () => {
         expect(screen.getByText('Test Song 1')).toBeInTheDocument();
         expect(screen.getByText('Test Song 2')).toBeInTheDocument();
       });
-
-      expect(mockApiService.getSongs).toHaveBeenCalledTimes(1);
     });
 
     it('displays error when loading songs fails', async () => {
-      mockApiService.getSongs.mockRejectedValue(new Error('Network error'));
+      // Setup error state in useRealtimeSongs hook
+      mockUseRealtimeSongs.mockReturnValue({
+        songs: [],
+        loading: false,
+        error: 'Network error',
+        isRealTime: false,
+        refetch: vi.fn(),
+      });
 
       renderHome();
 
@@ -128,9 +200,13 @@ describe('Home Component', () => {
     });
 
     it('displays error when API returns error status', async () => {
-      mockApiService.getSongs.mockResolvedValue({
-        status: 'error',
-        error: 'API error',
+      // Setup error state in useRealtimeSongs hook  
+      mockUseRealtimeSongs.mockReturnValue({
+        songs: [],
+        loading: false,
+        error: 'Failed to load songs',
+        isRealTime: false,
+        refetch: vi.fn(),
       });
 
       renderHome();
@@ -196,8 +272,6 @@ describe('Home Component', () => {
           content: newSong.content,
         });
       });
-
-      expect(mockApiService.getSongs).toHaveBeenCalledTimes(2); // Initial load + reload after create
     });
 
     it('handles create song error', async () => {
@@ -238,15 +312,20 @@ describe('Home Component', () => {
     const mockSong: Song = {
       id: '1',
       title: 'Test Song',
+      author_id: '1', // Owned by current user
       content: '[C]Test content',
       created_at: '2023-01-01T00:00:00Z',
       updated_at: '2023-01-01T00:00:00Z',
     };
 
     beforeEach(async () => {
-      mockApiService.getSongs.mockResolvedValue({
-        status: 'success',
-        data: { songs: [mockSong] },
+      // Setup song data in useRealtimeSongs hook
+      mockUseRealtimeSongs.mockReturnValue({
+        songs: [mockSong],
+        loading: false,
+        error: null,
+        isRealTime: false,
+        refetch: vi.fn(),
       });
 
       renderHome();
@@ -369,8 +448,6 @@ describe('Home Component', () => {
       await waitFor(() => {
         expect(mockApiService.deleteSong).toHaveBeenCalledWith(mockSong.id);
       });
-
-      expect(mockApiService.getSongs).toHaveBeenCalledTimes(2); // Initial load + reload after delete
     });
 
     it('does not delete song when deletion is cancelled', async () => {
@@ -435,6 +512,7 @@ describe('Home Component', () => {
           song: {
             id: '1',
             title: 'test',
+            author_id: '1', // Owned by current user
             content: '[C]File content',
             created_at: '2023-01-01T00:00:00Z',
             updated_at: '2023-01-01T00:00:00Z',
@@ -460,19 +538,10 @@ describe('Home Component', () => {
   });
 
   describe('UI State Management', () => {
-    beforeEach(async () => {
-      mockApiService.getSongs.mockResolvedValue({
-        status: 'success',
-        data: { songs: [] },
-      });
-
-      renderHome();
-      await waitFor(() =>
-        expect(screen.queryByText('Loading songs...')).not.toBeInTheDocument()
-      );
-    });
-
     it('shows empty state when no songs', () => {
+      // Use default empty songs state from beforeEach
+      renderHome();
+      
       expect(
         screen.getByText(
           "You haven't created any songs yet. Create your first song to get started!"
@@ -483,20 +552,22 @@ describe('Home Component', () => {
     it('hides create form when edit form is opened', async () => {
       const user = userEvent.setup();
 
-      // Mock a song for editing
-      mockApiService.getSongs.mockResolvedValue({
-        status: 'success',
-        data: {
-          songs: [
-            {
-              id: '1',
-              title: 'Test',
-              content: '[C]Test',
-              created_at: '2023-01-01T00:00:00Z',
-              updated_at: '2023-01-01T00:00:00Z',
-            },
-          ],
-        },
+      const testSong = {
+        id: '1',
+        title: 'Test',
+        author_id: '1',
+        content: '[C]Test',
+        created_at: '2023-01-01T00:00:00Z',
+        updated_at: '2023-01-01T00:00:00Z',
+      };
+
+      // Setup song data in useRealtimeSongs hook
+      mockUseRealtimeSongs.mockReturnValue({
+        songs: [testSong],
+        loading: false,
+        error: null,
+        isRealTime: false,
+        refetch: vi.fn(),
       });
 
       // Re-render to get the song
@@ -511,6 +582,8 @@ describe('Home Component', () => {
     });
 
     it('displays user welcome message', () => {
+      renderHome();
+      
       expect(
         screen.getByText('Welcome back, test@example.com!')
       ).toBeInTheDocument();
