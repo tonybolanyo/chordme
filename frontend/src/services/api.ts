@@ -4,13 +4,38 @@ import type {
   LoginRequest,
   RegisterRequest,
   AuthResponse,
+  // User, // removed as it is unused
 } from '../types';
 import { isTokenExpired } from '../utils/jwt';
+import { firebaseService } from './firebase';
+import { firestoreService } from './firestore';
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
 class ApiService {
+  /**
+   * Determine if we should use Firebase/Firestore or the Flask backend
+   */
+  private shouldUseFirebase(): boolean {
+    return firebaseService.isEnabled();
+  }
+
+  /**
+   * Get current user ID from authentication
+   */
+  private getCurrentUserId(): string | null {
+    const user = localStorage.getItem('authUser');
+    if (!user) return null;
+    
+    try {
+      const parsedUser = JSON.parse(user);
+      return parsedUser.id;
+    } catch {
+      return null;
+    }
+  }
+
   private getAuthToken(): string | null {
     return localStorage.getItem('authToken');
   }
@@ -72,14 +97,63 @@ class ApiService {
 
   // Song-related API calls (these now require authentication)
   async getSongs() {
+    if (this.shouldUseFirebase()) {
+      const userId = this.getCurrentUserId();
+      if (!userId) {
+        throw new Error('User not authenticated for Firebase operations');
+      }
+      
+      try {
+        const songs = await firestoreService.getSongs(userId);
+        return {
+          status: 'success',
+          data: { songs }
+        };
+      } catch (error) {
+        throw new Error(error instanceof Error ? error.message : 'Failed to fetch songs from Firebase');
+      }
+    }
+    
     return this.fetchApi('/api/v1/songs');
   }
 
   async getSong(id: string) {
+    if (this.shouldUseFirebase()) {
+      try {
+        const song = await firestoreService.getSong(id);
+        if (!song) {
+          throw new Error('Song not found');
+        }
+        return {
+          status: 'success',
+          data: { song }
+        };
+      } catch (error) {
+        throw new Error(error instanceof Error ? error.message : 'Failed to fetch song from Firebase');
+      }
+    }
+    
     return this.fetchApi(`/api/v1/songs/${id}`);
   }
 
   async createSong(songData: Partial<Song>) {
+    if (this.shouldUseFirebase()) {
+      const userId = this.getCurrentUserId();
+      if (!userId) {
+        throw new Error('User not authenticated for Firebase operations');
+      }
+      
+      try {
+        const song = await firestoreService.createSong(songData, userId);
+        return {
+          status: 'success',
+          data: { song }
+        };
+      } catch (error) {
+        throw new Error(error instanceof Error ? error.message : 'Failed to create song in Firebase');
+      }
+    }
+    
     return this.fetchApi('/api/v1/songs', {
       method: 'POST',
       body: JSON.stringify(songData),
@@ -87,6 +161,18 @@ class ApiService {
   }
 
   async updateSong(id: string, songData: Partial<Song>) {
+    if (this.shouldUseFirebase()) {
+      try {
+        const song = await firestoreService.updateSong(id, songData);
+        return {
+          status: 'success',
+          data: { song }
+        };
+      } catch (error) {
+        throw new Error(error instanceof Error ? error.message : 'Failed to update song in Firebase');
+      }
+    }
+    
     return this.fetchApi(`/api/v1/songs/${id}`, {
       method: 'PUT',
       body: JSON.stringify(songData),
@@ -94,12 +180,53 @@ class ApiService {
   }
 
   async deleteSong(id: string) {
+    if (this.shouldUseFirebase()) {
+      try {
+        await firestoreService.deleteSong(id);
+        return {
+          status: 'success',
+          message: 'Song deleted successfully'
+        };
+      } catch (error) {
+        throw new Error(error instanceof Error ? error.message : 'Failed to delete song from Firebase');
+      }
+    }
+    
     return this.fetchApi(`/api/v1/songs/${id}`, {
       method: 'DELETE',
     });
   }
 
   async downloadSong(id: string): Promise<void> {
+    if (this.shouldUseFirebase()) {
+      // For Firebase, we'll implement a simple download by fetching the song content
+      try {
+        const song = await firestoreService.getSong(id);
+        if (!song) {
+          throw new Error('Song not found');
+        }
+        
+        // Create a blob with the song content
+        const blob = new Blob([song.content], { type: 'text/plain' });
+        const url = window.URL.createObjectURL(blob);
+        
+        // Create a temporary anchor element to trigger the download
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${song.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.cho`;
+        document.body.appendChild(link);
+        link.click();
+        
+        // Clean up
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        return;
+      } catch (error) {
+        throw new Error(error instanceof Error ? error.message : 'Failed to download song from Firebase');
+      }
+    }
+    
+    // Original Flask backend implementation
     const token = this.getAuthToken();
 
     // Check if token is expired before making the request
@@ -193,6 +320,19 @@ class ApiService {
       method: 'POST',
       body: JSON.stringify(credentials),
     });
+  }
+
+  // Utility methods
+  
+  /**
+   * Get information about the current data source
+   */
+  getDataSourceInfo() {
+    return {
+      source: this.shouldUseFirebase() ? 'firebase' : 'api',
+      isFirebaseEnabled: firebaseService.isInitialized(),
+      isFirebaseConfigured: firebaseService.isEnabled(),
+    };
   }
 }
 
