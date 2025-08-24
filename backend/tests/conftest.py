@@ -22,6 +22,7 @@ def app():
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['WTF_CSRF_ENABLED'] = False
+    app.config['HTTPS_ENFORCED'] = False  # Disable HTTPS enforcement in tests
     
     with app.app_context():
         # Create all tables
@@ -45,6 +46,7 @@ def client():
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['WTF_CSRF_ENABLED'] = False
+    app.config['HTTPS_ENFORCED'] = False  # Disable HTTPS enforcement in tests
     
     with app.test_client() as client:
         with app.app_context():

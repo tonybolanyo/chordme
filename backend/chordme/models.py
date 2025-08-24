@@ -175,9 +175,15 @@ class Song(db.Model):
         # Add user if not already shared
         if user_id not in self.shared_with:
             self.shared_with.append(user_id)
+            # Mark the field as modified for SQLAlchemy
+            from sqlalchemy.orm.attributes import flag_modified
+            flag_modified(self, 'shared_with')
         
         # Set permission level
         self.permissions[str(user_id)] = permission_level
+        # Mark the field as modified for SQLAlchemy
+        from sqlalchemy.orm.attributes import flag_modified
+        flag_modified(self, 'permissions')
     
     def remove_shared_user(self, user_id):
         """Remove a user from the shared list.
@@ -187,9 +193,15 @@ class Song(db.Model):
         """
         if self.shared_with and user_id in self.shared_with:
             self.shared_with.remove(user_id)
+            # Mark the field as modified for SQLAlchemy
+            from sqlalchemy.orm.attributes import flag_modified
+            flag_modified(self, 'shared_with')
         
         if self.permissions and str(user_id) in self.permissions:
             del self.permissions[str(user_id)]
+            # Mark the field as modified for SQLAlchemy
+            from sqlalchemy.orm.attributes import flag_modified
+            flag_modified(self, 'permissions')
     
     def get_user_permission(self, user_id):
         """Get permission level for a specific user.
@@ -234,6 +246,40 @@ class Song(db.Model):
         
         # Check if directly shared with user
         return self.is_shared_with_user(user_id)
+    
+    def can_user_edit(self, user_id):
+        """Check if a user can edit this song.
+        
+        Args:
+            user_id (int): The ID of the user
+            
+        Returns:
+            bool: True if user can edit (author, edit permission, or admin permission), False otherwise
+        """
+        # Author always has edit access
+        if self.author_id == user_id:
+            return True
+        
+        # Check permission level
+        permission = self.get_user_permission(user_id)
+        return permission in ['edit', 'admin']
+    
+    def can_user_manage(self, user_id):
+        """Check if a user can manage sharing and permissions for this song.
+        
+        Args:
+            user_id (int): The ID of the user
+            
+        Returns:
+            bool: True if user can manage (author or admin permission), False otherwise
+        """
+        # Author always has management access
+        if self.author_id == user_id:
+            return True
+        
+        # Check for admin permission
+        permission = self.get_user_permission(user_id)
+        return permission == 'admin'
     
     def __repr__(self):
         return f'<Song {self.title}>'

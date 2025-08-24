@@ -9,6 +9,10 @@ from chordme.models import User, Song
 @pytest.fixture
 def test_client():
     """Create a test client using the real chordme app."""
+    # Configure for testing
+    app.config['TESTING'] = True
+    app.config['HTTPS_ENFORCED'] = False  # Disable HTTPS enforcement in tests
+    
     with app.test_client() as client:
         with app.app_context():
             # Clear rate limiter state before each test
