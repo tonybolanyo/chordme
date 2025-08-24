@@ -9,6 +9,7 @@ import type {
 import { isTokenExpired } from '../utils/jwt';
 import { firebaseService } from './firebase';
 import { firestoreService } from './firestore';
+import type { Unsubscribe } from 'firebase/firestore';
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
@@ -333,6 +334,52 @@ class ApiService {
       isFirebaseEnabled: firebaseService.isInitialized(),
       isFirebaseConfigured: firebaseService.isEnabled(),
     };
+  }
+
+  // Real-time operations (only available with Firebase)
+
+  /**
+   * Subscribe to real-time updates for all songs
+   * Only works with Firebase backend, returns no-op for Flask backend
+   */
+  subscribeToSongs(callback: (songs: Song[]) => void): Unsubscribe {
+    if (this.shouldUseFirebase()) {
+      const userId = this.getCurrentUserId();
+      if (!userId) {
+        console.error('User not authenticated for Firebase real-time operations');
+        // Return a no-op unsubscribe function
+        return () => {};
+      }
+      
+      return firestoreService.subscribeToSongs(userId, callback);
+    }
+    
+    // For Flask backend, we don't support real-time updates
+    // Return a no-op unsubscribe function
+    console.log('Real-time updates not available with Flask backend');
+    return () => {};
+  }
+
+  /**
+   * Subscribe to real-time updates for a specific song
+   * Only works with Firebase backend, returns no-op for Flask backend
+   */
+  subscribeToSong(songId: string, callback: (song: Song | null) => void): Unsubscribe {
+    if (this.shouldUseFirebase()) {
+      return firestoreService.subscribeToSong(songId, callback);
+    }
+    
+    // For Flask backend, we don't support real-time updates
+    // Return a no-op unsubscribe function
+    console.log('Real-time updates not available with Flask backend');
+    return () => {};
+  }
+
+  /**
+   * Check if real-time updates are supported
+   */
+  supportsRealTimeUpdates(): boolean {
+    return this.shouldUseFirebase();
   }
 }
 

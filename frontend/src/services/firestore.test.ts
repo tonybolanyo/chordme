@@ -26,6 +26,12 @@ describe('FirestoreService', () => {
     expect(typeof firestoreService.isAvailable).toBe('function');
   });
 
+  it('should have real-time subscription methods', async () => {
+    const { firestoreService } = await import('./firestore');
+    expect(typeof firestoreService.subscribeToSongs).toBe('function');
+    expect(typeof firestoreService.subscribeToSong).toBe('function');
+  });
+
   it('should report availability based on Firebase service', async () => {
     const { firestoreService } = await import('./firestore');
     expect(firestoreService.isAvailable()).toBe(true);

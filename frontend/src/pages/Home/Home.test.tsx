@@ -13,6 +13,9 @@ vi.mock('../../services/api', () => ({
     updateSong: vi.fn(),
     deleteSong: vi.fn(),
     downloadSong: vi.fn(),
+    supportsRealTimeUpdates: vi.fn(() => false),
+    subscribeToSongs: vi.fn(() => () => {}),
+    subscribeToSong: vi.fn(() => () => {}),
   },
 }));
 
