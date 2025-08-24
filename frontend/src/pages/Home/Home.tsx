@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { apiService } from '../../services/api';
 import { googleOAuth2Service } from '../../services/googleOAuth';
