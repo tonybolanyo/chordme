@@ -14,3 +14,6 @@ export { default as NotificationContainer } from './NotificationContainer';
 
 // Google Auth components
 export * from './GoogleAuth';
+
+// Collaborative editing components
+export * from './CollaborativeEditing';

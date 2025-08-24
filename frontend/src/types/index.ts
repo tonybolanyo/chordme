@@ -133,3 +133,21 @@ export interface SharingNotification {
   timestamp: string;
   read: boolean;
 }
+
+// Re-export collaboration types
+export type {
+  CollaborationUser,
+  CursorPosition,
+  UserCursor,
+  UserPresence,
+  TextOperation,
+  EditOperation,
+  DocumentState,
+  ConflictResolution,
+  ConflictMarker,
+  NetworkStatus,
+  OptimisticUpdate,
+  CollaborationSession,
+  PermissionChange,
+  CollaborationEvent
+} from './collaboration';

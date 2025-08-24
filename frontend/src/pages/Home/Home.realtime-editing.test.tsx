@@ -95,8 +95,30 @@ describe('Home Component - Real-time Editing', () => {
     updated_at: '2023-01-01T00:00:00Z',
   };
 
+  let originalLocalStorage: Storage;
+
   beforeEach(() => {
     vi.clearAllMocks();
+    
+    // Store original localStorage
+    originalLocalStorage = window.localStorage;
+    
+    // Mock localStorage for getUserPermission to work
+    const mockUser = { id: '1', email: 'test@example.com' };
+    Object.defineProperty(window, 'localStorage', {
+      value: {
+        getItem: vi.fn((key) => {
+          if (key === 'authUser') {
+            return JSON.stringify(mockUser);
+          }
+          return null;
+        }),
+        setItem: vi.fn(),
+        removeItem: vi.fn(),
+        clear: vi.fn(),
+      },
+      writable: true,
+    });
     
     // Reset hook mocks to default values
     mockUseRealtimeSongs.mockReturnValue({
@@ -115,9 +137,23 @@ describe('Home Component - Real-time Editing', () => {
       refetch: vi.fn(),
     });
 
+    // Mock shared songs empty for simplicity
+    mockApiService.getSharedSongs = vi.fn().mockResolvedValue({
+      status: 'success',
+      data: { songs: [] },
+    });
+
     mockApiService.updateSong.mockResolvedValue({
       status: 'success',
       data: { song: mockSong },
+    });
+  });
+
+  afterEach(() => {
+    // Restore original localStorage
+    Object.defineProperty(window, 'localStorage', {
+      value: originalLocalStorage,
+      writable: true,
     });
   });
 
