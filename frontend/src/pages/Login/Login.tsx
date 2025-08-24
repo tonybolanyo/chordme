@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { apiService } from '../../services/api';
 import { validateEmail, validateRequired } from '../../utils';
 import { GoogleAuthButton } from '../../components/GoogleAuth';
+import { FirebaseAuthButtons, FirebaseEmailForm } from '../../components/FirebaseAuth';
 import type { LoginRequest, GoogleUserInfo } from '../../types';
 import './Login.css';
 
@@ -18,6 +19,7 @@ const Login: React.FC = () => {
     password?: string;
     submit?: string;
     google?: string;
+    firebase?: string;
   }>({});
 
   const [isLoading, setIsLoading] = useState(false);
@@ -108,6 +110,15 @@ const Login: React.FC = () => {
     setErrors({ google: error });
   };
 
+  const handleFirebaseSuccess = (message: string) => {
+    setSuccessMessage(message);
+    setErrors({ firebase: undefined });
+  };
+
+  const handleFirebaseError = (error: string) => {
+    setErrors({ firebase: error });
+  };
+
   return (
     <div className="login">
       <div className="login-container">
@@ -121,6 +132,7 @@ const Login: React.FC = () => {
         )}
 
         <form onSubmit={handleSubmit} className="login-form">
+          <h3>Sign in with your ChordMe account</h3>
           <div className="form-group">
             <label htmlFor="email">Email</label>
             <input
@@ -167,6 +179,27 @@ const Login: React.FC = () => {
             {isLoading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
+
+        {/* Firebase Authentication Options */}
+        <FirebaseAuthButtons
+          mode="login"
+          disabled={isLoading}
+          onSuccess={handleFirebaseSuccess}
+          onError={handleFirebaseError}
+        />
+        
+        <FirebaseEmailForm
+          mode="login"
+          disabled={isLoading}
+          onSuccess={handleFirebaseSuccess}
+          onError={handleFirebaseError}
+        />
+
+        {errors.firebase && (
+          <div className="error-message" style={{ marginTop: '16px' }}>
+            {errors.firebase}
+          </div>
+        )}
 
         <div className="login-divider">
           <span>or</span>

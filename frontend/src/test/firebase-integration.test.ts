@@ -51,6 +51,9 @@ describe('Firebase Integration Tests', () => {
 
     const dataSourceInfo = apiService.getDataSourceInfo();
     
+    expect(dataSourceInfo).toEqual({
+      source: 'api',
+      isFirebaseEnabled: true,
       isFirebaseConfigured: true,
     });
   });

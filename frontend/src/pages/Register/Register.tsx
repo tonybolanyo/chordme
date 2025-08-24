@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { apiService } from '../../services/api';
 import { validateEmail, validatePassword } from '../../utils';
+import { FirebaseAuthButtons, FirebaseEmailForm } from '../../components/FirebaseAuth';
 import type { RegisterRequest } from '../../types';
 import './Register.css';
 
@@ -17,6 +18,7 @@ const Register: React.FC = () => {
     password?: string;
     confirmPassword?: string;
     submit?: string;
+    firebase?: string;
   }>({});
 
   const [isLoading, setIsLoading] = useState(false);
@@ -103,6 +105,15 @@ const Register: React.FC = () => {
     }
   };
 
+  const handleFirebaseSuccess = (message: string) => {
+    setSuccessMessage(message);
+    setErrors({ firebase: undefined });
+  };
+
+  const handleFirebaseError = (error: string) => {
+    setErrors({ firebase: error });
+  };
+
   return (
     <div className="register">
       <div className="register-container">
@@ -116,6 +127,7 @@ const Register: React.FC = () => {
         )}
 
         <form onSubmit={handleSubmit} className="register-form">
+          <h3>Create a ChordMe account</h3>
           <div className="form-group">
             <label htmlFor="email">Email</label>
             <input
@@ -190,6 +202,27 @@ const Register: React.FC = () => {
             {isLoading ? 'Creating account...' : 'Create Account'}
           </button>
         </form>
+
+        {/* Firebase Authentication Options */}
+        <FirebaseAuthButtons
+          mode="register"
+          disabled={isLoading}
+          onSuccess={handleFirebaseSuccess}
+          onError={handleFirebaseError}
+        />
+        
+        <FirebaseEmailForm
+          mode="register"
+          disabled={isLoading}
+          onSuccess={handleFirebaseSuccess}
+          onError={handleFirebaseError}
+        />
+
+        {errors.firebase && (
+          <div className="error-message" style={{ marginTop: '16px' }}>
+            {errors.firebase}
+          </div>
+        )}
 
         <p className="register-footer">
           Already have an account? <a href="#login">Sign in here</a>
