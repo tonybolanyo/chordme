@@ -594,7 +594,7 @@ def get_song(song_id):
     tags:
       - Songs
     summary: Get song by ID
-    description: Retrieve a specific song by its ID (only if owned by authenticated user)
+    description: Retrieve a specific song by its ID (accessible if owned, shared, or public)
     security:
       - Bearer: []
     parameters:
@@ -628,10 +628,12 @@ def get_song(song_id):
           $ref: '#/definitions/Error'
     """
     try:
-        # Find song by ID and ensure it belongs to the current user
-        song = Song.query.filter_by(id=song_id, author_id=g.current_user_id).first()
+        from .permission_helpers import check_song_permission
         
-        if not song:
+        # Check if user has read access to the song
+        song, has_permission = check_song_permission(song_id, g.current_user_id, 'read')
+        
+        if not song or not has_permission:
             return create_error_response("Song not found", 404)
         
         return create_success_response(
@@ -661,7 +663,7 @@ def update_song(song_id):
     tags:
       - Songs
     summary: Update song
-    description: Update a specific song by its ID (only if owned by authenticated user)
+    description: Update a specific song by its ID (requires edit permissions)
     security:
       - Bearer: []
     parameters:
@@ -704,6 +706,10 @@ def update_song(song_id):
         description: Authentication required
         schema:
           $ref: '#/definitions/Error'
+      403:
+        description: Insufficient permissions
+        schema:
+          $ref: '#/definitions/Error'
       404:
         description: Song not found
         schema:
@@ -722,11 +728,16 @@ def update_song(song_id):
           $ref: '#/definitions/Error'
     """
     try:
-        # Find song by ID and ensure it belongs to the current user
-        song = Song.query.filter_by(id=song_id, author_id=g.current_user_id).first()
+        from .permission_helpers import check_song_permission
+        
+        # Check if user has edit access to the song
+        song, has_permission = check_song_permission(song_id, g.current_user_id, 'edit')
         
         if not song:
             return create_error_response("Song not found", 404)
+        
+        if not has_permission:
+            return create_error_response("Insufficient permissions to edit this song", 403)
         
         # Get JSON data from request
         data = request.get_json()
@@ -800,7 +811,7 @@ def delete_song(song_id):
     tags:
       - Songs
     summary: Delete song
-    description: Delete a specific song by its ID (only if owned by authenticated user)
+    description: Delete a specific song by its ID (requires admin permissions - only owner)
     security:
       - Bearer: []
     parameters:
@@ -819,6 +830,10 @@ def delete_song(song_id):
         description: Authentication required
         schema:
           $ref: '#/definitions/Error'
+      403:
+        description: Insufficient permissions
+        schema:
+          $ref: '#/definitions/Error'
       404:
         description: Song not found
         schema:
@@ -833,11 +848,16 @@ def delete_song(song_id):
           $ref: '#/definitions/Error'
     """
     try:
-        # Find song by ID and ensure it belongs to the current user
-        song = Song.query.filter_by(id=song_id, author_id=g.current_user_id).first()
+        from .permission_helpers import check_song_permission
+        
+        # Check if user has admin access to the song (only owner can delete)
+        song, has_permission = check_song_permission(song_id, g.current_user_id, 'admin')
         
         if not song:
             return create_error_response("Song not found", 404)
+        
+        if not has_permission:
+            return create_error_response("Insufficient permissions to delete this song", 403)
         
         song_title = song.title  # Store for logging
         
@@ -872,7 +892,7 @@ def download_song(song_id):
     tags:
       - Songs
     summary: Download song file
-    description: Download a specific song as a ChordPro (.cho) file (only if owned by authenticated user)
+    description: Download a specific song as a ChordPro (.cho) file (accessible if owned, shared, or public)
     security:
       - Bearer: []
     parameters:
@@ -915,10 +935,12 @@ def download_song(song_id):
           $ref: '#/definitions/Error'
     """
     try:
-        # Find song by ID and ensure it belongs to the current user
-        song = Song.query.filter_by(id=song_id, author_id=g.current_user_id).first()
+        from .permission_helpers import check_song_permission
         
-        if not song:
+        # Check if user has read access to the song
+        song, has_permission = check_song_permission(song_id, g.current_user_id, 'read')
+        
+        if not song or not has_permission:
             return create_error_response("Song not found", 404)
         
         # Generate ChordPro content
@@ -1618,7 +1640,7 @@ def get_song_sections(song_id):
     tags:
       - Songs
     summary: Get song sections
-    description: Retrieve all sections for a specific song (only if owned by authenticated user)
+    description: Retrieve all sections for a specific song (accessible if owned, shared, or public)
     security:
       - Bearer: []
     parameters:
@@ -1679,10 +1701,12 @@ def get_song_sections(song_id):
           $ref: '#/definitions/Error'
     """
     try:
-        # Find song by ID and ensure it belongs to the current user
-        song = Song.query.filter_by(id=song_id, author_id=g.current_user_id).first()
+        from .permission_helpers import check_song_permission
         
-        if not song:
+        # Check if user has read access to the song
+        song, has_permission = check_song_permission(song_id, g.current_user_id, 'read')
+        
+        if not song or not has_permission:
             return create_error_response("Song not found", 404)
         
         # Get sections ordered by their index
@@ -1716,7 +1740,7 @@ def get_song_section(song_id, section_id):
     tags:
       - Songs
     summary: Get specific song section
-    description: Retrieve a specific section by its ID (only if song is owned by authenticated user)
+    description: Retrieve a specific section by its ID (accessible if song is owned, shared, or public)
     security:
       - Bearer: []
     parameters:
@@ -1778,10 +1802,12 @@ def get_song_section(song_id, section_id):
           $ref: '#/definitions/Error'
     """
     try:
-        # Find song by ID and ensure it belongs to the current user
-        song = Song.query.filter_by(id=song_id, author_id=g.current_user_id).first()
+        from .permission_helpers import check_song_permission
         
-        if not song:
+        # Check if user has read access to the song
+        song, has_permission = check_song_permission(song_id, g.current_user_id, 'read')
+        
+        if not song or not has_permission:
             return create_error_response("Song not found", 404)
         
         # Find specific section for this song
@@ -2296,6 +2322,601 @@ def delete_chord(chord_id):
         db.session.rollback()
         return security_error_handler.handle_server_error(
             "An error occurred while deleting the chord",
+            exception=e,
+            ip_address=request.remote_addr
+        )
+
+
+
+# Collaboration endpoints for song sharing and permission management
+
+@app.route('/api/v1/songs/<int:song_id>/share', methods=['POST'])
+@auth_required
+@validate_positive_integer('song_id')
+@validate_request_size(max_content_length=10*1024)  # 10KB for sharing data
+@rate_limit(max_requests=20, window_seconds=300)  # 20 sharing operations per 5 minutes
+@csrf_protect(require_token=False)  # CSRF optional for API endpoints
+@security_headers
+def share_song(song_id):
+    """
+    Share a song with other users
+    ---
+    tags:
+      - Collaboration
+    summary: Share song with users
+    description: Share a song with specified users and permission levels (requires admin permissions)
+    security:
+      - Bearer: []
+    parameters:
+      - in: path
+        name: song_id
+        description: Song ID
+        required: true
+        type: integer
+        minimum: 1
+      - in: body
+        name: body
+        description: Sharing details
+        required: true
+        schema:
+          type: object
+          required:
+            - user_email
+            - permission_level
+          properties:
+            user_email:
+              type: string
+              format: email
+              description: Email of user to share with
+              example: "collaborator@example.com"
+            permission_level:
+              type: string
+              enum: ["read", "edit", "admin"]
+              description: Permission level to grant
+              example: "edit"
+    responses:
+      200:
+        description: Song shared successfully
+        schema:
+          allOf:
+            - $ref: '#/definitions/Success'
+            - type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    user_id:
+                      type: integer
+                      description: ID of the user granted access
+                    user_email:
+                      type: string
+                      description: Email of the user granted access
+                    permission_level:
+                      type: string
+                      description: Permission level granted
+      400:
+        description: Invalid input or validation error
+        schema:
+          $ref: '#/definitions/Error'
+      401:
+        description: Authentication required
+        schema:
+          $ref: '#/definitions/Error'
+      403:
+        description: Insufficient permissions
+        schema:
+          $ref: '#/definitions/Error'
+      404:
+        description: Song or user not found
+        schema:
+          $ref: '#/definitions/Error'
+      429:
+        description: Too many requests
+        schema:
+          $ref: '#/definitions/Error'
+      500:
+        description: Internal server error
+        schema:
+          $ref: '#/definitions/Error'
+    """
+    try:
+        from .permission_helpers import check_song_permission, validate_permission_level, log_sharing_activity
+        
+        # Check if user has admin access to the song
+        song, has_permission = check_song_permission(song_id, g.current_user_id, 'admin')
+        
+        if not song:
+            return create_error_response("Song not found", 404)
+        
+        if not has_permission:
+            return create_error_response("Insufficient permissions to manage this song", 403)
+        
+        # Get JSON data from request
+        data = request.get_json()
+        
+        if not data:
+            return create_error_response("No data provided", 400)
+        
+        # Sanitize input data
+        data = sanitize_input(data)
+        
+        user_email = data.get('user_email', '').strip().lower()
+        permission_level = data.get('permission_level', '').strip()
+        
+        # Validate required fields
+        if not user_email:
+            return create_error_response("User email is required", 400)
+        
+        if not permission_level:
+            return create_error_response("Permission level is required", 400)
+        
+        # Validate permission level
+        if not validate_permission_level(permission_level):
+            return create_error_response("Permission level must be 'read', 'edit', or 'admin'", 400)
+        
+        # Find user by email
+        target_user = User.query.filter_by(email=user_email).first()
+        if not target_user:
+            return create_error_response("User not found", 404)
+        
+        # Don't allow sharing with yourself
+        if target_user.id == g.current_user_id:
+            return create_error_response("Cannot share song with yourself", 400)
+        
+        # Add or update sharing
+        previous_permission = song.get_user_permission(target_user.id)
+        song.add_shared_user(target_user.id, permission_level)
+        
+        # Save changes
+        db.session.commit()
+        
+        # Log the sharing activity
+        action = 'permission_changed' if previous_permission else 'share_added'
+        log_sharing_activity(
+            action=action,
+            song_id=song_id,
+            actor_user_id=g.current_user_id,
+            target_user_id=target_user.id,
+            permission_level=permission_level,
+            details={'previous_permission': previous_permission}
+        )
+        
+        app.logger.info(f"Song shared: {song.title} with {user_email} ({permission_level}) by user {g.current_user_id} from IP {request.remote_addr}")
+        
+        return create_success_response(
+            data={
+                'user_id': target_user.id,
+                'user_email': target_user.email,
+                'permission_level': permission_level
+            },
+            message=f"Song shared successfully with {user_email}"
+        )
+        
+    except Exception as e:
+        db.session.rollback()
+        return security_error_handler.handle_server_error(
+            "An error occurred while sharing the song",
+            exception=e,
+            ip_address=request.remote_addr
+        )
+
+
+@app.route('/api/v1/songs/<int:song_id>/collaborators', methods=['GET'])
+@auth_required
+@validate_positive_integer('song_id')
+@security_headers
+def get_song_collaborators(song_id):
+    """
+    Get list of collaborators for a song
+    ---
+    tags:
+      - Collaboration
+    summary: List song collaborators
+    description: Retrieve list of users who have access to the song (requires read permissions)
+    security:
+      - Bearer: []
+    parameters:
+      - in: path
+        name: song_id
+        description: Song ID
+        required: true
+        type: integer
+        minimum: 1
+    responses:
+      200:
+        description: Collaborators retrieved successfully
+        schema:
+          allOf:
+            - $ref: '#/definitions/Success'
+            - type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    collaborators:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          user_id:
+                            type: integer
+                            description: User ID
+                          email:
+                            type: string
+                            description: User email
+                          permission_level:
+                            type: string
+                            description: Permission level
+                          granted_at:
+                            type: string
+                            format: date-time
+                            description: When access was granted
+                    owner:
+                      type: object
+                      properties:
+                        user_id:
+                          type: integer
+                          description: Owner user ID
+                        email:
+                          type: string
+                          description: Owner email
+      401:
+        description: Authentication required
+        schema:
+          $ref: '#/definitions/Error'
+      404:
+        description: Song not found
+        schema:
+          $ref: '#/definitions/Error'
+      500:
+        description: Internal server error
+        schema:
+          $ref: '#/definitions/Error'
+    """
+    try:
+        from .permission_helpers import check_song_permission
+        
+        # Check if user has read access to the song
+        song, has_permission = check_song_permission(song_id, g.current_user_id, 'read')
+        
+        if not song or not has_permission:
+            return create_error_response("Song not found", 404)
+        
+        # Get owner information
+        owner = User.query.filter_by(id=song.author_id).first()
+        owner_data = {
+            'user_id': owner.id,
+            'email': owner.email
+        } if owner else None
+        
+        # Get collaborators
+        collaborators = []
+        if song.shared_with and song.permissions:
+            # Get users who have access
+            shared_user_ids = song.shared_with
+            shared_users = User.query.filter(User.id.in_(shared_user_ids)).all()
+            
+            for user in shared_users:
+                permission = song.get_user_permission(user.id)
+                if permission:
+                    collaborators.append({
+                        'user_id': user.id,
+                        'email': user.email,
+                        'permission_level': permission,
+                        'granted_at': song.updated_at.isoformat() if song.updated_at else None
+                    })
+        
+        return create_success_response(
+            data={
+                'collaborators': collaborators,
+                'owner': owner_data
+            },
+            message=f"Retrieved {len(collaborators)} collaborators"
+        )
+        
+    except Exception as e:
+        return security_error_handler.handle_server_error(
+            "An error occurred while retrieving collaborators",
+            exception=e,
+            ip_address=request.remote_addr
+        )
+
+
+@app.route('/api/v1/songs/<int:song_id>/permissions', methods=['PUT'])
+@auth_required
+@validate_positive_integer('song_id')
+@validate_request_size(max_content_length=10*1024)  # 10KB for permission data
+@rate_limit(max_requests=20, window_seconds=300)  # 20 permission changes per 5 minutes
+@csrf_protect(require_token=False)  # CSRF optional for API endpoints
+@security_headers
+def update_song_permissions(song_id):
+    """
+    Update user permissions for a song
+    ---
+    tags:
+      - Collaboration
+    summary: Update user permissions
+    description: Update permission level for a user on the song (requires admin permissions)
+    security:
+      - Bearer: []
+    parameters:
+      - in: path
+        name: song_id
+        description: Song ID
+        required: true
+        type: integer
+        minimum: 1
+      - in: body
+        name: body
+        description: Permission update details
+        required: true
+        schema:
+          type: object
+          required:
+            - user_email
+            - permission_level
+          properties:
+            user_email:
+              type: string
+              format: email
+              description: Email of user to update permissions for
+              example: "collaborator@example.com"
+            permission_level:
+              type: string
+              enum: ["read", "edit", "admin"]
+              description: New permission level
+              example: "admin"
+    responses:
+      200:
+        description: Permissions updated successfully
+        schema:
+          allOf:
+            - $ref: '#/definitions/Success'
+            - type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    user_id:
+                      type: integer
+                      description: ID of the user
+                    user_email:
+                      type: string
+                      description: Email of the user
+                    old_permission:
+                      type: string
+                      description: Previous permission level
+                    new_permission:
+                      type: string
+                      description: New permission level
+      400:
+        description: Invalid input or validation error
+        schema:
+          $ref: '#/definitions/Error'
+      401:
+        description: Authentication required
+        schema:
+          $ref: '#/definitions/Error'
+      403:
+        description: Insufficient permissions
+        schema:
+          $ref: '#/definitions/Error'
+      404:
+        description: Song or user not found
+        schema:
+          $ref: '#/definitions/Error'
+      429:
+        description: Too many requests
+        schema:
+          $ref: '#/definitions/Error'
+      500:
+        description: Internal server error
+        schema:
+          $ref: '#/definitions/Error'
+    """
+    try:
+        from .permission_helpers import check_song_permission, validate_permission_level, log_sharing_activity
+        
+        # Check if user has admin access to the song
+        song, has_permission = check_song_permission(song_id, g.current_user_id, 'admin')
+        
+        if not song:
+            return create_error_response("Song not found", 404)
+        
+        if not has_permission:
+            return create_error_response("Insufficient permissions to manage this song", 403)
+        
+        # Get JSON data from request
+        data = request.get_json()
+        
+        if not data:
+            return create_error_response("No data provided", 400)
+        
+        # Sanitize input data
+        data = sanitize_input(data)
+        
+        user_email = data.get('user_email', '').strip().lower()
+        permission_level = data.get('permission_level', '').strip()
+        
+        # Validate required fields
+        if not user_email:
+            return create_error_response("User email is required", 400)
+        
+        if not permission_level:
+            return create_error_response("Permission level is required", 400)
+        
+        # Validate permission level
+        if not validate_permission_level(permission_level):
+            return create_error_response("Permission level must be 'read', 'edit', or 'admin'", 400)
+        
+        # Find user by email
+        target_user = User.query.filter_by(email=user_email).first()
+        if not target_user:
+            return create_error_response("User not found", 404)
+        
+        # Check if user currently has access
+        old_permission = song.get_user_permission(target_user.id)
+        
+        # For the owner, they always have access but it's not stored in permissions
+        if target_user.id == song.author_id:
+            old_permission = 'admin'  # Owner implicitly has admin permissions
+        
+        if not old_permission and target_user.id != song.author_id:
+            return create_error_response("User does not have access to this song", 400)
+        
+        # Don't allow changing own permissions
+        if target_user.id == g.current_user_id:
+            return create_error_response("Cannot change your own permissions", 400)
+        
+        # Update permission
+        song.add_shared_user(target_user.id, permission_level)
+        
+        # Save changes
+        db.session.commit()
+        
+        # Log the permission change
+        log_sharing_activity(
+            action='permission_changed',
+            song_id=song_id,
+            actor_user_id=g.current_user_id,
+            target_user_id=target_user.id,
+            permission_level=permission_level,
+            details={'old_permission': old_permission}
+        )
+        
+        app.logger.info(f"Permissions updated: {song.title} for {user_email} ({old_permission} -> {permission_level}) by user {g.current_user_id} from IP {request.remote_addr}")
+        
+        return create_success_response(
+            data={
+                'user_id': target_user.id,
+                'user_email': target_user.email,
+                'old_permission': old_permission,
+                'new_permission': permission_level
+            },
+            message=f"Permissions updated successfully for {user_email}"
+        )
+        
+    except Exception as e:
+        db.session.rollback()
+        return security_error_handler.handle_server_error(
+            "An error occurred while updating permissions",
+            exception=e,
+            ip_address=request.remote_addr
+        )
+
+
+@app.route('/api/v1/songs/<int:song_id>/share/<int:user_id>', methods=['DELETE'])
+@auth_required
+@validate_positive_integer('song_id')
+@validate_positive_integer('user_id')
+@rate_limit(max_requests=20, window_seconds=300)  # 20 revoke operations per 5 minutes
+@csrf_protect(require_token=False)  # CSRF optional for API endpoints
+@security_headers
+def revoke_song_access(song_id, user_id):
+    """
+    Revoke user access to a song
+    ---
+    tags:
+      - Collaboration
+    summary: Revoke user access
+    description: Remove user's access to the song (requires admin permissions)
+    security:
+      - Bearer: []
+    parameters:
+      - in: path
+        name: song_id
+        description: Song ID
+        required: true
+        type: integer
+        minimum: 1
+      - in: path
+        name: user_id
+        description: User ID to revoke access from
+        required: true
+        type: integer
+        minimum: 1
+    responses:
+      200:
+        description: Access revoked successfully
+        schema:
+          $ref: '#/definitions/Success'
+      401:
+        description: Authentication required
+        schema:
+          $ref: '#/definitions/Error'
+      403:
+        description: Insufficient permissions
+        schema:
+          $ref: '#/definitions/Error'
+      404:
+        description: Song or user not found
+        schema:
+          $ref: '#/definitions/Error'
+      429:
+        description: Too many requests
+        schema:
+          $ref: '#/definitions/Error'
+      500:
+        description: Internal server error
+        schema:
+          $ref: '#/definitions/Error'
+    """
+    try:
+        from .permission_helpers import check_song_permission, log_sharing_activity
+        
+        # Check if user has admin access to the song
+        song, has_permission = check_song_permission(song_id, g.current_user_id, 'admin')
+        
+        if not song:
+            return create_error_response("Song not found", 404)
+        
+        if not has_permission:
+            return create_error_response("Insufficient permissions to manage this song", 403)
+        
+        # Find the target user
+        target_user = User.query.filter_by(id=user_id).first()
+        if not target_user:
+            return create_error_response("User not found", 404)
+        
+        # Check if user currently has access
+        old_permission = song.get_user_permission(target_user.id)
+        
+        # For the owner, they always have access but it's not stored in permissions
+        if target_user.id == song.author_id:
+            old_permission = 'admin'  # Owner implicitly has admin permissions
+        
+        if not old_permission and target_user.id != song.author_id:
+            return create_error_response("User does not have access to this song", 400)
+        
+        # Don't allow revoking own access
+        if target_user.id == g.current_user_id:
+            return create_error_response("Cannot revoke your own access", 400)
+        
+        # Remove user access
+        song.remove_shared_user(target_user.id)
+        
+        # Save changes
+        db.session.commit()
+        
+        # Log the access revocation
+        log_sharing_activity(
+            action='share_removed',
+            song_id=song_id,
+            actor_user_id=g.current_user_id,
+            target_user_id=target_user.id,
+            permission_level=old_permission
+        )
+        
+        app.logger.info(f"Access revoked: {song.title} for {target_user.email} by user {g.current_user_id} from IP {request.remote_addr}")
+        
+        return create_success_response(
+            message=f"Access revoked successfully for {target_user.email}"
+        )
+        
+    except Exception as e:
+        db.session.rollback()
+        return security_error_handler.handle_server_error(
+            "An error occurred while revoking access",
             exception=e,
             ip_address=request.remote_addr
         )
