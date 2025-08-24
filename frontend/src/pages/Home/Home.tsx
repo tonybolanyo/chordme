@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { apiService } from '../../services/api';
 import { googleOAuth2Service } from '../../services/googleOAuth';
 import { formatRelativeTime } from '../../utils';
+import { useRealtimeSongs } from '../../hooks/useRealtimeSongs';
 import type { Song, DriveFile } from '../../types';
 import {
   ChordProEditor,
@@ -13,8 +14,16 @@ import './Home.css';
 
 const Home: React.FC = () => {
   const { user } = useAuth();
-  const [songs, setSongs] = useState<Song[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  
+  // Use real-time songs hook instead of manual state management
+  const { 
+    songs, 
+    loading: isLoading, 
+    error: songsError, 
+    isRealTime, 
+    refetch: reloadSongs 
+  } = useRealtimeSongs();
+  
   const [error, setError] = useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newSong, setNewSong] = useState({ title: '', content: '' });
@@ -29,27 +38,12 @@ const Home: React.FC = () => {
   );
   const [exportSuccess, setExportSuccess] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadSongs();
-  }, []);
+  // Combine real-time songs error with other errors
+  const displayError = error || songsError;
 
-  const loadSongs = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const response = await apiService.getSongs();
-      if (response.status === 'success') {
-        setSongs(response.data.songs);
-      } else {
-        setError('Failed to load songs');
-      }
-    } catch (err) {
-      console.error('Error loading songs:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load songs');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // Remove the old loadSongs function since it's handled by the hook
+  // Keep a reload function for manual refresh if needed (for non-real-time scenarios)
+  const loadSongs = reloadSongs;
 
   const handleCreateSong = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,7 +60,11 @@ const Home: React.FC = () => {
       if (response.status === 'success') {
         setNewSong({ title: '', content: '' });
         setShowCreateForm(false);
-        loadSongs(); // Reload songs list
+        // Real-time updates will handle refreshing the list automatically
+        // Only manually reload if not using real-time
+        if (!isRealTime) {
+          loadSongs();
+        }
       }
     } catch (err) {
       console.error('Error creating song:', err);
@@ -81,7 +79,11 @@ const Home: React.FC = () => {
 
     try {
       await apiService.deleteSong(songId);
-      loadSongs(); // Reload songs list
+      // Real-time updates will handle removing the song from the list automatically
+      // Only manually reload if not using real-time
+      if (!isRealTime) {
+        loadSongs();
+      }
     } catch (err) {
       console.error('Error deleting song:', err);
       setError(err instanceof Error ? err.message : 'Failed to delete song');
@@ -121,7 +123,11 @@ const Home: React.FC = () => {
       if (response.status === 'success') {
         setEditingSong(null);
         setEditSongData({ title: '', content: '' });
-        loadSongs(); // Reload songs list
+        // Real-time updates will handle refreshing the song automatically
+        // Only manually reload if not using real-time
+        if (!isRealTime) {
+          loadSongs();
+        }
       }
     } catch (err) {
       console.error('Error updating song:', err);
@@ -395,7 +401,7 @@ const Home: React.FC = () => {
         <h1>Welcome back, {user?.email}!</h1>
         <p className="home-subtitle">Manage your chords and lyrics</p>
 
-        {error && (
+        {displayError && (
           <div
             className="error-message"
             style={{
@@ -406,7 +412,7 @@ const Home: React.FC = () => {
               borderRadius: '4px',
             }}
           >
-            {error}
+            {displayError}
           </div>
         )}
 
@@ -797,7 +803,24 @@ const Home: React.FC = () => {
       </div>
 
       <div className="songs-section">
-        <h2>Your Songs ({songs.length})</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+          <h2>Your Songs ({songs.length})</h2>
+          {isRealTime && (
+            <span 
+              style={{ 
+                fontSize: '12px', 
+                color: '#28a745', 
+                backgroundColor: '#e8f5e8', 
+                padding: '2px 8px', 
+                borderRadius: '12px',
+                border: '1px solid #28a745'
+              }}
+              title="Songs update automatically when changes are made"
+            >
+              🔄 Real-time
+            </span>
+          )}
+        </div>
 
         {songs.length === 0 ? (
           <div className="no-songs">

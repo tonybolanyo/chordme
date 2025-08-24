@@ -10,10 +10,13 @@ import {
   query,
   where,
   orderBy,
+  onSnapshot,
   Timestamp,
   DocumentReference,
   DocumentSnapshot,
+  QuerySnapshot,
 } from 'firebase/firestore';
+import type { Unsubscribe } from 'firebase/firestore';
 import { firebaseService } from './firebase';
 import type { Song, User } from '../types';
 
@@ -303,6 +306,65 @@ class FirestoreService {
    */
   isAvailable(): boolean {
     return firebaseService.isInitialized();
+  }
+
+  // Real-time operations
+
+  /**
+   * Subscribe to real-time updates for all songs for a user
+   */
+  subscribeToSongs(userId: string, callback: (songs: Song[]) => void): Unsubscribe {
+    try {
+      const songsRef = collection(this.db, 'songs');
+      const q = query(
+        songsRef,
+        where('author_id', '==', userId),
+        orderBy('updated_at', 'desc')
+      );
+      
+      return onSnapshot(q, (querySnapshot: QuerySnapshot) => {
+        const songs: Song[] = [];
+        
+        querySnapshot.forEach((doc) => {
+          const song = this.documentToSong(doc);
+          if (song) {
+            songs.push(song);
+          }
+        });
+        
+        callback(songs);
+      }, (error) => {
+        console.error('Error in songs real-time subscription:', error);
+        // Call callback with empty array on error to prevent UI issues
+        callback([]);
+      });
+    } catch (error) {
+      console.error('Error setting up songs real-time subscription:', error);
+      // Return a no-op unsubscribe function
+      return () => {};
+    }
+  }
+
+  /**
+   * Subscribe to real-time updates for a specific song
+   */
+  subscribeToSong(songId: string, callback: (song: Song | null) => void): Unsubscribe {
+    try {
+      const songRef = doc(this.db, 'songs', songId);
+      
+      return onSnapshot(songRef, (doc: DocumentSnapshot) => {
+        const song = this.documentToSong(doc);
+        callback(song);
+      }, (error) => {
+        console.error('Error in song real-time subscription:', error);
+        // Call callback with null on error
+        callback(null);
+      });
+    } catch (error) {
+      console.error('Error setting up song real-time subscription:', error);
+      // Return a no-op unsubscribe function
+      return () => {};
+    }
   }
 }
 

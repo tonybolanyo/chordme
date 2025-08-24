@@ -169,6 +169,13 @@ npm run test:all
 3. Create, edit, and delete songs
 4. Verify data persists in Firebase Console
 
+### 3. Real-time Testing
+
+1. Open multiple browser tabs/windows
+2. Create or edit a song in one tab
+3. Observe instant updates in other tabs (real-time indicator should show "🔄 Real-time")
+4. Check browser DevTools Network tab for WebSocket connections
+
 ## Switching Between Data Sources
 
 ### Use Flask Backend (Default)
@@ -239,13 +246,25 @@ If Firebase is misconfigured, the app will fall back to the Flask backend. Check
 - ✅ Automatic data source switching
 - ✅ Error handling and fallback
 - ✅ Type-safe TypeScript integration
+- ✅ **Real-time updates with instant UI synchronization**
+- ✅ **Automatic cleanup and memory management**
+- ✅ **React hooks for real-time data management**
+
+### Real-time Features
+- **Live Song Updates**: Changes to songs appear instantly across all open browsers
+- **Real-time Song List**: New songs, deletions, and edits sync immediately
+- **Automatic Fallback**: Seamlessly works with Flask backend (non-real-time)
+- **Real-time Indicator**: UI shows when real-time updates are active
+- **Memory Safe**: Proper cleanup prevents memory leaks
 
 ### Future Enhancements
-- 🔄 Real-time collaboration on songs
+- 🔄 Real-time collaboration on songs (multiple users editing)
 - 🔄 Firebase Authentication integration
 - 🔄 Cloud Functions for advanced features
 - 🔄 File storage for audio/images
 - 🔄 Offline-first capabilities
+- 🔄 Presence indicators (who's viewing songs)
+- 🔄 Push notifications for shared songs
 
 ## Support
 

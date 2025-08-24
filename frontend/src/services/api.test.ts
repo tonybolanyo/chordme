@@ -7,6 +7,26 @@ vi.mock('../utils/jwt', () => ({
   isTokenExpired: vi.fn(),
 }));
 
+// Mock Firebase services
+vi.mock('./firebase', () => ({
+  firebaseService: {
+    isEnabled: vi.fn(() => false),
+    isInitialized: vi.fn(() => false),
+  },
+}));
+
+vi.mock('./firestore', () => ({
+  firestoreService: {
+    getSongs: vi.fn(),
+    getSong: vi.fn(),
+    createSong: vi.fn(),
+    updateSong: vi.fn(),
+    deleteSong: vi.fn(),
+    subscribeToSongs: vi.fn(),
+    subscribeToSong: vi.fn(),
+  },
+}));
+
 import { isTokenExpired } from '../utils/jwt';
 
 // Mock fetch globally
