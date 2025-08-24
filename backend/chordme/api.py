@@ -2283,6 +2283,399 @@ def delete_chord(chord_id):
         )
 
 
+# Google Drive Integration Endpoints
+
+@app.route('/api/v1/google-drive/validate-and-save', methods=['POST'])
+@auth_required
+@validate_request_size(max_content_length=1024*1024)  # 1MB limit
+@rate_limit(max_requests=10, window_seconds=300)  # 10 saves per 5 minutes
+@csrf_protect(require_token=False)
+@security_headers
+def google_drive_validate_and_save():
+    """
+    Validate ChordPro content and save to Google Drive
+    ---
+    tags:
+      - Google Drive
+    summary: Validate and save ChordPro content to Google Drive
+    description: Server-side validation of ChordPro content before saving to Google Drive
+    security:
+      - Bearer: []
+    parameters:
+      - in: body
+        name: data
+        description: ChordPro content and file information
+        required: true
+        schema:
+          type: object
+          properties:
+            access_token:
+              type: string
+              description: Google OAuth2 access token
+            file_name:
+              type: string
+              description: Name for the file in Google Drive
+            content:
+              type: string
+              description: ChordPro content to validate and save
+            parent_folder_id:
+              type: string
+              description: Optional parent folder ID in Google Drive
+          required:
+            - access_token
+            - file_name
+            - content
+    responses:
+      200:
+        description: Validation and save completed
+        schema:
+          type: object
+          properties:
+            status:
+              type: string
+              example: "success"
+            data:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                validation:
+                  type: object
+                file:
+                  type: object
+                message:
+                  type: string
+      400:
+        description: Bad request or validation failed
+        schema:
+          $ref: '#/definitions/Error'
+      401:
+        description: Unauthorized
+        schema:
+          $ref: '#/definitions/Error'
+      500:
+        description: Internal server error
+        schema:
+          $ref: '#/definitions/Error'
+    """
+    try:
+        from .google_drive_service import google_drive_service
+        
+        if not google_drive_service.is_enabled():
+            return create_error_response(
+                "Google Drive integration is not enabled on this server", 
+                400
+            )
+        
+        data = request.get_json()
+        if not data:
+            return create_error_response("No data provided", 400)
+        
+        # Sanitize input
+        data = sanitize_input(data, max_string_length=50000)  # Allow large content
+        
+        access_token = data.get('access_token', '').strip()
+        file_name = data.get('file_name', '').strip()
+        content = data.get('content', '').strip()
+        parent_folder_id = data.get('parent_folder_id', '').strip() or None
+        
+        # Validate required fields
+        if not access_token:
+            return create_error_response("Access token is required", 400)
+        
+        if not file_name:
+            return create_error_response("File name is required", 400)
+        
+        if not content:
+            return create_error_response("Content is required", 400)
+        
+        # Validate file name length
+        if len(file_name) > 100:
+            return create_error_response("File name must be 100 characters or less", 400)
+        
+        # Call Google Drive service
+        result = google_drive_service.validate_chordpro_and_save(
+            access_token=access_token,
+            file_name=file_name,
+            content=content,
+            parent_folder_id=parent_folder_id
+        )
+        
+        app.logger.info(f"Google Drive validate and save operation by user {g.current_user_id} from IP {request.remote_addr}")
+        
+        return create_success_response(
+            data=result,
+            message="Operation completed"
+        )
+        
+    except Exception as e:
+        return security_error_handler.handle_server_error(
+            "An error occurred during Google Drive operation",
+            exception=e,
+            ip_address=request.remote_addr
+        )
+
+
+@app.route('/api/v1/google-drive/batch-validate', methods=['POST'])
+@auth_required
+@validate_request_size(max_content_length=512*1024)  # 512KB limit
+@rate_limit(max_requests=5, window_seconds=300)  # 5 batch operations per 5 minutes
+@csrf_protect(require_token=False)
+@security_headers
+def google_drive_batch_validate():
+    """
+    Batch validate multiple ChordPro files from Google Drive
+    ---
+    tags:
+      - Google Drive
+    summary: Batch validate ChordPro files
+    description: Validate multiple ChordPro files from Google Drive in a single operation
+    security:
+      - Bearer: []
+    parameters:
+      - in: body
+        name: data
+        description: Google Drive file IDs to validate
+        required: true
+        schema:
+          type: object
+          properties:
+            access_token:
+              type: string
+              description: Google OAuth2 access token
+            file_ids:
+              type: array
+              items:
+                type: string
+              description: List of Google Drive file IDs to validate
+          required:
+            - access_token
+            - file_ids
+    responses:
+      200:
+        description: Batch validation completed
+        schema:
+          type: object
+          properties:
+            status:
+              type: string
+              example: "success"
+            data:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                results:
+                  type: array
+                  items:
+                    type: object
+                total:
+                  type: integer
+                processed:
+                  type: integer
+      400:
+        description: Bad request
+        schema:
+          $ref: '#/definitions/Error'
+      401:
+        description: Unauthorized
+        schema:
+          $ref: '#/definitions/Error'
+      500:
+        description: Internal server error
+        schema:
+          $ref: '#/definitions/Error'
+    """
+    try:
+        from .google_drive_service import google_drive_service
+        
+        if not google_drive_service.is_enabled():
+            return create_error_response(
+                "Google Drive integration is not enabled on this server", 
+                400
+            )
+        
+        data = request.get_json()
+        if not data:
+            return create_error_response("No data provided", 400)
+        
+        # Sanitize input
+        data = sanitize_input(data)
+        
+        access_token = data.get('access_token', '').strip()
+        file_ids = data.get('file_ids', [])
+        
+        # Validate required fields
+        if not access_token:
+            return create_error_response("Access token is required", 400)
+        
+        if not isinstance(file_ids, list):
+            return create_error_response("File IDs must be a list", 400)
+        
+        if len(file_ids) == 0:
+            return create_error_response("At least one file ID is required", 400)
+        
+        if len(file_ids) > 20:  # Limit batch size
+            return create_error_response("Maximum 20 files can be validated at once", 400)
+        
+        # Validate file IDs
+        for file_id in file_ids:
+            if not isinstance(file_id, str) or not file_id.strip():
+                return create_error_response("All file IDs must be non-empty strings", 400)
+        
+        # Call Google Drive service
+        result = google_drive_service.batch_validate_files(
+            access_token=access_token,
+            file_ids=file_ids
+        )
+        
+        app.logger.info(f"Google Drive batch validation by user {g.current_user_id} for {len(file_ids)} files from IP {request.remote_addr}")
+        
+        return create_success_response(
+            data=result,
+            message="Batch validation completed"
+        )
+        
+    except Exception as e:
+        return security_error_handler.handle_server_error(
+            "An error occurred during batch validation",
+            exception=e,
+            ip_address=request.remote_addr
+        )
+
+
+@app.route('/api/v1/google-drive/backup-songs', methods=['POST'])
+@auth_required
+@validate_request_size(max_content_length=5*1024*1024)  # 5MB limit for backup
+@rate_limit(max_requests=2, window_seconds=3600)  # 2 backups per hour
+@csrf_protect(require_token=False)
+@security_headers
+def google_drive_backup_songs():
+    """
+    Backup user songs to Google Drive
+    ---
+    tags:
+      - Google Drive
+    summary: Backup songs to Google Drive
+    description: Create a backup of all user songs in Google Drive organized in a dedicated folder
+    security:
+      - Bearer: []
+    parameters:
+      - in: body
+        name: data
+        description: Backup configuration
+        required: true
+        schema:
+          type: object
+          properties:
+            access_token:
+              type: string
+              description: Google OAuth2 access token
+            backup_folder_name:
+              type: string
+              description: Name of the backup folder (optional)
+              default: "ChordMe Backup"
+          required:
+            - access_token
+    responses:
+      200:
+        description: Backup completed
+        schema:
+          type: object
+          properties:
+            status:
+              type: string
+              example: "success"
+            data:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                folder_id:
+                  type: string
+                folder_name:
+                  type: string
+                files:
+                  type: array
+                  items:
+                    type: object
+                total_songs:
+                  type: integer
+                backed_up:
+                  type: integer
+      400:
+        description: Bad request
+        schema:
+          $ref: '#/definitions/Error'
+      401:
+        description: Unauthorized
+        schema:
+          $ref: '#/definitions/Error'
+      500:
+        description: Internal server error
+        schema:
+          $ref: '#/definitions/Error'
+    """
+    try:
+        from .google_drive_service import google_drive_service
+        
+        if not google_drive_service.is_enabled():
+            return create_error_response(
+                "Google Drive integration is not enabled on this server", 
+                400
+            )
+        
+        data = request.get_json()
+        if not data:
+            return create_error_response("No data provided", 400)
+        
+        # Sanitize input
+        data = sanitize_input(data)
+        
+        access_token = data.get('access_token', '').strip()
+        backup_folder_name = data.get('backup_folder_name', 'ChordMe Backup').strip()
+        
+        # Validate required fields
+        if not access_token:
+            return create_error_response("Access token is required", 400)
+        
+        if len(backup_folder_name) > 100:
+            return create_error_response("Backup folder name must be 100 characters or less", 400)
+        
+        # Get user's songs
+        user_songs = Song.query.filter_by(author_id=g.current_user_id).all()
+        
+        # Convert to format expected by Google Drive service
+        songs_data = []
+        for song in user_songs:
+            songs_data.append({
+                'id': song.id,
+                'title': song.title,
+                'content': song.content or ''
+            })
+        
+        # Call Google Drive service
+        result = google_drive_service.backup_user_songs(
+            access_token=access_token,
+            user_songs=songs_data,
+            backup_folder_name=backup_folder_name
+        )
+        
+        app.logger.info(f"Google Drive backup by user {g.current_user_id} for {len(songs_data)} songs from IP {request.remote_addr}")
+        
+        return create_success_response(
+            data=result,
+            message="Backup operation completed"
+        )
+        
+    except Exception as e:
+        return security_error_handler.handle_server_error(
+            "An error occurred during backup operation",
+            exception=e,
+            ip_address=request.remote_addr
+        )
+
+
 @app.route('/')
 def index():
     """
