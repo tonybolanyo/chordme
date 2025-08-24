@@ -48,6 +48,6 @@ describe('Main Entry Point', () => {
 
   it('imports CSS styles', async () => {
     // CSS import should not throw
-    expect(() => require('./index.css')).not.toThrow();
+    await expect(import('./index.css')).resolves.toBeDefined();
   });
 });
