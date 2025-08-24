@@ -171,6 +171,13 @@ const Home: React.FC = () => {
   };
 
   // Conflict resolution handlers
+  const handleAcceptExternalChanges = () => {
+    if (realtimeEditingSong) {
+      setEditSongData({
+        title: realtimeEditingSong.title,
+        content: realtimeEditingSong.content,
+      });
+      setHasExternalChanges(false);
       setShowConflictDialog(false);
     } else {
       setError('External song data is incomplete or invalid. Please try again or reload.');
