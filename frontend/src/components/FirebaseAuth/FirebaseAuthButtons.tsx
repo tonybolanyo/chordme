@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { firebaseAuthService } from '../../services/firebaseAuth';
+import { firebaseAuthService, type FirebaseAuthUser } from '../../services/firebaseAuth';
 import './FirebaseAuth.css';
 
 interface FirebaseAuthButtonsProps {
@@ -18,14 +18,14 @@ const FirebaseAuthButtons: React.FC<FirebaseAuthButtonsProps> = ({
   const [isLoading, setIsLoading] = useState(false);
 
   // Dynamic import to avoid breaking tests that don't have AuthProvider
-  const [authContext, setAuthContext] = useState<any>(null);
+  const [authContext, setAuthContext] = useState<{ useAuth?: () => { loginWithFirebase: (user: FirebaseAuthUser) => void } } | null>(null);
   
   React.useEffect(() => {
     const loadAuthContext = async () => {
       try {
         const { useAuth } = await import('../../contexts/AuthContext');
         setAuthContext({ useAuth });
-      } catch (error) {
+      } catch {
         console.warn('AuthContext not available');
       }
     };
@@ -49,7 +49,7 @@ const FirebaseAuthButtons: React.FC<FirebaseAuthButtonsProps> = ({
       const result = await firebaseAuthService.signInWithGoogle();
       
       // Use auth context if available
-      if (authContext.useAuth) {
+      if (authContext?.useAuth) {
         const { loginWithFirebase } = authContext.useAuth();
         loginWithFirebase(result.user);
       }

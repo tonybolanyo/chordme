@@ -1,4 +1,5 @@
 // Test Firebase Authentication service
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 // Mock Firebase Auth modules first

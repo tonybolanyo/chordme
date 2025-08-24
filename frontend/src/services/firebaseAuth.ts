@@ -59,7 +59,7 @@ class FirebaseAuthService {
         user: this.mapFirebaseUser(userCredential.user),
         isNewUser: true,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       throw this.mapAuthError(error);
     }
   }
@@ -83,7 +83,7 @@ class FirebaseAuthService {
         user: this.mapFirebaseUser(userCredential.user),
         isNewUser: false,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       throw this.mapAuthError(error);
     }
   }
@@ -103,13 +103,12 @@ class FirebaseAuthService {
 
     try {
       const userCredential: UserCredential = await signInWithPopup(auth, this.googleProvider);
-      const additionalUserInfo = userCredential.user;
       
       return {
         user: this.mapFirebaseUser(userCredential.user),
         isNewUser: userCredential.user.metadata.creationTime === userCredential.user.metadata.lastSignInTime,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       throw this.mapAuthError(error);
     }
   }
@@ -129,7 +128,7 @@ class FirebaseAuthService {
 
     try {
       await signOut(auth);
-    } catch (error: any) {
+    } catch (error: unknown) {
       throw this.mapAuthError(error);
     }
   }
@@ -188,10 +187,13 @@ class FirebaseAuthService {
   /**
    * Map Firebase auth errors to user-friendly messages
    */
-  private mapAuthError(error: any): Error {
+  private mapAuthError(error: unknown): Error {
     console.error('Firebase Auth Error:', error);
 
-    switch (error.code) {
+    // Type guard to check if error has a code property
+    const firebaseError = error as { code?: string; message?: string };
+
+    switch (firebaseError.code) {
       case 'auth/user-not-found':
         return new Error('No account found with this email address');
       case 'auth/wrong-password':
@@ -217,7 +219,7 @@ class FirebaseAuthService {
       case 'auth/too-many-requests':
         return new Error('Too many failed attempts. Please try again later');
       default:
-        return new Error(error.message || 'An error occurred during authentication');
+        return new Error(firebaseError.message || 'An error occurred during authentication');
     }
   }
 }

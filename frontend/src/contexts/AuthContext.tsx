@@ -84,7 +84,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         unsubscribeFirebase();
       }
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run on mount to check stored auth data
 
   const clearAuthData = () => {
     localStorage.removeItem('authToken');
