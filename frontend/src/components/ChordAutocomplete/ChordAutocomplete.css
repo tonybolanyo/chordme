@@ -92,16 +92,16 @@
     max-width: 250px;
     min-width: 180px;
   }
-  
+
   .chord-autocomplete-item {
     padding: 6px 10px;
     font-size: 13px;
   }
-  
+
   .chord-autocomplete-title {
     font-size: 11px;
   }
-  
+
   .chord-autocomplete-hint {
     font-size: 9px;
   }

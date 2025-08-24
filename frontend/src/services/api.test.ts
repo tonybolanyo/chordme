@@ -300,7 +300,9 @@ describe('ApiService', () => {
         download: '',
         click: vi.fn(),
       };
-      document.createElement = vi.fn(() => mockAnchor) as any;
+      document.createElement = vi.fn(
+        () => mockAnchor
+      ) as typeof document.createElement;
       document.body.appendChild = vi.fn();
       document.body.removeChild = vi.fn();
     });

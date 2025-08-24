@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './ChordAutocomplete.css';
-import { getChordSuggestions, type ChordSuggestion } from '../../services/chordService';
+import {
+  getChordSuggestions,
+  type ChordSuggestion,
+} from '../../services/chordService';
 
 interface ChordAutocompleteProps {
   inputText: string;
@@ -15,7 +18,7 @@ const ChordAutocomplete: React.FC<ChordAutocompleteProps> = ({
   onSelectChord,
   onClose,
   position,
-  visible
+  visible,
 }) => {
   const [suggestions, setSuggestions] = useState<ChordSuggestion[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -38,13 +41,13 @@ const ChordAutocomplete: React.FC<ChordAutocompleteProps> = ({
       switch (e.key) {
         case 'ArrowDown':
           e.preventDefault();
-          setSelectedIndex(prev => 
+          setSelectedIndex((prev) =>
             prev < suggestions.length - 1 ? prev + 1 : 0
           );
           break;
         case 'ArrowUp':
           e.preventDefault();
-          setSelectedIndex(prev => 
+          setSelectedIndex((prev) =>
             prev > 0 ? prev - 1 : suggestions.length - 1
           );
           break;
@@ -69,14 +72,18 @@ const ChordAutocomplete: React.FC<ChordAutocompleteProps> = ({
   // Handle click outside to close
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (autocompleteRef.current && !autocompleteRef.current.contains(e.target as Node)) {
+      if (
+        autocompleteRef.current &&
+        !autocompleteRef.current.contains(e.target as Node)
+      ) {
         onClose();
       }
     };
 
     if (visible) {
       document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
+      return () =>
+        document.removeEventListener('mousedown', handleClickOutside);
     }
   }, [visible, onClose]);
 
@@ -97,7 +104,9 @@ const ChordAutocomplete: React.FC<ChordAutocompleteProps> = ({
     >
       <div className="chord-autocomplete-header">
         <span className="chord-autocomplete-title">Chord Suggestions</span>
-        <span className="chord-autocomplete-hint">↑↓ navigate, Enter/Tab select, Esc close</span>
+        <span className="chord-autocomplete-hint">
+          ↑↓ navigate, Enter/Tab select, Esc close
+        </span>
       </div>
       <ul className="chord-autocomplete-list">
         {suggestions.map((suggestion, index) => (

@@ -29,11 +29,7 @@ describe('ChordAutocomplete', () => {
 
   it('renders chord suggestions when visible with input text', async () => {
     render(
-      <ChordAutocomplete 
-        {...defaultProps} 
-        visible={true} 
-        inputText="C" 
-      />
+      <ChordAutocomplete {...defaultProps} visible={true} inputText="C" />
     );
 
     await waitFor(() => {
@@ -44,25 +40,23 @@ describe('ChordAutocomplete', () => {
 
   it('displays navigation hints', async () => {
     render(
-      <ChordAutocomplete 
-        {...defaultProps} 
-        visible={true} 
-        inputText="Am" 
-      />
+      <ChordAutocomplete {...defaultProps} visible={true} inputText="Am" />
     );
 
     await waitFor(() => {
-      expect(screen.getByText(/↑↓ navigate, Enter\/Tab select, Esc close/)).toBeInTheDocument();
+      expect(
+        screen.getByText(/↑↓ navigate, Enter\/Tab select, Esc close/)
+      ).toBeInTheDocument();
     });
   });
 
   it('calls onSelectChord when chord is clicked', async () => {
     const mockOnSelectChord = vi.fn();
     render(
-      <ChordAutocomplete 
-        {...defaultProps} 
-        visible={true} 
-        inputText="C" 
+      <ChordAutocomplete
+        {...defaultProps}
+        visible={true}
+        inputText="C"
         onSelectChord={mockOnSelectChord}
       />
     );
@@ -78,26 +72,24 @@ describe('ChordAutocomplete', () => {
   it('positions autocomplete correctly', () => {
     const position = { top: 150, left: 250 };
     render(
-      <ChordAutocomplete 
-        {...defaultProps} 
-        visible={true} 
-        inputText="G" 
+      <ChordAutocomplete
+        {...defaultProps}
+        visible={true}
+        inputText="G"
         position={position}
       />
     );
 
-    const autocomplete = document.querySelector('.chord-autocomplete') as HTMLElement;
+    const autocomplete = document.querySelector(
+      '.chord-autocomplete'
+    ) as HTMLElement;
     expect(autocomplete.style.top).toBe('150px');
     expect(autocomplete.style.left).toBe('250px');
   });
 
   it('handles keyboard navigation', async () => {
     render(
-      <ChordAutocomplete 
-        {...defaultProps} 
-        visible={true} 
-        inputText="C" 
-      />
+      <ChordAutocomplete {...defaultProps} visible={true} inputText="C" />
     );
 
     await waitFor(() => {
@@ -106,7 +98,7 @@ describe('ChordAutocomplete', () => {
 
     // Test arrow down navigation
     fireEvent.keyDown(document, { key: 'ArrowDown' });
-    
+
     // The second item should be selected (if multiple suggestions exist)
     const items = document.querySelectorAll('.chord-autocomplete-item');
     if (items.length > 1) {
@@ -117,10 +109,10 @@ describe('ChordAutocomplete', () => {
   it('handles Enter key to select chord', async () => {
     const mockOnSelectChord = vi.fn();
     render(
-      <ChordAutocomplete 
-        {...defaultProps} 
-        visible={true} 
-        inputText="C" 
+      <ChordAutocomplete
+        {...defaultProps}
+        visible={true}
+        inputText="C"
         onSelectChord={mockOnSelectChord}
       />
     );
@@ -136,10 +128,10 @@ describe('ChordAutocomplete', () => {
   it('handles Escape key to close', async () => {
     const mockOnClose = vi.fn();
     render(
-      <ChordAutocomplete 
-        {...defaultProps} 
-        visible={true} 
-        inputText="C" 
+      <ChordAutocomplete
+        {...defaultProps}
+        visible={true}
+        inputText="C"
         onClose={mockOnClose}
       />
     );
@@ -154,11 +146,7 @@ describe('ChordAutocomplete', () => {
 
   it('shows validity indicators for chords', async () => {
     render(
-      <ChordAutocomplete 
-        {...defaultProps} 
-        visible={true} 
-        inputText="C" 
-      />
+      <ChordAutocomplete {...defaultProps} visible={true} inputText="C" />
     );
 
     await waitFor(() => {
@@ -170,11 +158,7 @@ describe('ChordAutocomplete', () => {
   it('filters suggestions based on input text', async () => {
     // Test with specific input that should return limited results
     render(
-      <ChordAutocomplete 
-        {...defaultProps} 
-        visible={true} 
-        inputText="Cm" 
-      />
+      <ChordAutocomplete {...defaultProps} visible={true} inputText="Cm" />
     );
 
     await waitFor(() => {

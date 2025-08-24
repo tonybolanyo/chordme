@@ -57,6 +57,7 @@ jobs:
     
     - name: Generate API documentation
       run: python generate_docs.py
+      continue-on-error: true
     
     - name: Check if docs changed
       id: docs-changed

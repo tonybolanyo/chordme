@@ -146,11 +146,11 @@
 }
 
 /* Drag and drop styles */
-.chord-button[draggable="true"] {
+.chord-button[draggable='true'] {
   cursor: grab;
 }
 
-.chord-button[draggable="true"]:active {
+.chord-button[draggable='true']:active {
   cursor: grabbing;
 }
 

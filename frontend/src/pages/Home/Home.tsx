@@ -4,7 +4,11 @@ import { apiService } from '../../services/api';
 import { googleOAuth2Service } from '../../services/googleOAuth';
 import { formatRelativeTime } from '../../utils';
 import type { Song, DriveFile } from '../../types';
-import { ChordProEditor, ChordProViewer, GoogleDriveFileList } from '../../components';
+import {
+  ChordProEditor,
+  ChordProViewer,
+  GoogleDriveFileList,
+} from '../../components';
 import './Home.css';
 
 const Home: React.FC = () => {
@@ -20,7 +24,9 @@ const Home: React.FC = () => {
   const [isFileUploading, setIsFileUploading] = useState(false);
   const [showGoogleDrive, setShowGoogleDrive] = useState(false);
   const [driveError, setDriveError] = useState<string | null>(null);
-  const [exportingToGoogle, setExportingToGoogle] = useState<string | null>(null);
+  const [exportingToGoogle, setExportingToGoogle] = useState<string | null>(
+    null
+  );
   const [exportSuccess, setExportSuccess] = useState<string | null>(null);
 
   useEffect(() => {
@@ -211,27 +217,32 @@ const Home: React.FC = () => {
     try {
       setIsFileUploading(true);
       setDriveError(null);
-      
+
       // Get file content from Google Drive
       const content = await googleOAuth2Service.getFileContent(file.id);
-      
+
       // Extract title from content or use filename
       const titleMatch = content.match(/\{title[:\s]*([^}]+)\}/i);
-      const extractedTitle = titleMatch ? titleMatch[1].trim() : file.name.replace(/\.[^/.]+$/, '');
-      
+      const extractedTitle = titleMatch
+        ? titleMatch[1].trim()
+        : file.name.replace(/\.[^/.]+$/, '');
+
       // Update the form with the file content
       setNewSong({
         title: extractedTitle,
         content: content,
       });
-      
+
       // Show the create form if not already visible
       setShowCreateForm(true);
       setShowGoogleDrive(false);
-      
     } catch (error) {
       console.error('Error loading file from Google Drive:', error);
-      setDriveError(error instanceof Error ? error.message : 'Failed to load file from Google Drive');
+      setDriveError(
+        error instanceof Error
+          ? error.message
+          : 'Failed to load file from Google Drive'
+      );
     } finally {
       setIsFileUploading(false);
     }
@@ -254,7 +265,7 @@ const Home: React.FC = () => {
 
       // Create filename with .cho extension
       const filename = `${song.title.replace(/[^\w\s-]/g, '').replace(/\s+/g, '_')}.cho`;
-      
+
       // Export the song to Google Drive
       const exportedFile = await googleOAuth2Service.createFile(
         filename,
@@ -262,10 +273,16 @@ const Home: React.FC = () => {
         'text/plain'
       );
 
-      setExportSuccess(`Song "${song.title}" successfully exported to Google Drive as "${exportedFile.name}"`);
+      setExportSuccess(
+        `Song "${song.title}" successfully exported to Google Drive as "${exportedFile.name}"`
+      );
     } catch (error) {
       console.error('Error exporting to Google Drive:', error);
-      setDriveError(error instanceof Error ? error.message : 'Failed to export to Google Drive');
+      setDriveError(
+        error instanceof Error
+          ? error.message
+          : 'Failed to export to Google Drive'
+      );
     } finally {
       setExportingToGoogle(null);
     }
@@ -278,7 +295,9 @@ const Home: React.FC = () => {
     }
 
     if (!newSong.title || !newSong.content) {
-      setDriveError('Please enter both title and content before saving to Google Drive');
+      setDriveError(
+        'Please enter both title and content before saving to Google Drive'
+      );
       return;
     }
 
@@ -289,7 +308,7 @@ const Home: React.FC = () => {
 
       // Create filename with .cho extension
       const filename = `${newSong.title.replace(/[^\w\s-]/g, '').replace(/\s+/g, '_')}.cho`;
-      
+
       // Save the new song to Google Drive
       const savedFile = await googleOAuth2Service.createFile(
         filename,
@@ -297,10 +316,16 @@ const Home: React.FC = () => {
         'text/plain'
       );
 
-      setExportSuccess(`Song "${newSong.title}" successfully saved to Google Drive as "${savedFile.name}"`);
+      setExportSuccess(
+        `Song "${newSong.title}" successfully saved to Google Drive as "${savedFile.name}"`
+      );
     } catch (error) {
       console.error('Error saving to Google Drive:', error);
-      setDriveError(error instanceof Error ? error.message : 'Failed to save to Google Drive');
+      setDriveError(
+        error instanceof Error
+          ? error.message
+          : 'Failed to save to Google Drive'
+      );
     } finally {
       setExportingToGoogle(null);
     }
@@ -313,7 +338,9 @@ const Home: React.FC = () => {
     }
 
     if (!editSongData.title || !editSongData.content) {
-      setDriveError('Please enter both title and content before saving to Google Drive');
+      setDriveError(
+        'Please enter both title and content before saving to Google Drive'
+      );
       return;
     }
 
@@ -324,7 +351,7 @@ const Home: React.FC = () => {
 
       // Create filename with .cho extension
       const filename = `${editSongData.title.replace(/[^\w\s-]/g, '').replace(/\s+/g, '_')}.cho`;
-      
+
       // Save the edited song to Google Drive
       const savedFile = await googleOAuth2Service.createFile(
         filename,
@@ -332,10 +359,16 @@ const Home: React.FC = () => {
         'text/plain'
       );
 
-      setExportSuccess(`Song "${editSongData.title}" successfully saved to Google Drive as "${savedFile.name}"`);
+      setExportSuccess(
+        `Song "${editSongData.title}" successfully saved to Google Drive as "${savedFile.name}"`
+      );
     } catch (error) {
       console.error('Error saving to Google Drive:', error);
-      setDriveError(error instanceof Error ? error.message : 'Failed to save to Google Drive');
+      setDriveError(
+        error instanceof Error
+          ? error.message
+          : 'Failed to save to Google Drive'
+      );
     } finally {
       setExportingToGoogle(null);
     }
@@ -423,7 +456,7 @@ const Home: React.FC = () => {
           >
             {showCreateForm ? 'Cancel' : 'Create New Song'}
           </button>
-          
+
           {googleOAuth2Service.isAuthenticated() && (
             <button
               className="btn btn-secondary"
@@ -471,13 +504,19 @@ const Home: React.FC = () => {
             <h3 style={{ color: '#1976d2', marginBottom: '1rem' }}>
               Google Drive Files
             </h3>
-            <p style={{ fontSize: '14px', color: '#666', marginBottom: '16px' }}>
+            <p
+              style={{ fontSize: '14px', color: '#666', marginBottom: '16px' }}
+            >
               Select a ChordPro file from your Google Drive to import:
             </p>
             <GoogleDriveFileList
               onFileSelect={handleDriveFileSelect}
               onError={handleDriveError}
-              fileTypes={['text/plain', 'application/octet-stream', 'text/x-chordpro']}
+              fileTypes={[
+                'text/plain',
+                'application/octet-stream',
+                'text/x-chordpro',
+              ]}
               maxResults={15}
             />
           </div>
@@ -584,7 +623,9 @@ const Home: React.FC = () => {
                   }}
                   title="Save to Google Drive"
                 >
-                  {exportingToGoogle === 'new-song' ? 'Saving...' : 'Save to Drive'}
+                  {exportingToGoogle === 'new-song'
+                    ? 'Saving...'
+                    : 'Save to Drive'}
                 </button>
               )}
               <button
@@ -649,16 +690,26 @@ const Home: React.FC = () => {
                   type="button"
                   className="btn"
                   onClick={handleSaveEditedSongToGoogleDrive}
-                  disabled={exportingToGoogle === editingSong?.id || exportingToGoogle === 'edit-song'}
+                  disabled={
+                    exportingToGoogle === editingSong?.id ||
+                    exportingToGoogle === 'edit-song'
+                  }
                   style={{
                     marginLeft: '1rem',
                     backgroundColor: '#4285f4',
                     color: 'white',
-                    opacity: (exportingToGoogle === editingSong?.id || exportingToGoogle === 'edit-song') ? 0.6 : 1,
+                    opacity:
+                      exportingToGoogle === editingSong?.id ||
+                      exportingToGoogle === 'edit-song'
+                        ? 0.6
+                        : 1,
                   }}
                   title="Save to Google Drive"
                 >
-                  {(exportingToGoogle === editingSong?.id || exportingToGoogle === 'edit-song') ? 'Saving...' : 'Save to Drive'}
+                  {exportingToGoogle === editingSong?.id ||
+                  exportingToGoogle === 'edit-song'
+                    ? 'Saving...'
+                    : 'Save to Drive'}
                 </button>
               )}
               <button
@@ -718,7 +769,9 @@ const Home: React.FC = () => {
                     }}
                     title="Export to Google Drive"
                   >
-                    {exportingToGoogle === viewingSong.id ? 'Exporting...' : 'Export to Drive'}
+                    {exportingToGoogle === viewingSong.id
+                      ? 'Exporting...'
+                      : 'Export to Drive'}
                   </button>
                 )}
                 <button
@@ -851,7 +904,9 @@ const Home: React.FC = () => {
                       }}
                       title="Export to Google Drive"
                     >
-                      {exportingToGoogle === song.id ? 'Exporting...' : 'Export to Drive'}
+                      {exportingToGoogle === song.id
+                        ? 'Exporting...'
+                        : 'Export to Drive'}
                     </button>
                   )}
                   <button

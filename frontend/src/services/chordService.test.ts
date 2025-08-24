@@ -45,8 +45,8 @@ describe('ChordService', () => {
     it('returns exact matches with highest score', () => {
       const suggestions = getChordSuggestions('C');
       expect(suggestions.length).toBeGreaterThan(0);
-      
-      const exactMatch = suggestions.find(s => s.chord === 'C');
+
+      const exactMatch = suggestions.find((s) => s.chord === 'C');
       expect(exactMatch).toBeDefined();
       expect(exactMatch?.score).toBe(100);
     });
@@ -54,11 +54,11 @@ describe('ChordService', () => {
     it('returns prefix matches', () => {
       const suggestions = getChordSuggestions('Am');
       expect(suggestions.length).toBeGreaterThan(0);
-      
-      const prefixMatches = suggestions.filter(s => s.chord.startsWith('Am'));
+
+      const prefixMatches = suggestions.filter((s) => s.chord.startsWith('Am'));
       expect(prefixMatches.length).toBeGreaterThan(1);
-      expect(prefixMatches.some(s => s.chord === 'Am')).toBe(true);
-      expect(prefixMatches.some(s => s.chord === 'Am7')).toBe(true);
+      expect(prefixMatches.some((s) => s.chord === 'Am')).toBe(true);
+      expect(prefixMatches.some((s) => s.chord === 'Am7')).toBe(true);
     });
 
     it('limits suggestions to maxSuggestions', () => {
@@ -73,16 +73,18 @@ describe('ChordService', () => {
 
     it('sorts suggestions by relevance score', () => {
       const suggestions = getChordSuggestions('C');
-      
+
       // Scores should be in descending order
       for (let i = 1; i < suggestions.length; i++) {
-        expect(suggestions[i].score).toBeLessThanOrEqual(suggestions[i - 1].score);
+        expect(suggestions[i].score).toBeLessThanOrEqual(
+          suggestions[i - 1].score
+        );
       }
     });
 
     it('marks all returned chords as valid', () => {
       const suggestions = getChordSuggestions('G');
-      suggestions.forEach(suggestion => {
+      suggestions.forEach((suggestion) => {
         expect(suggestion.isValid).toBe(true);
       });
     });
@@ -92,7 +94,7 @@ describe('ChordService', () => {
     it('detects cursor inside complete chord brackets', () => {
       const text = 'Some lyrics [Am] more lyrics';
       const result = detectChordInput(text, 15); // Inside [Am]
-      
+
       expect(result.isInChord).toBe(true);
       expect(result.chordText).toBe('Am');
       expect(result.chordStart).toBe(13);
@@ -102,7 +104,7 @@ describe('ChordService', () => {
     it('detects cursor in incomplete chord', () => {
       const text = 'Some lyrics [Am';
       const result = detectChordInput(text, 15); // At end of incomplete chord
-      
+
       expect(result.isInChord).toBe(true);
       expect(result.chordText).toBe('Am');
       expect(result.chordStart).toBe(13);
@@ -111,7 +113,7 @@ describe('ChordService', () => {
     it('detects cursor in partial chord input', () => {
       const text = 'Some lyrics [A';
       const result = detectChordInput(text, 14); // After 'A'
-      
+
       expect(result.isInChord).toBe(true);
       expect(result.chordText).toBe('A');
       expect(result.chordStart).toBe(13);
@@ -119,11 +121,11 @@ describe('ChordService', () => {
 
     it('returns false when cursor is not in chord', () => {
       const text = 'Some lyrics [Am] more lyrics';
-      
+
       // Before opening bracket
       let result = detectChordInput(text, 10);
       expect(result.isInChord).toBe(false);
-      
+
       // After closing bracket
       result = detectChordInput(text, 18);
       expect(result.isInChord).toBe(false);
@@ -143,17 +145,17 @@ describe('ChordService', () => {
 
     it('handles multiple chord brackets correctly', () => {
       const text = '[C] lyrics [Am] more [G] end';
-      
+
       // Inside first chord
       let result = detectChordInput(text, 1);
       expect(result.isInChord).toBe(true);
       expect(result.chordText).toBe('C');
-      
+
       // Inside second chord
       result = detectChordInput(text, 13);
       expect(result.isInChord).toBe(true);
       expect(result.chordText).toBe('Am');
-      
+
       // Between chords
       result = detectChordInput(text, 8);
       expect(result.isInChord).toBe(false);
@@ -161,7 +163,7 @@ describe('ChordService', () => {
 
     it('handles edge cases with cursor position', () => {
       const text = '[Am]';
-      
+
       // Invalid cursor positions
       expect(detectChordInput(text, -1).isInChord).toBe(false);
       expect(detectChordInput(text, 10).isInChord).toBe(false);
@@ -229,7 +231,7 @@ describe('ChordService', () => {
 [C]Amazing [G]grace
 Some lyrics without chords
 {chorus}`;
-      
+
       const result = transposeChordProContent(content, 1);
       expect(result).toContain('{title: Test Song}');
       expect(result).toContain('# Verse 1');
@@ -239,9 +241,12 @@ Some lyrics without chords
     });
 
     it('handles complex chord progressions', () => {
-      const content = '[Cmaj7]Test [F#m7]progression [Bb]with [G/B]various chords';
+      const content =
+        '[Cmaj7]Test [F#m7]progression [Bb]with [G/B]various chords';
       const result = transposeChordProContent(content, 3);
-      expect(result).toBe('[D#maj7]Test [Am7]progression [C#]with [A#/B]various chords');
+      expect(result).toBe(
+        '[D#maj7]Test [Am7]progression [C#]with [A#/B]various chords'
+      );
     });
 
     it('returns unchanged for zero transposition', () => {
@@ -252,7 +257,9 @@ Some lyrics without chords
 
     it('returns unchanged for empty content', () => {
       expect(transposeChordProContent('', 2)).toBe('');
-      expect(transposeChordProContent('No chords here', 2)).toBe('No chords here');
+      expect(transposeChordProContent('No chords here', 2)).toBe(
+        'No chords here'
+      );
     });
 
     it('handles negative transposition', () => {

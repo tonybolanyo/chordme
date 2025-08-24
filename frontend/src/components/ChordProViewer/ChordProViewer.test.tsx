@@ -323,8 +323,12 @@ Second verse content
       render(<ChordProViewer content={content} />);
 
       // Should show section headers with numbers
-      expect(screen.getByText('Verse 1')).toHaveClass('chordpro-section-header');
-      expect(screen.getByText('Verse 2')).toHaveClass('chordpro-section-header');
+      expect(screen.getByText('Verse 1')).toHaveClass(
+        'chordpro-section-header'
+      );
+      expect(screen.getByText('Verse 2')).toHaveClass(
+        'chordpro-section-header'
+      );
 
       // Check content is in verse sections
       const firstVerseSection = screen

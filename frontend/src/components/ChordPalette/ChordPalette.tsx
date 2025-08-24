@@ -101,16 +101,21 @@ const ChordPalette: React.FC<ChordPaletteProps> = ({
 
   // Get unique categories for filter
   const categories = useMemo(() => {
-    const cats = Array.from(new Set(COMMON_CHORDS.map((chord) => chord.category)));
+    const cats = Array.from(
+      new Set(COMMON_CHORDS.map((chord) => chord.category))
+    );
     return ['all', ...cats.sort()];
   }, []);
 
   // Filter chords based on search term and category
   const filteredChords = useMemo(() => {
     return COMMON_CHORDS.filter((chord) => {
-      const matchesSearch = chord.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (chord.description && chord.description.toLowerCase().includes(searchTerm.toLowerCase()));
-      const matchesCategory = selectedCategory === 'all' || chord.category === selectedCategory;
+      const matchesSearch =
+        chord.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (chord.description &&
+          chord.description.toLowerCase().includes(searchTerm.toLowerCase()));
+      const matchesCategory =
+        selectedCategory === 'all' || chord.category === selectedCategory;
       return matchesSearch && matchesCategory;
     });
   }, [searchTerm, selectedCategory]);
@@ -126,7 +131,7 @@ const ChordPalette: React.FC<ChordPaletteProps> = ({
     e.dataTransfer.setData('text/plain', `[${chordName}]`);
     e.dataTransfer.setData('application/chord', chordName);
     e.dataTransfer.effectAllowed = 'copy';
-    
+
     // Add visual feedback class to the dragged element
     const target = e.target as HTMLElement;
     target.classList.add('chord-dragging');
@@ -147,7 +152,9 @@ const ChordPalette: React.FC<ChordPaletteProps> = ({
     <div className={`chord-palette ${className}`} style={style}>
       <div className="chord-palette-header">
         <h3 className="chord-palette-title">Chord Library</h3>
-        <p className="chord-palette-subtitle">Click to insert chord or drag to position</p>
+        <p className="chord-palette-subtitle">
+          Click to insert chord or drag to position
+        </p>
       </div>
 
       <div className="chord-palette-controls">
@@ -182,7 +189,9 @@ const ChordPalette: React.FC<ChordPaletteProps> = ({
           >
             {categories.map((category) => (
               <option key={category} value={category}>
-                {category === 'all' ? 'All Categories' : category.charAt(0).toUpperCase() + category.slice(1)}
+                {category === 'all'
+                  ? 'All Categories'
+                  : category.charAt(0).toUpperCase() + category.slice(1)}
               </option>
             ))}
           </select>
