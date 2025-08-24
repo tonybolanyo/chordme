@@ -1,0 +1,165 @@
+/* Firebase Auth components styles */
+
+.firebase-auth-buttons {
+  margin-top: 20px;
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  margin: 20px 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #ddd;
+}
+
+.auth-divider span {
+  padding: 0 16px;
+  background: var(--background-color, #fff);
+}
+
+.btn-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+  color: #333;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-google:hover:not(:disabled) {
+  border-color: #ccc;
+  background: #f8f9fa;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-google:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-google:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.google-icon {
+  flex-shrink: 0;
+}
+
+.firebase-auth-form {
+  margin-top: 20px;
+}
+
+.firebase-auth-form .form-group {
+  margin-bottom: 16px;
+}
+
+.firebase-auth-form .form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: #333;
+}
+
+.firebase-auth-form .form-group input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+}
+
+.firebase-auth-form .form-group input:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+.firebase-auth-form .form-group input.error {
+  border-color: #e74c3c;
+}
+
+.firebase-auth-form .error-text {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: #e74c3c;
+}
+
+.firebase-auth-form .btn-firebase {
+  width: 100%;
+  padding: 12px;
+  background: #3498db;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.firebase-auth-form .btn-firebase:hover:not(:disabled) {
+  background: #2980b9;
+}
+
+.firebase-auth-form .btn-firebase:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .auth-divider::before,
+  .auth-divider::after {
+    background: #444;
+  }
+  
+  .auth-divider {
+    color: #ccc;
+  }
+  
+  .btn-google {
+    background: #2c2c2c;
+    border-color: #444;
+    color: #fff;
+  }
+  
+  .btn-google:hover:not(:disabled) {
+    background: #3c3c3c;
+    border-color: #555;
+  }
+  
+  .firebase-auth-form .form-group label {
+    color: #ccc;
+  }
+  
+  .firebase-auth-form .form-group input {
+    background: #2c2c2c;
+    border-color: #444;
+    color: #fff;
+  }
+  
+  .firebase-auth-form .form-group input:focus {
+    border-color: #3498db;
+  }
+}
