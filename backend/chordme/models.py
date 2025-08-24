@@ -126,13 +126,21 @@ class Song(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
+    # Sharing model fields
+    shared_with = db.Column(db.JSON, default=list)  # Array of user IDs or email addresses
+    permissions = db.Column(db.JSON, default=dict)  # Object mapping user IDs to permission levels
+    share_settings = db.Column(db.String(20), default='private')  # 'private', 'public', 'link-shared'
+    
     # Relationship to song sections
     sections = db.relationship('SongSection', backref='song', lazy=True, cascade='all, delete-orphan', order_by='SongSection.order_index')
     
-    def __init__(self, title, author_id, content):
+    def __init__(self, title, author_id, content, shared_with=None, permissions=None, share_settings='private'):
         self.title = title
         self.author_id = author_id
         self.content = content
+        self.shared_with = shared_with or []
+        self.permissions = permissions or {}
+        self.share_settings = share_settings
     
     def to_dict(self):
         """Convert song to dictionary."""
@@ -141,12 +149,100 @@ class Song(db.Model):
             'title': self.title,
             'author_id': self.author_id,
             'content': self.content,
+            'shared_with': self.shared_with,
+            'permissions': self.permissions,
+            'share_settings': self.share_settings,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
     
+    def add_shared_user(self, user_id, permission_level='read'):
+        """Add a user to the shared list with specified permission level.
+        
+        Args:
+            user_id (int): The ID of the user to share with
+            permission_level (str): Permission level ('read', 'edit', 'admin')
+        """
+        if permission_level not in ['read', 'edit', 'admin']:
+            raise ValueError("Permission level must be 'read', 'edit', or 'admin'")
+        
+        # Initialize if None
+        if self.shared_with is None:
+            self.shared_with = []
+        if self.permissions is None:
+            self.permissions = {}
+            
+        # Add user if not already shared
+        if user_id not in self.shared_with:
+            self.shared_with.append(user_id)
+        
+        # Set permission level
+        self.permissions[str(user_id)] = permission_level
+    
+    def remove_shared_user(self, user_id):
+        """Remove a user from the shared list.
+        
+        Args:
+            user_id (int): The ID of the user to remove
+        """
+        if self.shared_with and user_id in self.shared_with:
+            self.shared_with.remove(user_id)
+        
+        if self.permissions and str(user_id) in self.permissions:
+            del self.permissions[str(user_id)]
+    
+    def get_user_permission(self, user_id):
+        """Get permission level for a specific user.
+        
+        Args:
+            user_id (int): The ID of the user
+            
+        Returns:
+            str: Permission level ('read', 'edit', 'admin') or None if not shared
+        """
+        if not self.permissions:
+            return None
+        return self.permissions.get(str(user_id))
+    
+    def is_shared_with_user(self, user_id):
+        """Check if song is shared with a specific user.
+        
+        Args:
+            user_id (int): The ID of the user
+            
+        Returns:
+            bool: True if shared with user, False otherwise
+        """
+        return bool(self.shared_with and user_id in self.shared_with)
+    
+    def can_user_access(self, user_id):
+        """Check if a user can access this song.
+        
+        Args:
+            user_id (int): The ID of the user
+            
+        Returns:
+            bool: True if user can access (author, shared, or public), False otherwise
+        """
+        # Author always has access
+        if self.author_id == user_id:
+            return True
+        
+        # Public songs are accessible to all
+        if self.share_settings == 'public':
+            return True
+        
+        # Check if directly shared with user
+        return self.is_shared_with_user(user_id)
+    
     def __repr__(self):
         return f'<Song {self.title}>'
+
+
+# Create indexes for efficient permission queries
+db.Index('idx_songs_author_id', Song.author_id)
+db.Index('idx_songs_share_settings', Song.share_settings)
+# Note: JSON field indexing may vary by database. SQLite has limited JSON index support.
 
 
 class SongSection(db.Model):

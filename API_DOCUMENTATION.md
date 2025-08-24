@@ -116,10 +116,53 @@ Actions:
 - `author_id` (integer): Owner user ID
 - `created_at` (datetime): Creation timestamp
 - `updated_at` (datetime): Last update timestamp
+- `shared_with` (array): List of user IDs that have access to this song
+- `permissions` (object): Mapping of user IDs to permission levels ("read", "edit", "admin")
+- `share_settings` (string): Visibility setting ("private", "public", "link-shared")
 
 ### Response Models
 - `Success`: Standard success response wrapper
 - `Error`: Standard error response wrapper
+
+## Sharing Model
+
+### Overview
+
+The ChordMe API supports comprehensive song sharing capabilities with granular permission controls.
+
+### Permission Levels
+
+- **read**: User can view the song content
+- **edit**: User can view and modify the song content
+- **admin**: User can view, modify, and manage sharing settings
+
+### Share Settings
+
+- **private**: Song is only accessible to the owner and explicitly shared users
+- **public**: Song is accessible to all users
+- **link-shared**: Song is accessible to users with explicit sharing permissions (for future link-based sharing)
+
+### Sharing Workflow
+
+1. **Create a song**: Song starts as private by default
+2. **Share with users**: Add users to `shared_with` array with appropriate permission levels
+3. **Modify permissions**: Update permission levels for existing shared users
+4. **Change visibility**: Update `share_settings` to control overall access
+5. **Remove access**: Remove users from sharing list
+
+### Permission Validation
+
+- Song owners (author) always have full access regardless of sharing settings
+- Public songs are accessible to all authenticated users
+- Private and link-shared songs require explicit permission grants
+- Permission levels are hierarchical (admin > edit > read)
+
+### Database Indexing
+
+Efficient querying is supported through indexes on:
+- `author_id`: Fast lookup of user's own songs
+- `share_settings`: Efficient filtering by visibility level
+- JSON field querying may vary by database implementation
 
 ## Authentication
 
