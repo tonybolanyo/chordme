@@ -675,6 +675,294 @@
         ]
       }
     },
+    "/google-drive/backup-songs": {
+      "post": {
+        "description": "Create a backup of all user songs in Google Drive organized in a dedicated folder",
+        "parameters": [
+          {
+            "description": "Backup configuration",
+            "in": "body",
+            "name": "data",
+            "required": true,
+            "schema": {
+              "properties": {
+                "access_token": {
+                  "description": "Google OAuth2 access token",
+                  "type": "string"
+                },
+                "backup_folder_name": {
+                  "default": "ChordMe Backup",
+                  "description": "Name of the backup folder (optional)",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "access_token"
+              ],
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Backup completed",
+            "schema": {
+              "properties": {
+                "data": {
+                  "properties": {
+                    "backed_up": {
+                      "type": "integer"
+                    },
+                    "files": {
+                      "items": {
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "folder_id": {
+                      "type": "string"
+                    },
+                    "folder_name": {
+                      "type": "string"
+                    },
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "total_songs": {
+                      "type": "integer"
+                    }
+                  },
+                  "type": "object"
+                },
+                "status": {
+                  "example": "success",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Backup user songs to Google Drive",
+        "tags": [
+          "Google Drive"
+        ]
+      }
+    },
+    "/google-drive/batch-validate": {
+      "post": {
+        "description": "Validate multiple ChordPro files from Google Drive in a single operation",
+        "parameters": [
+          {
+            "description": "Google Drive file IDs to validate",
+            "in": "body",
+            "name": "data",
+            "required": true,
+            "schema": {
+              "properties": {
+                "access_token": {
+                  "description": "Google OAuth2 access token",
+                  "type": "string"
+                },
+                "file_ids": {
+                  "description": "List of Google Drive file IDs to validate",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              },
+              "required": [
+                "access_token",
+                "file_ids"
+              ],
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Batch validation completed",
+            "schema": {
+              "properties": {
+                "data": {
+                  "properties": {
+                    "processed": {
+                      "type": "integer"
+                    },
+                    "results": {
+                      "items": {
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "total": {
+                      "type": "integer"
+                    }
+                  },
+                  "type": "object"
+                },
+                "status": {
+                  "example": "success",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Batch validate multiple ChordPro files from Google Drive",
+        "tags": [
+          "Google Drive"
+        ]
+      }
+    },
+    "/google-drive/validate-and-save": {
+      "post": {
+        "description": "Server-side validation of ChordPro content before saving to Google Drive",
+        "parameters": [
+          {
+            "description": "ChordPro content and file information",
+            "in": "body",
+            "name": "data",
+            "required": true,
+            "schema": {
+              "properties": {
+                "access_token": {
+                  "description": "Google OAuth2 access token",
+                  "type": "string"
+                },
+                "content": {
+                  "description": "ChordPro content to validate and save",
+                  "type": "string"
+                },
+                "file_name": {
+                  "description": "Name for the file in Google Drive",
+                  "type": "string"
+                },
+                "parent_folder_id": {
+                  "description": "Optional parent folder ID in Google Drive",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "access_token",
+                "file_name",
+                "content"
+              ],
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Validation and save completed",
+            "schema": {
+              "properties": {
+                "data": {
+                  "properties": {
+                    "file": {
+                      "type": "object"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "validation": {
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                },
+                "status": {
+                  "example": "success",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Bad request or validation failed",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Validate ChordPro content and save to Google Drive",
+        "tags": [
+          "Google Drive"
+        ]
+      }
+    },
     "/health": {
       "get": {
         "description": "Returns the current status of the API service",
