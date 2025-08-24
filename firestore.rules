@@ -1,0 +1,157 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions for authentication and authorization
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isValidEmail(email) {
+      return email is string && 
+             email.matches('.*@.*\\..*') && 
+             email.size() <= 120;
+    }
+    
+    function isValidString(value, maxLength) {
+      return value is string && 
+             value.size() >= 1 && 
+             value.size() <= maxLength;
+    }
+    
+    function isValidTimestamp(timestamp) {
+      return timestamp is timestamp;
+    }
+    
+    // Users collection - users can only access their own user document
+    match /users/{userId} {
+      // Users can read and write their own user document
+      allow read, write: if isOwner(userId);
+      
+      // User creation validation
+      allow create: if isOwner(userId) && 
+                    isValidUserData();
+      
+      // User update validation  
+      allow update: if isOwner(userId) && 
+                    isValidUserData() &&
+                    request.resource.data.keys().hasAll(['email', 'created_at', 'updated_at']) &&
+                    request.resource.data.created_at == resource.data.created_at; // Don't allow changing creation time
+      
+      function isValidUserData() {
+        return request.resource.data.keys().hasAll(['email', 'created_at', 'updated_at']) &&
+               isValidEmail(request.resource.data.email) &&
+               isValidTimestamp(request.resource.data.created_at) &&
+               isValidTimestamp(request.resource.data.updated_at);
+      }
+    }
+    
+    // Songs collection - users can only access songs they own or that are shared with them
+    match /songs/{songId} {
+      // Users can read songs they own
+      allow read: if isAuthenticated() && 
+                  (isOwner(resource.data.author_id) || 
+                   isSharedWithUser());
+      
+      // Users can only create songs where they are the author
+      allow create: if isAuthenticated() && 
+                    isOwner(request.resource.data.author_id) &&
+                    isValidSongData();
+      
+      // Users can only update songs they own
+      allow update: if isAuthenticated() && 
+                    isOwner(resource.data.author_id) &&
+                    isValidSongData() &&
+                    request.resource.data.author_id == resource.data.author_id && // Don't allow changing ownership
+                    request.resource.data.created_at == resource.data.created_at; // Don't allow changing creation time
+      
+      // Users can only delete songs they own
+      allow delete: if isAuthenticated() && 
+                    isOwner(resource.data.author_id);
+      
+      function isValidSongData() {
+        return request.resource.data.keys().hasAll(['title', 'author_id', 'content', 'created_at', 'updated_at']) &&
+               isValidString(request.resource.data.title, 200) &&
+               isValidString(request.resource.data.author_id, 128) &&
+               isValidString(request.resource.data.content, 50000) &&
+               isValidTimestamp(request.resource.data.created_at) &&
+               isValidTimestamp(request.resource.data.updated_at);
+      }
+      
+      function isSharedWithUser() {
+        // Future implementation: check if song is shared with current user
+        // This could check a 'shared_users' array field or a subcollection
+        return false; // For now, only owners can access
+      }
+      
+      // Song sharing subcollection (for future implementation)
+      match /shared/{shareId} {
+        allow read: if isAuthenticated() && 
+                    (isOwner(get(/databases/$(database)/documents/songs/$(songId)).data.author_id) ||
+                     request.auth.uid == resource.data.user_id);
+        
+        allow create, update: if isAuthenticated() && 
+                              isOwner(get(/databases/$(database)/documents/songs/$(songId)).data.author_id) &&
+                              isValidShareData();
+        
+        allow delete: if isAuthenticated() && 
+                      (isOwner(get(/databases/$(database)/documents/songs/$(songId)).data.author_id) ||
+                       request.auth.uid == resource.data.user_id);
+        
+        function isValidShareData() {
+          return request.resource.data.keys().hasAll(['user_id', 'permissions', 'created_at']) &&
+                 isValidString(request.resource.data.user_id, 128) &&
+                 request.resource.data.permissions is list &&
+                 request.resource.data.permissions.hasAny(['read', 'write']) &&
+                 isValidTimestamp(request.resource.data.created_at);
+        }
+      }
+    }
+    
+    // Chords collection - users can only access chords they own
+    match /chords/{chordId} {
+      // Users can read chords they own
+      allow read: if isAuthenticated() && 
+                  isOwner(resource.data.owner_id);
+      
+      // Users can only create chords where they are the owner
+      allow create: if isAuthenticated() && 
+                    isOwner(request.resource.data.owner_id) &&
+                    isValidChordData();
+      
+      // Users can only update chords they own
+      allow update: if isAuthenticated() && 
+                    isOwner(resource.data.owner_id) &&
+                    isValidChordData() &&
+                    request.resource.data.owner_id == resource.data.owner_id && // Don't allow changing ownership
+                    request.resource.data.created_at == resource.data.created_at; // Don't allow changing creation time
+      
+      // Users can only delete chords they own
+      allow delete: if isAuthenticated() && 
+                    isOwner(resource.data.owner_id);
+      
+      function isValidChordData() {
+        let requiredFields = ['name', 'definition', 'owner_id', 'created_at', 'updated_at'];
+        return request.resource.data.keys().hasAll(requiredFields) &&
+               isValidString(request.resource.data.name, 50) &&
+               isValidString(request.resource.data.definition, 1000) &&
+               isValidString(request.resource.data.owner_id, 128) &&
+               isValidTimestamp(request.resource.data.created_at) &&
+               isValidTimestamp(request.resource.data.updated_at) &&
+               // Optional description field validation
+               (!('description' in request.resource.data) || 
+                isValidString(request.resource.data.description, 1000));
+      }
+    }
+    
+    // Deny access to any other collections or documents
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
