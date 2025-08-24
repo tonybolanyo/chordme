@@ -12,7 +12,7 @@
   border-radius: 10px;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
   width: 100%;
-  max-width: 400px;
+  max-width: 450px;
   text-align: center;
 }
 
@@ -106,6 +106,40 @@
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
+}
+
+.login-divider {
+  margin: 2rem 0;
+  position: relative;
+  text-align: center;
+}
+
+.login-divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background-color: #e0e6ed;
+}
+
+.login-divider span {
+  background: white;
+  padding: 0 1rem;
+  color: #7f8c8d;
+  font-size: 0.875rem;
+}
+
+.google-auth-section {
+  margin-bottom: 1.5rem;
+}
+
+.google-auth-section h3 {
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
 }
 
 .login-footer {

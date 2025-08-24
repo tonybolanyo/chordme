@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { apiService } from '../../services/api';
+import { googleOAuth2Service } from '../../services/googleOAuth';
 import { formatRelativeTime } from '../../utils';
-import type { Song } from '../../types';
-import { ChordProEditor, ChordProViewer } from '../../components';
+import type { Song, DriveFile } from '../../types';
+import { ChordProEditor, ChordProViewer, GoogleDriveFileList } from '../../components';
 import './Home.css';
 
 const Home: React.FC = () => {
@@ -17,6 +18,8 @@ const Home: React.FC = () => {
   const [editSongData, setEditSongData] = useState({ title: '', content: '' });
   const [viewingSong, setViewingSong] = useState<Song | null>(null);
   const [isFileUploading, setIsFileUploading] = useState(false);
+  const [showGoogleDrive, setShowGoogleDrive] = useState(false);
+  const [driveError, setDriveError] = useState<string | null>(null);
 
   useEffect(() => {
     loadSongs();
@@ -202,6 +205,40 @@ const Home: React.FC = () => {
     }
   };
 
+  const handleDriveFileSelect = async (file: DriveFile) => {
+    try {
+      setIsFileUploading(true);
+      setDriveError(null);
+      
+      // Get file content from Google Drive
+      const content = await googleOAuth2Service.getFileContent(file.id);
+      
+      // Extract title from content or use filename
+      const titleMatch = content.match(/\{title[:\s]*([^}]+)\}/i);
+      const extractedTitle = titleMatch ? titleMatch[1].trim() : file.name.replace(/\.[^/.]+$/, '');
+      
+      // Update the form with the file content
+      setNewSong({
+        title: extractedTitle,
+        content: content,
+      });
+      
+      // Show the create form if not already visible
+      setShowCreateForm(true);
+      setShowGoogleDrive(false);
+      
+    } catch (error) {
+      console.error('Error loading file from Google Drive:', error);
+      setDriveError(error instanceof Error ? error.message : 'Failed to load file from Google Drive');
+    } finally {
+      setIsFileUploading(false);
+    }
+  };
+
+  const handleDriveError = (error: string) => {
+    setDriveError(error);
+  };
+
   if (isLoading) {
     return (
       <div className="home">
@@ -241,12 +278,71 @@ const Home: React.FC = () => {
               if (!showCreateForm) {
                 setEditingSong(null);
                 setViewingSong(null);
+                setShowGoogleDrive(false);
               }
             }}
           >
             {showCreateForm ? 'Cancel' : 'Create New Song'}
           </button>
+          
+          {googleOAuth2Service.isAuthenticated() && (
+            <button
+              className="btn btn-secondary"
+              onClick={() => {
+                setShowGoogleDrive(!showGoogleDrive);
+                if (!showGoogleDrive) {
+                  setEditingSong(null);
+                  setViewingSong(null);
+                  setShowCreateForm(false);
+                }
+              }}
+              style={{ marginLeft: '1rem' }}
+            >
+              {showGoogleDrive ? 'Hide Drive Files' : 'Browse Google Drive'}
+            </button>
+          )}
         </div>
+
+        {driveError && (
+          <div
+            className="error-message"
+            style={{
+              margin: '1rem 0',
+              padding: '1rem',
+              backgroundColor: '#fee',
+              border: '1px solid #fcc',
+              borderRadius: '4px',
+            }}
+          >
+            Google Drive Error: {driveError}
+          </div>
+        )}
+
+        {showGoogleDrive && (
+          <div
+            className="google-drive-section"
+            style={{
+              margin: '2rem 0',
+              padding: '1rem',
+              backgroundColor: '#f0f8ff',
+              borderRadius: '8px',
+              border: '1px solid #4285f4',
+            }}
+          >
+            <h3 style={{ color: '#1976d2', marginBottom: '1rem' }}>
+              Google Drive Files
+            </h3>
+            <p style={{ fontSize: '14px', color: '#666', marginBottom: '16px' }}>
+              Select a ChordPro file from your Google Drive to import:
+            </p>
+            <GoogleDriveFileList
+              onFileSelect={handleDriveFileSelect}
+              onError={handleDriveError}
+              fileTypes={['text/plain', 'application/octet-stream', 'text/x-chordpro']}
+              maxResults={15}
+            />
+          </div>
+        )}
 
         {showCreateForm && (
           <form

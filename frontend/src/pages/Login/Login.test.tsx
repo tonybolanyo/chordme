@@ -23,6 +23,30 @@ vi.mock('../../services/api', () => ({
   },
 }));
 
+vi.mock('../../services/googleOAuth', () => ({
+  googleOAuth2Service: {
+    isAuthenticated: vi.fn(() => false),
+    getStoredUserInfo: vi.fn(() => null),
+    startAuthFlow: vi.fn(),
+    signOut: vi.fn(),
+  },
+}));
+
+vi.mock('../../components/GoogleAuth', () => ({
+  GoogleAuthButton: ({ onAuthSuccess }: { onAuthSuccess?: (userInfo: { id: string; email: string; name: string }) => void; onAuthError?: (error: string) => void }) => (
+    <button
+      onClick={() => {
+        // Mock successful auth for testing
+        if (onAuthSuccess) {
+          onAuthSuccess({ id: 'test', email: 'test@example.com', name: 'Test User' });
+        }
+      }}
+    >
+      Sign in with Google
+    </button>
+  ),
+}));
+
 vi.mock('../../utils', () => ({
   validateEmail: vi.fn((email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -43,7 +67,7 @@ describe('Login', () => {
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: /sign in/i })
+      screen.getByRole('button', { name: /^sign in$/i })
     ).toBeInTheDocument();
   });
 
@@ -74,7 +98,7 @@ describe('Login', () => {
 
     const emailInput = screen.getByLabelText(/email/i);
     const passwordInput = screen.getByLabelText(/password/i);
-    const submitButton = screen.getByRole('button', { name: /sign in/i });
+    const submitButton = screen.getByRole('button', { name: /^sign in$/i });
 
     await user.type(emailInput, 'test@example.com');
     await user.type(passwordInput, 'password123');
