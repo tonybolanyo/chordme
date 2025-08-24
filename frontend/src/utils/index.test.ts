@@ -67,12 +67,10 @@ describe('Utility Functions', () => {
       const now = new Date('2023-01-15T12:00:00Z');
       vi.setSystemTime(now);
       
-      const twoDaysAgo = new Date('2023-01-15T12:00:00Z');
-      twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+      const twoDaysAgo = new Date('2023-01-13T12:00:00Z');
       expect(formatRelativeTime(twoDaysAgo.toISOString())).toBe('2 days ago');
       
-      const oneDayAgo = new Date('2023-01-15T12:00:00Z');
-      oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+      const oneDayAgo = new Date('2023-01-14T12:00:00Z');
       expect(formatRelativeTime(oneDayAgo.toISOString())).toBe('1 day ago');
     });
 
