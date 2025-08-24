@@ -244,7 +244,7 @@ export function transposeChordProContent(content: string, semitones: number): st
   // Regular expression to find chord notation in ChordPro format [ChordName]
   const chordPattern = /\[([^\]]+)\]/g;
   
-  return content.replace(chordPattern, (match, chordName) => {
+  return content.replace(chordPattern, (_match, chordName) => {
     const transposedChord = transposeChord(chordName, semitones);
     return `[${transposedChord}]`;
   });

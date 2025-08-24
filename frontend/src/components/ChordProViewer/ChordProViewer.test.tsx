@@ -144,8 +144,8 @@ Some lyrics`;
       const content = 'First line\n\nThird line';
       render(<ChordProViewer content={content} />);
 
-      const lines = screen.getAllByText((content, element) =>
-        element?.classList.contains('chordpro-line')
+      const lines = screen.getAllByText((_content, element) =>
+        Boolean(element?.classList.contains('chordpro-line'))
       );
       expect(lines).toHaveLength(3); // Including empty line
     });
@@ -228,11 +228,11 @@ Chorus lyrics here
 
       render(<ChordProViewer content={content} />);
 
-      const verseSections = screen.getAllByText((content, element) =>
-        element?.classList.contains('chordpro-section-verse')
+      const verseSections = screen.getAllByText((_content, element) =>
+        Boolean(element?.classList.contains('chordpro-section-verse'))
       );
-      const chorusSections = screen.getAllByText((content, element) =>
-        element?.classList.contains('chordpro-section-chorus')
+      const chorusSections = screen.getAllByText((_content, element) =>
+        Boolean(element?.classList.contains('chordpro-section-chorus'))
       );
 
       expect(verseSections.length).toBeGreaterThan(0);

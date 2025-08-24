@@ -22,12 +22,6 @@ export const GoogleDriveFileList: React.FC<GoogleDriveFileListProps> = ({
   const [nextPageToken, setNextPageToken] = useState<string | undefined>();
   const [hasMore, setHasMore] = useState(true);
 
-  useEffect(() => {
-    if (googleOAuth2Service.isAuthenticated()) {
-      loadFiles();
-    }
-  }, [loadFiles]);
-
   const buildQuery = useCallback(() => {
     const mimeTypeQuery = fileTypes.map(type => `mimeType='${type}'`).join(' or ');
     return `(${mimeTypeQuery}) and trashed=false`;
@@ -59,6 +53,12 @@ export const GoogleDriveFileList: React.FC<GoogleDriveFileListProps> = ({
       setIsLoading(false);
     }
   }, [maxResults, buildQuery, onError]);
+
+  useEffect(() => {
+    if (googleOAuth2Service.isAuthenticated()) {
+      loadFiles();
+    }
+  }, [loadFiles]);
 
   const loadMoreFiles = () => {
     if (nextPageToken && !isLoading) {
