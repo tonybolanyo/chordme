@@ -1,101 +1,204 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { formatDate, formatRelativeTime } from './index';
+import { 
+  formatDate, 
+  formatRelativeTime, 
+  debounce, 
+  capitalizeFirstLetter,
+  validateEmail,
+  validatePassword,
+  isTokenExpired
+} from './index';
 
-describe('Date Utilities', () => {
+describe('Utility Functions', () => {
   describe('formatDate', () => {
-    it('should format dates correctly', () => {
-      const date = new Date('2024-03-15T10:30:00Z');
+    it('formats date correctly', () => {
+      const date = new Date('2023-01-15T12:00:00Z');
       const formatted = formatDate(date);
-
-      // The exact format may vary by locale, but should contain year, month, day
-      expect(formatted).toMatch(/2024/);
-      expect(formatted).toMatch(/March|Mar/);
-      expect(formatted).toMatch(/15/);
+      expect(formatted).toBe('January 15, 2023');
     });
 
-    it('should handle different dates', () => {
-      const testDates = [
-        new Date('2023-01-01T00:00:00Z'),
-        new Date('2024-12-31T23:59:59Z'),
-        new Date('2024-07-04T12:00:00Z'),
-      ];
-
-      testDates.forEach((date) => {
-        const formatted = formatDate(date);
-        expect(formatted).toBeTruthy();
-        expect(typeof formatted).toBe('string');
-      });
+    it('handles different dates', () => {
+      const date = new Date('2022-12-25T00:00:00Z');
+      const formatted = formatDate(date);
+      expect(formatted).toBe('December 25, 2022');
     });
   });
 
   describe('formatRelativeTime', () => {
     beforeEach(() => {
-      // Mock the current time to have consistent test results
       vi.useFakeTimers();
-      vi.setSystemTime(new Date('2024-03-15T12:00:00Z'));
     });
 
     afterEach(() => {
       vi.useRealTimers();
     });
 
-    it('should return "Just now" for very recent times', () => {
-      const recent = new Date('2024-03-15T11:59:30Z').toISOString(); // 30 seconds ago
+    it('returns "Just now" for recent times', () => {
+      const now = new Date('2023-01-15T12:00:00Z');
+      vi.setSystemTime(now);
+      
+      const recent = new Date('2023-01-15T11:59:30Z').toISOString();
       expect(formatRelativeTime(recent)).toBe('Just now');
     });
 
-    it('should return minutes for times less than an hour ago', () => {
-      const thirtyMinutesAgo = new Date('2024-03-15T11:30:00Z').toISOString();
-      expect(formatRelativeTime(thirtyMinutesAgo)).toBe('30 minutes ago');
-
-      const oneMinuteAgo = new Date('2024-03-15T11:59:00Z').toISOString();
+    it('returns minutes ago for times within an hour', () => {
+      const now = new Date('2023-01-15T12:00:00Z');
+      vi.setSystemTime(now);
+      
+      const twoMinutesAgo = new Date('2023-01-15T11:58:00Z').toISOString();
+      expect(formatRelativeTime(twoMinutesAgo)).toBe('2 minutes ago');
+      
+      const oneMinuteAgo = new Date('2023-01-15T11:59:00Z').toISOString();
       expect(formatRelativeTime(oneMinuteAgo)).toBe('1 minute ago');
     });
 
-    it('should return hours for times less than a day ago', () => {
-      const twoHoursAgo = new Date('2024-03-15T10:00:00Z').toISOString();
+    it('returns hours ago for times within a day', () => {
+      const now = new Date('2023-01-15T12:00:00Z');
+      vi.setSystemTime(now);
+      
+      const twoHoursAgo = new Date('2023-01-15T10:00:00Z').toISOString();
       expect(formatRelativeTime(twoHoursAgo)).toBe('2 hours ago');
-
-      const oneHourAgo = new Date('2024-03-15T11:00:00Z').toISOString();
+      
+      const oneHourAgo = new Date('2023-01-15T11:00:00Z').toISOString();
       expect(formatRelativeTime(oneHourAgo)).toBe('1 hour ago');
     });
 
-    it('should return days for times less than a week ago', () => {
-      const twoDaysAgo = new Date('2024-03-13T12:00:00Z').toISOString();
-      expect(formatRelativeTime(twoDaysAgo)).toBe('2 days ago');
-
-      const oneDayAgo = new Date('2024-03-14T12:00:00Z').toISOString();
-      expect(formatRelativeTime(oneDayAgo)).toBe('1 day ago');
+    it('returns days ago for times within a week', () => {
+      const now = new Date('2023-01-15T12:00:00Z');
+      vi.setSystemTime(now);
+      
+      const twoDaysAgo = new Date('2023-01-13T12:00:00Z');
+      expect(formatRelativeTime(twoDaysAgo.toISOString())).toBe('2 days ago');
+      
+      const oneDayAgo = new Date('2023-01-14T12:00:00Z');
+      expect(formatRelativeTime(oneDayAgo.toISOString())).toBe('1 day ago');
     });
 
-    it('should return formatted date for times more than a week ago', () => {
-      const twoWeeksAgo = new Date('2024-03-01T12:00:00Z').toISOString();
-      const result = formatRelativeTime(twoWeeksAgo);
-
-      // Should return a formatted date, not relative time
-      expect(result).toMatch(/March|Mar/);
-      expect(result).toMatch(/1/);
-      expect(result).toMatch(/2024/);
+    it('returns formatted date for times older than a week', () => {
+      const now = new Date('2023-01-15T12:00:00Z');
+      vi.setSystemTime(now);
+      
+      const oldDate = new Date('2023-01-01T12:00:00Z').toISOString();
+      expect(formatRelativeTime(oldDate)).toBe('Jan 1, 2023');
     });
 
-    it('should handle invalid date strings', () => {
+    it('handles invalid date strings', () => {
       expect(formatRelativeTime('invalid-date')).toBe('Invalid date');
-      expect(formatRelativeTime('')).toBe('Invalid date');
-      expect(formatRelativeTime('not-a-date')).toBe('Invalid date');
     });
 
-    it('should handle edge cases correctly', () => {
-      // Exactly 1 minute ago
-      const exactlyOneMinute = new Date('2024-03-15T11:59:00Z').toISOString();
-      expect(formatRelativeTime(exactlyOneMinute)).toBe('1 minute ago');
+    it('handles empty string', () => {
+      expect(formatRelativeTime('')).toBe('Invalid date');
+    });
+  });
 
-      // Exactly 1 hour ago
-      const exactlyOneHour = new Date('2024-03-15T11:00:00Z').toISOString();
-      expect(formatRelativeTime(exactlyOneHour)).toBe('1 hour ago');
+  describe('debounce', () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
 
-      // Exactly 1 day ago
-      const exactlyOneDay = new Date('2024-03-14T12:00:00Z').toISOString();
-      expect(formatRelativeTime(exactlyOneDay)).toBe('1 day ago');
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('delays function execution', () => {
+      const mockFn = vi.fn();
+      const debouncedFn = debounce(mockFn, 100);
+      
+      debouncedFn('test');
+      expect(mockFn).not.toHaveBeenCalled();
+      
+      vi.advanceTimersByTime(100);
+      expect(mockFn).toHaveBeenCalledWith('test');
+    });
+
+    it('cancels previous calls', () => {
+      const mockFn = vi.fn();
+      const debouncedFn = debounce(mockFn, 100);
+      
+      debouncedFn('first');
+      debouncedFn('second');
+      debouncedFn('third');
+      
+      vi.advanceTimersByTime(100);
+      
+      expect(mockFn).toHaveBeenCalledTimes(1);
+      expect(mockFn).toHaveBeenCalledWith('third');
+    });
+
+    it('works with multiple arguments', () => {
+      const mockFn = vi.fn();
+      const debouncedFn = debounce(mockFn, 100);
+      
+      debouncedFn('arg1', 'arg2', 123);
+      vi.advanceTimersByTime(100);
+      
+      expect(mockFn).toHaveBeenCalledWith('arg1', 'arg2', 123);
+    });
+
+    it('handles multiple calls with different delays', () => {
+      const mockFn = vi.fn();
+      const debouncedFn = debounce(mockFn, 100);
+      
+      debouncedFn('first');
+      vi.advanceTimersByTime(50);
+      debouncedFn('second');
+      vi.advanceTimersByTime(100);
+      
+      expect(mockFn).toHaveBeenCalledTimes(1);
+      expect(mockFn).toHaveBeenCalledWith('second');
+    });
+  });
+
+  describe('capitalizeFirstLetter', () => {
+    it('capitalizes first letter of lowercase string', () => {
+      expect(capitalizeFirstLetter('hello')).toBe('Hello');
+    });
+
+    it('keeps first letter capitalized if already uppercase', () => {
+      expect(capitalizeFirstLetter('Hello')).toBe('Hello');
+    });
+
+    it('handles single character strings', () => {
+      expect(capitalizeFirstLetter('a')).toBe('A');
+      expect(capitalizeFirstLetter('A')).toBe('A');
+    });
+
+    it('handles empty string', () => {
+      expect(capitalizeFirstLetter('')).toBe('');
+    });
+
+    it('handles strings with numbers and special characters', () => {
+      expect(capitalizeFirstLetter('123abc')).toBe('123abc');
+      expect(capitalizeFirstLetter('!hello')).toBe('!hello');
+    });
+
+    it('only capitalizes first character, leaves rest unchanged', () => {
+      expect(capitalizeFirstLetter('hELLO wORLD')).toBe('HELLO wORLD');
+    });
+  });
+
+  describe('Re-exports', () => {
+    it('exports validation functions', () => {
+      expect(typeof validateEmail).toBe('function');
+      expect(typeof validatePassword).toBe('function');
+    });
+
+    it('exports JWT functions', () => {
+      expect(typeof isTokenExpired).toBe('function');
+    });
+
+    it('validation functions work correctly', () => {
+      const validEmailResult = validateEmail('test@example.com');
+      expect(validEmailResult.isValid).toBe(true);
+      
+      const invalidEmailResult = validateEmail('invalid-email');
+      expect(invalidEmailResult.isValid).toBe(false);
+      
+      const validPasswordResult = validatePassword('Password123!');
+      expect(validPasswordResult.isValid).toBe(true);
+      
+      const weakPasswordResult = validatePassword('weak');
+      expect(weakPasswordResult.isValid).toBe(false);
     });
   });
 });
