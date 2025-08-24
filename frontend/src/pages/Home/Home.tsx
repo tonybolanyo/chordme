@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { apiService } from '../../services/api';
 import { googleOAuth2Service } from '../../services/googleOAuth';
 import { formatRelativeTime } from '../../utils';
 import { useRealtimeSongs } from '../../hooks/useRealtimeSongs';
+import { useRealtimeSong } from '../../hooks/useRealtimeSong';
 import type { Song, DriveFile } from '../../types';
 import {
   ChordProEditor,
@@ -38,8 +39,38 @@ const Home: React.FC = () => {
   );
   const [exportSuccess, setExportSuccess] = useState<string | null>(null);
 
+  // Real-time editing state
+  const [hasExternalChanges, setHasExternalChanges] = useState(false);
+  const [showConflictDialog, setShowConflictDialog] = useState(false);
+
+  // Subscribe to real-time updates for the song being edited
+  const { 
+    song: realtimeEditingSong, 
+    isRealTime: isEditingRealTime 
+  } = useRealtimeSong(editingSong?.id || null);
+
   // Combine real-time songs error with other errors
   const displayError = error || songsError;
+
+  // Monitor external changes to the song being edited
+  useEffect(() => {
+    if (!editingSong || !realtimeEditingSong || !isEditingRealTime) {
+      setHasExternalChanges(false);
+      return;
+    }
+
+    // Check if the real-time song data differs from our editing state
+    const hasContentChanged = realtimeEditingSong.content !== editSongData.content;
+    const hasTitleChanged = realtimeEditingSong.title !== editSongData.title;
+    const hasTimestampChanged = realtimeEditingSong.updated_at !== editingSong.updated_at;
+
+    // Only consider it an external change if the timestamp is newer than when we started editing
+    if ((hasContentChanged || hasTitleChanged) && hasTimestampChanged) {
+      setHasExternalChanges(true);
+    } else {
+      setHasExternalChanges(false);
+    }
+  }, [editingSong, realtimeEditingSong, editSongData, isEditingRealTime]);
 
   // Remove the old loadSongs function since it's handled by the hook
   // Keep a reload function for manual refresh if needed (for non-real-time scenarios)
@@ -106,6 +137,8 @@ const Home: React.FC = () => {
     setEditSongData({ title: song.title, content: song.content });
     setShowCreateForm(false); // Hide create form if open
     setViewingSong(null); // Hide view if open
+    setHasExternalChanges(false); // Reset conflict state
+    setShowConflictDialog(false);
   };
 
   const handleUpdateSong = async (e: React.FormEvent) => {
@@ -123,6 +156,8 @@ const Home: React.FC = () => {
       if (response.status === 'success') {
         setEditingSong(null);
         setEditSongData({ title: '', content: '' });
+        setHasExternalChanges(false);
+        setShowConflictDialog(false);
         // Real-time updates will handle refreshing the song automatically
         // Only manually reload if not using real-time
         if (!isRealTime) {
@@ -135,9 +170,27 @@ const Home: React.FC = () => {
     }
   };
 
+  // Conflict resolution handlers
+      setShowConflictDialog(false);
+    } else {
+      setError('External song data is incomplete or invalid. Please try again or reload.');
+    }
+  };
+
+  const handleKeepLocalChanges = () => {
+    setHasExternalChanges(false);
+    setShowConflictDialog(false);
+  };
+
+  const handleShowConflictDialog = () => {
+    setShowConflictDialog(true);
+  };
+
   const handleCancelEdit = () => {
     setEditingSong(null);
     setEditSongData({ title: '', content: '' });
+    setHasExternalChanges(false);
+    setShowConflictDialog(false);
   };
 
   const handleViewSong = (song: Song) => {
@@ -659,6 +712,100 @@ const Home: React.FC = () => {
             }}
           >
             <h3>Edit Song: {editingSong.title}</h3>
+            
+            {/* Real-time status indicator */}
+            {isEditingRealTime && (
+              <div style={{ 
+                marginBottom: '1rem', 
+                padding: '0.5rem', 
+                backgroundColor: '#d4edda', 
+                border: '1px solid #c3e6cb', 
+                borderRadius: '4px',
+                color: '#155724',
+                fontSize: '0.9em'
+              }}>
+                🔄 Real-time editing enabled - Changes from other users will be detected
+              </div>
+            )}
+            
+            {/* Conflict notification */}
+            {hasExternalChanges && !showConflictDialog && (
+              <div style={{ 
+                marginBottom: '1rem', 
+                padding: '0.75rem', 
+                backgroundColor: '#fff3cd', 
+                border: '1px solid #ffeaa7', 
+                borderRadius: '4px',
+                color: '#856404'
+              }}>
+                ⚠️ This song has been updated by another user. 
+                <button 
+                  type="button"
+                  onClick={handleShowConflictDialog}
+                  style={{
+                    marginLeft: '0.5rem',
+                    background: 'none',
+                    border: '1px solid #856404',
+                    color: '#856404',
+                    padding: '0.25rem 0.5rem',
+                    borderRadius: '3px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Review changes
+                </button>
+              </div>
+            )}
+            
+            {/* Conflict resolution dialog */}
+            {showConflictDialog && realtimeEditingSong && (
+              <div style={{ 
+                marginBottom: '1rem', 
+                padding: '1rem', 
+                backgroundColor: '#f8d7da', 
+                border: '1px solid #f5c6cb', 
+                borderRadius: '4px',
+                color: '#721c24'
+              }}>
+                <h4 style={{ margin: '0 0 1rem 0' }}>⚠️ Conflicting Changes Detected</h4>
+                <p style={{ margin: '0 0 1rem 0' }}>
+                  The song has been updated by another user. Choose how to proceed:
+                </p>
+                <div style={{ marginBottom: '1rem' }}>
+                  <strong>Last updated:</strong> {formatRelativeTime(realtimeEditingSong.updated_at)}
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <button 
+                    type="button"
+                    onClick={handleAcceptExternalChanges}
+                    style={{
+                      backgroundColor: '#28a745',
+                      color: 'white',
+                      border: 'none',
+                      padding: '0.5rem 1rem',
+                      borderRadius: '4px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Accept external changes
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={handleKeepLocalChanges}
+                    style={{
+                      backgroundColor: '#17a2b8',
+                      color: 'white',
+                      border: 'none',
+                      padding: '0.5rem 1rem',
+                      borderRadius: '4px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Keep my changes
+                  </button>
+                </div>
+              </div>
+            )}
             <div style={{ marginBottom: '1rem' }}>
               <label htmlFor="edit-title">Title:</label>
               <input
