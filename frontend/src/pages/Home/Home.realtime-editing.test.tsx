@@ -45,7 +45,9 @@ vi.mock('../../components', () => ({
   ChordProViewer: ({ content }: { content: string }) => (
     <div data-testid="chordpro-viewer">{content}</div>
   ),
-  GoogleDriveFileList: () => <div data-testid="google-drive-file-list" />,
+  GoogleDriveFileList: () => <div data-testid="google-drive-file-list">Google Drive Files</div>,
+  SongSharingModal: () => <div data-testid="song-sharing-modal">Sharing Modal</div>,
+  NotificationContainer: () => <div data-testid="notification-container">Notifications</div>,
 }));
 
 // Mock other dependencies
