@@ -165,3 +165,9 @@ docs/.jekyll-cache/
 docs/vendor/
 docs/.bundle/
 docs/Gemfile.lock
+
+# Firebase emulator files
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log

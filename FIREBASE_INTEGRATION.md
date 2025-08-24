@@ -111,9 +111,48 @@ When using Firebase, the application creates the following collections:
 
 ## Firestore Security Rules
 
-For production, configure Firestore security rules to protect user data:
+**⚠️ IMPORTANT: Comprehensive security rules are now implemented and tested.**
+
+For production deployment, ChordMe includes comprehensive Firestore security rules that enforce strict authentication and authorization:
+
+- **Authentication Required**: All operations require user authentication
+- **User Isolation**: Users can only access their own data (songs, chords, user profile)
+- **Data Validation**: Strict validation of all data structure and field limits
+- **Ownership Protection**: Prevents unauthorized ownership changes
+- **Future Sharing**: Infrastructure ready for song sharing between users
+
+**Security Rules Files:**
+- `firestore.rules` - Main security rules implementation
+- `firebase.json` - Firebase project configuration
+- `firestore.indexes.json` - Database performance indexes
+
+**Deployment:**
+```bash
+# Deploy security rules and indexes
+firebase deploy --only firestore
+
+# Verify deployment
+firebase open firestore
+```
+
+**Testing:**
+```bash
+# Run security validation tests (always available)
+cd frontend && npm test -- --run firestore-security-validation.test.ts
+
+# Run comprehensive security tests (requires emulator)
+firebase emulators:start --only firestore
+cd frontend && npm test -- --run firestore-security-rules.test.ts
+```
+
+**📖 See [FIRESTORE_SECURITY_RULES.md](./FIRESTORE_SECURITY_RULES.md) for complete implementation guide.**
+
+### Legacy Basic Rules (Deprecated)
+
+The following basic rules were previously documented but are now replaced by comprehensive security rules:
 
 ```javascript
+// DEPRECATED - Use firestore.rules file instead
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
