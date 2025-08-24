@@ -1,0 +1,57 @@
+.storage-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  color: #495057;
+  transition: all 0.2s ease;
+}
+
+.storage-indicator.clickable {
+  cursor: pointer;
+}
+
+.storage-indicator.clickable:hover {
+  background-color: #e9ecef;
+  border-color: #dee2e6;
+  transform: translateY(-1px);
+}
+
+.storage-indicator.unavailable {
+  background-color: #fff3cd;
+  border-color: #ffeaa7;
+  color: #856404;
+}
+
+.storage-icon {
+  font-size: 1rem;
+}
+
+.storage-name {
+  font-weight: 500;
+  font-size: 0.8rem;
+}
+
+.storage-warning {
+  font-size: 0.75rem;
+  color: #e67e22;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .storage-indicator {
+    padding: 0.4rem 0.6rem;
+  }
+  
+  .storage-name {
+    display: none;
+  }
+  
+  .storage-icon {
+    font-size: 1.1rem;
+  }
+}

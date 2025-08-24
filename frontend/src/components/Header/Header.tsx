@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { StorageIndicator, StorageSettings } from '../';
+import { apiService } from '../../services/api';
 import './Header.css';
 
 interface HeaderProps {
@@ -8,9 +10,25 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ title = 'ChordMe' }) => {
   const { isAuthenticated, user, logout } = useAuth();
+  const [showStorageSettings, setShowStorageSettings] = useState(false);
 
   const handleLogout = () => {
     logout();
+  };
+
+  const handleStorageSettingsOpen = () => {
+    setShowStorageSettings(true);
+  };
+
+  const handleStorageSettingsClose = () => {
+    setShowStorageSettings(false);
+  };
+
+  const handleBackendChange = (backendId: string) => {
+    apiService.setStorageBackend(backendId as any);
+    setShowStorageSettings(false);
+    // You might want to trigger a refresh or reload here
+    // For now, let's just close the settings
   };
 
   return (
@@ -31,6 +49,7 @@ const Header: React.FC<HeaderProps> = ({ title = 'ChordMe' }) => {
                 Songs
               </a>
               <div className="auth-links">
+                <StorageIndicator onClick={handleStorageSettingsOpen} />
                 <span className="user-info">Welcome, {user?.email}</span>
                 <button
                   onClick={handleLogout}
@@ -46,6 +65,7 @@ const Header: React.FC<HeaderProps> = ({ title = 'ChordMe' }) => {
                 Demo
               </a>
               <div className="auth-links">
+                <StorageIndicator onClick={handleStorageSettingsOpen} />
                 <a href="#login" className="nav-link auth-link">
                   Login
                 </a>
@@ -57,6 +77,14 @@ const Header: React.FC<HeaderProps> = ({ title = 'ChordMe' }) => {
           )}
         </nav>
       </div>
+      
+      {showStorageSettings && (
+        <StorageSettings
+          currentBackend={apiService.getCurrentBackend()}
+          onBackendChange={handleBackendChange}
+          onClose={handleStorageSettingsClose}
+        />
+      )}
     </header>
   );
 };

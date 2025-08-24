@@ -1,0 +1,200 @@
+.storage-settings-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.storage-settings-modal {
+  background: white;
+  border-radius: 8px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.storage-settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.storage-settings-header h2 {
+  margin: 0;
+  color: #333;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.close-button:hover {
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.storage-settings-content {
+  padding: 1.5rem;
+}
+
+.settings-description {
+  color: #666;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.backend-options {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.backend-option {
+  border: 2px solid #e5e5e5;
+  border-radius: 8px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.backend-option:hover:not(.disabled) {
+  border-color: #3498db;
+  background-color: #f8f9fa;
+}
+
+.backend-option.selected {
+  border-color: #3498db;
+  background-color: #e3f2fd;
+}
+
+.backend-option.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: #f9f9f9;
+}
+
+.backend-option-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.backend-option-header input[type="radio"] {
+  margin: 0;
+}
+
+.backend-name {
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+  cursor: pointer;
+  flex: 1;
+}
+
+.unavailable-badge {
+  background-color: #ff6b6b;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.backend-description {
+  color: #666;
+  margin: 0.5rem 0 0 0;
+  line-height: 1.4;
+  font-size: 0.9rem;
+}
+
+.configuration-required {
+  color: #e67e22;
+  margin: 0.5rem 0 0 0;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.storage-settings-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #e5e5e5;
+  background-color: #f8f9fa;
+}
+
+.btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background-color: #3498db;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #2980b9;
+}
+
+.btn-primary:disabled {
+  background-color: #bdc3c7;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background-color: #95a5a6;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background-color: #7f8c8d;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .storage-settings-modal {
+    width: 95%;
+    max-height: 90vh;
+  }
+  
+  .storage-settings-header,
+  .storage-settings-content,
+  .storage-settings-footer {
+    padding: 1rem;
+  }
+  
+  .storage-settings-footer {
+    flex-direction: column;
+  }
+  
+  .btn {
+    width: 100%;
+  }
+}
