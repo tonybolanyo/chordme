@@ -6,6 +6,9 @@ export interface Song {
   content: string;
   created_at: string;
   updated_at: string;
+  shared_with?: SharedUser[];
+  share_settings?: 'private' | 'public' | 'link-shared';
+  user_permission?: 'read' | 'edit' | 'admin' | 'owner';
 }
 
 export interface Chord {
@@ -85,4 +88,48 @@ export interface DriveFileList {
   files: DriveFile[];
   nextPageToken?: string;
   incompleteSearch?: boolean;
+}
+
+// Song sharing types
+export interface SharedUser {
+  id: string;
+  email: string;
+  permission_level: 'read' | 'edit' | 'admin';
+  shared_at?: string;
+}
+
+export interface ShareSongRequest {
+  user_email: string;
+  permission_level: 'read' | 'edit' | 'admin';
+}
+
+export interface UpdatePermissionRequest {
+  user_email: string;
+  permission_level: 'read' | 'edit' | 'admin';
+}
+
+export interface SharingResponse {
+  status: string;
+  message: string;
+  data?: {
+    user_email?: string;
+    permission_level?: string;
+    old_permission?: string;
+    new_permission?: string;
+  };
+  error?: string;
+}
+
+// Notification types
+export interface SharingNotification {
+  id: string;
+  type: 'share_added' | 'share_removed' | 'permission_changed';
+  song_id: string;
+  song_title: string;
+  actor_email: string;
+  permission_level?: string;
+  old_permission?: string;
+  new_permission?: string;
+  timestamp: string;
+  read: boolean;
 }

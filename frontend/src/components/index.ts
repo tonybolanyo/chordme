@@ -8,6 +8,9 @@ export { default as ChordAutocomplete } from './ChordAutocomplete';
 export { default as TranspositionControls } from './TranspositionControls';
 export { default as StorageSettings } from './StorageSettings';
 export { default as StorageIndicator } from './StorageIndicator';
+export { default as SongSharingModal } from './SongSharingModal';
+export { default as NotificationToast } from './NotificationToast';
+export { default as NotificationContainer } from './NotificationContainer';
 
 // Google Auth components
 export * from './GoogleAuth';

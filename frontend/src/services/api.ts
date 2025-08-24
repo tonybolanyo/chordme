@@ -4,6 +4,10 @@ import type {
   LoginRequest,
   RegisterRequest,
   AuthResponse,
+  SharedUser,
+  ShareSongRequest,
+  UpdatePermissionRequest,
+  SharingResponse,
   // User, // removed as it is unused
 } from '../types';
 import { isTokenExpired } from '../utils/jwt';
@@ -416,6 +420,65 @@ class ApiService {
    */
   supportsRealTimeUpdates(): boolean {
     return this.shouldUseFirebase();
+  }
+
+  // Song sharing methods
+  
+  /**
+   * Share a song with another user
+   */
+  async shareSong(songId: string, shareData: ShareSongRequest): Promise<SharingResponse> {
+    if (this.shouldUseFirebase()) {
+      // For Firebase, we would implement sharing through Firestore
+      // For now, we'll fall back to API
+      console.log('Firebase sharing not yet implemented, using API');
+    }
+    
+    return this.fetchApi(`/api/v1/songs/${songId}/share`, {
+      method: 'POST',
+      body: JSON.stringify(shareData),
+    });
+  }
+
+  /**
+   * Update user permissions for a shared song
+   */
+  async updateSongPermissions(songId: string, updateData: UpdatePermissionRequest): Promise<SharingResponse> {
+    if (this.shouldUseFirebase()) {
+      // For Firebase, we would implement permission updates through Firestore
+      console.log('Firebase permission updates not yet implemented, using API');
+    }
+    
+    return this.fetchApi(`/api/v1/songs/${songId}/permissions`, {
+      method: 'PUT',
+      body: JSON.stringify(updateData),
+    });
+  }
+
+  /**
+   * Revoke user access to a song
+   */
+  async revokeSongAccess(songId: string, userId: string): Promise<SharingResponse> {
+    if (this.shouldUseFirebase()) {
+      // For Firebase, we would implement access revocation through Firestore
+      console.log('Firebase access revocation not yet implemented, using API');
+    }
+    
+    return this.fetchApi(`/api/v1/songs/${songId}/share/${userId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  /**
+   * Get sharing information for a song
+   */
+  async getSongSharingInfo(songId: string): Promise<{ shared_users: SharedUser[] }> {
+    if (this.shouldUseFirebase()) {
+      // For Firebase, we would get sharing info from Firestore
+      console.log('Firebase sharing info not yet implemented, using API');
+    }
+    
+    return this.fetchApi(`/api/v1/songs/${songId}/sharing`);
   }
 }
 

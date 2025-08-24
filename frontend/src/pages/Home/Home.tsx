@@ -5,11 +5,13 @@ import { googleOAuth2Service } from '../../services/googleOAuth';
 import { formatRelativeTime } from '../../utils';
 import { useRealtimeSongs } from '../../hooks/useRealtimeSongs';
 import { useRealtimeSong } from '../../hooks/useRealtimeSong';
-import type { Song, DriveFile } from '../../types';
+import type { Song, DriveFile, SharingNotification } from '../../types';
 import {
   ChordProEditor,
   ChordProViewer,
   GoogleDriveFileList,
+  SongSharingModal,
+  NotificationContainer,
 } from '../../components';
 import './Home.css';
 
@@ -38,6 +40,11 @@ const Home: React.FC = () => {
     null
   );
   const [exportSuccess, setExportSuccess] = useState<string | null>(null);
+
+  // Sharing state
+  const [sharingModalOpen, setSharingModalOpen] = useState(false);
+  const [songToShare, setSongToShare] = useState<Song | null>(null);
+  const [notifications, setNotifications] = useState<SharingNotification[]>([]);
 
   // Real-time editing state
   const [hasExternalChanges, setHasExternalChanges] = useState(false);
@@ -443,6 +450,57 @@ const Home: React.FC = () => {
   const clearNotifications = () => {
     setExportSuccess(null);
     setDriveError(null);
+  };
+
+  // Sharing handlers
+  const handleShareSong = (song: Song) => {
+    setSongToShare(song);
+    setSharingModalOpen(true);
+  };
+
+  const handleCloseSharingModal = () => {
+    setSharingModalOpen(false);
+    setSongToShare(null);
+  };
+
+  const handleShareUpdate = () => {
+    // Reload songs to get updated sharing information
+    if (!isRealTime) {
+      loadSongs();
+    }
+    // For real-time, the updates will come automatically
+  };
+
+  const addNotification = (notification: Omit<SharingNotification, 'id'>) => {
+    const newNotification: SharingNotification = {
+      ...notification,
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+    };
+    setNotifications(prev => [...prev, newNotification]);
+  };
+
+  const removeNotification = (id: string) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  };
+
+  // Helper function to get user permission level for a song
+  const getUserPermission = (song: Song): string => {
+    const currentUser = localStorage.getItem('authUser');
+    if (!currentUser) return 'none';
+    
+    try {
+      const user = JSON.parse(currentUser);
+      if (song.author_id === user.id) return 'owner';
+      return song.user_permission || 'none';
+    } catch {
+      return 'none';
+    }
+  };
+
+  // Helper function to check if user can share a song
+  const canUserShare = (song: Song): boolean => {
+    const permission = getUserPermission(song);
+    return permission === 'owner' || permission === 'admin';
   };
 
   if (isLoading) {
@@ -997,7 +1055,88 @@ const Home: React.FC = () => {
                   backgroundColor: '#fff',
                 }}
               >
-                <h3>{song.title}</h3>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                  <h3 style={{ margin: 0 }}>{song.title}</h3>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    {/* Ownership/Permission indicator */}
+                    {getUserPermission(song) === 'owner' && (
+                      <span 
+                        style={{ 
+                          fontSize: '0.75rem', 
+                          backgroundColor: '#4169e1', 
+                          color: 'white', 
+                          padding: '0.2rem 0.5rem', 
+                          borderRadius: '10px',
+                          fontWeight: '500'
+                        }}
+                        title="You own this song"
+                      >
+                        Owner
+                      </span>
+                    )}
+                    {getUserPermission(song) === 'admin' && (
+                      <span 
+                        style={{ 
+                          fontSize: '0.75rem', 
+                          backgroundColor: '#dc3545', 
+                          color: 'white', 
+                          padding: '0.2rem 0.5rem', 
+                          borderRadius: '10px',
+                          fontWeight: '500'
+                        }}
+                        title="You have admin access to this song"
+                      >
+                        Admin
+                      </span>
+                    )}
+                    {getUserPermission(song) === 'edit' && (
+                      <span 
+                        style={{ 
+                          fontSize: '0.75rem', 
+                          backgroundColor: '#7b1fa2', 
+                          color: 'white', 
+                          padding: '0.2rem 0.5rem', 
+                          borderRadius: '10px',
+                          fontWeight: '500'
+                        }}
+                        title="You can edit this song"
+                      >
+                        Editor
+                      </span>
+                    )}
+                    {getUserPermission(song) === 'read' && (
+                      <span 
+                        style={{ 
+                          fontSize: '0.75rem', 
+                          backgroundColor: '#1976d2', 
+                          color: 'white', 
+                          padding: '0.2rem 0.5rem', 
+                          borderRadius: '10px',
+                          fontWeight: '500'
+                        }}
+                        title="You have read-only access to this song"
+                      >
+                        Reader
+                      </span>
+                    )}
+                    {/* Collaboration indicator */}
+                    {song.shared_with && song.shared_with.length > 0 && (
+                      <span 
+                        style={{ 
+                          fontSize: '0.75rem', 
+                          backgroundColor: '#28a745', 
+                          color: 'white', 
+                          padding: '0.2rem 0.5rem', 
+                          borderRadius: '10px',
+                          fontWeight: '500'
+                        }}
+                        title={`Shared with ${song.shared_with.length} collaborator${song.shared_with.length === 1 ? '' : 's'}`}
+                      >
+                        👥 {song.shared_with.length}
+                      </span>
+                    )}
+                  </div>
+                </div>
                 <div
                   className="song-metadata"
                   style={{
@@ -1086,6 +1225,20 @@ const Home: React.FC = () => {
                         : 'Export to Drive'}
                     </button>
                   )}
+                  {canUserShare(song) && (
+                    <button
+                      className="btn"
+                      onClick={() => handleShareSong(song)}
+                      style={{
+                        marginRight: '0.5rem',
+                        backgroundColor: '#17a2b8',
+                        color: 'white',
+                      }}
+                      title="Share this song with others"
+                    >
+                      Share
+                    </button>
+                  )}
                   <button
                     className="btn btn-danger"
                     onClick={() => handleDeleteSong(song.id)}
@@ -1099,6 +1252,22 @@ const Home: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Sharing Modal */}
+      {songToShare && (
+        <SongSharingModal
+          song={songToShare}
+          isOpen={sharingModalOpen}
+          onClose={handleCloseSharingModal}
+          onShareUpdate={handleShareUpdate}
+        />
+      )}
+
+      {/* Notification Container */}
+      <NotificationContainer
+        notifications={notifications}
+        onRemoveNotification={removeNotification}
+      />
     </div>
   );
 };
