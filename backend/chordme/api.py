@@ -151,7 +151,14 @@ def register():
     """
     try:
         # Get JSON data from request with size limit
-        data = request.get_json()
+        try:
+            data = request.get_json()
+        except Exception as json_error:
+            # Handle cases where JSON parsing fails (e.g., no content-type, invalid JSON)
+            return security_error_handler.handle_validation_error(
+                "No data provided",
+                f"JSON parsing failed: {str(json_error)} from IP {request.remote_addr}"
+            )
         
         if not data:
             return security_error_handler.handle_validation_error(
@@ -187,9 +194,11 @@ def register():
         existing_user = User.query.filter_by(email=email).first()
         if existing_user:
             app.logger.warning(f"Registration failed: duplicate email {email} from IP {request.remote_addr}")
-            return security_error_handler.handle_validation_error(
+            # Use 409 Conflict for duplicate email as it's a resource conflict
+            from .utils import create_error_response
+            return create_error_response(
                 "User with this email already exists",
-                f"Duplicate registration attempt for {email} from IP {request.remote_addr}"
+                409
             )
         
         # Create new user
@@ -202,9 +211,11 @@ def register():
         except IntegrityError:
             db.session.rollback()
             app.logger.warning(f"Registration failed: database integrity error from IP {request.remote_addr}")
-            return security_error_handler.handle_validation_error(
+            # Use 409 Conflict for database integrity error (duplicate email)
+            from .utils import create_error_response
+            return create_error_response(
                 "User with this email already exists",
-                f"Database integrity error for {email} from IP {request.remote_addr}"
+                409
             )
         
         app.logger.info(f"User registered successfully: {email} from IP {request.remote_addr}")
@@ -293,7 +304,14 @@ def login():
     """
     try:
         # Get JSON data from request with size limit
-        data = request.get_json()
+        try:
+            data = request.get_json()
+        except Exception as json_error:
+            # Handle cases where JSON parsing fails (e.g., no content-type, invalid JSON)
+            return security_error_handler.handle_validation_error(
+                "No data provided",
+                f"JSON parsing failed: {str(json_error)} from IP {request.remote_addr}"
+            )
         
         if not data:
             return security_error_handler.handle_validation_error(
