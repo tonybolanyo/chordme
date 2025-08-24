@@ -157,6 +157,10 @@ jobs:
     - name: Install Node.js dependencies
       run: npm ci
     
+    - name: Install frontend dependencies
+      working-directory: ./frontend
+      run: npm ci
+    
     - name: Install Python dependencies
       working-directory: ./backend
       run: |

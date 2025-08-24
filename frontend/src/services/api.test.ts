@@ -11,7 +11,7 @@ import { isTokenExpired } from '../utils/jwt';
 
 // Mock fetch globally
 const mockFetch = vi.fn();
-global.fetch = mockFetch;
+globalThis.fetch = mockFetch;
 
 // Mock window properties
 Object.defineProperty(window, 'location', {
@@ -295,11 +295,14 @@ describe('ApiService', () => {
     beforeEach(() => {
       mockIsTokenExpired.mockReturnValue(false);
       // Mock DOM methods
-      document.createElement = vi.fn(() => ({
+      const mockAnchor = {
         href: '',
         download: '',
         click: vi.fn(),
-      })) as unknown as HTMLAnchorElement;
+      };
+      document.createElement = vi.fn(
+        () => mockAnchor
+      ) as typeof document.createElement;
       document.body.appendChild = vi.fn();
       document.body.removeChild = vi.fn();
     });

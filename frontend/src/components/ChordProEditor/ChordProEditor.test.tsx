@@ -319,43 +319,47 @@ Chorus [Am]line with [F]chords
     it('supports drag and drop functionality', () => {
       const mockOnChange = vi.fn();
       const { container } = render(
-        <ChordProEditor 
+        <ChordProEditor
           value="Test content"
           onChange={mockOnChange}
           allowDrop={true}
         />
       );
 
-      const editorContainer = container.querySelector('.chordpro-editor-container');
+      const editorContainer = container.querySelector(
+        '.chordpro-editor-container'
+      );
       expect(editorContainer).toBeInTheDocument();
 
       // Test drag over event using fireEvent
       const mockDataTransfer = { dropEffect: '' };
-      
+
       fireEvent.dragOver(editorContainer!, {
         dataTransfer: mockDataTransfer,
       });
-      
+
       // Should add drag-over class
       expect(editorContainer).toHaveClass('drag-over');
     });
 
     it('can disable drag and drop functionality', () => {
       const { container } = render(
-        <ChordProEditor 
+        <ChordProEditor
           value="Test content"
           onChange={vi.fn()}
           allowDrop={false}
         />
       );
 
-      const editorContainer = container.querySelector('.chordpro-editor-container');
-      
+      const editorContainer = container.querySelector(
+        '.chordpro-editor-container'
+      );
+
       // Test drag over event when disabled
       fireEvent.dragOver(editorContainer!, {
         dataTransfer: { dropEffect: '' },
       });
-      
+
       // Should not add drag-over class when disabled
       expect(editorContainer).not.toHaveClass('drag-over');
     });
@@ -365,9 +369,9 @@ Chorus [Am]line with [F]chords
     it('shows autocomplete when typing chord brackets', async () => {
       const user = userEvent.setup();
       const mockOnChange = vi.fn();
-      
+
       render(
-        <ChordProEditor 
+        <ChordProEditor
           value=""
           onChange={mockOnChange}
           enableAutocomplete={true}
@@ -375,17 +379,17 @@ Chorus [Am]line with [F]chords
       );
 
       const textarea = screen.getByRole('textbox');
-      
+
       // Type opening bracket and chord letter using keyboard events
       await user.type(textarea, '{[}C');
-      
+
       // Should trigger onChange
       expect(mockOnChange).toHaveBeenCalled();
     });
 
     it('can disable autocomplete functionality', () => {
       render(
-        <ChordProEditor 
+        <ChordProEditor
           value="[C"
           onChange={vi.fn()}
           enableAutocomplete={false}
@@ -398,7 +402,7 @@ Chorus [Am]line with [F]chords
 
     it('validates chords and shows visual feedback', () => {
       render(
-        <ChordProEditor 
+        <ChordProEditor
           value="[C] valid chord [invalid] invalid chord"
           onChange={vi.fn()}
         />
@@ -412,19 +416,14 @@ Chorus [Am]line with [F]chords
     it('handles selection changes for chord detection', async () => {
       const user = userEvent.setup();
       const mockOnChange = vi.fn();
-      
-      render(
-        <ChordProEditor 
-          value="[Am] test"
-          onChange={mockOnChange}
-        />
-      );
+
+      render(<ChordProEditor value="[Am] test" onChange={mockOnChange} />);
 
       const textarea = screen.getByRole('textbox');
-      
+
       // Click to change cursor position
       await user.click(textarea);
-      
+
       // Should handle selection change without errors
       expect(textarea).toBeInTheDocument();
     });
@@ -432,9 +431,9 @@ Chorus [Am]line with [F]chords
     it('preserves existing functionality with autocomplete enabled', async () => {
       const user = userEvent.setup();
       const mockOnChange = vi.fn();
-      
+
       render(
-        <ChordProEditor 
+        <ChordProEditor
           value=""
           onChange={mockOnChange}
           enableAutocomplete={true}
@@ -442,10 +441,10 @@ Chorus [Am]line with [F]chords
       );
 
       const textarea = screen.getByRole('textbox');
-      
+
       // Type regular text (not chord)
       await user.type(textarea, 'Regular lyrics');
-      
+
       // Should trigger onChange for regular text
       expect(mockOnChange).toHaveBeenCalled();
     });

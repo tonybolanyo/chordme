@@ -51,7 +51,7 @@ class TestGoogleDriveEndpoints:
                               headers=auth_headers)
         
         assert response.status_code == 400
-        assert 'Google Drive integration is not enabled' in response.json['message']
+        assert 'Google Drive integration is not enabled' in response.json['error']
     
     def test_validate_and_save_missing_data(self, client, auth_headers):
         """Test validate and save endpoint with missing data."""
@@ -60,7 +60,7 @@ class TestGoogleDriveEndpoints:
                               headers=auth_headers)
         
         assert response.status_code == 400
-        assert 'No data provided' in response.json['message']
+        assert 'No data provided' in response.json['error']
     
     def test_validate_and_save_missing_fields(self, client, auth_headers):
         """Test validate and save endpoint with missing required fields."""
@@ -77,7 +77,7 @@ class TestGoogleDriveEndpoints:
                                   headers=auth_headers)
             
             assert response.status_code == 400
-            assert expected_error in response.json['message']
+            assert expected_error in response.json['error']
     
     def test_validate_and_save_invalid_file_name(self, client, auth_headers):
         """Test validate and save endpoint with invalid file name."""
@@ -93,7 +93,7 @@ class TestGoogleDriveEndpoints:
                               headers=auth_headers)
         
         assert response.status_code == 400
-        assert 'File name must be 100 characters or less' in response.json['message']
+        assert 'File name must be 100 characters or less' in response.json['error']
     
     @patch('chordme.api.current_app')
     def test_validate_and_save_enabled(self, mock_app, client, auth_headers):
@@ -138,7 +138,7 @@ class TestGoogleDriveEndpoints:
                               headers=auth_headers)
         
         assert response.status_code == 400
-        assert 'Google Drive integration is not enabled' in response.json['message']
+        assert 'Google Drive integration is not enabled' in response.json['error']
     
     def test_batch_validate_missing_fields(self, client, auth_headers):
         """Test batch validate endpoint with missing required fields."""
@@ -156,7 +156,7 @@ class TestGoogleDriveEndpoints:
                                   headers=auth_headers)
             
             assert response.status_code == 400
-            assert expected_error in response.json['message']
+            assert expected_error in response.json['error']
     
     def test_batch_validate_too_many_files(self, client, auth_headers):
         """Test batch validate endpoint with too many files."""
@@ -171,7 +171,7 @@ class TestGoogleDriveEndpoints:
                               headers=auth_headers)
         
         assert response.status_code == 400
-        assert 'Maximum 20 files can be validated at once' in response.json['message']
+        assert 'Maximum 20 files can be validated at once' in response.json['error']
     
     def test_batch_validate_invalid_file_ids(self, client, auth_headers):
         """Test batch validate endpoint with invalid file IDs."""
@@ -186,7 +186,7 @@ class TestGoogleDriveEndpoints:
                               headers=auth_headers)
         
         assert response.status_code == 400
-        assert 'All file IDs must be non-empty strings' in response.json['message']
+        assert 'All file IDs must be non-empty strings' in response.json['error']
     
     def test_backup_songs_service_disabled(self, client, auth_headers):
         """Test backup songs endpoint when service is disabled."""
@@ -200,7 +200,7 @@ class TestGoogleDriveEndpoints:
                               headers=auth_headers)
         
         assert response.status_code == 400
-        assert 'Google Drive integration is not enabled' in response.json['message']
+        assert 'Google Drive integration is not enabled' in response.json['error']
     
     def test_backup_songs_missing_token(self, client, auth_headers):
         """Test backup songs endpoint with missing access token."""
@@ -210,7 +210,7 @@ class TestGoogleDriveEndpoints:
                               headers=auth_headers)
         
         assert response.status_code == 400
-        assert 'Access token is required' in response.json['message']
+        assert 'Access token is required' in response.json['error']
     
     def test_backup_songs_invalid_folder_name(self, client, auth_headers):
         """Test backup songs endpoint with invalid folder name."""
@@ -225,7 +225,7 @@ class TestGoogleDriveEndpoints:
                               headers=auth_headers)
         
         assert response.status_code == 400
-        assert 'Backup folder name must be 100 characters or less' in response.json['message']
+        assert 'Backup folder name must be 100 characters or less' in response.json['error']
     
     def test_endpoints_require_authentication(self, client):
         """Test that all Google Drive endpoints require authentication."""
@@ -241,7 +241,7 @@ class TestGoogleDriveEndpoints:
                                   content_type='application/json')
             
             assert response.status_code == 401
-            assert 'Token is missing' in response.json['message']
+            assert 'Token is missing' in response.json['error']
     
     def test_endpoints_rate_limiting(self, client, auth_headers):
         """Test that Google Drive endpoints have rate limiting."""
@@ -261,4 +261,4 @@ class TestGoogleDriveEndpoints:
         
         # Should get 400 for disabled service, not 429 for rate limiting
         assert response.status_code == 400
-        assert 'Google Drive integration is not enabled' in response.json['message']
+        assert 'Google Drive integration is not enabled' in response.json['error']

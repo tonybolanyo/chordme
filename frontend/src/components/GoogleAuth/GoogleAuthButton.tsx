@@ -24,7 +24,7 @@ export const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
     // Check if already authenticated
     const authenticated = googleOAuth2Service.isAuthenticated();
     setIsAuthenticated(authenticated);
-    
+
     if (authenticated) {
       const storedUserInfo = googleOAuth2Service.getStoredUserInfo();
       setUserInfo(storedUserInfo);
@@ -36,7 +36,8 @@ export const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
       setIsLoading(true);
       await googleOAuth2Service.startAuthFlow();
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Authentication failed';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Authentication failed';
       onAuthError?.(errorMessage);
       setIsLoading(false);
     }
@@ -49,7 +50,8 @@ export const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
       setIsAuthenticated(false);
       setUserInfo(null);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Sign out failed';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Sign out failed';
       onAuthError?.(errorMessage);
     } finally {
       setIsLoading(false);
@@ -121,7 +123,8 @@ export const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
       }}
       onMouseEnter={(e) => {
         if (!disabled && !isLoading) {
-          e.currentTarget.style.boxShadow = '0 1px 2px 0 rgba(60,64,67,.30), 0 1px 3px 1px rgba(60,64,67,.15)';
+          e.currentTarget.style.boxShadow =
+            '0 1px 2px 0 rgba(60,64,67,.30), 0 1px 3px 1px rgba(60,64,67,.15)';
         }
       }}
       onMouseLeave={(e) => {

@@ -12,7 +12,7 @@ const TranspositionControls: React.FC<TranspositionControlsProps> = ({
   onTranspose,
   disabled = false,
   className = '',
-  style
+  style,
 }) => {
   const handleTransposeUp = () => {
     if (!disabled) {

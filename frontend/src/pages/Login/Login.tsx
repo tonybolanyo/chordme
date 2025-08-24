@@ -96,7 +96,9 @@ const Login: React.FC = () => {
   };
 
   const handleGoogleAuthSuccess = (userInfo: GoogleUserInfo) => {
-    setSuccessMessage(`Welcome, ${userInfo.name}! Google Drive access enabled.`);
+    setSuccessMessage(
+      `Welcome, ${userInfo.name}! Google Drive access enabled.`
+    );
     // Note: Google OAuth is for Drive access, not replacing main authentication
     // Users still need to sign in with their ChordMe account
     setErrors({ google: undefined });
@@ -173,7 +175,8 @@ const Login: React.FC = () => {
         <div className="google-auth-section">
           <h3>Connect Google Drive</h3>
           <p style={{ fontSize: '14px', color: '#666', marginBottom: '16px' }}>
-            Optional: Connect your Google Drive to access and save your chord files
+            Optional: Connect your Google Drive to access and save your chord
+            files
           </p>
           <GoogleAuthButton
             onAuthSuccess={handleGoogleAuthSuccess}

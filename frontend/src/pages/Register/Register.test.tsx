@@ -191,7 +191,8 @@ describe('Register Component', () => {
 
       mockApiService.register.mockResolvedValue({
         status: 'success',
-        data: { message: successMessage },
+        message: successMessage,
+        data: {},
       });
 
       render(<Register />);
@@ -218,7 +219,8 @@ describe('Register Component', () => {
 
       mockApiService.register.mockResolvedValue({
         status: 'success',
-        data: { message: 'Registration successful!' },
+        message: 'Registration successful!',
+        data: {},
       });
 
       render(<Register />);
@@ -354,7 +356,8 @@ describe('Register Component', () => {
       // Resolve the promise
       resolvePromise!({
         status: 'success',
-        data: { message: 'Success!' },
+        message: 'Success!',
+        data: {},
       });
 
       await waitFor(() => {
@@ -401,7 +404,7 @@ describe('Register Component', () => {
       expect(passwordInput).toBeDisabled();
       expect(confirmPasswordInput).toBeDisabled();
 
-      resolvePromise!({ status: 'success', data: { message: 'Success!' } });
+      resolvePromise!({ status: 'success', message: 'Success!', data: {} });
 
       await waitFor(() => {
         expect(emailInput).not.toBeDisabled();
@@ -454,7 +457,8 @@ describe('Register Component', () => {
 
       mockApiService.register.mockResolvedValue({
         status: 'success',
-        data: { message: 'Success!' },
+        message: 'Success!',
+        data: {},
       });
 
       render(<Register />);
@@ -478,7 +482,8 @@ describe('Register Component', () => {
 
       mockApiService.register.mockResolvedValue({
         status: 'success',
-        data: { message: 'Success!' },
+        message: 'Success!',
+        data: {},
       });
 
       render(<Register />);
@@ -508,7 +513,8 @@ describe('Register Component', () => {
 
       mockApiService.register.mockResolvedValue({
         status: 'success',
-        data: { message: 'Success!' },
+        message: 'Success!',
+        data: {},
       });
 
       render(<Register />);
@@ -531,7 +537,8 @@ describe('Register Component', () => {
 
       mockApiService.register.mockResolvedValue({
         status: 'success',
-        data: { message: 'Success!' },
+        message: 'Success!',
+        data: {},
       });
 
       render(<Register />);

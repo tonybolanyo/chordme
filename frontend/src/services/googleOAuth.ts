@@ -15,7 +15,9 @@ class GoogleOAuth2Service {
   constructor() {
     this.config = {
       clientId: (import.meta.env?.VITE_GOOGLE_CLIENT_ID as string) || '',
-      redirectUri: (import.meta.env?.VITE_GOOGLE_REDIRECT_URI as string) || `${window.location.origin}/auth/google/callback`,
+      redirectUri:
+        (import.meta.env?.VITE_GOOGLE_REDIRECT_URI as string) ||
+        `${window.location.origin}/auth/google/callback`,
       scopes: [
         'openid',
         'email',
@@ -45,7 +47,9 @@ class GoogleOAuth2Service {
     const encoder = new TextEncoder();
     const data = encoder.encode(verifier);
     const digest = await crypto.subtle.digest('SHA-256', data);
-    return btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(digest))))
+    return btoa(
+      String.fromCharCode.apply(null, Array.from(new Uint8Array(digest)))
+    )
       .replace(/\+/g, '-')
       .replace(/\//g, '_')
       .replace(/=/g, '');
@@ -60,7 +64,7 @@ class GoogleOAuth2Service {
 
     try {
       const tokens: GoogleTokens = JSON.parse(tokensJson);
-      
+
       // Check if tokens are expired
       if (Date.now() >= tokens.expires_at) {
         localStorage.removeItem('googleTokens');
@@ -127,7 +131,7 @@ class GoogleOAuth2Service {
     });
 
     const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
-    
+
     // Redirect to Google for authentication
     window.location.href = authUrl;
   }
@@ -138,7 +142,9 @@ class GoogleOAuth2Service {
   async handleAuthCallback(code: string): Promise<GoogleAuthResponse> {
     const codeVerifier = sessionStorage.getItem('googleCodeVerifier');
     if (!codeVerifier) {
-      throw new Error('Code verifier not found. Please restart the authentication flow.');
+      throw new Error(
+        'Code verifier not found. Please restart the authentication flow.'
+      );
     }
 
     // Clear stored code verifier
@@ -165,11 +171,11 @@ class GoogleOAuth2Service {
       }
 
       const tokenData = await tokenResponse.json();
-      
+
       // Calculate absolute expiration time
       const tokens: GoogleTokens = {
         ...tokenData,
-        expires_at: Date.now() + (tokenData.expires_in * 1000),
+        expires_at: Date.now() + tokenData.expires_in * 1000,
       };
 
       // Get user info
@@ -213,12 +219,12 @@ class GoogleOAuth2Service {
       }
 
       const tokenData = await response.json();
-      
+
       // Update tokens (preserve refresh_token if not provided)
       const newTokens: GoogleTokens = {
         ...tokenData,
         refresh_token: tokenData.refresh_token || currentTokens.refresh_token,
-        expires_at: Date.now() + (tokenData.expires_in * 1000),
+        expires_at: Date.now() + tokenData.expires_in * 1000,
       };
 
       this.storeTokens(newTokens);
@@ -226,22 +232,28 @@ class GoogleOAuth2Service {
     } catch (error) {
       console.error('Error refreshing tokens:', error);
       this.clearTokens();
-      throw new Error('Failed to refresh authentication. Please sign in again.');
+      throw new Error(
+        'Failed to refresh authentication. Please sign in again.'
+      );
     }
   }
 
   /**
    * Make authenticated request to Google APIs with automatic token refresh
    */
-  private async makeAuthenticatedRequest(url: string, options: RequestInit = {}): Promise<Response> {
+  private async makeAuthenticatedRequest(
+    url: string,
+    options: RequestInit = {}
+  ): Promise<Response> {
     let tokens = this.getStoredTokens();
-    
+
     if (!tokens) {
       throw new Error('Not authenticated with Google');
     }
 
     // Check if token needs refresh
-    if (Date.now() >= tokens.expires_at - 60000) { // Refresh 1 minute before expiry
+    if (Date.now() >= tokens.expires_at - 60000) {
+      // Refresh 1 minute before expiry
       tokens = await this.refreshTokens();
     }
 
@@ -249,7 +261,7 @@ class GoogleOAuth2Service {
       ...options,
       headers: {
         ...options.headers,
-        'Authorization': `Bearer ${tokens.access_token}`,
+        Authorization: `Bearer ${tokens.access_token}`,
       },
     });
 
@@ -261,7 +273,7 @@ class GoogleOAuth2Service {
           ...options,
           headers: {
             ...options.headers,
-            'Authorization': `Bearer ${tokens.access_token}`,
+            Authorization: `Bearer ${tokens.access_token}`,
           },
         });
       } catch (refreshError) {
@@ -283,11 +295,14 @@ class GoogleOAuth2Service {
       throw new Error('No access token available');
     }
 
-    const response = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
+    const response = await fetch(
+      'https://www.googleapis.com/oauth2/v2/userinfo',
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
     if (!response.ok) {
       throw new Error('Failed to get user information');
@@ -315,14 +330,17 @@ class GoogleOAuth2Service {
   /**
    * List files in Google Drive
    */
-  async listDriveFiles(options: {
-    pageToken?: string;
-    pageSize?: number;
-    query?: string;
-    orderBy?: string;
-  } = {}): Promise<DriveFileList> {
+  async listDriveFiles(
+    options: {
+      pageToken?: string;
+      pageSize?: number;
+      query?: string;
+      orderBy?: string;
+    } = {}
+  ): Promise<DriveFileList> {
     const params = new URLSearchParams({
-      fields: 'files(id,name,mimeType,modifiedTime,size,webViewLink,parents),nextPageToken,incompleteSearch',
+      fields:
+        'files(id,name,mimeType,modifiedTime,size,webViewLink,parents),nextPageToken,incompleteSearch',
       pageSize: (options.pageSize || 10).toString(),
     });
 
@@ -371,7 +389,10 @@ class GoogleOAuth2Service {
     };
 
     const form = new FormData();
-    form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+    form.append(
+      'metadata',
+      new Blob([JSON.stringify(metadata)], { type: 'application/json' })
+    );
     form.append('media', new Blob([content], { type: mimeType }));
 
     const response = await this.makeAuthenticatedRequest(
@@ -392,7 +413,11 @@ class GoogleOAuth2Service {
   /**
    * Update file content in Google Drive
    */
-  async updateFile(fileId: string, content: string, mimeType: string = 'text/plain'): Promise<DriveFile> {
+  async updateFile(
+    fileId: string,
+    content: string,
+    mimeType: string = 'text/plain'
+  ): Promise<DriveFile> {
     const response = await this.makeAuthenticatedRequest(
       `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media&fields=id,name,mimeType,modifiedTime,size,webViewLink,parents`,
       {
@@ -432,13 +457,16 @@ class GoogleOAuth2Service {
    */
   async signOut(): Promise<void> {
     const tokens = this.getStoredTokens();
-    
+
     if (tokens?.access_token) {
       try {
         // Revoke the token
-        await fetch(`https://oauth2.googleapis.com/revoke?token=${tokens.access_token}`, {
-          method: 'POST',
-        });
+        await fetch(
+          `https://oauth2.googleapis.com/revoke?token=${tokens.access_token}`,
+          {
+            method: 'POST',
+          }
+        );
       } catch (error) {
         console.error('Error revoking token:', error);
       }

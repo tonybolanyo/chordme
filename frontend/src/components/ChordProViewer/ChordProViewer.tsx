@@ -68,11 +68,11 @@ const ChordProViewer: React.FC<ChordProViewerProps> = ({
           if (currentSection.lines.length > 0) {
             sections.push(currentSection);
           }
-          
+
           // Handle parameterized sections like "start_of_verse: 1"
           let sectionType: string;
           let sectionParam: string | undefined;
-          
+
           if (directive.includes(':')) {
             const [fullType, param] = directive.split(':', 2);
             sectionType = fullType.replace('start_of_', '');
@@ -80,17 +80,17 @@ const ChordProViewer: React.FC<ChordProViewerProps> = ({
           } else {
             sectionType = directive.replace('start_of_', '');
           }
-          
-          const displayName = sectionParam 
+
+          const displayName = sectionParam
             ? `${sectionType.charAt(0).toUpperCase() + sectionType.slice(1)} ${sectionParam}`
             : sectionType;
-            
+
           currentSection = {
             type:
               sectionType === 'verse' ||
               sectionType === 'chorus' ||
               sectionType === 'bridge'
-                ? sectionType as Section['type']
+                ? (sectionType as Section['type'])
                 : 'content',
             name: displayName,
             lines: [],
@@ -108,26 +108,30 @@ const ChordProViewer: React.FC<ChordProViewerProps> = ({
           continue;
         } else if (
           // Check for abbreviated section directives
-          directive === 'sov' || directive === 'soc' || directive === 'sob' ||
-          directive === 'eov' || directive === 'eoc' || directive === 'eob'
+          directive === 'sov' ||
+          directive === 'soc' ||
+          directive === 'sob' ||
+          directive === 'eov' ||
+          directive === 'eoc' ||
+          directive === 'eob'
         ) {
           const abbreviationMap: Record<string, string> = {
-            'sov': 'start_of_verse',
-            'soc': 'start_of_chorus', 
-            'sob': 'start_of_bridge',
-            'eov': 'end_of_verse',
-            'eoc': 'end_of_chorus',
-            'eob': 'end_of_bridge'
+            sov: 'start_of_verse',
+            soc: 'start_of_chorus',
+            sob: 'start_of_bridge',
+            eov: 'end_of_verse',
+            eoc: 'end_of_chorus',
+            eob: 'end_of_bridge',
           };
-          
+
           const fullDirective = abbreviationMap[directive];
-          
+
           if (fullDirective.startsWith('start_of_')) {
             // Start new section
             if (currentSection.lines.length > 0) {
               sections.push(currentSection);
             }
-            
+
             const sectionType = fullDirective.replace('start_of_', '');
             currentSection = {
               type: sectionType as Section['type'],

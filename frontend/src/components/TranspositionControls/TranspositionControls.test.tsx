@@ -100,7 +100,9 @@ describe('TranspositionControls', () => {
 
     it('does not call onTranspose when buttons are disabled', () => {
       const onTranspose = vi.fn();
-      render(<TranspositionControls onTranspose={onTranspose} disabled={true} />);
+      render(
+        <TranspositionControls onTranspose={onTranspose} disabled={true} />
+      );
 
       const transposeUpButton = screen.getByLabelText('Transpose up');
       const transposeDownButton = screen.getByLabelText('Transpose down');
@@ -130,7 +132,10 @@ describe('TranspositionControls', () => {
       const transposeDownButton = screen.getByLabelText('Transpose down');
 
       expect(transposeUpButton).toHaveAttribute('aria-label', 'Transpose up');
-      expect(transposeDownButton).toHaveAttribute('aria-label', 'Transpose down');
+      expect(transposeDownButton).toHaveAttribute(
+        'aria-label',
+        'Transpose down'
+      );
     });
 
     it('has helpful title attributes', () => {
@@ -139,8 +144,14 @@ describe('TranspositionControls', () => {
       const transposeUpButton = screen.getByLabelText('Transpose up');
       const transposeDownButton = screen.getByLabelText('Transpose down');
 
-      expect(transposeUpButton).toHaveAttribute('title', 'Transpose up by one semitone');
-      expect(transposeDownButton).toHaveAttribute('title', 'Transpose down by one semitone');
+      expect(transposeUpButton).toHaveAttribute(
+        'title',
+        'Transpose up by one semitone'
+      );
+      expect(transposeDownButton).toHaveAttribute(
+        'title',
+        'Transpose down by one semitone'
+      );
     });
 
     it('buttons have correct type attribute', () => {

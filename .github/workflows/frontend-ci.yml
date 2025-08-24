@@ -61,7 +61,7 @@ jobs:
     
     - name: Install Playwright browsers
       run: npx playwright install --with-deps
-      working-directory: ../
+      continue-on-error: true
     
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4

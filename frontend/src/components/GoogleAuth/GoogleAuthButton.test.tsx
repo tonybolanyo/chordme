@@ -33,18 +33,22 @@ describe('GoogleAuthButton', () => {
 
     it('should render sign in button', () => {
       render(<GoogleAuthButton />);
-      
-      expect(screen.getByRole('button', { name: /sign in with google/i })).toBeInTheDocument();
+
+      expect(
+        screen.getByRole('button', { name: /sign in with google/i })
+      ).toBeInTheDocument();
     });
 
     it('should show loading state when starting auth flow', async () => {
-      mockGoogleService.startAuthFlow.mockImplementation(() => 
-        new Promise(resolve => setTimeout(resolve, 100))
+      mockGoogleService.startAuthFlow.mockImplementation(
+        () => new Promise((resolve) => setTimeout(resolve, 100))
       );
 
       render(<GoogleAuthButton />);
-      
-      const signInButton = screen.getByRole('button', { name: /sign in with google/i });
+
+      const signInButton = screen.getByRole('button', {
+        name: /sign in with google/i,
+      });
       fireEvent.click(signInButton);
 
       expect(screen.getByText('Signing in...')).toBeInTheDocument();
@@ -52,8 +56,10 @@ describe('GoogleAuthButton', () => {
 
     it('should call startAuthFlow when sign in button is clicked', async () => {
       render(<GoogleAuthButton />);
-      
-      const signInButton = screen.getByRole('button', { name: /sign in with google/i });
+
+      const signInButton = screen.getByRole('button', {
+        name: /sign in with google/i,
+      });
       fireEvent.click(signInButton);
 
       expect(mockGoogleService.startAuthFlow).toHaveBeenCalledTimes(1);
@@ -62,12 +68,16 @@ describe('GoogleAuthButton', () => {
     it('should call onAuthError when startAuthFlow fails', async () => {
       const onAuthError = vi.fn();
       const errorMessage = 'Authentication failed';
-      
-      mockGoogleService.startAuthFlow.mockRejectedValue(new Error(errorMessage));
+
+      mockGoogleService.startAuthFlow.mockRejectedValue(
+        new Error(errorMessage)
+      );
 
       render(<GoogleAuthButton onAuthError={onAuthError} />);
-      
-      const signInButton = screen.getByRole('button', { name: /sign in with google/i });
+
+      const signInButton = screen.getByRole('button', {
+        name: /sign in with google/i,
+      });
       fireEvent.click(signInButton);
 
       await waitFor(() => {
@@ -77,15 +87,19 @@ describe('GoogleAuthButton', () => {
 
     it('should be disabled when disabled prop is true', () => {
       render(<GoogleAuthButton disabled />);
-      
-      const signInButton = screen.getByRole('button', { name: /sign in with google/i });
+
+      const signInButton = screen.getByRole('button', {
+        name: /sign in with google/i,
+      });
       expect(signInButton).toBeDisabled();
     });
 
     it('should apply custom className', () => {
       render(<GoogleAuthButton className="custom-class" />);
-      
-      const signInButton = screen.getByRole('button', { name: /sign in with google/i });
+
+      const signInButton = screen.getByRole('button', {
+        name: /sign in with google/i,
+      });
       expect(signInButton).toHaveClass('custom-class');
     });
   });
@@ -105,10 +119,15 @@ describe('GoogleAuthButton', () => {
 
     it('should render user info and sign out button', () => {
       render(<GoogleAuthButton />);
-      
+
       expect(screen.getByText('Test User')).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /sign out/i })).toBeInTheDocument();
-      expect(screen.getByRole('img', { name: 'Test User' })).toHaveAttribute('src', mockUserInfo.picture);
+      expect(
+        screen.getByRole('button', { name: /sign out/i })
+      ).toBeInTheDocument();
+      expect(screen.getByRole('img', { name: 'Test User' })).toHaveAttribute(
+        'src',
+        mockUserInfo.picture
+      );
     });
 
     it('should render without user picture when not provided', () => {
@@ -116,7 +135,7 @@ describe('GoogleAuthButton', () => {
       mockGoogleService.getStoredUserInfo.mockReturnValue(userWithoutPicture);
 
       render(<GoogleAuthButton />);
-      
+
       expect(screen.getByText('Test User')).toBeInTheDocument();
       expect(screen.queryByRole('img')).not.toBeInTheDocument();
     });
@@ -125,7 +144,7 @@ describe('GoogleAuthButton', () => {
       mockGoogleService.signOut.mockResolvedValue();
 
       render(<GoogleAuthButton />);
-      
+
       const signOutButton = screen.getByRole('button', { name: /sign out/i });
       fireEvent.click(signOutButton);
 
@@ -133,12 +152,12 @@ describe('GoogleAuthButton', () => {
     });
 
     it('should show loading state when signing out', async () => {
-      mockGoogleService.signOut.mockImplementation(() => 
-        new Promise(resolve => setTimeout(resolve, 100))
+      mockGoogleService.signOut.mockImplementation(
+        () => new Promise((resolve) => setTimeout(resolve, 100))
       );
 
       render(<GoogleAuthButton />);
-      
+
       const signOutButton = screen.getByRole('button', { name: /sign out/i });
       fireEvent.click(signOutButton);
 
@@ -148,11 +167,11 @@ describe('GoogleAuthButton', () => {
     it('should handle sign out error', async () => {
       const onAuthError = vi.fn();
       const errorMessage = 'Sign out failed';
-      
+
       mockGoogleService.signOut.mockRejectedValue(new Error(errorMessage));
 
       render(<GoogleAuthButton onAuthError={onAuthError} />);
-      
+
       const signOutButton = screen.getByRole('button', { name: /sign out/i });
       fireEvent.click(signOutButton);
 
@@ -163,7 +182,7 @@ describe('GoogleAuthButton', () => {
 
     it('should be disabled when disabled prop is true', () => {
       render(<GoogleAuthButton disabled />);
-      
+
       const signOutButton = screen.getByRole('button', { name: /sign out/i });
       expect(signOutButton).toBeDisabled();
     });
@@ -172,15 +191,17 @@ describe('GoogleAuthButton', () => {
       mockGoogleService.signOut.mockResolvedValue();
 
       render(<GoogleAuthButton />);
-      
+
       // Initially authenticated
       expect(screen.getByText('Test User')).toBeInTheDocument();
-      
+
       const signOutButton = screen.getByRole('button', { name: /sign out/i });
       fireEvent.click(signOutButton);
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /sign in with google/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', { name: /sign in with google/i })
+        ).toBeInTheDocument();
       });
     });
   });
@@ -188,9 +209,9 @@ describe('GoogleAuthButton', () => {
   describe('Callbacks', () => {
     it('should call onAuthSuccess when provided (though not used in current implementation)', () => {
       const onAuthSuccess = vi.fn();
-      
+
       render(<GoogleAuthButton onAuthSuccess={onAuthSuccess} />);
-      
+
       // This test ensures the prop is accepted, even though it's not currently used
       // in the component implementation since auth success is handled via redirect
       expect(onAuthSuccess).not.toHaveBeenCalled();
@@ -200,7 +221,7 @@ describe('GoogleAuthButton', () => {
   describe('Accessibility', () => {
     it('should have proper ARIA attributes', () => {
       render(<GoogleAuthButton />);
-      
+
       const button = screen.getByRole('button');
       expect(button).toHaveAttribute('type', 'button');
     });
@@ -217,7 +238,7 @@ describe('GoogleAuthButton', () => {
       mockGoogleService.getStoredUserInfo.mockReturnValue(mockUserInfo);
 
       render(<GoogleAuthButton />);
-      
+
       const avatar = screen.getByRole('img');
       expect(avatar).toHaveAttribute('alt', 'Test User');
     });

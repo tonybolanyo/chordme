@@ -22,43 +22,49 @@ export const GoogleDriveFileList: React.FC<GoogleDriveFileListProps> = ({
   const [nextPageToken, setNextPageToken] = useState<string | undefined>();
   const [hasMore, setHasMore] = useState(true);
 
+  const buildQuery = useCallback(() => {
+    const mimeTypeQuery = fileTypes
+      .map((type) => `mimeType='${type}'`)
+      .join(' or ');
+    return `(${mimeTypeQuery}) and trashed=false`;
+  }, [fileTypes]);
+
+  const loadFiles = useCallback(
+    async (pageToken?: string) => {
+      try {
+        setIsLoading(true);
+
+        const result: DriveFileList = await googleOAuth2Service.listDriveFiles({
+          pageToken,
+          pageSize: maxResults,
+          query: buildQuery(),
+          orderBy: 'modifiedTime desc',
+        });
+
+        if (pageToken) {
+          setFiles((prev) => [...prev, ...result.files]);
+        } else {
+          setFiles(result.files);
+        }
+
+        setNextPageToken(result.nextPageToken);
+        setHasMore(!!result.nextPageToken);
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : 'Failed to load files';
+        onError?.(errorMessage);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [maxResults, buildQuery, onError]
+  );
+
   useEffect(() => {
     if (googleOAuth2Service.isAuthenticated()) {
       loadFiles();
     }
   }, [loadFiles]);
-
-  const buildQuery = useCallback(() => {
-    const mimeTypeQuery = fileTypes.map(type => `mimeType='${type}'`).join(' or ');
-    return `(${mimeTypeQuery}) and trashed=false`;
-  }, [fileTypes]);
-
-  const loadFiles = useCallback(async (pageToken?: string) => {
-    try {
-      setIsLoading(true);
-      
-      const result: DriveFileList = await googleOAuth2Service.listDriveFiles({
-        pageToken,
-        pageSize: maxResults,
-        query: buildQuery(),
-        orderBy: 'modifiedTime desc',
-      });
-
-      if (pageToken) {
-        setFiles(prev => [...prev, ...result.files]);
-      } else {
-        setFiles(result.files);
-      }
-
-      setNextPageToken(result.nextPageToken);
-      setHasMore(!!result.nextPageToken);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load files';
-      onError?.(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [maxResults, buildQuery, onError]);
 
   const loadMoreFiles = () => {
     if (nextPageToken && !isLoading) {
@@ -75,7 +81,8 @@ export const GoogleDriveFileList: React.FC<GoogleDriveFileListProps> = ({
     const size = parseInt(sizeString);
     if (size < 1024) return `${size} B`;
     if (size < 1024 * 1024) return `${Math.round(size / 1024)} KB`;
-    if (size < 1024 * 1024 * 1024) return `${Math.round(size / (1024 * 1024))} MB`;
+    if (size < 1024 * 1024 * 1024)
+      return `${Math.round(size / (1024 * 1024))} MB`;
     return `${Math.round(size / (1024 * 1024 * 1024))} GB`;
   };
 
@@ -140,10 +147,16 @@ export const GoogleDriveFileList: React.FC<GoogleDriveFileListProps> = ({
             }}
           >
             <div className="file-info">
-              <div className="file-name" style={{ fontWeight: '500', marginBottom: '4px' }}>
+              <div
+                className="file-name"
+                style={{ fontWeight: '500', marginBottom: '4px' }}
+              >
                 {file.name}
               </div>
-              <div className="file-meta" style={{ fontSize: '14px', color: '#666' }}>
+              <div
+                className="file-meta"
+                style={{ fontSize: '14px', color: '#666' }}
+              >
                 Modified: {formatDate(file.modifiedTime)}
                 {file.size && ` • ${formatFileSize(file.size)}`}
               </div>
@@ -174,7 +187,10 @@ export const GoogleDriveFileList: React.FC<GoogleDriveFileListProps> = ({
       </div>
 
       {hasMore && (
-        <div className="load-more" style={{ textAlign: 'center', marginTop: '16px' }}>
+        <div
+          className="load-more"
+          style={{ textAlign: 'center', marginTop: '16px' }}
+        >
           <button
             onClick={loadMoreFiles}
             disabled={isLoading}

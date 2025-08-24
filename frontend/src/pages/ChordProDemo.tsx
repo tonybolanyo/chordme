@@ -1,5 +1,10 @@
 import React, { useState, useRef } from 'react';
-import { ChordProEditor, ChordProViewer, ChordPalette, TranspositionControls } from '../components';
+import {
+  ChordProEditor,
+  ChordProViewer,
+  ChordPalette,
+  TranspositionControls,
+} from '../components';
 import { transposeChordProContent } from '../services/chordService';
 
 const ChordProDemo: React.FC = () => {
@@ -38,19 +43,22 @@ The [Em]hour I [D]first be[G]lieved
       const startPos = textarea.selectionStart;
       const endPos = textarea.selectionEnd;
       const currentContent = content;
-      
+
       // Insert chord at cursor position
-      const newContent = 
-        currentContent.substring(0, startPos) + 
-        chord + 
+      const newContent =
+        currentContent.substring(0, startPos) +
+        chord +
         currentContent.substring(endPos);
-      
+
       setContent(newContent);
-      
+
       // Move cursor after inserted chord
       setTimeout(() => {
         textarea.focus();
-        textarea.setSelectionRange(startPos + chord.length, startPos + chord.length);
+        textarea.setSelectionRange(
+          startPos + chord.length,
+          startPos + chord.length
+        );
       }, 0);
     }
   };
@@ -86,19 +94,51 @@ The [Em]hour I [D]first be[G]lieved
         <strong>Interactive Features:</strong>
       </p>
       <ul>
-        <li><strong>Direct Chord Entry:</strong> Type chord names within square brackets <code>[Am]</code> with real-time validation</li>
-        <li><strong>Autocomplete:</strong> Start typing a chord like <code>[C</code> to see suggestions</li>
-        <li><strong>Chord Palette:</strong> Click any chord button to insert at cursor position</li> 
-        <li><strong>Drag & Drop:</strong> Drag chords from the palette directly onto specific positions in the lyrics</li>
-        <li><strong>Chord Transposition:</strong> Use the transpose buttons (♭/♯) to transpose all chords up or down by semitones</li>
-        <li><strong>Visual Feedback:</strong> Invalid chord names are highlighted with red underlines</li>
+        <li>
+          <strong>Direct Chord Entry:</strong> Type chord names within square
+          brackets <code>[Am]</code> with real-time validation
+        </li>
+        <li>
+          <strong>Autocomplete:</strong> Start typing a chord like{' '}
+          <code>[C</code> to see suggestions
+        </li>
+        <li>
+          <strong>Chord Palette:</strong> Click any chord button to insert at
+          cursor position
+        </li>
+        <li>
+          <strong>Drag & Drop:</strong> Drag chords from the palette directly
+          onto specific positions in the lyrics
+        </li>
+        <li>
+          <strong>Chord Transposition:</strong> Use the transpose buttons (♭/♯)
+          to transpose all chords up or down by semitones
+        </li>
+        <li>
+          <strong>Visual Feedback:</strong> Invalid chord names are highlighted
+          with red underlines
+        </li>
       </ul>
 
-      <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start', marginTop: '20px' }}>
+      <div
+        style={{
+          display: 'flex',
+          gap: '20px',
+          alignItems: 'flex-start',
+          marginTop: '20px',
+        }}
+      >
         <div style={{ flex: '1' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '10px',
+            }}
+          >
             <h2>Interactive Editor</h2>
-            <TranspositionControls 
+            <TranspositionControls
               onTranspose={handleTranspose}
               style={{ marginLeft: 'auto' }}
             />
@@ -125,7 +165,7 @@ The [Em]hour I [D]first be[G]lieved
         </div>
 
         <div style={{ width: '300px', flexShrink: 0 }}>
-          <ChordPalette 
+          <ChordPalette
             onChordSelect={handleChordSelect}
             style={{ position: 'sticky', top: '20px' }}
           />

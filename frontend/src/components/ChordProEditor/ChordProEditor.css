@@ -117,7 +117,7 @@
 }
 
 .chordpro-editor-container.drag-over::before {
-  content: "Drop chord here";
+  content: 'Drop chord here';
   position: absolute;
   top: 50%;
   left: 50%;
