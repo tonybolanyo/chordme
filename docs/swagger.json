@@ -1367,7 +1367,7 @@
     },
     "/songs/{song_id}": {
       "delete": {
-        "description": "Delete a specific song by its ID (only if owned by authenticated user)",
+        "description": "Delete a specific song by its ID (requires admin permissions - only owner)",
         "parameters": [
           {
             "description": "Song ID",
@@ -1387,6 +1387,12 @@
           },
           "401": {
             "description": "Authentication required",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "403": {
+            "description": "Insufficient permissions",
             "schema": {
               "$ref": "#/definitions/Error"
             }
@@ -1421,7 +1427,7 @@
         ]
       },
       "get": {
-        "description": "Retrieve a specific song by its ID (only if owned by authenticated user)",
+        "description": "Retrieve a specific song by its ID (accessible if owned, shared, or public)",
         "parameters": [
           {
             "description": "Song ID",
@@ -1544,6 +1550,12 @@
               "$ref": "#/definitions/Error"
             }
           },
+          "403": {
+            "description": "Insufficient permissions",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
           "404": {
             "description": "Song not found",
             "schema": {
@@ -1580,9 +1592,111 @@
         ]
       }
     },
+    "/songs/{song_id}/collaborators": {
+      "get": {
+        "description": "Retrieve list of users who have access to the song (requires read permissions)",
+        "parameters": [
+          {
+            "description": "Song ID",
+            "in": "path",
+            "minimum": 1,
+            "name": "song_id",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Collaborators retrieved successfully",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Success"
+                },
+                {
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "collaborators": {
+                          "items": {
+                            "properties": {
+                              "email": {
+                                "description": "User email",
+                                "type": "string"
+                              },
+                              "granted_at": {
+                                "description": "When access was granted",
+                                "format": "date-time",
+                                "type": "string"
+                              },
+                              "permission_level": {
+                                "description": "Permission level",
+                                "type": "string"
+                              },
+                              "user_id": {
+                                "description": "User ID",
+                                "type": "integer"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "owner": {
+                          "properties": {
+                            "email": {
+                              "description": "Owner email",
+                              "type": "string"
+                            },
+                            "user_id": {
+                              "description": "Owner user ID",
+                              "type": "integer"
+                            }
+                          },
+                          "type": "object"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              ]
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Song not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Get list of collaborators for a song",
+        "tags": [
+          "Collaboration"
+        ]
+      }
+    },
     "/songs/{song_id}/download": {
       "get": {
-        "description": "Download a specific song as a ChordPro (.cho) file (only if owned by authenticated user)",
+        "description": "Download a specific song as a ChordPro (.cho) file (accessible if owned, shared, or public)",
         "parameters": [
           {
             "description": "Song ID",
@@ -1650,9 +1764,138 @@
         ]
       }
     },
+    "/songs/{song_id}/permissions": {
+      "put": {
+        "description": "Update permission level for a user on the song (requires admin permissions)",
+        "parameters": [
+          {
+            "description": "Song ID",
+            "in": "path",
+            "minimum": 1,
+            "name": "song_id",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "description": "Permission update details",
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "properties": {
+                "permission_level": {
+                  "description": "New permission level",
+                  "enum": [
+                    "read",
+                    "edit",
+                    "admin"
+                  ],
+                  "example": "admin",
+                  "type": "string"
+                },
+                "user_email": {
+                  "description": "Email of user to update permissions for",
+                  "example": "collaborator@example.com",
+                  "format": "email",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "user_email",
+                "permission_level"
+              ],
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Permissions updated successfully",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Success"
+                },
+                {
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "new_permission": {
+                          "description": "New permission level",
+                          "type": "string"
+                        },
+                        "old_permission": {
+                          "description": "Previous permission level",
+                          "type": "string"
+                        },
+                        "user_email": {
+                          "description": "Email of the user",
+                          "type": "string"
+                        },
+                        "user_id": {
+                          "description": "ID of the user",
+                          "type": "integer"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Invalid input or validation error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "403": {
+            "description": "Insufficient permissions",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Song or user not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Update user permissions for a song",
+        "tags": [
+          "Collaboration"
+        ]
+      }
+    },
     "/songs/{song_id}/sections": {
       "get": {
-        "description": "Retrieve all sections for a specific song (only if owned by authenticated user)",
+        "description": "Retrieve all sections for a specific song (accessible if owned, shared, or public)",
         "parameters": [
           {
             "description": "Song ID",
@@ -1752,7 +1995,7 @@
     },
     "/songs/{song_id}/sections/{section_id}": {
       "get": {
-        "description": "Retrieve a specific section by its ID (only if song is owned by authenticated user)",
+        "description": "Retrieve a specific section by its ID (accessible if song is owned, shared, or public)",
         "parameters": [
           {
             "description": "Song ID",
@@ -1847,6 +2090,201 @@
         "summary": "Get a specific section by ID",
         "tags": [
           "Songs"
+        ]
+      }
+    },
+    "/songs/{song_id}/share": {
+      "post": {
+        "description": "Share a song with specified users and permission levels (requires admin permissions)",
+        "parameters": [
+          {
+            "description": "Song ID",
+            "in": "path",
+            "minimum": 1,
+            "name": "song_id",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "description": "Sharing details",
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "properties": {
+                "permission_level": {
+                  "description": "Permission level to grant",
+                  "enum": [
+                    "read",
+                    "edit",
+                    "admin"
+                  ],
+                  "example": "edit",
+                  "type": "string"
+                },
+                "user_email": {
+                  "description": "Email of user to share with",
+                  "example": "collaborator@example.com",
+                  "format": "email",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "user_email",
+                "permission_level"
+              ],
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Song shared successfully",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Success"
+                },
+                {
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "permission_level": {
+                          "description": "Permission level granted",
+                          "type": "string"
+                        },
+                        "user_email": {
+                          "description": "Email of the user granted access",
+                          "type": "string"
+                        },
+                        "user_id": {
+                          "description": "ID of the user granted access",
+                          "type": "integer"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Invalid input or validation error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "403": {
+            "description": "Insufficient permissions",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Song or user not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Share a song with other users",
+        "tags": [
+          "Collaboration"
+        ]
+      }
+    },
+    "/songs/{song_id}/share/{user_id}": {
+      "delete": {
+        "description": "Remove user's access to the song (requires admin permissions)",
+        "parameters": [
+          {
+            "description": "Song ID",
+            "in": "path",
+            "minimum": 1,
+            "name": "song_id",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "description": "User ID to revoke access from",
+            "in": "path",
+            "minimum": 1,
+            "name": "user_id",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Access revoked successfully",
+            "schema": {
+              "$ref": "#/definitions/Success"
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "403": {
+            "description": "Insufficient permissions",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Song or user not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Revoke user access to a song",
+        "tags": [
+          "Collaboration"
         ]
       }
     }
