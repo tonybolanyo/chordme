@@ -43,6 +43,13 @@ jobs:
           bundler-cache: true
           working-directory: ./docs
 
+      - name: Validate documentation format
+        run: |
+          echo "::group::Documentation Format Validation"
+          chmod +x ./scripts/validate-docs.sh
+          ./scripts/validate-docs.sh
+          echo "::endgroup::"
+
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v5
@@ -86,10 +93,18 @@ jobs:
             bundle install
           fi
           
-          # Build with Jekyll
-          bundle exec jekyll build \
+          # Build with Jekyll with detailed error reporting
+          echo "::group::Jekyll Build"
+          if bundle exec jekyll build \
             --baseurl "${{ steps.pages.outputs.base_path }}" \
-            --verbose
+            --verbose; then
+            echo "✅ Jekyll build completed successfully"
+          else
+            echo "❌ Jekyll build failed"
+            echo "::error title=Jekyll Build Failed::Please check the Jekyll configuration and markdown files"
+            exit 1
+          fi
+          echo "::endgroup::"
         env:
           JEKYLL_ENV: production
 

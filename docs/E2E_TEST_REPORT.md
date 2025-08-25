@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: ChordMe E2E Test Suite Summary Report
+---
+
 # ChordMe E2E Test Suite Summary Report
 
 **Generated**: $(date)  

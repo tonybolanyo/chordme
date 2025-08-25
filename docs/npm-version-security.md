@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: npm version Command Security Documentation
+---
+
 # npm version Command Security Documentation
 
 ## Issue #92: Proper Quoting of VERSION Variable

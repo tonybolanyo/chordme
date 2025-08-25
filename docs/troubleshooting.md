@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: ChordMe Troubleshooting Guide
+---
+
 # ChordMe Troubleshooting Guide
 
 This guide helps you resolve common issues when using or developing ChordMe.

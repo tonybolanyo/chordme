@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Song Sharing UI Implementation Guide
+---
+
 # Song Sharing UI Implementation Guide
 
 This document provides a comprehensive guide to the song sharing UI features implemented in ChordMe.

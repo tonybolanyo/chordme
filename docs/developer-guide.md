@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: ChordMe Developer Guide
+---
+
 # ChordMe Developer Guide
 
 This guide is for developers who want to contribute to ChordMe or understand its technical architecture.

@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: ChordMe End-to-End Test Suite Documentation
+---
+
 # ChordMe End-to-End Test Suite Documentation
 
 ## Overview

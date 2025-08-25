@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: ChordMe Documentation Site
+---
+
 # ChordMe Documentation Site
 
 This directory contains the comprehensive user manual for ChordMe, automatically generated and deployed to GitHub Pages.

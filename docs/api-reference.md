@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: ChordMe API Reference
+---
+
 # ChordMe API Reference
 
 This document provides a complete reference for the ChordMe REST API. The API provides programmatic access to all ChordMe functionality, including user authentication, song management, and ChordPro validation.

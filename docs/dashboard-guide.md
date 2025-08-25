@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Dashboard Layout and Sharing Features
+---
+
 # Dashboard Layout and Sharing Features
 
 This document describes the enhanced dashboard layout that separates songs into distinct sections based on ownership and sharing permissions.
