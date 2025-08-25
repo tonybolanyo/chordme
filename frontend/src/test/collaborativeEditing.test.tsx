@@ -366,17 +366,17 @@ describe('Collaborative Editing Integration', () => {
       };
 
       // Apply operations with transformation
-      const transformedUser2Op = OperationalTransform.transform(
-        user1Operation,
-        user2Operation
+      const transformedUser1Op = OperationalTransform.transform(
+        user2Operation,
+        user1Operation
       );
 
-      expect(transformedUser2Op.position).toBe(7); // Adjusted for user1's insertion
+      expect(transformedUser1Op.position).toBe(14); // Original 7 + user2's insertion length 7
 
       // Verify both operations can be applied
       let content = 'Initial content';
       content = OperationalTransform.applyOperation(content, user2Operation); // User 2's op first
-      content = OperationalTransform.applyOperation(content, user1Operation); // Then user 1's transformed op
+      content = OperationalTransform.applyOperation(content, transformedUser1Op); // Then user 1's transformed op
 
       expect(content).toBe('Prefix Initial updated content');
     });
@@ -414,6 +414,9 @@ describe('Collaborative Editing Integration', () => {
         }
       );
 
+      // Actually register a callback to trigger the mock
+      collaborationService.onNetworkStatusChange(mockNetworkCallback);
+
       // Trigger network offline event
       networkCallbacks.forEach((callback) => {
         callback({
@@ -424,6 +427,11 @@ describe('Collaborative Editing Integration', () => {
       });
 
       expect(networkCallbacks.length).toBeGreaterThan(0);
+      expect(mockNetworkCallback).toHaveBeenCalledWith({
+        online: false,
+        connectionQuality: 'offline',
+        lastSync: expect.any(String),
+      });
     });
 
     it('should queue operations during network outage', async () => {
@@ -474,6 +482,7 @@ describe('Collaborative Editing Integration', () => {
 
   describe('Permission Change Scenarios', () => {
     it('should handle permission changes during active collaboration', async () => {
+      const mockPermissionCallback = vi.fn();
       const mockPermissionChange = {
         userId: 'user1',
         oldPermission: 'edit',
@@ -495,12 +504,16 @@ describe('Collaborative Editing Integration', () => {
         }
       );
 
+      // Actually register a callback to trigger the mock
+      collaborationService.onPermissionChange(mockPermissionCallback);
+
       // Trigger permission change
       permissionCallbacks.forEach((callback) => {
         callback(mockPermissionChange);
       });
 
       expect(permissionCallbacks.length).toBeGreaterThan(0);
+      expect(mockPermissionCallback).toHaveBeenCalledWith(mockPermissionChange);
     });
   });
 });

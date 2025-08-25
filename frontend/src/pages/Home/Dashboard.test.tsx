@@ -260,16 +260,17 @@ describe('Dashboard - Song Separation', () => {
 
     render(<Home />);
 
-    // Should show sort control for My Songs section
-    expect(screen.getByText('Sort by:')).toBeInTheDocument();
+    // Should show sort control for My Songs section  
+    const sortByElements = screen.getAllByText('Sort by:');
+    expect(sortByElements).toHaveLength(2); // One for My Songs, one for Shared
 
     // Should show filter and sort controls for Shared section (when there are shared songs)
     // Since our shared song should appear in the shared section, it should show controls
     expect(screen.getByText('Filter by permission:')).toBeInTheDocument();
 
-    // Check that control options exist
-    expect(screen.getByText('Last Modified')).toBeInTheDocument();
-    expect(screen.getByText('Title')).toBeInTheDocument();
-    expect(screen.getByText('Created Date')).toBeInTheDocument();
+    // Check that control options exist (each appears twice - once for My Songs, once for Shared)
+    expect(screen.getAllByText('Last Modified')).toHaveLength(2);
+    expect(screen.getAllByText('Title')).toHaveLength(2);
+    expect(screen.getAllByText('Created Date')).toHaveLength(2);
   });
 });
