@@ -35,4 +35,4 @@ Authorization: Bearer <your-jwt-token>
 
 Get a token by registering and logging in through the `/auth/register` and `/auth/login` endpoints.
 
-## Generated: 2025-08-25 15:17:08 UTC
+## Generated: 2025-08-25 16:28:03 UTC

@@ -1764,6 +1764,122 @@
         ]
       }
     },
+    "/songs/{song_id}/export/pdf": {
+      "get": {
+        "description": "Export a specific song as a PDF document with proper ChordPro formatting (accessible if owned, shared, or public)",
+        "parameters": [
+          {
+            "description": "Song ID",
+            "in": "path",
+            "minimum": 1,
+            "name": "song_id",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "default": "a4",
+            "description": "Paper size for PDF",
+            "enum": [
+              "a4",
+              "letter",
+              "legal"
+            ],
+            "in": "query",
+            "name": "paper_size",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "default": "portrait",
+            "description": "Page orientation",
+            "enum": [
+              "portrait",
+              "landscape"
+            ],
+            "in": "query",
+            "name": "orientation",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "description": "Override song title",
+            "in": "query",
+            "name": "title",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "description": "Override song artist",
+            "in": "query",
+            "name": "artist",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "produces": [
+          "application/pdf"
+        ],
+        "responses": {
+          "200": {
+            "description": "PDF file generated successfully",
+            "headers": {
+              "Content-Disposition": {
+                "description": "attachment; filename=\"songname.pdf\"",
+                "type": "string"
+              },
+              "Content-Type": {
+                "description": "application/pdf",
+                "type": "string"
+              }
+            },
+            "schema": {
+              "description": "PDF file content",
+              "format": "binary",
+              "type": "string"
+            }
+          },
+          "400": {
+            "description": "Invalid parameters",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Song not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Export song as PDF document",
+        "tags": [
+          "Songs"
+        ]
+      }
+    },
     "/songs/{song_id}/permissions": {
       "put": {
         "description": "Update permission level for a user on the song (requires admin permissions)",
