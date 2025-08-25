@@ -131,10 +131,22 @@ const Login: React.FC = () => {
         </p>
 
         {successMessage && (
-          <div className="success-message">{successMessage}</div>
+          <div 
+            className="success-message" 
+            role="status" 
+            aria-live="polite"
+            aria-label="Success message"
+          >
+            {successMessage}
+          </div>
         )}
 
-        <form onSubmit={handleSubmit} className="login-form">
+        <form 
+          onSubmit={handleSubmit} 
+          className="login-form"
+          noValidate
+          aria-label="ChordMe account login form"
+        >
           <h3>Sign in with your ChordMe account</h3>
           <div className="form-group">
             <label htmlFor="email">Email</label>
@@ -148,8 +160,20 @@ const Login: React.FC = () => {
               placeholder="Enter your email"
               disabled={isLoading}
               autoComplete="email"
+              aria-invalid={errors.email ? 'true' : 'false'}
+              aria-describedby={errors.email ? 'email-error' : undefined}
+              required
             />
-            {errors.email && <span className="error-text">{errors.email}</span>}
+            {errors.email && (
+              <span 
+                className="error-text" 
+                id="email-error"
+                role="alert"
+                aria-live="polite"
+              >
+                {errors.email}
+              </span>
+            )}
           </div>
 
           <div className="form-group">
@@ -164,23 +188,51 @@ const Login: React.FC = () => {
               placeholder="Enter your password"
               disabled={isLoading}
               autoComplete="current-password"
+              aria-invalid={errors.password ? 'true' : 'false'}
+              aria-describedby={errors.password ? 'password-error' : undefined}
+              required
             />
             {errors.password && (
-              <span className="error-text">{errors.password}</span>
+              <span 
+                className="error-text" 
+                id="password-error"
+                role="alert"
+                aria-live="polite"
+              >
+                {errors.password}
+              </span>
             )}
           </div>
 
           {errors.submit && (
-            <div className="error-message">{errors.submit}</div>
+            <div 
+              className="error-message" 
+              role="alert"
+              aria-live="assertive"
+              aria-label="Form submission error"
+            >
+              {errors.submit}
+            </div>
           )}
 
           <button
             type="submit"
             className="btn btn-primary"
             disabled={isLoading}
+            aria-describedby={isLoading ? 'loading-status' : undefined}
           >
             {isLoading ? 'Signing in...' : 'Sign In'}
           </button>
+          
+          {isLoading && (
+            <span 
+              id="loading-status" 
+              className="sr-only"
+              aria-live="polite"
+            >
+              Please wait, signing you in...
+            </span>
+          )}
         </form>
 
         {/* Firebase Authentication Options */}
