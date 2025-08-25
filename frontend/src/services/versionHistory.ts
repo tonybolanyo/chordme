@@ -60,7 +60,10 @@ export class VersionHistoryService {
   /**
    * Get a specific version by ID
    */
-  async getVersion(songId: string | number, versionId: string | number): Promise<SongVersion> {
+  async getVersion(
+    songId: string | number,
+    versionId: string | number
+  ): Promise<SongVersion> {
     const response = await apiService.request<SingleVersionResponse>({
       endpoint: `/songs/${songId}/versions/${versionId}`,
       method: 'GET',
@@ -76,7 +79,10 @@ export class VersionHistoryService {
   /**
    * Restore a song to a specific version
    */
-  async restoreVersion(songId: string | number, versionId: string | number): Promise<void> {
+  async restoreVersion(
+    songId: string | number,
+    versionId: string | number
+  ): Promise<void> {
     const response = await apiService.request<RestoreVersionResponse>({
       endpoint: `/songs/${songId}/restore/${versionId}`,
       method: 'POST',
@@ -98,7 +104,7 @@ export class VersionHistoryService {
   } {
     const date = new Date(version.created_at);
     const relativeTime = this.formatRelativeTime(date);
-    
+
     return {
       title: `Version ${version.version_number}`,
       subtitle: version.title,

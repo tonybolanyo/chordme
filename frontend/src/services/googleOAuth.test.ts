@@ -433,8 +433,9 @@ describe('GoogleOAuth2Service', () => {
         refresh_token: 'test-refresh-token',
         expires_in: 3600,
         token_type: 'Bearer',
-        scope: 'openid email profile https://www.googleapis.com/auth/drive.file',
-        id_token: 'test-id-token'
+        scope:
+          'openid email profile https://www.googleapis.com/auth/drive.file',
+        id_token: 'test-id-token',
       };
 
       sessionStorage.setItem('googleCodeVerifier', 'test-verifier');
@@ -446,14 +447,16 @@ describe('GoogleOAuth2Service', () => {
         })
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({
-            id: 'test-user-id',
-            email: 'test@example.com',
-            name: 'Test User'
-          }),
+          json: () =>
+            Promise.resolve({
+              id: 'test-user-id',
+              email: 'test@example.com',
+              name: 'Test User',
+            }),
         });
 
-      const result = await googleOAuth2Service.handleAuthCallback('test-auth-code');
+      const result =
+        await googleOAuth2Service.handleAuthCallback('test-auth-code');
 
       expect(result.tokens.scope).toContain('drive.file');
       expect(localStorage.getItem('googleTokens')).toBeTruthy();
@@ -612,10 +615,11 @@ describe('GoogleOAuth2Service', () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 400,
-        json: () => Promise.resolve({
-          error: 'invalid_grant',
-          error_description: 'Bad Request'
-        }),
+        json: () =>
+          Promise.resolve({
+            error: 'invalid_grant',
+            error_description: 'Bad Request',
+          }),
       });
 
       await expect(googleOAuth2Service.refreshTokens()).rejects.toThrow(
@@ -633,10 +637,11 @@ describe('GoogleOAuth2Service', () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 400,
-        json: () => Promise.resolve({
-          error: 'invalid_request',
-          error_description: 'Invalid authorization code'
-        }),
+        json: () =>
+          Promise.resolve({
+            error: 'invalid_request',
+            error_description: 'Invalid authorization code',
+          }),
       });
 
       await expect(
@@ -647,9 +652,9 @@ describe('GoogleOAuth2Service', () => {
     it('should handle OAuth2 state parameter validation', async () => {
       // Mock window.location with state parameter
       Object.defineProperty(window, 'location', {
-        value: { 
+        value: {
           href: 'http://localhost:5173/callback?code=test&state=malicious-state',
-          search: '?code=test&state=malicious-state'
+          search: '?code=test&state=malicious-state',
         },
         writable: true,
       });
@@ -748,12 +753,13 @@ describe('GoogleOAuth2Service', () => {
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({
-          access_token: 'new-token',
-          expires_in: 3600,
-          token_type: 'Bearer',
-          scope: 'openid email profile',
-        }),
+        json: () =>
+          Promise.resolve({
+            access_token: 'new-token',
+            expires_in: 3600,
+            token_type: 'Bearer',
+            scope: 'openid email profile',
+          }),
       });
 
       // Use getUserInfo which internally uses makeAuthenticatedRequest
@@ -785,25 +791,27 @@ describe('GoogleOAuth2Service', () => {
         })
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({
-            access_token: 'refreshed-token',
-            expires_in: 3600,
-            token_type: 'Bearer',
-            scope: 'openid email profile',
-          }),
+          json: () =>
+            Promise.resolve({
+              access_token: 'refreshed-token',
+              expires_in: 3600,
+              token_type: 'Bearer',
+              scope: 'openid email profile',
+            }),
         })
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({ 
-            id: 'test-user',
-            email: 'test@example.com',
-            name: 'Test User'
-          }),
+          json: () =>
+            Promise.resolve({
+              id: 'test-user',
+              email: 'test@example.com',
+              name: 'Test User',
+            }),
         });
 
       // Use getUserInfo which internally uses makeAuthenticatedRequest
       const userInfo = await googleOAuth2Service.getUserInfo();
-      
+
       expect(userInfo.email).toBe('test@example.com');
       expect(mockFetch).toHaveBeenCalledTimes(3); // Original call, refresh, retry
     });

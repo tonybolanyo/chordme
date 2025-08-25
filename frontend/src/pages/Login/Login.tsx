@@ -3,7 +3,10 @@ import { useAuth } from '../../contexts/AuthContext';
 import { apiService } from '../../services/api';
 import { validateEmail, validateRequired } from '../../utils';
 import { GoogleAuthButton } from '../../components/GoogleAuth';
-import { FirebaseAuthButtons, FirebaseEmailForm } from '../../components/FirebaseAuth';
+import {
+  FirebaseAuthButtons,
+  FirebaseEmailForm,
+} from '../../components/FirebaseAuth';
 import type { LoginRequest, GoogleUserInfo } from '../../types';
 import './Login.css';
 
@@ -187,7 +190,7 @@ const Login: React.FC = () => {
           onSuccess={handleFirebaseSuccess}
           onError={handleFirebaseError}
         />
-        
+
         <FirebaseEmailForm
           mode="login"
           disabled={isLoading}

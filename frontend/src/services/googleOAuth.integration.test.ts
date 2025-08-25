@@ -55,7 +55,7 @@ describe('Google OAuth2 Integration Tests', () => {
     vi.clearAllMocks();
     mockLocation.href = '';
     mockLocation.search = '';
-    
+
     // Create new service instance for each test
     service = new GoogleOAuth2Service();
   });
@@ -69,8 +69,10 @@ describe('Google OAuth2 Integration Tests', () => {
     it('should handle complete successful authentication flow', async () => {
       // Step 1: Start authentication flow
       await service.startAuthFlow();
-      
-      expect(mockLocation.href).toMatch(/^https:\/\/accounts\.google\.com\/o\/oauth2\/v2\/auth/);
+
+      expect(mockLocation.href).toMatch(
+        /^https:\/\/accounts\.google\.com\/o\/oauth2\/v2\/auth/
+      );
       expect(mockLocation.href).toContain('client_id=test-client-id');
       expect(mockLocation.href).toContain('code_challenge=');
       expect(mockLocation.href).toContain('code_challenge_method=S256');
@@ -82,7 +84,8 @@ describe('Google OAuth2 Integration Tests', () => {
         refresh_token: 'test-refresh-token',
         expires_in: 3600,
         token_type: 'Bearer',
-        scope: 'openid email profile https://www.googleapis.com/auth/drive.file',
+        scope:
+          'openid email profile https://www.googleapis.com/auth/drive.file',
       };
 
       const mockUserInfo: GoogleUserInfo = {
@@ -124,15 +127,17 @@ describe('Google OAuth2 Integration Tests', () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 400,
-        json: () => Promise.resolve({
-          error: 'invalid_grant',
-          error_description: 'The provided authorization grant is invalid, expired, revoked, does not match the redirection URI used in the authorization request, or was issued to another client.',
-        }),
+        json: () =>
+          Promise.resolve({
+            error: 'invalid_grant',
+            error_description:
+              'The provided authorization grant is invalid, expired, revoked, does not match the redirection URI used in the authorization request, or was issued to another client.',
+          }),
       });
 
-      await expect(
-        service.handleAuthCallback('invalid-code')
-      ).rejects.toThrow('Authentication failed');
+      await expect(service.handleAuthCallback('invalid-code')).rejects.toThrow(
+        'Authentication failed'
+      );
 
       expect(service.isAuthenticated()).toBe(false);
       expect(sessionStorage.getItem('googleCodeVerifier')).toBeNull();
@@ -141,25 +146,26 @@ describe('Google OAuth2 Integration Tests', () => {
     it('should handle user rejection during consent flow', async () => {
       // Start flow first
       await service.startAuthFlow();
-      
+
       // Simulate user clicking "Deny" on consent screen
       // This would typically result in an error parameter in the callback URL
-      mockLocation.search = '?error=access_denied&error_description=The%20user%20denied%20the%20request';
+      mockLocation.search =
+        '?error=access_denied&error_description=The%20user%20denied%20the%20request';
 
-      await expect(
-        service.handleAuthCallback('')
-      ).rejects.toThrow('Code verifier not found');
+      await expect(service.handleAuthCallback('')).rejects.toThrow(
+        'Code verifier not found'
+      );
     });
 
     it('should handle network interruptions during token exchange', async () => {
       await service.startAuthFlow();
-      
+
       // Simulate network error during token exchange
       mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
-      await expect(
-        service.handleAuthCallback('test-code')
-      ).rejects.toThrow('Authentication failed');
+      await expect(service.handleAuthCallback('test-code')).rejects.toThrow(
+        'Authentication failed'
+      );
 
       expect(service.isAuthenticated()).toBe(false);
     });
@@ -186,9 +192,9 @@ describe('Google OAuth2 Integration Tests', () => {
           status: 403,
         });
 
-      await expect(
-        service.handleAuthCallback('test-code')
-      ).rejects.toThrow('Authentication failed');
+      await expect(service.handleAuthCallback('test-code')).rejects.toThrow(
+        'Authentication failed'
+      );
     });
   });
 
@@ -245,10 +251,11 @@ describe('Google OAuth2 Integration Tests', () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 400,
-        json: () => Promise.resolve({
-          error: 'invalid_grant',
-          error_description: 'Token has been expired or revoked.',
-        }),
+        json: () =>
+          Promise.resolve({
+            error: 'invalid_grant',
+            error_description: 'Token has been expired or revoked.',
+          }),
       });
 
       await expect(service.refreshTokens()).rejects.toThrow(
@@ -271,7 +278,10 @@ describe('Google OAuth2 Integration Tests', () => {
       };
 
       localStorage.setItem('googleTokens', JSON.stringify(tokens));
-      localStorage.setItem('googleUserInfo', JSON.stringify({ id: 'test-user' }));
+      localStorage.setItem(
+        'googleUserInfo',
+        JSON.stringify({ id: 'test-user' })
+      );
 
       // Mock successful token revocation
       mockFetch.mockResolvedValueOnce({
@@ -361,16 +371,16 @@ describe('Google OAuth2 Integration Tests', () => {
         }),
       });
 
-      await expect(
-        service.handleAuthCallback('test-code')
-      ).rejects.toThrow('Authentication failed');
+      await expect(service.handleAuthCallback('test-code')).rejects.toThrow(
+        'Authentication failed'
+      );
     });
   });
 
   describe('OAuth2 Security Validations', () => {
     it('should validate PKCE code challenge and verifier', async () => {
       await service.startAuthFlow();
-      
+
       const codeVerifier = sessionStorage.getItem('googleCodeVerifier');
       expect(codeVerifier).toBeTruthy();
       expect(codeVerifier!.length).toBeGreaterThan(43); // Min length for PKCE
@@ -382,9 +392,9 @@ describe('Google OAuth2 Integration Tests', () => {
 
     it('should reject authentication without proper PKCE verification', async () => {
       // Don't start flow, directly try callback
-      await expect(
-        service.handleAuthCallback('test-code')
-      ).rejects.toThrow('Code verifier not found');
+      await expect(service.handleAuthCallback('test-code')).rejects.toThrow(
+        'Code verifier not found'
+      );
     });
 
     it('should handle scope validation in token response', async () => {

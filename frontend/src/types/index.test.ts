@@ -5,7 +5,7 @@ describe('Type Definitions', () => {
   it('exports all required types', () => {
     // Verify that the main types are exported correctly
     expect(typeof types).toBe('object');
-    
+
     // Check that we can access type properties via typeof checks
     const song: types.Song = {
       id: 'test-id',
@@ -15,7 +15,7 @@ describe('Type Definitions', () => {
       created_at: '2023-01-01T00:00:00Z',
       updated_at: '2023-01-01T00:00:00Z',
     };
-    
+
     expect(song.id).toBe('test-id');
     expect(song.title).toBe('Test Song');
   });
@@ -27,7 +27,7 @@ describe('Type Definitions', () => {
       created_at: '2023-01-01T00:00:00Z',
       updated_at: '2023-01-01T00:00:00Z',
     };
-    
+
     expect(user.id).toBe('user-1');
     expect(user.email).toBe('test@example.com');
   });
@@ -38,7 +38,7 @@ describe('Type Definitions', () => {
       fingering: '0-3-2-0-1-0',
       diagram: 'chord-diagram-data',
     };
-    
+
     expect(chord.name).toBe('C');
     expect(chord.fingering).toBe('0-3-2-0-1-0');
   });
@@ -48,12 +48,12 @@ describe('Type Definitions', () => {
       email: 'test@example.com',
       password: 'password123',
     };
-    
+
     const registerRequest: types.RegisterRequest = {
       email: 'test@example.com',
       password: 'password123',
     };
-    
+
     expect(loginRequest.email).toBe('test@example.com');
     expect(registerRequest.email).toBe('test@example.com');
   });
@@ -64,7 +64,7 @@ describe('Type Definitions', () => {
       redirectUri: 'http://localhost:3000/callback',
       scopes: ['drive.readonly'],
     };
-    
+
     const googleTokens: types.GoogleTokens = {
       access_token: 'access-token',
       refresh_token: 'refresh-token',
@@ -73,7 +73,7 @@ describe('Type Definitions', () => {
       token_type: 'Bearer',
       scope: 'drive.readonly',
     };
-    
+
     expect(googleConfig.clientId).toBe('test-client-id');
     expect(googleTokens.access_token).toBe('access-token');
   });
@@ -88,13 +88,13 @@ describe('Type Definitions', () => {
       webViewLink: 'https://drive.google.com/file/d/file-id/view',
       parents: ['parent-folder-id'],
     };
-    
+
     const driveFileList: types.DriveFileList = {
       files: [driveFile],
       nextPageToken: 'next-page-token',
       incompleteSearch: false,
     };
-    
+
     expect(driveFile.id).toBe('file-id');
     expect(driveFileList.files).toHaveLength(1);
   });

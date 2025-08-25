@@ -63,7 +63,7 @@ describe('FirebaseAuthService', () => {
         displayName: null,
         photoURL: null,
       };
-      
+
       vi.mocked(createUserWithEmailAndPassword).mockResolvedValue({
         user: mockUser,
       });
@@ -86,7 +86,7 @@ describe('FirebaseAuthService', () => {
         displayName: 'Test User',
         photoURL: null,
       };
-      
+
       vi.mocked(signInWithEmailAndPassword).mockResolvedValue({
         user: mockUser,
       });
@@ -103,14 +103,17 @@ describe('FirebaseAuthService', () => {
 
     it('should handle authentication errors', async () => {
       const { signInWithEmailAndPassword } = await import('firebase/auth');
-      
+
       vi.mocked(signInWithEmailAndPassword).mockRejectedValue({
         code: 'auth/user-not-found',
         message: 'User not found',
       });
 
       await expect(
-        firebaseAuthService.signInWithEmailAndPassword('test@example.com', 'wrong-password')
+        firebaseAuthService.signInWithEmailAndPassword(
+          'test@example.com',
+          'wrong-password'
+        )
       ).rejects.toThrow('No account found with this email address');
     });
   });
@@ -134,7 +137,7 @@ describe('FirebaseAuthService', () => {
           lastSignInTime: '2023-01-02',
         },
       };
-      
+
       vi.mocked(signInWithPopup).mockResolvedValue({
         user: mockUser,
       });
@@ -149,7 +152,7 @@ describe('FirebaseAuthService', () => {
 
     it('should handle Google sign-in errors', async () => {
       const { signInWithPopup } = await import('firebase/auth');
-      
+
       vi.mocked(signInWithPopup).mockRejectedValue({
         code: 'auth/popup-closed-by-user',
         message: 'Popup closed',
@@ -165,7 +168,7 @@ describe('FirebaseAuthService', () => {
     it('should sign out successfully', async () => {
       const { firebaseService } = await import('./firebase');
       const { signOut } = await import('firebase/auth');
-      
+
       vi.mocked(firebaseService.isInitialized).mockReturnValue(true);
       vi.mocked(firebaseService.getAuth).mockReturnValue({} as any);
       vi.mocked(signOut).mockResolvedValue(undefined);
@@ -175,7 +178,7 @@ describe('FirebaseAuthService', () => {
 
     it('should throw error when Firebase is not available', async () => {
       const { firebaseService } = await import('./firebase');
-      
+
       vi.mocked(firebaseService.isInitialized).mockReturnValue(false);
 
       await expect(firebaseAuthService.signOut()).rejects.toThrow(
@@ -193,7 +196,7 @@ describe('FirebaseAuthService', () => {
         displayName: 'Current User',
         photoURL: null,
       };
-      
+
       vi.mocked(firebaseService.isInitialized).mockReturnValue(true);
       vi.mocked(firebaseService.getAuth).mockReturnValue({
         currentUser: mockUser,
@@ -207,7 +210,7 @@ describe('FirebaseAuthService', () => {
 
     it('should return null when no user is signed in', async () => {
       const { firebaseService } = await import('./firebase');
-      
+
       vi.mocked(firebaseService.isInitialized).mockReturnValue(true);
       vi.mocked(firebaseService.getAuth).mockReturnValue({
         currentUser: null,
@@ -224,7 +227,7 @@ describe('FirebaseAuthService', () => {
       const { firebaseService } = await import('./firebase');
       const { onAuthStateChanged } = await import('firebase/auth');
       const mockUnsubscribe = vi.fn();
-      
+
       vi.mocked(firebaseService.isInitialized).mockReturnValue(true);
       vi.mocked(firebaseService.getAuth).mockReturnValue({} as any);
       vi.mocked(onAuthStateChanged).mockReturnValue(mockUnsubscribe);
@@ -238,7 +241,7 @@ describe('FirebaseAuthService', () => {
 
     it('should return no-op function when Firebase is not available', async () => {
       const { firebaseService } = await import('./firebase');
-      
+
       vi.mocked(firebaseService.isInitialized).mockReturnValue(false);
 
       const callback = vi.fn();

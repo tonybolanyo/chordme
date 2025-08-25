@@ -59,9 +59,15 @@ vi.mock('../../components', () => ({
   ChordProViewer: ({ content }: { content: string }) => (
     <div data-testid="chordpro-viewer">{content}</div>
   ),
-  GoogleDriveFileList: () => <div data-testid="google-drive-file-list">Google Drive Files</div>,
-  SongSharingModal: () => <div data-testid="song-sharing-modal">Sharing Modal</div>,
-  NotificationContainer: () => <div data-testid="notification-container">Notifications</div>,
+  GoogleDriveFileList: () => (
+    <div data-testid="google-drive-file-list">Google Drive Files</div>
+  ),
+  SongSharingModal: () => (
+    <div data-testid="song-sharing-modal">Sharing Modal</div>
+  ),
+  NotificationContainer: () => (
+    <div data-testid="notification-container">Notifications</div>
+  ),
   HistoryPanel: () => <div data-testid="history-panel">History Panel</div>,
   UndoRedoControls: ({
     canUndo,
@@ -141,10 +147,10 @@ describe('Home Component - Real-time Editing', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     // Store original localStorage
     originalLocalStorage = window.localStorage;
-    
+
     // Mock localStorage for getUserPermission to work
     const mockUser = { id: '1', email: 'test@example.com' };
     Object.defineProperty(window, 'localStorage', {
@@ -161,7 +167,7 @@ describe('Home Component - Real-time Editing', () => {
       },
       writable: true,
     });
-    
+
     // Reset hook mocks to default values
     mockUseRealtimeSongs.mockReturnValue({
       songs: [mockSong],
@@ -202,7 +208,7 @@ describe('Home Component - Real-time Editing', () => {
   describe('Real-time Status Indicators', () => {
     it('shows real-time editing indicator when editing a song with real-time enabled', async () => {
       const user = userEvent.setup();
-      
+
       // Mock real-time for the specific song being edited
       mockUseRealtimeSong.mockReturnValue({
         song: mockSong,
@@ -213,7 +219,7 @@ describe('Home Component - Real-time Editing', () => {
       });
 
       render(<Home />);
-      
+
       // Wait for the song to load
       await waitFor(() => {
         expect(screen.getByText('Test Song')).toBeInTheDocument();
@@ -225,13 +231,15 @@ describe('Home Component - Real-time Editing', () => {
 
       // Should show real-time editing indicator
       await waitFor(() => {
-        expect(screen.getByText(/Real-time editing enabled/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/Real-time editing enabled/i)
+        ).toBeInTheDocument();
       });
     });
 
     it('does not show real-time indicator when real-time is disabled', async () => {
       const user = userEvent.setup();
-      
+
       // Mock real-time as disabled
       mockUseRealtimeSong.mockReturnValue({
         song: null,
@@ -242,7 +250,7 @@ describe('Home Component - Real-time Editing', () => {
       });
 
       render(<Home />);
-      
+
       await waitFor(() => {
         expect(screen.getByText('Test Song')).toBeInTheDocument();
       });
@@ -251,16 +259,18 @@ describe('Home Component - Real-time Editing', () => {
       await user.click(editButton);
 
       // Should not show real-time editing indicator
-      expect(screen.queryByText(/Real-time editing enabled/i)).not.toBeInTheDocument();
+      expect(
+        screen.queryByText(/Real-time editing enabled/i)
+      ).not.toBeInTheDocument();
     });
   });
 
   describe('Editing Form Structure', () => {
     it('shows edit form with real-time capabilities', async () => {
       const user = userEvent.setup();
-      
+
       render(<Home />);
-      
+
       await waitFor(() => {
         expect(screen.getByText('Test Song')).toBeInTheDocument();
       });
@@ -278,9 +288,9 @@ describe('Home Component - Real-time Editing', () => {
 
     it('calls useRealtimeSong hook with song ID when editing', async () => {
       const user = userEvent.setup();
-      
+
       render(<Home />);
-      
+
       await waitFor(() => {
         expect(screen.getByText('Test Song')).toBeInTheDocument();
       });

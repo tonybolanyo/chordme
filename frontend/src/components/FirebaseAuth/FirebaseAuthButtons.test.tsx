@@ -34,11 +34,11 @@ describe('FirebaseAuthButtons Component', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     // Get the mocked services and set default returns
     const { firebaseAuthService } = require('../../services/firebaseAuth');
     vi.mocked(firebaseAuthService.isAvailable).mockReturnValue(true);
-    
+
     // Mock window.location.hash
     Object.defineProperty(window, 'location', {
       value: { hash: '#login' },
@@ -49,30 +49,32 @@ describe('FirebaseAuthButtons Component', () => {
   describe('Component Rendering', () => {
     it('should render Google sign-in button when Firebase is available', () => {
       render(<FirebaseAuthButtons {...defaultProps} />);
-      
-      const button = screen.getByRole('button', { name: /continue with google/i });
+
+      const button = screen.getByRole('button', {
+        name: /continue with google/i,
+      });
       expect(button).toBeInTheDocument();
       expect(button).not.toBeDisabled();
     });
 
     it('should not render anything when Firebase is not available', () => {
       mockIsAvailable.mockReturnValue(false);
-      
+
       const { container } = render(<FirebaseAuthButtons {...defaultProps} />);
-      
+
       expect(container.firstChild).toBeNull();
     });
 
     it('should show Google logo in the button', () => {
       render(<FirebaseAuthButtons {...defaultProps} />);
-      
+
       const svg = screen.getByRole('img', { hidden: true });
       expect(svg).toBeInTheDocument();
     });
 
     it('should disable button when disabled prop is true', () => {
       render(<FirebaseAuthButtons {...defaultProps} disabled={true} />);
-      
+
       const button = screen.getByRole('button');
       expect(button).toBeDisabled();
     });
@@ -93,7 +95,7 @@ describe('FirebaseAuthButtons Component', () => {
       });
 
       render(<FirebaseAuthButtons {...defaultProps} />);
-      
+
       const button = screen.getByRole('button');
       fireEvent.click(button);
 
@@ -128,7 +130,7 @@ describe('FirebaseAuthButtons Component', () => {
       });
 
       render(<FirebaseAuthButtons {...defaultProps} />);
-      
+
       const button = screen.getByRole('button');
       fireEvent.click(button);
 
@@ -144,12 +146,14 @@ describe('FirebaseAuthButtons Component', () => {
       mockSignInWithGoogle.mockRejectedValue(error);
 
       render(<FirebaseAuthButtons {...defaultProps} />);
-      
+
       const button = screen.getByRole('button');
       fireEvent.click(button);
 
       await waitFor(() => {
-        expect(defaultProps.onError).toHaveBeenCalledWith('Google sign-in failed');
+        expect(defaultProps.onError).toHaveBeenCalledWith(
+          'Google sign-in failed'
+        );
       });
 
       // Button should not be in loading state after error
@@ -157,14 +161,14 @@ describe('FirebaseAuthButtons Component', () => {
     });
 
     it('should handle popup blocked error', async () => {
-      const error = { 
+      const error = {
         code: 'auth/popup-blocked',
-        message: 'Popup blocked' 
+        message: 'Popup blocked',
       };
       mockSignInWithGoogle.mockRejectedValue(error);
 
       render(<FirebaseAuthButtons {...defaultProps} />);
-      
+
       const button = screen.getByRole('button');
       fireEvent.click(button);
 
@@ -176,14 +180,14 @@ describe('FirebaseAuthButtons Component', () => {
     });
 
     it('should prevent multiple concurrent sign-in attempts', async () => {
-      mockSignInWithGoogle.mockImplementation(() => 
-        new Promise(resolve => setTimeout(resolve, 1000))
+      mockSignInWithGoogle.mockImplementation(
+        () => new Promise((resolve) => setTimeout(resolve, 1000))
       );
 
       render(<FirebaseAuthButtons {...defaultProps} />);
-      
+
       const button = screen.getByRole('button');
-      
+
       // Click multiple times rapidly
       fireEvent.click(button);
       fireEvent.click(button);
@@ -200,7 +204,7 @@ describe('FirebaseAuthButtons Component', () => {
       mockIsAvailable.mockReturnValue(false);
 
       render(<FirebaseAuthButtons {...defaultProps} />);
-      
+
       const button = screen.getByRole('button');
       fireEvent.click(button);
 
@@ -227,7 +231,7 @@ describe('FirebaseAuthButtons Component', () => {
       });
 
       render(<FirebaseAuthButtons {...defaultProps} />);
-      
+
       const button = screen.getByRole('button');
       fireEvent.click(button);
 
@@ -243,12 +247,14 @@ describe('FirebaseAuthButtons Component', () => {
       mockSignInWithGoogle.mockRejectedValue(error);
 
       render(<FirebaseAuthButtons {...defaultProps} />);
-      
+
       const button = screen.getByRole('button');
       fireEvent.click(button);
 
       await waitFor(() => {
-        expect(defaultProps.onError).toHaveBeenCalledWith('Google sign-in failed');
+        expect(defaultProps.onError).toHaveBeenCalledWith(
+          'Google sign-in failed'
+        );
       });
     });
   });
@@ -256,31 +262,39 @@ describe('FirebaseAuthButtons Component', () => {
   describe('Component State Management', () => {
     it('should manage loading state correctly', async () => {
       let resolveSignIn: ((value: any) => void) | undefined;
-      mockSignInWithGoogle.mockImplementation(() => 
-        new Promise(resolve => { resolveSignIn = resolve; })
+      mockSignInWithGoogle.mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            resolveSignIn = resolve;
+          })
       );
 
       render(<FirebaseAuthButtons {...defaultProps} />);
-      
+
       const button = screen.getByRole('button');
-      
+
       // Initial state
       expect(screen.getByText('Continue with Google')).toBeInTheDocument();
-      
+
       // Click to start sign-in
       fireEvent.click(button);
-      
+
       // Loading state
       await waitFor(() => {
         expect(screen.getByText('Signing in...')).toBeInTheDocument();
       });
-      
+
       // Complete sign-in
       resolveSignIn?.({
-        user: { uid: 'test', email: 'test@example.com', displayName: null, photoURL: null },
+        user: {
+          uid: 'test',
+          email: 'test@example.com',
+          displayName: null,
+          photoURL: null,
+        },
         isNewUser: false,
       });
-      
+
       // Back to normal state
       await waitFor(() => {
         expect(screen.getByText('Continue with Google')).toBeInTheDocument();
@@ -288,7 +302,9 @@ describe('FirebaseAuthButtons Component', () => {
     });
 
     it('should handle mode prop variations', () => {
-      const { rerender } = render(<FirebaseAuthButtons {...defaultProps} mode="login" />);
+      const { rerender } = render(
+        <FirebaseAuthButtons {...defaultProps} mode="login" />
+      );
       expect(screen.getByText('Continue with Google')).toBeInTheDocument();
 
       rerender(<FirebaseAuthButtons {...defaultProps} mode="register" />);
@@ -299,28 +315,28 @@ describe('FirebaseAuthButtons Component', () => {
   describe('Accessibility', () => {
     it('should have proper ARIA attributes', () => {
       render(<FirebaseAuthButtons {...defaultProps} />);
-      
+
       const button = screen.getByRole('button');
       expect(button).toHaveAttribute('type', 'button');
     });
 
     it('should be keyboard accessible', () => {
       render(<FirebaseAuthButtons {...defaultProps} />);
-      
+
       const button = screen.getByRole('button');
       button.focus();
       expect(button).toHaveFocus();
-      
+
       fireEvent.keyDown(button, { key: 'Enter' });
       expect(mockSignInWithGoogle).toHaveBeenCalled();
     });
 
     it('should properly disable button when disabled', () => {
       render(<FirebaseAuthButtons {...defaultProps} disabled={true} />);
-      
+
       const button = screen.getByRole('button');
       expect(button).toBeDisabled();
-      
+
       fireEvent.click(button);
       expect(mockSignInWithGoogle).not.toHaveBeenCalled();
     });

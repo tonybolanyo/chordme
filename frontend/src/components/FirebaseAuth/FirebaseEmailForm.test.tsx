@@ -37,7 +37,7 @@ vi.mock('./FirebaseAuth.css', () => ({}));
 
 describe('FirebaseEmailForm Component', () => {
   const user = userEvent.setup();
-  
+
   const defaultProps = {
     mode: 'login' as const,
     disabled: false,
@@ -48,7 +48,7 @@ describe('FirebaseEmailForm Component', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockIsAvailable.mockReturnValue(true);
-    
+
     // Mock window.location.hash
     Object.defineProperty(window, 'location', {
       value: { hash: '#login' },
@@ -59,40 +59,50 @@ describe('FirebaseEmailForm Component', () => {
   describe('Component Rendering', () => {
     it('should render email form when Firebase is available', () => {
       render(<FirebaseEmailForm {...defaultProps} />);
-      
+
       expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /sign in with firebase/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /sign in with firebase/i })
+      ).toBeInTheDocument();
       expect(screen.getByText(/sign in with firebase/i)).toBeInTheDocument();
     });
 
     it('should not render anything when Firebase is not available', () => {
       mockIsAvailable.mockReturnValue(false);
-      
+
       const { container } = render(<FirebaseEmailForm {...defaultProps} />);
-      
+
       expect(container.firstChild).toBeNull();
     });
 
     it('should show different text for register mode', () => {
       render(<FirebaseEmailForm {...defaultProps} mode="register" />);
-      
+
       expect(screen.getByText(/sign up with firebase/i)).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /create account with firebase/i })).toBeInTheDocument();
-      expect(screen.getByPlaceholderText(/create a strong password/i)).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /create account with firebase/i })
+      ).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText(/create a strong password/i)
+      ).toBeInTheDocument();
     });
 
     it('should show different text for login mode', () => {
       render(<FirebaseEmailForm {...defaultProps} mode="login" />);
-      
+
       expect(screen.getByText(/sign in with firebase/i)).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /sign in with firebase/i })).toBeInTheDocument();
-      expect(screen.getByPlaceholderText(/enter your password/i)).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /sign in with firebase/i })
+      ).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText(/enter your password/i)
+      ).toBeInTheDocument();
     });
 
     it('should disable form when disabled prop is true', () => {
       render(<FirebaseEmailForm {...defaultProps} disabled={true} />);
-      
+
       expect(screen.getByLabelText(/email/i)).toBeDisabled();
       expect(screen.getByLabelText(/password/i)).toBeDisabled();
       expect(screen.getByRole('button')).toBeDisabled();
@@ -102,31 +112,33 @@ describe('FirebaseEmailForm Component', () => {
   describe('Form Validation', () => {
     it('should show error for invalid email format', async () => {
       render(<FirebaseEmailForm {...defaultProps} />);
-      
+
       const emailInput = screen.getByLabelText(/email/i);
       const passwordInput = screen.getByLabelText(/password/i);
       const submitButton = screen.getByRole('button');
-      
+
       await user.type(emailInput, 'invalid-email');
       await user.type(passwordInput, 'password123');
       await user.click(submitButton);
-      
+
       await waitFor(() => {
-        expect(screen.getByText('Please enter a valid email address')).toBeInTheDocument();
+        expect(
+          screen.getByText('Please enter a valid email address')
+        ).toBeInTheDocument();
       });
-      
+
       expect(mockSignInWithEmailAndPassword).not.toHaveBeenCalled();
     });
 
     it('should show error for missing email', async () => {
       render(<FirebaseEmailForm {...defaultProps} />);
-      
+
       const passwordInput = screen.getByLabelText(/password/i);
       const submitButton = screen.getByRole('button');
-      
+
       await user.type(passwordInput, 'password123');
       await user.click(submitButton);
-      
+
       await waitFor(() => {
         expect(screen.getByText('Email is required')).toBeInTheDocument();
       });
@@ -134,13 +146,13 @@ describe('FirebaseEmailForm Component', () => {
 
     it('should show error for missing password', async () => {
       render(<FirebaseEmailForm {...defaultProps} />);
-      
+
       const emailInput = screen.getByLabelText(/email/i);
       const submitButton = screen.getByRole('button');
-      
+
       await user.type(emailInput, 'test@example.com');
       await user.click(submitButton);
-      
+
       await waitFor(() => {
         expect(screen.getByText('Password is required')).toBeInTheDocument();
       });
@@ -148,35 +160,37 @@ describe('FirebaseEmailForm Component', () => {
 
     it('should show error for short password in register mode', async () => {
       render(<FirebaseEmailForm {...defaultProps} mode="register" />);
-      
+
       const emailInput = screen.getByLabelText(/email/i);
       const passwordInput = screen.getByLabelText(/password/i);
       const submitButton = screen.getByRole('button');
-      
+
       await user.type(emailInput, 'test@example.com');
       await user.type(passwordInput, '123');
       await user.click(submitButton);
-      
+
       await waitFor(() => {
-        expect(screen.getByText('Password must be at least 6 characters long')).toBeInTheDocument();
+        expect(
+          screen.getByText('Password must be at least 6 characters long')
+        ).toBeInTheDocument();
       });
     });
 
     it('should clear validation errors when input changes', async () => {
       render(<FirebaseEmailForm {...defaultProps} />);
-      
+
       const emailInput = screen.getByLabelText(/email/i);
       const submitButton = screen.getByRole('button');
-      
+
       // Trigger validation error
       await user.click(submitButton);
       await waitFor(() => {
         expect(screen.getByText('Email is required')).toBeInTheDocument();
       });
-      
+
       // Start typing to clear error
       await user.type(emailInput, 'test@example.com');
-      
+
       await waitFor(() => {
         expect(screen.queryByText('Email is required')).not.toBeInTheDocument();
       });
@@ -198,11 +212,11 @@ describe('FirebaseEmailForm Component', () => {
       });
 
       render(<FirebaseEmailForm {...defaultProps} mode="login" />);
-      
+
       const emailInput = screen.getByLabelText(/email/i);
       const passwordInput = screen.getByLabelText(/password/i);
       const submitButton = screen.getByRole('button');
-      
+
       await user.type(emailInput, 'test@example.com');
       await user.type(passwordInput, 'password123');
       await user.click(submitButton);
@@ -232,17 +246,19 @@ describe('FirebaseEmailForm Component', () => {
       mockSignInWithEmailAndPassword.mockRejectedValue(error);
 
       render(<FirebaseEmailForm {...defaultProps} mode="login" />);
-      
+
       const emailInput = screen.getByLabelText(/email/i);
       const passwordInput = screen.getByLabelText(/password/i);
       const submitButton = screen.getByRole('button');
-      
+
       await user.type(emailInput, 'test@example.com');
       await user.type(passwordInput, 'wrongpassword');
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(defaultProps.onError).toHaveBeenCalledWith('Invalid credentials');
+        expect(defaultProps.onError).toHaveBeenCalledWith(
+          'Invalid credentials'
+        );
       });
 
       // Button should not be in loading state after error
@@ -265,11 +281,11 @@ describe('FirebaseEmailForm Component', () => {
       });
 
       render(<FirebaseEmailForm {...defaultProps} mode="register" />);
-      
+
       const emailInput = screen.getByLabelText(/email/i);
       const passwordInput = screen.getByLabelText(/password/i);
       const submitButton = screen.getByRole('button');
-      
+
       await user.type(emailInput, 'new@example.com');
       await user.type(passwordInput, 'newpassword123');
       await user.click(submitButton);
@@ -296,17 +312,19 @@ describe('FirebaseEmailForm Component', () => {
       mockSignUpWithEmailAndPassword.mockRejectedValue(error);
 
       render(<FirebaseEmailForm {...defaultProps} mode="register" />);
-      
+
       const emailInput = screen.getByLabelText(/email/i);
       const passwordInput = screen.getByLabelText(/password/i);
       const submitButton = screen.getByRole('button');
-      
+
       await user.type(emailInput, 'existing@example.com');
       await user.type(passwordInput, 'password123');
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(defaultProps.onError).toHaveBeenCalledWith('Email already in use');
+        expect(defaultProps.onError).toHaveBeenCalledWith(
+          'Email already in use'
+        );
       });
     });
   });
@@ -317,11 +335,11 @@ describe('FirebaseEmailForm Component', () => {
       mockIsAvailable.mockReturnValue(false);
 
       render(<FirebaseEmailForm {...defaultProps} />);
-      
+
       const emailInput = screen.getByLabelText(/email/i);
       const passwordInput = screen.getByLabelText(/password/i);
       const submitButton = screen.getByRole('button');
-      
+
       await user.type(emailInput, 'test@example.com');
       await user.type(passwordInput, 'password123');
       await user.click(submitButton);
@@ -349,11 +367,11 @@ describe('FirebaseEmailForm Component', () => {
       });
 
       render(<FirebaseEmailForm {...defaultProps} />);
-      
+
       const emailInput = screen.getByLabelText(/email/i);
       const passwordInput = screen.getByLabelText(/password/i);
       const submitButton = screen.getByRole('button');
-      
+
       await user.type(emailInput, 'test@example.com');
       await user.type(passwordInput, 'password123');
       await user.click(submitButton);
@@ -370,17 +388,19 @@ describe('FirebaseEmailForm Component', () => {
       mockSignInWithEmailAndPassword.mockRejectedValue(error);
 
       render(<FirebaseEmailForm {...defaultProps} />);
-      
+
       const emailInput = screen.getByLabelText(/email/i);
       const passwordInput = screen.getByLabelText(/password/i);
       const submitButton = screen.getByRole('button');
-      
+
       await user.type(emailInput, 'test@example.com');
       await user.type(passwordInput, 'password123');
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(defaultProps.onError).toHaveBeenCalledWith('Authentication failed');
+        expect(defaultProps.onError).toHaveBeenCalledWith(
+          'Authentication failed'
+        );
       });
     });
   });
@@ -388,36 +408,44 @@ describe('FirebaseEmailForm Component', () => {
   describe('Form State Management', () => {
     it('should manage loading state correctly', async () => {
       let resolveAuth: ((value: any) => void) | undefined;
-      mockSignInWithEmailAndPassword.mockImplementation(() => 
-        new Promise(resolve => { resolveAuth = resolve; })
+      mockSignInWithEmailAndPassword.mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            resolveAuth = resolve;
+          })
       );
 
       render(<FirebaseEmailForm {...defaultProps} mode="login" />);
-      
+
       const emailInput = screen.getByLabelText(/email/i);
       const passwordInput = screen.getByLabelText(/password/i);
       const submitButton = screen.getByRole('button');
-      
+
       await user.type(emailInput, 'test@example.com');
       await user.type(passwordInput, 'password123');
-      
+
       // Initial state
       expect(screen.getByText('Sign In with Firebase')).toBeInTheDocument();
-      
+
       // Click to start authentication
       await user.click(submitButton);
-      
+
       // Loading state
       await waitFor(() => {
         expect(screen.getByText('Signing in...')).toBeInTheDocument();
       });
-      
+
       // Complete authentication
       resolveAuth?.({
-        user: { uid: 'test', email: 'test@example.com', displayName: null, photoURL: null },
+        user: {
+          uid: 'test',
+          email: 'test@example.com',
+          displayName: null,
+          photoURL: null,
+        },
         isNewUser: false,
       });
-      
+
       // Back to normal state
       await waitFor(() => {
         expect(screen.getByText('Sign In with Firebase')).toBeInTheDocument();
@@ -425,19 +453,19 @@ describe('FirebaseEmailForm Component', () => {
     });
 
     it('should prevent multiple concurrent submissions', async () => {
-      mockSignInWithEmailAndPassword.mockImplementation(() => 
-        new Promise(resolve => setTimeout(resolve, 1000))
+      mockSignInWithEmailAndPassword.mockImplementation(
+        () => new Promise((resolve) => setTimeout(resolve, 1000))
       );
 
       render(<FirebaseEmailForm {...defaultProps} />);
-      
+
       const emailInput = screen.getByLabelText(/email/i);
       const passwordInput = screen.getByLabelText(/password/i);
       const submitButton = screen.getByRole('button');
-      
+
       await user.type(emailInput, 'test@example.com');
       await user.type(passwordInput, 'password123');
-      
+
       // Click multiple times rapidly
       await user.click(submitButton);
       await user.click(submitButton);
@@ -448,19 +476,21 @@ describe('FirebaseEmailForm Component', () => {
     });
 
     it('should clear form state on mode change', () => {
-      const { rerender } = render(<FirebaseEmailForm {...defaultProps} mode="login" />);
-      
+      const { rerender } = render(
+        <FirebaseEmailForm {...defaultProps} mode="login" />
+      );
+
       const emailInput = screen.getByLabelText(/email/i);
       const passwordInput = screen.getByLabelText(/password/i);
-      
+
       fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
       fireEvent.change(passwordInput, { target: { value: 'password123' } });
-      
+
       expect(emailInput).toHaveValue('test@example.com');
       expect(passwordInput).toHaveValue('password123');
-      
+
       rerender(<FirebaseEmailForm {...defaultProps} mode="register" />);
-      
+
       // Form should be cleared
       expect(screen.getByLabelText(/email/i)).toHaveValue('');
       expect(screen.getByLabelText(/password/i)).toHaveValue('');
@@ -470,24 +500,24 @@ describe('FirebaseEmailForm Component', () => {
   describe('Accessibility', () => {
     it('should have proper form labels and structure', () => {
       render(<FirebaseEmailForm {...defaultProps} />);
-      
+
       expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
-      
+
       const form = screen.getByRole('form', { hidden: true });
       expect(form).toBeInTheDocument();
     });
 
     it('should associate error messages with inputs', async () => {
       render(<FirebaseEmailForm {...defaultProps} />);
-      
+
       const submitButton = screen.getByRole('button');
       await user.click(submitButton);
-      
+
       await waitFor(() => {
         const emailInput = screen.getByLabelText(/email/i);
         const errorMessage = screen.getByText('Email is required');
-        
+
         expect(emailInput).toHaveClass('error');
         expect(errorMessage).toBeInTheDocument();
       });
@@ -495,32 +525,37 @@ describe('FirebaseEmailForm Component', () => {
 
     it('should be keyboard navigable', () => {
       render(<FirebaseEmailForm {...defaultProps} />);
-      
+
       const emailInput = screen.getByLabelText(/email/i);
       const passwordInput = screen.getByLabelText(/password/i);
       const submitButton = screen.getByRole('button');
-      
+
       emailInput.focus();
       expect(emailInput).toHaveFocus();
-      
+
       fireEvent.keyDown(emailInput, { key: 'Tab' });
       expect(passwordInput).toHaveFocus();
-      
+
       fireEvent.keyDown(passwordInput, { key: 'Tab' });
       expect(submitButton).toHaveFocus();
     });
 
     it('should support Enter key submission', async () => {
       mockSignInWithEmailAndPassword.mockResolvedValue({
-        user: { uid: 'test', email: 'test@example.com', displayName: null, photoURL: null },
+        user: {
+          uid: 'test',
+          email: 'test@example.com',
+          displayName: null,
+          photoURL: null,
+        },
         isNewUser: false,
       });
 
       render(<FirebaseEmailForm {...defaultProps} />);
-      
+
       const emailInput = screen.getByLabelText(/email/i);
       const passwordInput = screen.getByLabelText(/password/i);
-      
+
       await user.type(emailInput, 'test@example.com');
       await user.type(passwordInput, 'password123');
       await user.keyboard('{Enter}');

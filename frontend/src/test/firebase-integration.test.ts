@@ -21,7 +21,7 @@ describe('Firebase Integration Tests', () => {
     vi.mocked(firebaseService.isInitialized).mockReturnValue(false);
 
     const dataSourceInfo = apiService.getDataSourceInfo();
-    
+
     expect(dataSourceInfo).toEqual({
       source: 'api',
       isFirebaseEnabled: false,
@@ -35,7 +35,7 @@ describe('Firebase Integration Tests', () => {
     vi.mocked(firebaseService.isInitialized).mockReturnValue(true);
 
     const dataSourceInfo = apiService.getDataSourceInfo();
-    
+
     expect(dataSourceInfo).toEqual({
       source: 'firebase',
       isFirebaseEnabled: true,
@@ -50,7 +50,7 @@ describe('Firebase Integration Tests', () => {
     vi.mocked(firebaseService.isInitialized).mockReturnValue(true);
 
     const dataSourceInfo = apiService.getDataSourceInfo();
-    
+
     expect(dataSourceInfo).toEqual({
       source: 'api',
       isFirebaseEnabled: true,

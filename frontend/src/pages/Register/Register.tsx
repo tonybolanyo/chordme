@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { apiService } from '../../services/api';
 import { validateEmail, validatePassword } from '../../utils';
-import { FirebaseAuthButtons, FirebaseEmailForm } from '../../components/FirebaseAuth';
+import {
+  FirebaseAuthButtons,
+  FirebaseEmailForm,
+} from '../../components/FirebaseAuth';
 import type { RegisterRequest } from '../../types';
 import './Register.css';
 
@@ -210,7 +213,7 @@ const Register: React.FC = () => {
           onSuccess={handleFirebaseSuccess}
           onError={handleFirebaseError}
         />
-        
+
         <FirebaseEmailForm
           mode="register"
           disabled={isLoading}

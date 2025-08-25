@@ -57,16 +57,19 @@ export function useRealtimeSong(songId: string | null): UseRealtimeSongResult {
     // Check if real-time updates are supported
     if (apiService.supportsRealTimeUpdates()) {
       setIsRealTime(true);
-      
+
       // Set up real-time subscription
-      unsubscribe = apiService.subscribeToSong(songId, (realtimeSong: Song | null) => {
-        setSong(realtimeSong);
-        setLoading(false);
-        setError(null);
-      });
+      unsubscribe = apiService.subscribeToSong(
+        songId,
+        (realtimeSong: Song | null) => {
+          setSong(realtimeSong);
+          setLoading(false);
+          setError(null);
+        }
+      );
     } else {
       setIsRealTime(false);
-      
+
       // Fall back to regular API fetch for Flask backend
       fetchSong();
     }

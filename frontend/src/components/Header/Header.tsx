@@ -29,7 +29,9 @@ const Header: React.FC<HeaderProps> = ({ title = 'ChordMe' }) => {
   };
 
   const handleBackendChange = (backendId: string) => {
-    apiService.setStorageBackend(backendId as 'localStorage' | 'firebase' | 'googleDrive');
+    apiService.setStorageBackend(
+      backendId as 'localStorage' | 'firebase' | 'googleDrive'
+    );
     setShowStorageSettings(false);
     // You might want to trigger a refresh or reload here
     // For now, let's just close the settings
@@ -73,10 +75,18 @@ const Header: React.FC<HeaderProps> = ({ title = 'ChordMe' }) => {
           </a>
           <div className="auth-links">
             <StorageIndicator onClick={handleStorageSettingsOpen} />
-            <a href="#login" className="nav-link auth-link" onClick={closeMobileMenu}>
+            <a
+              href="#login"
+              className="nav-link auth-link"
+              onClick={closeMobileMenu}
+            >
               Login
             </a>
-            <a href="#register" className="nav-link auth-link btn-register" onClick={closeMobileMenu}>
+            <a
+              href="#register"
+              className="nav-link auth-link btn-register"
+              onClick={closeMobileMenu}
+            >
               Sign Up
             </a>
           </div>
@@ -91,13 +101,16 @@ const Header: React.FC<HeaderProps> = ({ title = 'ChordMe' }) => {
         <div className="header-container">
           <div className="header-top">
             <h1 className="header-title">
-              <a href="#home" style={{ textDecoration: 'none', color: 'inherit' }}>
+              <a
+                href="#home"
+                style={{ textDecoration: 'none', color: 'inherit' }}
+              >
                 {title}
               </a>
             </h1>
-            
+
             {isMobile && (
-              <button 
+              <button
                 className="mobile-menu-toggle touch-target"
                 onClick={toggleMobileMenu}
                 aria-label="Toggle navigation menu"
@@ -110,18 +123,20 @@ const Header: React.FC<HeaderProps> = ({ title = 'ChordMe' }) => {
               </button>
             )}
           </div>
-          
-          <nav className={`header-nav ${isMobile ? 'mobile-nav' : ''} ${mobileMenuOpen ? 'open' : ''}`}>
+
+          <nav
+            className={`header-nav ${isMobile ? 'mobile-nav' : ''} ${mobileMenuOpen ? 'open' : ''}`}
+          >
             {renderNavLinks()}
           </nav>
         </div>
-        
+
         {/* Mobile menu overlay */}
         {isMobile && mobileMenuOpen && (
           <div className="nav-overlay open" onClick={closeMobileMenu}></div>
         )}
       </header>
-      
+
       {showStorageSettings && (
         <StorageSettings
           currentBackend={apiService.getCurrentBackend()}

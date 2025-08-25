@@ -2,7 +2,10 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import type { User } from '../types';
 import { isTokenExpired } from '../utils/jwt';
-import { firebaseAuthService, type FirebaseAuthUser } from '../services/firebaseAuth';
+import {
+  firebaseAuthService,
+  type FirebaseAuthUser,
+} from '../services/firebaseAuth';
 
 export type AuthProvider = 'jwt' | 'firebase';
 
@@ -26,7 +29,9 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [firebaseUser, setFirebaseUser] = useState<FirebaseAuthUser | null>(null);
+  const [firebaseUser, setFirebaseUser] = useState<FirebaseAuthUser | null>(
+    null
+  );
   const [token, setToken] = useState<string | null>(null);
   const [authProvider, setAuthProvider] = useState<AuthProvider | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -57,7 +62,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     // Set up Firebase auth state listener
     let unsubscribeFirebase: (() => void) | null = null;
-    
+
     if (firebaseAuthService.isAvailable()) {
       unsubscribeFirebase = firebaseAuthService.onAuthStateChanged((fbUser) => {
         if (fbUser && (!storedProvider || storedProvider === 'firebase')) {
@@ -130,13 +135,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setFirebaseUser(null);
     setAuthProvider(null);
     clearAuthData();
-    
+
     // Redirect to home page
     window.location.hash = '';
   };
 
-  const isAuthenticated = (!!token && !!user && authProvider === 'jwt') || 
-                          (!!firebaseUser && authProvider === 'firebase');
+  const isAuthenticated =
+    (!!token && !!user && authProvider === 'jwt') ||
+    (!!firebaseUser && authProvider === 'firebase');
 
   const value: AuthContextType = {
     user,

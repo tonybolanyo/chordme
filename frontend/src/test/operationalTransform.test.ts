@@ -150,7 +150,7 @@ describe('OperationalTransform', () => {
 
     it('should preserve operation order independence', () => {
       const content = 'Hello World';
-      
+
       const op1: TextOperation = {
         type: 'insert',
         position: 5,
@@ -168,12 +168,18 @@ describe('OperationalTransform', () => {
       // Apply op1 then transformed op2
       const result1 = OperationalTransform.applyOperation(content, op1);
       const transformedOp2 = OperationalTransform.transform(op1, op2);
-      const finalResult1 = OperationalTransform.applyOperation(result1, transformedOp2);
+      const finalResult1 = OperationalTransform.applyOperation(
+        result1,
+        transformedOp2
+      );
 
       // Apply op2 then transformed op1
       const result2 = OperationalTransform.applyOperation(content, op2);
       const transformedOp1 = OperationalTransform.transform(op2, op1);
-      const finalResult2 = OperationalTransform.applyOperation(result2, transformedOp1);
+      const finalResult2 = OperationalTransform.applyOperation(
+        result2,
+        transformedOp1
+      );
 
       expect(finalResult1).toBe(finalResult2);
     });
@@ -182,7 +188,7 @@ describe('OperationalTransform', () => {
   describe('Complex Transformation Scenarios', () => {
     it('should handle multiple concurrent insertions', () => {
       const content = 'Hello World';
-      
+
       const operations: TextOperation[] = [
         { type: 'insert', position: 5, content: ' Beautiful', length: 10 },
         { type: 'insert', position: 0, content: 'Amazing ', length: 8 },
@@ -199,7 +205,7 @@ describe('OperationalTransform', () => {
 
     it('should handle mixed insert and delete operations', () => {
       const content = 'Hello Beautiful World';
-      
+
       const operations: TextOperation[] = [
         { type: 'delete', position: 6, length: 9 }, // Remove "Beautiful"
         { type: 'insert', position: 6, content: 'Amazing', length: 7 },
@@ -211,7 +217,7 @@ describe('OperationalTransform', () => {
 
     it('should handle operations at same position', () => {
       const content = 'Hello World';
-      
+
       const op1: TextOperation = {
         type: 'insert',
         position: 5,
@@ -232,7 +238,7 @@ describe('OperationalTransform', () => {
 
     it('should handle retain operations in sequences', () => {
       const content = 'Hello World';
-      
+
       const operations: TextOperation[] = [
         { type: 'retain', length: 5 },
         { type: 'insert', position: 5, content: ' Beautiful', length: 10 },
@@ -320,7 +326,10 @@ describe('OperationalTransform', () => {
       };
 
       const startTime = performance.now();
-      const result = OperationalTransform.applyOperation(largeContent, operation);
+      const result = OperationalTransform.applyOperation(
+        largeContent,
+        operation
+      );
       const endTime = performance.now();
 
       expect(result).toContain('INSERTED');
@@ -425,16 +434,24 @@ describe('OperationalTransform', () => {
   describe('Document State Consistency', () => {
     it('should maintain document integrity across complex operations', () => {
       const initialContent = 'The quick brown fox jumps over the lazy dog';
-      
+
       const operations: TextOperation[] = [
         { type: 'insert', position: 0, content: 'Today, ', length: 7 },
         { type: 'delete', position: 20, length: 5 }, // Remove 'brown'
         { type: 'insert', position: 20, content: 'red', length: 3 },
-        { type: 'insert', position: initialContent.length + 4, content: '.', length: 1 },
+        {
+          type: 'insert',
+          position: initialContent.length + 4,
+          content: '.',
+          length: 1,
+        },
       ];
 
-      const result = OperationalTransform.applyOperations(initialContent, operations);
-      
+      const result = OperationalTransform.applyOperations(
+        initialContent,
+        operations
+      );
+
       expect(result).toContain('Today,');
       expect(result).toContain('red fox');
       expect(result).not.toContain('brown');
@@ -447,7 +464,10 @@ describe('OperationalTransform', () => {
         { type: 'delete', position: 10, length: 2 }, // Invalid: position beyond content
       ];
 
-      const isValid = OperationalTransform.validateOperationSequence(operations, '');
+      const isValid = OperationalTransform.validateOperationSequence(
+        operations,
+        ''
+      );
       expect(isValid).toBe(false);
     });
 

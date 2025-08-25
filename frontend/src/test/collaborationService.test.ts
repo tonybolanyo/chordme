@@ -1,12 +1,12 @@
 // Comprehensive unit tests for collaboration service
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { CollaborationService } from '../services/collaborationService';
-import type { 
+import type {
   TextOperation,
   EditOperation,
   CollaborationSession,
   OptimisticUpdate,
-  PermissionChange
+  PermissionChange,
 } from '../types/collaboration';
 
 // Mock Firebase services
@@ -38,7 +38,7 @@ vi.mock('firebase/firestore', () => ({
 
 describe('CollaborationService', () => {
   let collaborationService: CollaborationService;
-  
+
   beforeEach(() => {
     collaborationService = new CollaborationService();
     vi.clearAllMocks();
@@ -66,7 +66,9 @@ describe('CollaborationService', () => {
       await service1.initializeUser('user1', { email: 'user1@example.com' });
       await service2.initializeUser('user2', { email: 'user2@example.com' });
 
-      expect(service1['currentUserColor']).not.toBe(service2['currentUserColor']);
+      expect(service1['currentUserColor']).not.toBe(
+        service2['currentUserColor']
+      );
 
       service1.cleanup();
       service2.cleanup();
@@ -76,19 +78,24 @@ describe('CollaborationService', () => {
       const userId = 'user123';
       const userInfo = { email: 'test@example.com' };
 
-      await expect(collaborationService.initializeUser(userId, userInfo)).resolves.not.toThrow();
+      await expect(
+        collaborationService.initializeUser(userId, userInfo)
+      ).resolves.not.toThrow();
     });
   });
 
   describe('Collaboration Session Management', () => {
     beforeEach(async () => {
-      await collaborationService.initializeUser('testUser', { email: 'test@example.com' });
+      await collaborationService.initializeUser('testUser', {
+        email: 'test@example.com',
+      });
     });
 
     it('should start collaboration session successfully', async () => {
       const songId = 'song123';
-      
-      const session = await collaborationService.startCollaborationSession(songId);
+
+      const session =
+        await collaborationService.startCollaborationSession(songId);
 
       expect(session).toBeDefined();
       expect(session.songId).toBe(songId);
@@ -99,17 +106,19 @@ describe('CollaborationService', () => {
 
     it('should fail to start session without user initialization', async () => {
       const uninitializedService = new CollaborationService();
-      
+
       await expect(
         uninitializedService.startCollaborationSession('song123')
-      ).rejects.toThrow('User must be initialized before starting collaboration');
+      ).rejects.toThrow(
+        'User must be initialized before starting collaboration'
+      );
 
       uninitializedService.cleanup();
     });
 
     it('should end collaboration session cleanly', async () => {
       const songId = 'song123';
-      
+
       await collaborationService.startCollaborationSession(songId);
       await collaborationService.endCollaborationSession(songId);
 
@@ -129,17 +138,21 @@ describe('CollaborationService', () => {
 
     beforeEach(async () => {
       songId = 'song123';
-      await collaborationService.initializeUser('testUser', { email: 'test@example.com' });
+      await collaborationService.initializeUser('testUser', {
+        email: 'test@example.com',
+      });
       await collaborationService.startCollaborationSession(songId);
     });
 
     it('should apply text operations with optimistic updates', async () => {
-      const operations: TextOperation[] = [{
-        type: 'insert',
-        position: 0,
-        content: 'Hello ',
-        length: 6,
-      }];
+      const operations: TextOperation[] = [
+        {
+          type: 'insert',
+          position: 0,
+          content: 'Hello ',
+          length: 6,
+        },
+      ];
 
       vi.mocked(collaborationService.applyTextOperation).mockResolvedValue({
         id: 'update1',
@@ -165,20 +178,26 @@ describe('CollaborationService', () => {
         timestamp: new Date().toISOString(),
       });
 
-      const result = await collaborationService.applyTextOperation(songId, operations, true);
-      
+      const result = await collaborationService.applyTextOperation(
+        songId,
+        operations,
+        true
+      );
+
       expect(result).toBeDefined();
       expect(result?.status).toBe('pending');
       expect(result?.localState.content).toBe('Hello ');
     });
 
     it('should handle text operation failures with rollback', async () => {
-      const operations: TextOperation[] = [{
-        type: 'insert',
-        position: 0,
-        content: 'Hello',
-        length: 5,
-      }];
+      const operations: TextOperation[] = [
+        {
+          type: 'insert',
+          position: 0,
+          content: 'Hello',
+          length: 5,
+        },
+      ];
 
       vi.mocked(collaborationService.applyTextOperation).mockResolvedValue({
         id: 'update1',
@@ -208,19 +227,25 @@ describe('CollaborationService', () => {
         timestamp: new Date().toISOString(),
       });
 
-      const result = await collaborationService.applyTextOperation(songId, operations, true);
-      
+      const result = await collaborationService.applyTextOperation(
+        songId,
+        operations,
+        true
+      );
+
       expect(result?.status).toBe('failed');
       expect(result?.rollbackData).toBeDefined();
     });
 
     it('should validate operation parameters', async () => {
-      const invalidOperations: TextOperation[] = [{
-        type: 'insert',
-        position: -1, // Invalid position
-        content: 'test',
-        length: 4,
-      }];
+      const invalidOperations: TextOperation[] = [
+        {
+          type: 'insert',
+          position: -1, // Invalid position
+          content: 'test',
+          length: 4,
+        },
+      ];
 
       await expect(
         collaborationService.applyTextOperation(songId, invalidOperations)
@@ -233,7 +258,9 @@ describe('CollaborationService', () => {
 
     beforeEach(async () => {
       songId = 'song123';
-      await collaborationService.initializeUser('testUser', { email: 'test@example.com' });
+      await collaborationService.initializeUser('testUser', {
+        email: 'test@example.com',
+      });
       await collaborationService.startCollaborationSession(songId);
     });
 
@@ -246,11 +273,11 @@ describe('CollaborationService', () => {
     });
 
     it('should handle cursor position with selection', async () => {
-      const position = { 
-        line: 5, 
-        column: 10, 
-        selectionStart: 0, 
-        selectionEnd: 15 
+      const position = {
+        line: 5,
+        column: 10,
+        selectionStart: 0,
+        selectionEnd: 15,
       };
 
       await expect(
@@ -269,46 +296,54 @@ describe('CollaborationService', () => {
 
   describe('Network Status Monitoring', () => {
     beforeEach(async () => {
-      await collaborationService.initializeUser('testUser', { email: 'test@example.com' });
+      await collaborationService.initializeUser('testUser', {
+        email: 'test@example.com',
+      });
     });
 
     it('should handle network status changes', () => {
       const mockCallback = vi.fn();
-      
-      const unsubscribe = collaborationService.onNetworkStatusChange(mockCallback);
-      
+
+      const unsubscribe =
+        collaborationService.onNetworkStatusChange(mockCallback);
+
       expect(typeof unsubscribe).toBe('function');
       unsubscribe();
     });
 
     it('should remove network status callback on unsubscribe', () => {
       const mockCallback = vi.fn();
-      
-      const unsubscribe = collaborationService.onNetworkStatusChange(mockCallback);
+
+      const unsubscribe =
+        collaborationService.onNetworkStatusChange(mockCallback);
       unsubscribe();
 
       // Verify callback is removed
-      expect(collaborationService['networkStatusCallbacks'].has(mockCallback)).toBe(false);
+      expect(
+        collaborationService['networkStatusCallbacks'].has(mockCallback)
+      ).toBe(false);
     });
   });
 
   describe('Permission Change Handling', () => {
     beforeEach(async () => {
-      await collaborationService.initializeUser('testUser', { email: 'test@example.com' });
+      await collaborationService.initializeUser('testUser', {
+        email: 'test@example.com',
+      });
     });
 
     it('should handle permission changes', () => {
       const mockCallback = vi.fn();
-      
+
       const unsubscribe = collaborationService.onPermissionChange(mockCallback);
-      
+
       expect(typeof unsubscribe).toBe('function');
       unsubscribe();
     });
 
     it('should notify on permission changes', () => {
       const mockCallback = vi.fn();
-      
+
       collaborationService.onPermissionChange(mockCallback);
 
       const permissionChange: PermissionChange = {
@@ -321,7 +356,7 @@ describe('CollaborationService', () => {
       };
 
       // Simulate permission change notification
-      collaborationService['permissionChangeCallbacks'].forEach(callback => {
+      collaborationService['permissionChangeCallbacks'].forEach((callback) => {
         callback(permissionChange);
       });
 
@@ -331,13 +366,15 @@ describe('CollaborationService', () => {
 
   describe('Session Cleanup', () => {
     it('should cleanup all resources', async () => {
-      await collaborationService.initializeUser('testUser', { email: 'test@example.com' });
+      await collaborationService.initializeUser('testUser', {
+        email: 'test@example.com',
+      });
       await collaborationService.startCollaborationSession('song1');
       await collaborationService.startCollaborationSession('song2');
 
       const networkCallback = vi.fn();
       const permissionCallback = vi.fn();
-      
+
       collaborationService.onNetworkStatusChange(networkCallback);
       collaborationService.onPermissionChange(permissionCallback);
 
@@ -355,19 +392,23 @@ describe('CollaborationService', () => {
 
   describe('Error Handling', () => {
     it('should handle network failures gracefully', async () => {
-      await collaborationService.initializeUser('testUser', { email: 'test@example.com' });
-      
+      await collaborationService.initializeUser('testUser', {
+        email: 'test@example.com',
+      });
+
       // Mock network failure
       vi.mocked(collaborationService.applyTextOperation).mockRejectedValue(
         new Error('Network error')
       );
 
-      const operations: TextOperation[] = [{
-        type: 'insert',
-        position: 0,
-        content: 'test',
-        length: 4,
-      }];
+      const operations: TextOperation[] = [
+        {
+          type: 'insert',
+          position: 0,
+          content: 'test',
+          length: 4,
+        },
+      ];
 
       await expect(
         collaborationService.applyTextOperation('song123', operations)
@@ -379,10 +420,15 @@ describe('CollaborationService', () => {
     });
 
     it('should handle cursor updates for invalid sessions', async () => {
-      await collaborationService.initializeUser('testUser', { email: 'test@example.com' });
-      
+      await collaborationService.initializeUser('testUser', {
+        email: 'test@example.com',
+      });
+
       await expect(
-        collaborationService.updateCursorPosition('nonexistent', { line: 0, column: 0 })
+        collaborationService.updateCursorPosition('nonexistent', {
+          line: 0,
+          column: 0,
+        })
       ).resolves.not.toThrow();
     });
   });

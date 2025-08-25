@@ -26,15 +26,15 @@ describe('useRealtimeSong', () => {
   });
 
   it('should use real-time updates when supported', async () => {
-    const mockSong = { 
-      id: '1', 
-      title: 'Test Song', 
-      author_id: 'user1', 
-      content: 'test content', 
-      created_at: '2023-01-01', 
-      updated_at: '2023-01-01' 
+    const mockSong = {
+      id: '1',
+      title: 'Test Song',
+      author_id: 'user1',
+      content: 'test content',
+      created_at: '2023-01-01',
+      updated_at: '2023-01-01',
     };
-    
+
     const mockUnsubscribe = vi.fn();
     mockApiService.supportsRealTimeUpdates.mockReturnValue(true);
     mockApiService.subscribeToSong.mockImplementation((songId, callback) => {
@@ -58,23 +58,26 @@ describe('useRealtimeSong', () => {
     expect(result.current.song).toEqual(mockSong);
     expect(result.current.isRealTime).toBe(true);
     expect(result.current.error).toBe(null);
-    expect(mockApiService.subscribeToSong).toHaveBeenCalledWith('1', expect.any(Function));
+    expect(mockApiService.subscribeToSong).toHaveBeenCalledWith(
+      '1',
+      expect.any(Function)
+    );
   });
 
   it('should fall back to API when real-time not supported', async () => {
-    const mockSong = { 
-      id: '1', 
-      title: 'Test Song', 
-      author_id: 'user1', 
-      content: 'test content', 
-      created_at: '2023-01-01', 
-      updated_at: '2023-01-01' 
+    const mockSong = {
+      id: '1',
+      title: 'Test Song',
+      author_id: 'user1',
+      content: 'test content',
+      created_at: '2023-01-01',
+      updated_at: '2023-01-01',
     };
-    
+
     mockApiService.supportsRealTimeUpdates.mockReturnValue(false);
     mockApiService.getSong.mockResolvedValue({
       status: 'success',
-      data: { song: mockSong }
+      data: { song: mockSong },
     });
 
     const { result } = renderHook(() => useRealtimeSong('1'));
@@ -150,7 +153,10 @@ describe('useRealtimeSong', () => {
 
     const { unmount } = renderHook(() => useRealtimeSong('1'));
 
-    expect(mockApiService.subscribeToSong).toHaveBeenCalledWith('1', expect.any(Function));
+    expect(mockApiService.subscribeToSong).toHaveBeenCalledWith(
+      '1',
+      expect.any(Function)
+    );
 
     unmount();
 
@@ -158,19 +164,19 @@ describe('useRealtimeSong', () => {
   });
 
   it('should provide refetch functionality', async () => {
-    const mockSong = { 
-      id: '1', 
-      title: 'Test Song', 
-      author_id: 'user1', 
-      content: 'test content', 
-      created_at: '2023-01-01', 
-      updated_at: '2023-01-01' 
+    const mockSong = {
+      id: '1',
+      title: 'Test Song',
+      author_id: 'user1',
+      content: 'test content',
+      created_at: '2023-01-01',
+      updated_at: '2023-01-01',
     };
-    
+
     mockApiService.supportsRealTimeUpdates.mockReturnValue(false);
     mockApiService.getSong.mockResolvedValue({
       status: 'success',
-      data: { song: mockSong }
+      data: { song: mockSong },
     });
 
     const { result } = renderHook(() => useRealtimeSong('1'));
@@ -181,10 +187,10 @@ describe('useRealtimeSong', () => {
 
     // Clear the mock to test refetch
     mockApiService.getSong.mockClear();
-    
+
     // Test refetch
     await result.current.refetch();
-    
+
     expect(mockApiService.getSong).toHaveBeenCalledWith('1');
   });
 });

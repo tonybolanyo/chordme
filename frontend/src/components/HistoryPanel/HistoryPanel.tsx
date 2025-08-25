@@ -25,7 +25,9 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({
   const [versions, setVersions] = useState<SongVersion[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedVersion, setSelectedVersion] = useState<SongVersion | null>(null);
+  const [selectedVersion, setSelectedVersion] = useState<SongVersion | null>(
+    null
+  );
   const [restoring, setRestoring] = useState<number | null>(null);
 
   useEffect(() => {
@@ -41,14 +43,20 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({
       const versionList = await versionHistoryService.getVersions(songId);
       setVersions(versionList);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load version history');
+      setError(
+        err instanceof Error ? err.message : 'Failed to load version history'
+      );
     } finally {
       setLoading(false);
     }
   };
 
   const handleRestore = async (version: SongVersion) => {
-    if (window.confirm(`Are you sure you want to restore to version ${version.version_number}? This will create a new version with the restored content.`)) {
+    if (
+      window.confirm(
+        `Are you sure you want to restore to version ${version.version_number}? This will create a new version with the restored content.`
+      )
+    ) {
       setRestoring(version.id);
       try {
         await versionHistoryService.restoreVersion(songId, version.id);
@@ -56,7 +64,9 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({
         // Reload versions to show the new restoration
         await loadVersions();
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to restore version');
+        setError(
+          err instanceof Error ? err.message : 'Failed to restore version'
+        );
       } finally {
         setRestoring(null);
       }
@@ -79,8 +89,8 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({
       <div className="history-panel">
         <div className="history-panel-header">
           <h3>Version History</h3>
-          <button 
-            className="close-button" 
+          <button
+            className="close-button"
             onClick={onClose}
             aria-label="Close history panel"
           >
@@ -125,7 +135,10 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({
                 {versions.length === 0 ? (
                   <div className="empty-state">
                     <p>No version history available.</p>
-                    <p className="empty-subtitle">Versions will appear here after you save changes to this song.</p>
+                    <p className="empty-subtitle">
+                      Versions will appear here after you save changes to this
+                      song.
+                    </p>
                   </div>
                 ) : (
                   versions.map((version) => {
@@ -134,15 +147,21 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({
                     const isRestoring = restoring === version.id;
 
                     return (
-                      <div 
-                        key={version.id} 
+                      <div
+                        key={version.id}
                         className={`version-item ${isSelected ? 'selected' : ''}`}
                       >
                         <div className="version-header">
                           <div className="version-info">
-                            <span className="version-title">{display.title}</span>
-                            <span className="version-subtitle">{display.subtitle}</span>
-                            <span className="version-timestamp">{display.timestamp}</span>
+                            <span className="version-title">
+                              {display.title}
+                            </span>
+                            <span className="version-subtitle">
+                              {display.subtitle}
+                            </span>
+                            <span className="version-timestamp">
+                              {display.timestamp}
+                            </span>
                           </div>
                           <div className="version-actions">
                             <button
@@ -168,11 +187,13 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({
                             </button>
                           </div>
                         </div>
-                        
+
                         {isSelected && (
                           <div className="version-preview">
                             <h4>Content Preview:</h4>
-                            <pre className="content-preview">{version.content}</pre>
+                            <pre className="content-preview">
+                              {version.content}
+                            </pre>
                           </div>
                         )}
                       </div>

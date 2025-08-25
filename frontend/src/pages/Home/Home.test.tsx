@@ -69,9 +69,15 @@ vi.mock('../../components', () => ({
   ChordProViewer: ({ content }: { content: string }) => (
     <div data-testid="chordpro-viewer">{content}</div>
   ),
-  GoogleDriveFileList: () => <div data-testid="google-drive-file-list">Google Drive Files</div>,
-  SongSharingModal: () => <div data-testid="song-sharing-modal">Sharing Modal</div>,
-  NotificationContainer: () => <div data-testid="notification-container">Notifications</div>,
+  GoogleDriveFileList: () => (
+    <div data-testid="google-drive-file-list">Google Drive Files</div>
+  ),
+  SongSharingModal: () => (
+    <div data-testid="song-sharing-modal">Sharing Modal</div>
+  ),
+  NotificationContainer: () => (
+    <div data-testid="notification-container">Notifications</div>
+  ),
   HistoryPanel: () => <div data-testid="history-panel">History Panel</div>,
   UndoRedoControls: ({
     canUndo,
@@ -136,7 +142,12 @@ const mockApiService = vi.mocked(apiService);
 const mockUseRealtimeSongs = vi.mocked(useRealtimeSongs);
 
 // Mock user for auth context
-const mockUser: User = { id: '1', email: 'test@example.com', created_at: '2023-01-01T00:00:00Z', updated_at: '2023-01-01T00:00:00Z' };
+const mockUser: User = {
+  id: '1',
+  email: 'test@example.com',
+  created_at: '2023-01-01T00:00:00Z',
+  updated_at: '2023-01-01T00:00:00Z',
+};
 
 // Helper to render Home component with AuthProvider
 const renderHome = () => {
@@ -242,7 +253,7 @@ describe('Home Component', () => {
     });
 
     it('displays error when API returns error status', async () => {
-      // Setup error state in useRealtimeSongs hook  
+      // Setup error state in useRealtimeSongs hook
       mockUseRealtimeSongs.mockReturnValue({
         songs: [],
         loading: false,
@@ -583,7 +594,7 @@ describe('Home Component', () => {
     it('shows empty state when no songs', () => {
       // Use default empty songs state from beforeEach
       renderHome();
-      
+
       expect(
         screen.getByText(
           "You haven't created any songs yet. Create your first song to get started!"
@@ -625,7 +636,7 @@ describe('Home Component', () => {
 
     it('displays user welcome message', () => {
       renderHome();
-      
+
       expect(
         screen.getByText('Welcome back, test@example.com!')
       ).toBeInTheDocument();

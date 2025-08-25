@@ -35,7 +35,7 @@ const PDFExportModal: React.FC<PDFExportModalProps> = ({
   };
 
   const handleInputChange = (field: keyof PDFExportOptions, value: string) => {
-    setOptions(prev => ({
+    setOptions((prev) => ({
       ...prev,
       [field]: value,
     }));
@@ -48,15 +48,15 @@ const PDFExportModal: React.FC<PDFExportModalProps> = ({
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h3>Export as PDF</h3>
-          <button 
-            className="modal-close-btn" 
+          <button
+            className="modal-close-btn"
             onClick={onClose}
             aria-label="Close modal"
           >
             ×
           </button>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="pdf-export-form">
           <div className="form-group">
             <label htmlFor="pdf-title">Title (optional override):</label>
@@ -102,7 +102,9 @@ const PDFExportModal: React.FC<PDFExportModalProps> = ({
               <select
                 id="pdf-orientation"
                 value={options.orientation}
-                onChange={(e) => handleInputChange('orientation', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange('orientation', e.target.value)
+                }
                 disabled={isExporting}
               >
                 <option value="portrait">Portrait</option>
@@ -277,7 +279,7 @@ const PDFExportModal: React.FC<PDFExportModalProps> = ({
           .form-row {
             grid-template-columns: 1fr;
           }
-          
+
           .modal-content {
             width: 95%;
           }

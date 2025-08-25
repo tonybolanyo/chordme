@@ -112,8 +112,15 @@ export interface PermissionChange {
 }
 
 export interface CollaborationEvent {
-  type: 'user-joined' | 'user-left' | 'cursor-moved' | 'presence-changed' | 
-        'edit-operation' | 'permission-changed' | 'network-status' | 'conflict-detected';
+  type:
+    | 'user-joined'
+    | 'user-left'
+    | 'cursor-moved'
+    | 'presence-changed'
+    | 'edit-operation'
+    | 'permission-changed'
+    | 'network-status'
+    | 'conflict-detected';
   payload: any;
   timestamp: string;
   userId?: string;

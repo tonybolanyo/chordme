@@ -89,20 +89,20 @@
     gap: 0.25rem;
     padding: 0.125rem;
   }
-  
+
   .undo-button,
   .redo-button,
   .history-button {
     padding: 0.375rem 0.5rem;
     font-size: 0.8rem;
   }
-  
+
   /* Hide text on very small screens, show only icons */
   @media (max-width: 480px) {
     .button-text {
       display: none;
     }
-    
+
     .undo-button,
     .redo-button,
     .history-button {
@@ -120,13 +120,13 @@
   .history-button {
     transition: none;
   }
-  
+
   .undo-button svg,
   .redo-button svg,
   .history-button svg {
     transition: none;
   }
-  
+
   .undo-button:hover:not(.disabled) svg,
   .redo-button:hover:not(.disabled) svg,
   .history-button:hover svg {
@@ -139,7 +139,7 @@
   .undo-redo-controls {
     border: 2px solid;
   }
-  
+
   .undo-button.disabled,
   .redo-button.disabled {
     opacity: 0.8;

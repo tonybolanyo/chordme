@@ -120,26 +120,26 @@
   .header {
     padding: 1rem 0;
   }
-  
+
   .header-container {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 0 var(--space-lg);
   }
-  
+
   .header-top {
     justify-content: flex-start;
   }
-  
+
   .mobile-menu-toggle {
     display: none;
   }
-  
+
   .header-title {
     font-size: 1.8rem;
   }
-  
+
   .header-nav {
     margin-top: 0;
     position: static;
@@ -256,7 +256,9 @@
   z-index: 999;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    visibility 0.3s ease;
 }
 
 .nav-overlay.open {

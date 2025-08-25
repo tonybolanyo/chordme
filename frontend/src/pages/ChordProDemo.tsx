@@ -100,40 +100,44 @@ The [Em]hour I [D]first be[G]lieved
             <strong>Direct Chord Entry:</strong> Type chord names within square
             brackets <code>[Am]</code> with real-time validation
           </li>
-        <li>
-          <strong>Autocomplete:</strong> Start typing a chord like{' '}
-          <code>[C</code> to see suggestions
-        </li>
-        <li>
-          <strong>Chord Palette:</strong> Click any chord button to insert at
-          cursor position
-        </li>
-        <li>
-          <strong>Drag & Drop:</strong> Drag chords from the palette directly
-          onto specific positions in the lyrics
-        </li>
-        <li>
-          <strong>Chord Transposition:</strong> Use the transpose buttons (♭/♯)
-          to transpose all chords up or down by semitones
-        </li>
-        <li>
-          <strong>Visual Feedback:</strong> Invalid chord names are highlighted
-          with red underlines
-        </li>
+          <li>
+            <strong>Autocomplete:</strong> Start typing a chord like{' '}
+            <code>[C</code> to see suggestions
+          </li>
+          <li>
+            <strong>Chord Palette:</strong> Click any chord button to insert at
+            cursor position
+          </li>
+          <li>
+            <strong>Drag & Drop:</strong> Drag chords from the palette directly
+            onto specific positions in the lyrics
+          </li>
+          <li>
+            <strong>Chord Transposition:</strong> Use the transpose buttons
+            (♭/♯) to transpose all chords up or down by semitones
+          </li>
+          <li>
+            <strong>Visual Feedback:</strong> Invalid chord names are
+            highlighted with red underlines
+          </li>
         </ul>
       </div>
 
-      <div className="editor-layout-responsive" style={{ marginTop: 'var(--space-lg)' }}>
+      <div
+        className="editor-layout-responsive"
+        style={{ marginTop: 'var(--space-lg)' }}
+      >
         <div className="editor-main-responsive">
-          <div className="flex-responsive-md-row" style={{ 
-            justifyContent: 'space-between', 
-            alignItems: 'center',
-            marginBottom: 'var(--space-md)'
-          }}>
+          <div
+            className="flex-responsive-md-row"
+            style={{
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: 'var(--space-md)',
+            }}
+          >
             <h2>Interactive Editor</h2>
-            <TranspositionControls
-              onTranspose={handleTranspose}
-            />
+            <TranspositionControls onTranspose={handleTranspose} />
           </div>
           <ChordProEditor
             ref={editorRef}
@@ -158,9 +162,7 @@ The [Em]hour I [D]first be[G]lieved
 
         <div className="editor-sidebar-responsive">
           <div style={{ position: 'sticky', top: 'var(--space-lg)' }}>
-            <ChordPalette
-              onChordSelect={handleChordSelect}
-            />
+            <ChordPalette onChordSelect={handleChordSelect} />
           </div>
         </div>
       </div>

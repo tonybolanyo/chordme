@@ -101,7 +101,7 @@
   margin-bottom: 0.5rem;
 }
 
-.backend-option-header input[type="radio"] {
+.backend-option-header input[type='radio'] {
   margin: 0;
 }
 
@@ -183,17 +183,17 @@
     width: 95%;
     max-height: 90vh;
   }
-  
+
   .storage-settings-header,
   .storage-settings-content,
   .storage-settings-footer {
     padding: 1rem;
   }
-  
+
   .storage-settings-footer {
     flex-direction: column;
   }
-  
+
   .btn {
     width: 100%;
   }

@@ -20,7 +20,9 @@ interface ConflictResolutionProps {
     operations: EditOperation[];
     author: string;
   };
-  onResolve: (resolution: 'accept-local' | 'accept-remote' | 'merge-auto' | 'merge-manual') => void;
+  onResolve: (
+    resolution: 'accept-local' | 'accept-remote' | 'merge-auto' | 'merge-manual'
+  ) => void;
   onMergeManual?: (mergedContent: string) => void;
 }
 
@@ -63,15 +65,15 @@ export const ConflictResolutionDialog: React.FC<ConflictResolutionProps> = ({
     // Simple merge strategy - in a real implementation, you'd use operational transformation
     const lines1 = localChanges.content.split('\n');
     const lines2 = remoteChanges.content.split('\n');
-    
+
     // Basic line-by-line merge with conflict markers
     const merged: string[] = [];
     const maxLines = Math.max(lines1.length, lines2.length);
-    
+
     for (let i = 0; i < maxLines; i++) {
       const line1 = lines1[i] || '';
       const line2 = lines2[i] || '';
-      
+
       if (line1 === line2) {
         merged.push(line1);
       } else {
@@ -82,7 +84,7 @@ export const ConflictResolutionDialog: React.FC<ConflictResolutionProps> = ({
         merged.push(`>>>>>>> ${remoteChanges.author}'s changes`);
       }
     }
-    
+
     return merged.join('\n');
   };
 
@@ -101,41 +103,53 @@ export const ConflictResolutionDialog: React.FC<ConflictResolutionProps> = ({
             ⚠️ Conflicting Changes Detected
           </h3>
         </div>
-        
+
         <div className="conflict-dialog-content">
           <p>
-            Concurrent edits have been detected. Choose how to resolve the conflict:
+            Concurrent edits have been detected. Choose how to resolve the
+            conflict:
           </p>
-          
+
           <div className="conflict-changes">
             <div className="conflict-change">
               <div className="conflict-change-header">
                 Your Changes
                 <br />
-                <small>Modified {formatRelativeTime(localChanges.lastModified)}</small>
+                <small>
+                  Modified {formatRelativeTime(localChanges.lastModified)}
+                </small>
               </div>
               <div className="conflict-change-content">
                 {localChanges.content || '(empty)'}
               </div>
             </div>
-            
+
             <div className="conflict-change">
               <div className="conflict-change-header">
                 {remoteChanges.author}'s Changes
                 <br />
-                <small>Modified {formatRelativeTime(remoteChanges.lastModified)}</small>
+                <small>
+                  Modified {formatRelativeTime(remoteChanges.lastModified)}
+                </small>
               </div>
               <div className="conflict-change-content">
                 {remoteChanges.content || '(empty)'}
               </div>
             </div>
           </div>
-          
+
           <div style={{ marginTop: '1.5rem' }}>
             <h4>Resolution Options:</h4>
-            
+
             <div style={{ margin: '1rem 0' }}>
-              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', marginBottom: '0.75rem' }}>
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '0.5rem',
+                  marginBottom: '0.75rem',
+                }}
+              >
                 <input
                   type="radio"
                   name="resolution"
@@ -145,13 +159,26 @@ export const ConflictResolutionDialog: React.FC<ConflictResolutionProps> = ({
                 />
                 <div>
                   <strong>Keep My Changes</strong>
-                  <div style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.25rem' }}>
+                  <div
+                    style={{
+                      fontSize: '0.85rem',
+                      color: '#666',
+                      marginTop: '0.25rem',
+                    }}
+                  >
                     Discard the other user's changes and keep yours.
                   </div>
                 </div>
               </label>
-              
-              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', marginBottom: '0.75rem' }}>
+
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '0.5rem',
+                  marginBottom: '0.75rem',
+                }}
+              >
                 <input
                   type="radio"
                   name="resolution"
@@ -161,13 +188,26 @@ export const ConflictResolutionDialog: React.FC<ConflictResolutionProps> = ({
                 />
                 <div>
                   <strong>Accept {remoteChanges.author}'s Changes</strong>
-                  <div style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.25rem' }}>
+                  <div
+                    style={{
+                      fontSize: '0.85rem',
+                      color: '#666',
+                      marginTop: '0.25rem',
+                    }}
+                  >
                     Discard your changes and accept theirs.
                   </div>
                 </div>
               </label>
-              
-              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', marginBottom: '0.75rem' }}>
+
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '0.5rem',
+                  marginBottom: '0.75rem',
+                }}
+              >
                 <input
                   type="radio"
                   name="resolution"
@@ -177,13 +217,27 @@ export const ConflictResolutionDialog: React.FC<ConflictResolutionProps> = ({
                 />
                 <div>
                   <strong>Auto-Merge</strong>
-                  <div style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.25rem' }}>
-                    Automatically merge changes using operational transformation.
+                  <div
+                    style={{
+                      fontSize: '0.85rem',
+                      color: '#666',
+                      marginTop: '0.25rem',
+                    }}
+                  >
+                    Automatically merge changes using operational
+                    transformation.
                   </div>
                 </div>
               </label>
-              
-              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', marginBottom: '0.75rem' }}>
+
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '0.5rem',
+                  marginBottom: '0.75rem',
+                }}
+              >
                 <input
                   type="radio"
                   name="resolution"
@@ -193,12 +247,18 @@ export const ConflictResolutionDialog: React.FC<ConflictResolutionProps> = ({
                 />
                 <div>
                   <strong>Manual Merge</strong>
-                  <div style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.25rem' }}>
+                  <div
+                    style={{
+                      fontSize: '0.85rem',
+                      color: '#666',
+                      marginTop: '0.25rem',
+                    }}
+                  >
                     Manually edit the merged content to resolve conflicts.
                   </div>
                 </div>
               </label>
-              
+
               {selectedResolution === 'merge-manual' && (
                 <div style={{ marginTop: '1rem' }}>
                   <button
@@ -209,10 +269,17 @@ export const ConflictResolutionDialog: React.FC<ConflictResolutionProps> = ({
                   >
                     Generate Merge Preview
                   </button>
-                  
+
                   {showManualMerge && (
                     <div>
-                      <label htmlFor="merge-content-textarea" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+                      <label
+                        htmlFor="merge-content-textarea"
+                        style={{
+                          display: 'block',
+                          marginBottom: '0.5rem',
+                          fontWeight: '500',
+                        }}
+                      >
                         Edit the merged content:
                       </label>
                       <textarea
@@ -230,8 +297,16 @@ export const ConflictResolutionDialog: React.FC<ConflictResolutionProps> = ({
                           resize: 'vertical',
                         }}
                       />
-                      <div style={{ fontSize: '0.75rem', color: '#666', marginTop: '0.5rem' }}>
-                        Conflict markers: &lt;&lt;&lt;&lt;&lt;&lt;&lt; (your changes), ======= (separator), &gt;&gt;&gt;&gt;&gt;&gt;&gt; (their changes)
+                      <div
+                        style={{
+                          fontSize: '0.75rem',
+                          color: '#666',
+                          marginTop: '0.5rem',
+                        }}
+                      >
+                        Conflict markers: &lt;&lt;&lt;&lt;&lt;&lt;&lt; (your
+                        changes), ======= (separator),
+                        &gt;&gt;&gt;&gt;&gt;&gt;&gt; (their changes)
                       </div>
                     </div>
                   )}
@@ -240,7 +315,7 @@ export const ConflictResolutionDialog: React.FC<ConflictResolutionProps> = ({
             </div>
           </div>
         </div>
-        
+
         <div className="conflict-actions">
           <button
             type="button"
@@ -253,7 +328,10 @@ export const ConflictResolutionDialog: React.FC<ConflictResolutionProps> = ({
             type="button"
             className="conflict-btn conflict-btn-primary"
             onClick={handleResolve}
-            disabled={!selectedResolution || (selectedResolution === 'merge-manual' && !manualMergeContent)}
+            disabled={
+              !selectedResolution ||
+              (selectedResolution === 'merge-manual' && !manualMergeContent)
+            }
           >
             Resolve Conflict
           </button>

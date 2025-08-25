@@ -63,7 +63,7 @@ describe('StoragePreferenceService', () => {
     it('should overwrite existing preference', () => {
       storagePreferenceService.setPreference('firebase');
       storagePreferenceService.setPreference('api');
-      
+
       const preference = storagePreferenceService.getPreference();
       expect(preference).toBe('api');
     });
@@ -73,7 +73,7 @@ describe('StoragePreferenceService', () => {
     it('should remove stored preference', () => {
       storagePreferenceService.setPreference('firebase');
       expect(storagePreferenceService.hasExplicitPreference()).toBe(true);
-      
+
       storagePreferenceService.clearPreference();
       expect(storagePreferenceService.hasExplicitPreference()).toBe(false);
       expect(storagePreferenceService.getPreference()).toBe('api');
@@ -100,7 +100,7 @@ describe('StoragePreferenceService', () => {
     it('should return metadata when preference is stored', () => {
       storagePreferenceService.setPreference('firebase');
       const metadata = storagePreferenceService.getPreferenceMetadata();
-      
+
       expect(metadata).toBeTruthy();
       expect(metadata!.backend).toBe('firebase');
       expect(typeof metadata!.timestamp).toBe('number');

@@ -2,12 +2,14 @@ import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import ChordProDemo from './ChordProDemo';
 
-// Mock all the child components 
+// Mock all the child components
 vi.mock('../components', () => ({
   ChordProEditor: () => <div data-testid="chordpro-editor">Editor</div>,
   ChordProViewer: () => <div data-testid="chordpro-viewer">Viewer</div>,
   ChordPalette: () => <div data-testid="chord-palette">Palette</div>,
-  TranspositionControls: () => <div data-testid="transposition-controls">Controls</div>,
+  TranspositionControls: () => (
+    <div data-testid="transposition-controls">Controls</div>
+  ),
 }));
 
 // Mock the chord service
@@ -18,7 +20,9 @@ vi.mock('../services/chordService', () => ({
 describe('ChordProDemo Component', () => {
   it('renders main title', () => {
     render(<ChordProDemo />);
-    expect(screen.getByText('ChordPro Syntax Highlighting Demo')).toBeInTheDocument();
+    expect(
+      screen.getByText('ChordPro Syntax Highlighting Demo')
+    ).toBeInTheDocument();
   });
 
   it('renders all main components', () => {
@@ -38,7 +42,11 @@ describe('ChordProDemo Component', () => {
 
   it('describes ChordPro features', () => {
     render(<ChordProDemo />);
-    expect(screen.getByText(/This demonstrates the ChordPro syntax highlighting features/)).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /This demonstrates the ChordPro syntax highlighting features/
+      )
+    ).toBeInTheDocument();
     expect(screen.getByText(/Interactive Features/)).toBeInTheDocument();
   });
 

@@ -1,15 +1,15 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { 
-  getViewportWidth, 
-  getViewportHeight, 
-  isBreakpoint, 
-  isMobile, 
-  isTablet, 
+import {
+  getViewportWidth,
+  getViewportHeight,
+  isBreakpoint,
+  isMobile,
+  isTablet,
   isDesktop,
   getCurrentBreakpoint,
   getResponsiveColumns,
   getTouchTargetSize,
-  BREAKPOINTS
+  BREAKPOINTS,
 } from './responsive';
 
 // Mock window and navigator objects for testing
@@ -36,7 +36,7 @@ beforeEach(() => {
     configurable: true,
     value: vi.fn(),
   });
-  
+
   Object.defineProperty(navigator, 'maxTouchPoints', {
     writable: true,
     configurable: true,
@@ -59,10 +59,10 @@ describe('Responsive Utilities', () => {
       const originalWindow = global.window;
       // @ts-expect-error - Testing undefined window
       delete global.window;
-      
+
       expect(getViewportWidth()).toBe(0);
       expect(getViewportHeight()).toBe(0);
-      
+
       global.window = originalWindow;
     });
   });
@@ -80,7 +80,7 @@ describe('Responsive Utilities', () => {
     it('should detect mobile viewport', () => {
       Object.defineProperty(window, 'innerWidth', { value: 600 });
       expect(isMobile()).toBe(true);
-      
+
       Object.defineProperty(window, 'innerWidth', { value: 800 });
       expect(isMobile()).toBe(false);
     });
@@ -88,10 +88,10 @@ describe('Responsive Utilities', () => {
     it('should detect tablet viewport', () => {
       Object.defineProperty(window, 'innerWidth', { value: 900 });
       expect(isTablet()).toBe(true);
-      
+
       Object.defineProperty(window, 'innerWidth', { value: 600 });
       expect(isTablet()).toBe(false);
-      
+
       Object.defineProperty(window, 'innerWidth', { value: 1200 });
       expect(isTablet()).toBe(false);
     });
@@ -99,7 +99,7 @@ describe('Responsive Utilities', () => {
     it('should detect desktop viewport', () => {
       Object.defineProperty(window, 'innerWidth', { value: 1024 });
       expect(isDesktop()).toBe(true);
-      
+
       Object.defineProperty(window, 'innerWidth', { value: 600 });
       expect(isDesktop()).toBe(false);
     });
@@ -107,16 +107,16 @@ describe('Responsive Utilities', () => {
     it('should get current breakpoint correctly', () => {
       Object.defineProperty(window, 'innerWidth', { value: 320 });
       expect(getCurrentBreakpoint()).toBe('xs');
-      
+
       Object.defineProperty(window, 'innerWidth', { value: 480 });
       expect(getCurrentBreakpoint()).toBe('sm');
-      
+
       Object.defineProperty(window, 'innerWidth', { value: 768 });
       expect(getCurrentBreakpoint()).toBe('md');
-      
+
       Object.defineProperty(window, 'innerWidth', { value: 1024 });
       expect(getCurrentBreakpoint()).toBe('lg');
-      
+
       Object.defineProperty(window, 'innerWidth', { value: 1200 });
       expect(getCurrentBreakpoint()).toBe('xl');
     });
@@ -126,10 +126,10 @@ describe('Responsive Utilities', () => {
     it('should calculate responsive columns correctly', () => {
       Object.defineProperty(window, 'innerWidth', { value: 400 });
       expect(getResponsiveColumns(1, 2, 3)).toBe(1);
-      
+
       Object.defineProperty(window, 'innerWidth', { value: 800 });
       expect(getResponsiveColumns(1, 2, 3)).toBe(2);
-      
+
       Object.defineProperty(window, 'innerWidth', { value: 1200 });
       expect(getResponsiveColumns(1, 2, 3)).toBe(3);
     });
@@ -139,7 +139,7 @@ describe('Responsive Utilities', () => {
       Object.defineProperty(window, 'ontouchstart', { value: true });
       expect(getTouchTargetSize(30)).toBe(44);
       expect(getTouchTargetSize(50)).toBe(50);
-      
+
       // Mock non-touch device
       delete (window as unknown as { ontouchstart?: unknown }).ontouchstart;
       expect(getTouchTargetSize(30)).toBe(30);

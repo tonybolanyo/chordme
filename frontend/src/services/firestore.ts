@@ -59,12 +59,14 @@ class FirestoreService {
       title: data.title,
       author_id: data.author_id,
       content: data.content,
-      created_at: data.created_at instanceof Timestamp 
-        ? data.created_at.toDate().toISOString()
-        : data.created_at as string,
-      updated_at: data.updated_at instanceof Timestamp 
-        ? data.updated_at.toDate().toISOString()
-        : data.updated_at as string,
+      created_at:
+        data.created_at instanceof Timestamp
+          ? data.created_at.toDate().toISOString()
+          : (data.created_at as string),
+      updated_at:
+        data.updated_at instanceof Timestamp
+          ? data.updated_at.toDate().toISOString()
+          : (data.updated_at as string),
     };
   }
 
@@ -80,17 +82,19 @@ class FirestoreService {
     return {
       id: doc.id,
       email: data.email,
-      created_at: data.created_at instanceof Timestamp 
-        ? data.created_at.toDate().toISOString()
-        : data.created_at as string,
-      updated_at: data.updated_at instanceof Timestamp 
-        ? data.updated_at.toDate().toISOString()
-        : data.updated_at as string,
+      created_at:
+        data.created_at instanceof Timestamp
+          ? data.created_at.toDate().toISOString()
+          : (data.created_at as string),
+      updated_at:
+        data.updated_at instanceof Timestamp
+          ? data.updated_at.toDate().toISOString()
+          : (data.updated_at as string),
     };
   }
 
   // Song operations
-  
+
   /**
    * Get all songs for a user
    */
@@ -102,17 +106,17 @@ class FirestoreService {
         where('author_id', '==', userId),
         orderBy('updated_at', 'desc')
       );
-      
+
       const querySnapshot = await getDocs(q);
       const songs: Song[] = [];
-      
+
       querySnapshot.forEach((doc) => {
         const song = this.documentToSong(doc);
         if (song) {
           songs.push(song);
         }
       });
-      
+
       return songs;
     } catch (error) {
       console.error('Error getting songs from Firestore:', error);
@@ -127,7 +131,7 @@ class FirestoreService {
     try {
       const songRef = doc(this.db, 'songs', songId);
       const songSnap = await getDoc(songRef);
-      
+
       return this.documentToSong(songSnap);
     } catch (error) {
       console.error('Error getting song from Firestore:', error);
@@ -150,15 +154,15 @@ class FirestoreService {
       };
 
       const docRef = await addDoc(collection(this.db, 'songs'), firestoreSong);
-      
+
       // Get the created document to return as Song
       const createdDoc = await getDoc(docRef);
       const createdSong = this.documentToSong(createdDoc);
-      
+
       if (!createdSong) {
         throw new Error('Failed to retrieve created song');
       }
-      
+
       return createdSong;
     } catch (error) {
       console.error('Error creating song in Firestore:', error);
@@ -172,29 +176,29 @@ class FirestoreService {
   async updateSong(songId: string, songData: Partial<Song>): Promise<Song> {
     try {
       const songRef = doc(this.db, 'songs', songId);
-      
+
       const updateData: Partial<FirestoreSong> = {
         updated_at: Timestamp.now(),
       };
-      
+
       if (songData.title !== undefined) {
         updateData.title = songData.title;
       }
-      
+
       if (songData.content !== undefined) {
         updateData.content = songData.content;
       }
-      
+
       await updateDoc(songRef, updateData);
-      
+
       // Get the updated document to return as Song
       const updatedDoc = await getDoc(songRef);
       const updatedSong = this.documentToSong(updatedDoc);
-      
+
       if (!updatedSong) {
         throw new Error('Failed to retrieve updated song');
       }
-      
+
       return updatedSong;
     } catch (error) {
       console.error('Error updating song in Firestore:', error);
@@ -216,7 +220,7 @@ class FirestoreService {
   }
 
   // User operations (basic CRUD for compatibility)
-  
+
   /**
    * Get user by ID
    */
@@ -224,7 +228,7 @@ class FirestoreService {
     try {
       const userRef = doc(this.db, 'users', userId);
       const userSnap = await getDoc(userRef);
-      
+
       return this.documentToUser(userSnap);
     } catch (error) {
       console.error('Error getting user from Firestore:', error);
@@ -253,15 +257,15 @@ class FirestoreService {
         // Auto-generate ID
         docRef = await addDoc(collection(this.db, 'users'), firestoreUser);
       }
-      
+
       // Get the created document to return as User
       const createdDoc = await getDoc(docRef);
       const createdUser = this.documentToUser(createdDoc);
-      
+
       if (!createdUser) {
         throw new Error('Failed to retrieve created user');
       }
-      
+
       return createdUser;
     } catch (error) {
       console.error('Error creating user in Firestore:', error);
@@ -275,25 +279,25 @@ class FirestoreService {
   async updateUser(userId: string, userData: Partial<User>): Promise<User> {
     try {
       const userRef = doc(this.db, 'users', userId);
-      
+
       const updateData: Partial<FirestoreUser> = {
         updated_at: Timestamp.now(),
       };
-      
+
       if (userData.email !== undefined) {
         updateData.email = userData.email;
       }
-      
+
       await updateDoc(userRef, updateData);
-      
+
       // Get the updated document to return as User
       const updatedDoc = await getDoc(userRef);
       const updatedUser = this.documentToUser(updatedDoc);
-      
+
       if (!updatedUser) {
         throw new Error('Failed to retrieve updated user');
       }
-      
+
       return updatedUser;
     } catch (error) {
       console.error('Error updating user in Firestore:', error);
@@ -313,7 +317,10 @@ class FirestoreService {
   /**
    * Subscribe to real-time updates for all songs for a user
    */
-  subscribeToSongs(userId: string, callback: (songs: Song[]) => void): Unsubscribe {
+  subscribeToSongs(
+    userId: string,
+    callback: (songs: Song[]) => void
+  ): Unsubscribe {
     try {
       const songsRef = collection(this.db, 'songs');
       const q = query(
@@ -321,23 +328,27 @@ class FirestoreService {
         where('author_id', '==', userId),
         orderBy('updated_at', 'desc')
       );
-      
-      return onSnapshot(q, (querySnapshot: QuerySnapshot) => {
-        const songs: Song[] = [];
-        
-        querySnapshot.forEach((doc) => {
-          const song = this.documentToSong(doc);
-          if (song) {
-            songs.push(song);
-          }
-        });
-        
-        callback(songs);
-      }, (error) => {
-        console.error('Error in songs real-time subscription:', error);
-        // Call callback with empty array on error to prevent UI issues
-        callback([]);
-      });
+
+      return onSnapshot(
+        q,
+        (querySnapshot: QuerySnapshot) => {
+          const songs: Song[] = [];
+
+          querySnapshot.forEach((doc) => {
+            const song = this.documentToSong(doc);
+            if (song) {
+              songs.push(song);
+            }
+          });
+
+          callback(songs);
+        },
+        (error) => {
+          console.error('Error in songs real-time subscription:', error);
+          // Call callback with empty array on error to prevent UI issues
+          callback([]);
+        }
+      );
     } catch (error) {
       console.error('Error setting up songs real-time subscription:', error);
       // Return a no-op unsubscribe function
@@ -348,18 +359,25 @@ class FirestoreService {
   /**
    * Subscribe to real-time updates for a specific song
    */
-  subscribeToSong(songId: string, callback: (song: Song | null) => void): Unsubscribe {
+  subscribeToSong(
+    songId: string,
+    callback: (song: Song | null) => void
+  ): Unsubscribe {
     try {
       const songRef = doc(this.db, 'songs', songId);
-      
-      return onSnapshot(songRef, (doc: DocumentSnapshot) => {
-        const song = this.documentToSong(doc);
-        callback(song);
-      }, (error) => {
-        console.error('Error in song real-time subscription:', error);
-        // Call callback with null on error
-        callback(null);
-      });
+
+      return onSnapshot(
+        songRef,
+        (doc: DocumentSnapshot) => {
+          const song = this.documentToSong(doc);
+          callback(song);
+        },
+        (error) => {
+          console.error('Error in song real-time subscription:', error);
+          // Call callback with null on error
+          callback(null);
+        }
+      );
     } catch (error) {
       console.error('Error setting up song real-time subscription:', error);
       // Return a no-op unsubscribe function

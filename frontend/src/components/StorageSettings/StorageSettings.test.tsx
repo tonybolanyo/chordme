@@ -26,7 +26,7 @@ vi.mock('./StorageSettings.css', () => ({}));
 
 describe('StorageSettings Component', () => {
   const user = userEvent.setup();
-  
+
   const defaultProps = {
     onClose: vi.fn(),
     currentBackend: 'api' as const,
@@ -37,7 +37,7 @@ describe('StorageSettings Component', () => {
     vi.clearAllMocks();
     mockFirebaseIsInitialized.mockReturnValue(true);
     mockGoogleOAuthIsConfigured.mockReturnValue(true);
-    
+
     // Mock localStorage
     Object.defineProperty(global, 'localStorage', {
       value: {
@@ -53,7 +53,7 @@ describe('StorageSettings Component', () => {
   describe('Component Rendering', () => {
     it('should render all storage backend options', () => {
       render(<StorageSettings {...defaultProps} />);
-      
+
       expect(screen.getByText('REST API Storage')).toBeInTheDocument();
       expect(screen.getByText('Firebase/Firestore')).toBeInTheDocument();
       expect(screen.getByText('Google Drive')).toBeInTheDocument();
@@ -62,24 +62,32 @@ describe('StorageSettings Component', () => {
 
     it('should show backend descriptions', () => {
       render(<StorageSettings {...defaultProps} />);
-      
-      expect(screen.getByText(/server-based storage using flask backend/i)).toBeInTheDocument();
-      expect(screen.getByText(/real-time cloud storage with live synchronization/i)).toBeInTheDocument();
-      expect(screen.getByText(/store songs as files in your google drive/i)).toBeInTheDocument();
+
+      expect(
+        screen.getByText(/server-based storage using flask backend/i)
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(/real-time cloud storage with live synchronization/i)
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(/store songs as files in your google drive/i)
+      ).toBeInTheDocument();
       expect(screen.getByText(/browser-based storage/i)).toBeInTheDocument();
     });
 
     it('should highlight current backend selection', () => {
       render(<StorageSettings {...defaultProps} currentBackend="firebase" />);
-      
+
       const firebaseRadio = screen.getByDisplayValue('firebase');
       expect(firebaseRadio).toBeChecked();
     });
 
     it('should render action buttons', () => {
       render(<StorageSettings {...defaultProps} />);
-      
-      expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument();
+
+      expect(
+        screen.getByRole('button', { name: /cancel/i })
+      ).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /save/i })).toBeInTheDocument();
     });
   });
@@ -87,10 +95,10 @@ describe('StorageSettings Component', () => {
   describe('Backend Availability Detection', () => {
     it('should show all backends as available when properly configured', () => {
       render(<StorageSettings {...defaultProps} />);
-      
+
       // No unavailable badges should be present
       expect(screen.queryByText('Unavailable')).not.toBeInTheDocument();
-      
+
       // All radio buttons should be enabled
       expect(screen.getByDisplayValue('api')).toBeEnabled();
       expect(screen.getByDisplayValue('firebase')).toBeEnabled();
@@ -100,22 +108,32 @@ describe('StorageSettings Component', () => {
 
     it('should mark Firebase as unavailable when not configured', () => {
       mockFirebaseIsInitialized.mockReturnValue(false);
-      
+
       render(<StorageSettings {...defaultProps} />);
-      
-      const firebaseOption = screen.getByDisplayValue('firebase').closest('.backend-option');
+
+      const firebaseOption = screen
+        .getByDisplayValue('firebase')
+        .closest('.backend-option');
       expect(firebaseOption).toHaveClass('disabled');
-      expect(screen.getByText('Firebase configuration required in environment variables')).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          'Firebase configuration required in environment variables'
+        )
+      ).toBeInTheDocument();
     });
 
     it('should mark Google Drive as unavailable when not configured', () => {
       mockGoogleOAuthIsConfigured.mockReturnValue(false);
-      
+
       render(<StorageSettings {...defaultProps} />);
-      
-      const googleDriveOption = screen.getByDisplayValue('googledrive').closest('.backend-option');
+
+      const googleDriveOption = screen
+        .getByDisplayValue('googledrive')
+        .closest('.backend-option');
       expect(googleDriveOption).toHaveClass('disabled');
-      expect(screen.getByText('Google OAuth configuration required')).toBeInTheDocument();
+      expect(
+        screen.getByText('Google OAuth configuration required')
+      ).toBeInTheDocument();
     });
 
     it('should mark Local Storage as unavailable when not supported', () => {
@@ -124,22 +142,28 @@ describe('StorageSettings Component', () => {
         value: undefined,
         writable: true,
       });
-      
+
       render(<StorageSettings {...defaultProps} />);
-      
-      const localStorageOption = screen.getByDisplayValue('localstorage').closest('.backend-option');
+
+      const localStorageOption = screen
+        .getByDisplayValue('localstorage')
+        .closest('.backend-option');
       expect(localStorageOption).toHaveClass('disabled');
-      expect(screen.getByText('Local storage not supported in this browser')).toBeInTheDocument();
+      expect(
+        screen.getByText('Local storage not supported in this browser')
+      ).toBeInTheDocument();
     });
 
     it('should always show REST API as available', () => {
       mockFirebaseIsInitialized.mockReturnValue(false);
       mockGoogleOAuthIsConfigured.mockReturnValue(false);
       Object.defineProperty(global, 'localStorage', { value: undefined });
-      
+
       render(<StorageSettings {...defaultProps} />);
-      
-      const apiOption = screen.getByDisplayValue('api').closest('.backend-option');
+
+      const apiOption = screen
+        .getByDisplayValue('api')
+        .closest('.backend-option');
       expect(apiOption).not.toHaveClass('disabled');
       expect(screen.getByDisplayValue('api')).toBeEnabled();
     });
@@ -148,22 +172,22 @@ describe('StorageSettings Component', () => {
   describe('Backend Selection', () => {
     it('should allow selecting available backends', async () => {
       render(<StorageSettings {...defaultProps} currentBackend="api" />);
-      
+
       const firebaseRadio = screen.getByDisplayValue('firebase');
       await user.click(firebaseRadio);
-      
+
       expect(firebaseRadio).toBeChecked();
       expect(screen.getByDisplayValue('api')).not.toBeChecked();
     });
 
     it('should prevent selecting unavailable backends', async () => {
       mockFirebaseIsInitialized.mockReturnValue(false);
-      
+
       render(<StorageSettings {...defaultProps} currentBackend="api" />);
-      
+
       const firebaseRadio = screen.getByDisplayValue('firebase');
       expect(firebaseRadio).toBeDisabled();
-      
+
       await user.click(firebaseRadio);
       expect(firebaseRadio).not.toBeChecked();
       expect(screen.getByDisplayValue('api')).toBeChecked();
@@ -171,21 +195,25 @@ describe('StorageSettings Component', () => {
 
     it('should update selection when clicking on backend option container', async () => {
       render(<StorageSettings {...defaultProps} currentBackend="api" />);
-      
-      const firebaseOption = screen.getByDisplayValue('firebase').closest('.backend-option');
+
+      const firebaseOption = screen
+        .getByDisplayValue('firebase')
+        .closest('.backend-option');
       await user.click(firebaseOption!);
-      
+
       expect(screen.getByDisplayValue('firebase')).toBeChecked();
     });
 
     it('should not change selection when clicking disabled backend option', async () => {
       mockFirebaseIsInitialized.mockReturnValue(false);
-      
+
       render(<StorageSettings {...defaultProps} currentBackend="api" />);
-      
-      const firebaseOption = screen.getByDisplayValue('firebase').closest('.backend-option');
+
+      const firebaseOption = screen
+        .getByDisplayValue('firebase')
+        .closest('.backend-option');
       await user.click(firebaseOption!);
-      
+
       expect(screen.getByDisplayValue('api')).toBeChecked();
       expect(screen.getByDisplayValue('firebase')).not.toBeChecked();
     });
@@ -194,35 +222,35 @@ describe('StorageSettings Component', () => {
   describe('Form Actions', () => {
     it('should call onClose when cancel button is clicked', async () => {
       render(<StorageSettings {...defaultProps} />);
-      
+
       const cancelButton = screen.getByRole('button', { name: /cancel/i });
       await user.click(cancelButton);
-      
+
       expect(defaultProps.onClose).toHaveBeenCalled();
     });
 
     it('should call onBackendChange and onClose when save button is clicked', async () => {
       render(<StorageSettings {...defaultProps} currentBackend="api" />);
-      
+
       // Select a different backend
       const firebaseRadio = screen.getByDisplayValue('firebase');
       await user.click(firebaseRadio);
-      
+
       // Click save
       const saveButton = screen.getByRole('button', { name: /save/i });
       await user.click(saveButton);
-      
+
       expect(defaultProps.onBackendChange).toHaveBeenCalledWith('firebase');
       expect(defaultProps.onClose).toHaveBeenCalled();
     });
 
-    it('should not call onBackendChange if selection hasn\'t changed', async () => {
+    it("should not call onBackendChange if selection hasn't changed", async () => {
       render(<StorageSettings {...defaultProps} currentBackend="api" />);
-      
+
       // Click save without changing selection
       const saveButton = screen.getByRole('button', { name: /save/i });
       await user.click(saveButton);
-      
+
       expect(defaultProps.onBackendChange).not.toHaveBeenCalled();
       expect(defaultProps.onClose).toHaveBeenCalled();
     });
@@ -232,30 +260,40 @@ describe('StorageSettings Component', () => {
     it('should show configuration requirements for unavailable backends', () => {
       mockFirebaseIsInitialized.mockReturnValue(false);
       mockGoogleOAuthIsConfigured.mockReturnValue(false);
-      
+
       render(<StorageSettings {...defaultProps} />);
-      
-      expect(screen.getByText('⚠️ Firebase configuration required in environment variables')).toBeInTheDocument();
-      expect(screen.getByText('⚠️ Google OAuth configuration required')).toBeInTheDocument();
+
+      expect(
+        screen.getByText(
+          '⚠️ Firebase configuration required in environment variables'
+        )
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('⚠️ Google OAuth configuration required')
+      ).toBeInTheDocument();
     });
 
     it('should not show configuration messages for available backends', () => {
       render(<StorageSettings {...defaultProps} />);
-      
-      expect(screen.queryByText(/configuration required/i)).not.toBeInTheDocument();
+
+      expect(
+        screen.queryByText(/configuration required/i)
+      ).not.toBeInTheDocument();
     });
   });
 
   describe('Component State Management', () => {
     it('should maintain selection state when backend availability changes', async () => {
-      const { rerender } = render(<StorageSettings {...defaultProps} currentBackend="firebase" />);
-      
+      const { rerender } = render(
+        <StorageSettings {...defaultProps} currentBackend="firebase" />
+      );
+
       expect(screen.getByDisplayValue('firebase')).toBeChecked();
-      
+
       // Firebase becomes unavailable
       mockFirebaseIsInitialized.mockReturnValue(false);
       rerender(<StorageSettings {...defaultProps} currentBackend="firebase" />);
-      
+
       // Should still show firebase as selected, but disabled
       expect(screen.getByDisplayValue('firebase')).toBeChecked();
       expect(screen.getByDisplayValue('firebase')).toBeDisabled();
@@ -264,9 +302,9 @@ describe('StorageSettings Component', () => {
     it('should reset to available backend when current backend becomes unavailable', () => {
       // Start with firebase selected but unavailable
       mockFirebaseIsInitialized.mockReturnValue(false);
-      
+
       render(<StorageSettings {...defaultProps} currentBackend="firebase" />);
-      
+
       // Should fall back to api (always available)
       expect(screen.getByDisplayValue('api')).toBeChecked();
     });
@@ -275,44 +313,44 @@ describe('StorageSettings Component', () => {
   describe('Accessibility', () => {
     it('should have proper form structure and labels', () => {
       render(<StorageSettings {...defaultProps} />);
-      
+
       // Radio group should be properly labeled
       const radioButtons = screen.getAllByRole('radio');
       expect(radioButtons).toHaveLength(4);
-      
-      radioButtons.forEach(radio => {
+
+      radioButtons.forEach((radio) => {
         expect(radio).toHaveAttribute('name', 'storage-backend');
       });
     });
 
     it('should support keyboard navigation', async () => {
       render(<StorageSettings {...defaultProps} />);
-      
+
       const apiRadio = screen.getByDisplayValue('api');
       const firebaseRadio = screen.getByDisplayValue('firebase');
-      
+
       apiRadio.focus();
       expect(apiRadio).toHaveFocus();
-      
+
       await user.keyboard('{ArrowDown}');
       expect(firebaseRadio).toHaveFocus();
     });
 
     it('should announce selection changes to screen readers', async () => {
       render(<StorageSettings {...defaultProps} />);
-      
+
       const firebaseRadio = screen.getByDisplayValue('firebase');
-      
+
       await user.click(firebaseRadio);
-      
+
       expect(firebaseRadio).toHaveAttribute('aria-checked', 'true');
     });
 
     it('should indicate disabled state for unavailable backends', () => {
       mockFirebaseIsInitialized.mockReturnValue(false);
-      
+
       render(<StorageSettings {...defaultProps} />);
-      
+
       const firebaseRadio = screen.getByDisplayValue('firebase');
       expect(firebaseRadio).toHaveAttribute('disabled');
       expect(firebaseRadio.closest('.backend-option')).toHaveClass('disabled');
@@ -323,34 +361,42 @@ describe('StorageSettings Component', () => {
     it('should update availability when services become configured', async () => {
       // Start with Firebase unavailable
       mockFirebaseIsInitialized.mockReturnValue(false);
-      
+
       const { rerender } = render(<StorageSettings {...defaultProps} />);
-      
+
       expect(screen.getByDisplayValue('firebase')).toBeDisabled();
-      expect(screen.getByText('Firebase configuration required in environment variables')).toBeInTheDocument();
-      
+      expect(
+        screen.getByText(
+          'Firebase configuration required in environment variables'
+        )
+      ).toBeInTheDocument();
+
       // Firebase becomes available
       mockFirebaseIsInitialized.mockReturnValue(true);
       rerender(<StorageSettings {...defaultProps} />);
-      
+
       expect(screen.getByDisplayValue('firebase')).toBeEnabled();
-      expect(screen.queryByText('Firebase configuration required in environment variables')).not.toBeInTheDocument();
+      expect(
+        screen.queryByText(
+          'Firebase configuration required in environment variables'
+        )
+      ).not.toBeInTheDocument();
     });
 
     it('should handle multiple service availability changes', () => {
       // Start with some services unavailable
       mockFirebaseIsInitialized.mockReturnValue(false);
       mockGoogleOAuthIsConfigured.mockReturnValue(false);
-      
+
       const { rerender } = render(<StorageSettings {...defaultProps} />);
-      
+
       expect(screen.getAllByText('Unavailable')).toHaveLength(2);
-      
+
       // Services become available
       mockFirebaseIsInitialized.mockReturnValue(true);
       mockGoogleOAuthIsConfigured.mockReturnValue(true);
       rerender(<StorageSettings {...defaultProps} />);
-      
+
       expect(screen.queryByText('Unavailable')).not.toBeInTheDocument();
     });
   });
@@ -361,31 +407,35 @@ describe('StorageSettings Component', () => {
         value: undefined,
         writable: true,
       });
-      
+
       expect(() => {
         render(<StorageSettings {...defaultProps} />);
       }).not.toThrow();
-      
-      expect(screen.getByText('Local storage not supported in this browser')).toBeInTheDocument();
+
+      expect(
+        screen.getByText('Local storage not supported in this browser')
+      ).toBeInTheDocument();
     });
 
     it('should handle service check failures gracefully', () => {
       mockFirebaseIsInitialized.mockImplementation(() => {
         throw new Error('Service check failed');
       });
-      
+
       expect(() => {
         render(<StorageSettings {...defaultProps} />);
       }).not.toThrow();
-      
+
       // Should fall back to treating Firebase as unavailable
       expect(screen.getByDisplayValue('firebase')).toBeDisabled();
     });
 
     it('should handle missing backend in current selection', () => {
       // @ts-ignore - Testing invalid backend id
-      render(<StorageSettings {...defaultProps} currentBackend="invalid-backend" />);
-      
+      render(
+        <StorageSettings {...defaultProps} currentBackend="invalid-backend" />
+      );
+
       // Should default to API backend
       expect(screen.getByDisplayValue('api')).toBeChecked();
     });

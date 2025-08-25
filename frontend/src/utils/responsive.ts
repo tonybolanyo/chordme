@@ -64,7 +64,7 @@ export const isDesktop = (): boolean => {
  */
 export const getCurrentBreakpoint = (): Breakpoint => {
   const width = getViewportWidth();
-  
+
   if (width >= BREAKPOINTS.xl) return 'xl';
   if (width >= BREAKPOINTS.lg) return 'lg';
   if (width >= BREAKPOINTS.md) return 'md';
@@ -100,7 +100,7 @@ export const useViewport = (): ViewportInfo => {
     const handleResize = () => {
       const width = getViewportWidth();
       const height = getViewportHeight();
-      
+
       setViewport({
         width,
         height,
@@ -112,7 +112,7 @@ export const useViewport = (): ViewportInfo => {
     };
 
     window.addEventListener('resize', handleResize);
-    
+
     // Call immediately to set initial state
     handleResize();
 
@@ -160,9 +160,12 @@ export const useIsTouchDevice = (): boolean => {
     if (typeof window === 'undefined') return;
 
     const checkTouchSupport = () => {
-      return 'ontouchstart' in window || 
-             navigator.maxTouchPoints > 0 ||
-             (navigator as unknown as { msMaxTouchPoints?: number }).msMaxTouchPoints > 0;
+      return (
+        'ontouchstart' in window ||
+        navigator.maxTouchPoints > 0 ||
+        (navigator as unknown as { msMaxTouchPoints?: number })
+          .msMaxTouchPoints > 0
+      );
     };
 
     setIsTouchDevice(checkTouchSupport());
@@ -180,7 +183,7 @@ export const getResponsiveColumns = (
   desktop: number = 3
 ): number => {
   const width = getViewportWidth();
-  
+
   if (width >= BREAKPOINTS.lg) return desktop;
   if (width >= BREAKPOINTS.md) return tablet;
   return mobile;
@@ -202,7 +205,7 @@ export const createResizeObserver = (
   debounceMs: number = 150
 ) => {
   let timeoutId: NodeJS.Timeout;
-  
+
   const debouncedCallback = () => {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => {
@@ -223,7 +226,7 @@ export const createResizeObserver = (
         window.removeEventListener('resize', debouncedCallback);
         clearTimeout(timeoutId);
       }
-    }
+    },
   };
 
   return observer;
