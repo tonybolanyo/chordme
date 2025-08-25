@@ -385,6 +385,284 @@ class GoogleDriveService:
             filename = name[:95] + ('.' + ext if ext else '')
         return filename
 
+    def _list_drive_files(self, access_token: str, query: str = None, max_results: int = 100) -> List[Dict[str, Any]]:
+        """
+        List files from Google Drive.
+        
+        Args:
+            access_token: OAuth2 access token
+            query: Optional search query
+            max_results: Maximum number of results to return
+            
+        Returns:
+            List of file metadata dictionaries
+            
+        Raises:
+            ValueError: If API error occurs
+        """
+        try:
+            service = self._create_drive_service(access_token)
+            
+            request_params = {
+                'pageSize': min(max_results, 1000),
+                'fields': 'files(id,name,mimeType,size,modifiedTime,createdTime,webViewLink)'
+            }
+            
+            if query:
+                request_params['q'] = query
+            
+            result = service.files().list(**request_params).execute()
+            return result.get('files', [])
+            
+        except HttpError as e:
+            if e.resp.status == 401:
+                raise ValueError("Invalid or expired access token")
+            else:
+                raise ValueError(f"Google Drive API error: {e.resp.reason}")
+        except Exception as e:
+            raise ValueError(f"Failed to list files: {str(e)}")
+
+    def _download_drive_file(self, access_token: str, file_id: str) -> tuple[Dict[str, Any], str]:
+        """
+        Download file from Google Drive.
+        
+        Args:
+            access_token: OAuth2 access token
+            file_id: Google Drive file ID
+            
+        Returns:
+            Tuple of (file_metadata, file_content)
+            
+        Raises:
+            ValueError: If file not found or API error occurs
+        """
+        try:
+            service = self._create_drive_service(access_token)
+            
+            # Get file metadata
+            metadata = service.files().get(
+                fileId=file_id,
+                fields='id,name,mimeType,size,modifiedTime,createdTime'
+            ).execute()
+            
+            # Download file content
+            content_bytes = service.files().get_media(fileId=file_id).execute()
+            content = content_bytes.decode('utf-8')
+            
+            return metadata, content
+            
+        except HttpError as e:
+            if e.resp.status == 404:
+                raise ValueError("File not found")
+            elif e.resp.status == 401:
+                raise ValueError("Invalid or expired access token")
+            else:
+                raise ValueError(f"Google Drive API error: {e.resp.reason}")
+        except Exception as e:
+            raise ValueError(f"Failed to download file: {str(e)}")
+
+    def _upload_to_drive(self, access_token: str, filename: str, content: str, parent_folder_id: str = None) -> Dict[str, Any]:
+        """
+        Upload file to Google Drive.
+        
+        Args:
+            access_token: OAuth2 access token
+            filename: Name for the uploaded file
+            content: File content
+            parent_folder_id: Optional parent folder ID
+            
+        Returns:
+            File metadata dictionary
+            
+        Raises:
+            ValueError: If upload fails or API error occurs
+        """
+        try:
+            service = self._create_drive_service(access_token)
+            
+            # Prepare file metadata
+            file_metadata = {'name': filename}
+            if parent_folder_id:
+                file_metadata['parents'] = [parent_folder_id]
+            
+            # Create media upload
+            media = MediaInMemoryUpload(
+                content.encode('utf-8'),
+                mimetype='text/plain',
+                resumable=False
+            )
+            
+            # Upload file
+            result = service.files().create(
+                body=file_metadata,
+                media_body=media,
+                fields='id,name,mimeType,size,createdTime,modifiedTime,webViewLink'
+            ).execute()
+            
+            return result
+            
+        except HttpError as e:
+            if 'storage quota' in str(e):
+                raise ValueError("Google Drive storage quota exceeded")
+            elif e.resp.status == 401:
+                raise ValueError("Invalid or expired access token")
+            else:
+                raise ValueError(f"Google Drive API error: {e.resp.reason}")
+        except Exception as e:
+            raise ValueError(f"Failed to upload file: {str(e)}")
+
+    def _create_drive_folder(self, access_token: str, folder_name: str, parent_folder_id: str = None) -> Dict[str, Any]:
+        """
+        Create folder in Google Drive.
+        
+        Args:
+            access_token: OAuth2 access token
+            folder_name: Name for the new folder
+            parent_folder_id: Optional parent folder ID
+            
+        Returns:
+            Folder metadata dictionary
+            
+        Raises:
+            ValueError: If creation fails or API error occurs
+        """
+        try:
+            service = self._create_drive_service(access_token)
+            
+            # Prepare folder metadata
+            folder_metadata = {
+                'name': folder_name,
+                'mimeType': 'application/vnd.google-apps.folder'
+            }
+            if parent_folder_id:
+                folder_metadata['parents'] = [parent_folder_id]
+            
+            # Create folder
+            result = service.files().create(
+                body=folder_metadata,
+                fields='id,name,mimeType,createdTime,modifiedTime'
+            ).execute()
+            
+            return result
+            
+        except HttpError as e:
+            if e.resp.status == 401:
+                raise ValueError("Invalid or expired access token")
+            else:
+                raise ValueError(f"Google Drive API error: {e.resp.reason}")
+        except Exception as e:
+            raise ValueError(f"Failed to create folder: {str(e)}")
+
+    def _update_drive_file(self, access_token: str, file_id: str, content: str) -> Dict[str, Any]:
+        """
+        Update existing file in Google Drive.
+        
+        Args:
+            access_token: OAuth2 access token
+            file_id: Google Drive file ID to update
+            content: New file content
+            
+        Returns:
+            Updated file metadata dictionary
+            
+        Raises:
+            ValueError: If update fails or API error occurs
+        """
+        try:
+            service = self._create_drive_service(access_token)
+            
+            # Create media upload
+            media = MediaInMemoryUpload(
+                content.encode('utf-8'),
+                mimetype='text/plain',
+                resumable=False
+            )
+            
+            # Update file
+            result = service.files().update(
+                fileId=file_id,
+                media_body=media,
+                fields='id,name,mimeType,size,modifiedTime'
+            ).execute()
+            
+            return result
+            
+        except HttpError as e:
+            if e.resp.status == 404:
+                raise ValueError("File not found")
+            elif e.resp.status == 401:
+                raise ValueError("Invalid or expired access token")
+            else:
+                raise ValueError(f"Google Drive API error: {e.resp.reason}")
+        except Exception as e:
+            raise ValueError(f"Failed to update file: {str(e)}")
+
+    def _delete_drive_file(self, access_token: str, file_id: str) -> bool:
+        """
+        Delete file from Google Drive.
+        
+        Args:
+            access_token: OAuth2 access token
+            file_id: Google Drive file ID to delete
+            
+        Returns:
+            True if deletion successful
+            
+        Raises:
+            ValueError: If deletion fails or API error occurs
+        """
+        try:
+            service = self._create_drive_service(access_token)
+            
+            # Delete file
+            service.files().delete(fileId=file_id).execute()
+            return True
+            
+        except HttpError as e:
+            if e.resp.status == 404:
+                raise ValueError("File not found")
+            elif e.resp.status == 401:
+                raise ValueError("Invalid or expired access token")
+            else:
+                raise ValueError(f"Google Drive API error: {e.resp.reason}")
+        except Exception as e:
+            raise ValueError(f"Failed to delete file: {str(e)}")
+
+    def _get_file_permissions(self, access_token: str, file_id: str) -> Dict[str, Any]:
+        """
+        Get file permissions from Google Drive.
+        
+        Args:
+            access_token: OAuth2 access token
+            file_id: Google Drive file ID
+            
+        Returns:
+            Permissions metadata dictionary
+            
+        Raises:
+            ValueError: If API error occurs
+        """
+        try:
+            service = self._create_drive_service(access_token)
+            
+            # Get permissions
+            result = service.permissions().list(
+                fileId=file_id,
+                fields='permissions(id,type,role,emailAddress)'
+            ).execute()
+            
+            return result
+            
+        except HttpError as e:
+            if e.resp.status == 404:
+                raise ValueError("File not found")
+            elif e.resp.status == 401:
+                raise ValueError("Invalid or expired access token")
+            else:
+                raise ValueError(f"Google Drive API error: {e.resp.reason}")
+        except Exception as e:
+            raise ValueError(f"Failed to get permissions: {str(e)}")
+
 
 # Global service instance
 google_drive_service = GoogleDriveService()

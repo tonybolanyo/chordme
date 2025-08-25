@@ -203,3 +203,49 @@ class TestGoogleDriveService:
             
             # Should not call Google Drive API
             mock_build.assert_not_called()
+
+    @patch('chordme.google_drive_service.current_app')
+    @patch('chordme.google_drive_service.build')
+    def test_drive_api_list_files_success(self, mock_build, mock_app, app):
+        """Test successful Google Drive file listing."""
+        with app.app_context():
+            # Configure mock_app properly
+            mock_config = MagicMock()
+            mock_config.GOOGLE_DRIVE_ENABLED = True
+            mock_app.config = mock_config
+            
+            service = GoogleDriveService()
+            service._enabled = None  # Reset cache to pick up mock config
+            
+            # Mock Google Drive service
+            mock_drive_service = MagicMock()
+            mock_files_list = {
+                'files': [
+                    {
+                        'id': 'file1',
+                        'name': 'song1.pro',
+                        'mimeType': 'text/plain',
+                        'size': '150',
+                        'modifiedTime': '2023-01-01T00:00:00Z'
+                    },
+                    {
+                        'id': 'file2',
+                        'name': 'song2.pro',
+                        'mimeType': 'text/plain',
+                        'size': '200',
+                        'modifiedTime': '2023-01-02T00:00:00Z'
+                    }
+                ],
+                'nextPageToken': None
+            }
+            mock_drive_service.files().list().execute.return_value = mock_files_list
+            mock_build.return_value = mock_drive_service
+            
+            result = service._list_drive_files("test_token", query="name contains '.pro'")
+            
+            assert len(result) == 2
+            assert result[0]['id'] == 'file1'
+            assert result[1]['name'] == 'song2.pro'
+            
+            # Verify API call was made with correct parameters
+            assert mock_drive_service.files().list.call_count >= 1

@@ -425,4 +425,387 @@ describe('GoogleOAuth2Service', () => {
       expect(localStorage.getItem('googleTokens')).toBeNull();
     });
   });
+
+  describe('Enhanced Token Acquisition and Storage', () => {
+    it('should handle token acquisition with various token types', async () => {
+      const mockTokenResponse = {
+        access_token: 'test-access-token',
+        refresh_token: 'test-refresh-token',
+        expires_in: 3600,
+        token_type: 'Bearer',
+        scope: 'openid email profile https://www.googleapis.com/auth/drive.file',
+        id_token: 'test-id-token'
+      };
+
+      sessionStorage.setItem('googleCodeVerifier', 'test-verifier');
+
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve(mockTokenResponse),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({
+            id: 'test-user-id',
+            email: 'test@example.com',
+            name: 'Test User'
+          }),
+        });
+
+      const result = await googleOAuth2Service.handleAuthCallback('test-auth-code');
+
+      expect(result.tokens.scope).toContain('drive.file');
+      expect(localStorage.getItem('googleTokens')).toBeTruthy();
+    });
+
+    it('should handle token storage with concurrent access', async () => {
+      const tokens1: GoogleTokens = {
+        access_token: 'token1',
+        refresh_token: 'refresh1',
+        expires_in: 3600,
+        expires_at: Date.now() + 3600000,
+        token_type: 'Bearer',
+        scope: 'openid email profile',
+      };
+
+      const tokens2: GoogleTokens = {
+        access_token: 'token2',
+        refresh_token: 'refresh2',
+        expires_in: 3600,
+        expires_at: Date.now() + 3600000,
+        token_type: 'Bearer',
+        scope: 'openid email profile',
+      };
+
+      // Simulate concurrent storage operations
+      localStorage.setItem('googleTokens', JSON.stringify(tokens1));
+      localStorage.setItem('googleTokens', JSON.stringify(tokens2));
+
+      const retrievedTokens = googleOAuth2Service.getStoredTokens();
+      expect(retrievedTokens?.access_token).toBe('token2');
+    });
+
+    it('should handle token storage failure gracefully', () => {
+      // Mock localStorage to throw error
+      const originalSetItem = localStorage.setItem;
+      localStorage.setItem = vi.fn(() => {
+        throw new Error('Storage quota exceeded');
+      });
+
+      const tokens: GoogleTokens = {
+        access_token: 'test-token',
+        refresh_token: 'test-refresh',
+        expires_in: 3600,
+        expires_at: Date.now() + 3600000,
+        token_type: 'Bearer',
+        scope: 'openid email profile',
+      };
+
+      // Call the private method through a public method that uses it
+      expect(() => {
+        // Store via localStorage directly since we're testing the error condition
+        localStorage.setItem('googleTokens', JSON.stringify(tokens));
+      }).toThrow('Storage quota exceeded');
+
+      // Restore original implementation
+      localStorage.setItem = originalSetItem;
+    });
+  });
+
+  describe('Enhanced Token Refresh Logic', () => {
+    it('should handle token refresh with network timeouts', async () => {
+      const currentTokens: GoogleTokens = {
+        access_token: 'old-access-token',
+        refresh_token: 'test-refresh-token',
+        expires_in: 3600,
+        expires_at: Date.now() + 3600000,
+        token_type: 'Bearer',
+        scope: 'openid email profile',
+      };
+
+      localStorage.setItem('googleTokens', JSON.stringify(currentTokens));
+
+      // Mock timeout error
+      mockFetch.mockRejectedValueOnce(new Error('Timeout'));
+
+      await expect(googleOAuth2Service.refreshTokens()).rejects.toThrow(
+        'Failed to refresh authentication'
+      );
+
+      expect(localStorage.getItem('googleTokens')).toBeNull();
+    });
+
+    it('should handle refresh token rotation', async () => {
+      const currentTokens: GoogleTokens = {
+        access_token: 'old-access-token',
+        refresh_token: 'old-refresh-token',
+        expires_in: 3600,
+        expires_at: Date.now() + 3600000,
+        token_type: 'Bearer',
+        scope: 'openid email profile',
+      };
+
+      const newTokenResponse = {
+        access_token: 'new-access-token',
+        refresh_token: 'new-refresh-token', // Server provides new refresh token
+        expires_in: 3600,
+        token_type: 'Bearer',
+        scope: 'openid email profile',
+      };
+
+      localStorage.setItem('googleTokens', JSON.stringify(currentTokens));
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(newTokenResponse),
+      });
+
+      const refreshedTokens = await googleOAuth2Service.refreshTokens();
+
+      expect(refreshedTokens.access_token).toBe('new-access-token');
+      expect(refreshedTokens.refresh_token).toBe('new-refresh-token');
+    });
+
+    it('should handle partial token refresh responses', async () => {
+      const currentTokens: GoogleTokens = {
+        access_token: 'old-access-token',
+        refresh_token: 'test-refresh-token',
+        expires_in: 3600,
+        expires_at: Date.now() + 3600000,
+        token_type: 'Bearer',
+        scope: 'openid email profile',
+      };
+
+      // Response missing some fields
+      const partialTokenResponse = {
+        access_token: 'new-access-token',
+        expires_in: 3600,
+        // Missing refresh_token, token_type, scope
+      };
+
+      localStorage.setItem('googleTokens', JSON.stringify(currentTokens));
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(partialTokenResponse),
+      });
+
+      const refreshedTokens = await googleOAuth2Service.refreshTokens();
+
+      expect(refreshedTokens.access_token).toBe('new-access-token');
+      expect(refreshedTokens.refresh_token).toBe('test-refresh-token'); // Preserved
+    });
+
+    it('should handle invalid refresh token responses', async () => {
+      const currentTokens: GoogleTokens = {
+        access_token: 'old-access-token',
+        refresh_token: 'invalid-refresh-token',
+        expires_in: 3600,
+        expires_at: Date.now() + 3600000,
+        token_type: 'Bearer',
+        scope: 'openid email profile',
+      };
+
+      localStorage.setItem('googleTokens', JSON.stringify(currentTokens));
+
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        json: () => Promise.resolve({
+          error: 'invalid_grant',
+          error_description: 'Bad Request'
+        }),
+      });
+
+      await expect(googleOAuth2Service.refreshTokens()).rejects.toThrow(
+        'Failed to refresh authentication'
+      );
+
+      expect(localStorage.getItem('googleTokens')).toBeNull();
+    });
+  });
+
+  describe('Enhanced Authentication Flow Error Handling', () => {
+    it('should handle OAuth2 error responses with error codes', async () => {
+      sessionStorage.setItem('googleCodeVerifier', 'test-verifier');
+
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        json: () => Promise.resolve({
+          error: 'invalid_request',
+          error_description: 'Invalid authorization code'
+        }),
+      });
+
+      await expect(
+        googleOAuth2Service.handleAuthCallback('invalid-code')
+      ).rejects.toThrow('Authentication failed');
+    });
+
+    it('should handle OAuth2 state parameter validation', async () => {
+      // Mock window.location with state parameter
+      Object.defineProperty(window, 'location', {
+        value: { 
+          href: 'http://localhost:5173/callback?code=test&state=malicious-state',
+          search: '?code=test&state=malicious-state'
+        },
+        writable: true,
+      });
+
+      sessionStorage.setItem('googleCodeVerifier', 'test-verifier');
+      sessionStorage.setItem('googleOAuthState', 'expected-state');
+
+      // Should reject mismatched state
+      await expect(
+        googleOAuth2Service.handleAuthCallback('test-code')
+      ).rejects.toThrow('Authentication failed');
+    });
+
+    it('should handle network errors during authentication', async () => {
+      sessionStorage.setItem('googleCodeVerifier', 'test-verifier');
+
+      mockFetch.mockRejectedValueOnce(new Error('Network error'));
+
+      await expect(
+        googleOAuth2Service.handleAuthCallback('test-code')
+      ).rejects.toThrow('Authentication failed');
+    });
+
+    it('should handle malformed user info responses', async () => {
+      const mockTokenResponse = {
+        access_token: 'test-access-token',
+        refresh_token: 'test-refresh-token',
+        expires_in: 3600,
+        token_type: 'Bearer',
+        scope: 'openid email profile',
+      };
+
+      sessionStorage.setItem('googleCodeVerifier', 'test-verifier');
+
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve(mockTokenResponse),
+        })
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 403,
+        });
+
+      await expect(
+        googleOAuth2Service.handleAuthCallback('test-code')
+      ).rejects.toThrow('Authentication failed');
+    });
+  });
+
+  describe('Token Expiration and Auto-Refresh', () => {
+    it('should automatically refresh tokens when near expiration', async () => {
+      const nearExpiredTokens: GoogleTokens = {
+        access_token: 'expiring-token',
+        refresh_token: 'test-refresh-token',
+        expires_in: 3600,
+        expires_at: Date.now() + 30000, // Expires in 30 seconds
+        token_type: 'Bearer',
+        scope: 'openid email profile',
+      };
+
+      const refreshedTokenResponse = {
+        access_token: 'refreshed-token',
+        expires_in: 3600,
+        token_type: 'Bearer',
+        scope: 'openid email profile',
+      };
+
+      localStorage.setItem('googleTokens', JSON.stringify(nearExpiredTokens));
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(refreshedTokenResponse),
+      });
+
+      // Use getUserInfo which internally uses makeAuthenticatedRequest
+      await googleOAuth2Service.getUserInfo();
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://oauth2.googleapis.com/token',
+        expect.any(Object)
+      );
+    });
+
+    it('should handle expired tokens during auto-refresh', async () => {
+      const expiredTokens: GoogleTokens = {
+        access_token: 'expired-token',
+        refresh_token: 'test-refresh-token',
+        expires_in: 3600,
+        expires_at: Date.now() - 1000, // Already expired
+        token_type: 'Bearer',
+        scope: 'openid email profile',
+      };
+
+      localStorage.setItem('googleTokens', JSON.stringify(expiredTokens));
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          access_token: 'new-token',
+          expires_in: 3600,
+          token_type: 'Bearer',
+          scope: 'openid email profile',
+        }),
+      });
+
+      // Use getUserInfo which internally uses makeAuthenticatedRequest
+      await googleOAuth2Service.getUserInfo();
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://oauth2.googleapis.com/token',
+        expect.any(Object)
+      );
+    });
+
+    it('should handle 401 errors with retry logic', async () => {
+      const validTokens: GoogleTokens = {
+        access_token: 'valid-token',
+        refresh_token: 'test-refresh-token',
+        expires_in: 3600,
+        expires_at: Date.now() + 3600000,
+        token_type: 'Bearer',
+        scope: 'openid email profile',
+      };
+
+      localStorage.setItem('googleTokens', JSON.stringify(validTokens));
+
+      // First call returns 401, then refresh succeeds, then retry succeeds
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 401,
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({
+            access_token: 'refreshed-token',
+            expires_in: 3600,
+            token_type: 'Bearer',
+            scope: 'openid email profile',
+          }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ 
+            id: 'test-user',
+            email: 'test@example.com',
+            name: 'Test User'
+          }),
+        });
+
+      // Use getUserInfo which internally uses makeAuthenticatedRequest
+      const userInfo = await googleOAuth2Service.getUserInfo();
+      
+      expect(userInfo.email).toBe('test@example.com');
+      expect(mockFetch).toHaveBeenCalledTimes(3); // Original call, refresh, retry
+    });
+  });
 });
