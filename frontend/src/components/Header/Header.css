@@ -88,6 +88,10 @@
   font-weight: bold;
 }
 
+.header-title a {
+  color: white !important;
+}
+
 /* Mobile navigation */
 .header-nav {
   margin-top: var(--space-md);
@@ -226,7 +230,7 @@
 }
 
 .btn-register {
-  background-color: #3498db;
+  background-color: var(--primary-color, #1e3a8a);
   padding: 0.6rem 1.2rem;
   border-radius: 6px;
   text-align: center;
@@ -234,7 +238,7 @@
 }
 
 .btn-register:hover {
-  background-color: #2980b9;
+  background-color: var(--primary-hover, #1e40af);
 }
 
 .btn-logout {

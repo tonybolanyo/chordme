@@ -20,7 +20,9 @@
     "format:frontend": "cd frontend && npm run format"
   },
   "devDependencies": {
-    "@playwright/test": "^1.54.1"
+    "@axe-core/playwright": "^4.10.2",
+    "@playwright/test": "^1.54.1",
+    "axe-core": "^4.10.3"
   },
   "keywords": [
     "music",

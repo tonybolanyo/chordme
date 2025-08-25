@@ -41,6 +41,8 @@ header_pages:
   - chordpro-format.md
   - api-reference.md
   - developer-guide.md
+  - accessibility-guidelines.md
+  - responsive-design-guide.md
   - troubleshooting.md
 
 header_pages_es:

@@ -97,13 +97,14 @@ const Header: React.FC<HeaderProps> = ({ title = 'ChordMe' }) => {
 
   return (
     <>
-      <header className="header">
+      <header className="header" role="banner">
         <div className="header-container">
           <div className="header-top">
             <h1 className="header-title">
               <a
                 href="#home"
-                style={{ textDecoration: 'none', color: 'inherit' }}
+                style={{ textDecoration: 'none', color: 'white' }}
+                aria-label="ChordMe homepage"
               >
                 {title}
               </a>
@@ -113,7 +114,9 @@ const Header: React.FC<HeaderProps> = ({ title = 'ChordMe' }) => {
               <button
                 className="mobile-menu-toggle touch-target"
                 onClick={toggleMobileMenu}
-                aria-label="Toggle navigation menu"
+                aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+                aria-expanded={mobileMenuOpen}
+                aria-controls="main-navigation"
               >
                 <span className={`hamburger ${mobileMenuOpen ? 'open' : ''}`}>
                   <span></span>
@@ -125,7 +128,11 @@ const Header: React.FC<HeaderProps> = ({ title = 'ChordMe' }) => {
           </div>
 
           <nav
+            id="main-navigation"
             className={`header-nav ${isMobile ? 'mobile-nav' : ''} ${mobileMenuOpen ? 'open' : ''}`}
+            role="navigation"
+            aria-label="Main navigation"
+            aria-hidden={isMobile && !mobileMenuOpen}
           >
             {renderNavLinks()}
           </nav>
@@ -133,7 +140,18 @@ const Header: React.FC<HeaderProps> = ({ title = 'ChordMe' }) => {
 
         {/* Mobile menu overlay */}
         {isMobile && mobileMenuOpen && (
-          <div className="nav-overlay open" onClick={closeMobileMenu}></div>
+          <div 
+            className="nav-overlay open" 
+            onClick={closeMobileMenu}
+            aria-label="Close navigation menu"
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                closeMobileMenu();
+              }
+            }}
+          ></div>
         )}
       </header>
 

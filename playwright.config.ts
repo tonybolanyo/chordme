@@ -30,12 +30,12 @@ export default defineConfig({
     {
       command: 'cd frontend && npm run dev',
       port: 5173,
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: true,
     },
     {
       command: 'cd backend && python run.py',
       port: 5000,
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: true,
     },
   ],
 });

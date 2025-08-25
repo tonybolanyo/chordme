@@ -318,6 +318,12 @@ test.describe('ChordMe UI and Accessibility Tests', () => {
         }
       }
     });
+
+    test('should handle different viewport sizes properly', async ({ page }) => {
+      const viewports = [
+        { width: 320, height: 568, name: 'Mobile' },
+        { width: 768, height: 1024, name: 'Tablet' },
+        { width: 1200, height: 800, name: 'Desktop' },
         { width: 1920, height: 1080, name: 'Large Desktop' }
       ];
       
