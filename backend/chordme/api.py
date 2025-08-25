@@ -1009,6 +1009,158 @@ def download_song(song_id):
         )
 
 
+@app.route('/api/v1/songs/<int:song_id>/export/pdf', methods=['GET'])
+@auth_required
+@validate_positive_integer('song_id')
+@rate_limit(max_requests=5, window_seconds=60)  # 5 PDF exports per minute
+@security_headers
+def export_song_pdf(song_id):
+    """
+    Export song as PDF document
+    ---
+    tags:
+      - Songs
+    summary: Export song as PDF
+    description: Export a specific song as a PDF document with proper ChordPro formatting (accessible if owned, shared, or public)
+    security:
+      - Bearer: []
+    parameters:
+      - in: path
+        name: song_id
+        description: Song ID
+        required: true
+        type: integer
+        minimum: 1
+      - in: query
+        name: paper_size
+        description: Paper size for PDF
+        required: false
+        type: string
+        enum: ['a4', 'letter', 'legal']
+        default: 'a4'
+      - in: query
+        name: orientation
+        description: Page orientation
+        required: false
+        type: string
+        enum: ['portrait', 'landscape']
+        default: 'portrait'
+      - in: query
+        name: title
+        description: Override song title
+        required: false
+        type: string
+      - in: query
+        name: artist
+        description: Override song artist
+        required: false
+        type: string
+    produces:
+      - application/pdf
+    responses:
+      200:
+        description: PDF file generated successfully
+        headers:
+          Content-Disposition:
+            type: string
+            description: attachment; filename="songname.pdf"
+          Content-Type:
+            type: string
+            description: application/pdf
+        schema:
+          type: string
+          format: binary
+          description: PDF file content
+      400:
+        description: Invalid parameters
+        schema:
+          $ref: '#/definitions/Error'
+      401:
+        description: Authentication required
+        schema:
+          $ref: '#/definitions/Error'
+      404:
+        description: Song not found
+        schema:
+          $ref: '#/definitions/Error'
+      429:
+        description: Too many requests
+        schema:
+          $ref: '#/definitions/Error'
+      500:
+        description: Internal server error
+        schema:
+          $ref: '#/definitions/Error'
+    """
+    try:
+        from .permission_helpers import check_song_permission
+        from .pdf_generator import generate_song_pdf
+        
+        # Check if user has read access to the song
+        song, has_permission = check_song_permission(song_id, g.current_user_id, 'read')
+        
+        if not song or not has_permission:
+            return create_error_response("Song not found", 404)
+        
+        # Get export parameters from query string
+        paper_size = request.args.get('paper_size', 'a4').lower()
+        orientation = request.args.get('orientation', 'portrait').lower()
+        title_override = request.args.get('title')
+        artist_override = request.args.get('artist')
+        
+        # Validate parameters
+        valid_paper_sizes = ['a4', 'letter', 'legal']
+        valid_orientations = ['portrait', 'landscape']
+        
+        if paper_size not in valid_paper_sizes:
+            return create_error_response(f"Invalid paper size. Must be one of: {', '.join(valid_paper_sizes)}", 400)
+        
+        if orientation not in valid_orientations:
+            return create_error_response(f"Invalid orientation. Must be one of: {', '.join(valid_orientations)}", 400)
+        
+        # Generate PDF
+        content = song.content
+        title = title_override or song.title
+        artist = artist_override or getattr(song, 'artist', None)  # Song model might not have artist field
+        
+        pdf_bytes = generate_song_pdf(
+            content=content,
+            title=title,
+            artist=artist,
+            paper_size=paper_size,
+            orientation=orientation
+        )
+        
+        # Create safe filename
+        safe_title = re.sub(r'[^\w\s-]', '', title or 'song')
+        safe_title = re.sub(r'[-\s]+', '-', safe_title).strip('-')
+        safe_filename = f"{safe_title[:50]}"  # Limit filename length
+        
+        # Create response with PDF
+        response = Response(
+            pdf_bytes,
+            mimetype='application/pdf',
+            headers={
+                'Content-Disposition': f'attachment; filename="{safe_filename}.pdf"'
+            }
+        )
+        
+        # Log export activity
+        app.logger.info(f"Song exported as PDF: {song.title} (paper: {paper_size}, orientation: {orientation}) by user {g.current_user_id} from IP {request.remote_addr}")
+        
+        return response
+        
+    except ImportError as e:
+        app.logger.error(f"PDF generation library not available: {str(e)}")
+        return create_error_response("PDF export functionality not available", 500)
+    except Exception as e:
+        return security_error_handler.handle_server_error(
+            "An error occurred while exporting the song as PDF",
+            exception=e,
+            ip_address=request.remote_addr
+        )
+
+
 @app.route('/api/v1/songs/<int:song_id>/versions', methods=['GET'])
 @auth_required
 @validate_positive_integer('song_id')
