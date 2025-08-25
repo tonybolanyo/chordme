@@ -1893,6 +1893,82 @@
         ]
       }
     },
+    "/songs/{song_id}/restore/{version_id}": {
+      "post": {
+        "description": "Restore a song to a specific version state (requires edit permissions)",
+        "parameters": [
+          {
+            "description": "Song ID",
+            "in": "path",
+            "minimum": 1,
+            "name": "song_id",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "description": "Version ID to restore",
+            "in": "path",
+            "minimum": 1,
+            "name": "version_id",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Song restored successfully",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Success"
+                },
+                {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/Song"
+                    }
+                  },
+                  "type": "object"
+                }
+              ]
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "403": {
+            "description": "Insufficient permissions",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Song or version not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Restore a song to a specific version",
+        "tags": [
+          "Songs"
+        ]
+      }
+    },
     "/songs/{song_id}/sections": {
       "get": {
         "description": "Retrieve all sections for a specific song (accessible if owned, shared, or public)",
@@ -2285,6 +2361,206 @@
         "summary": "Revoke user access to a song",
         "tags": [
           "Collaboration"
+        ]
+      }
+    },
+    "/songs/{song_id}/versions": {
+      "get": {
+        "description": "Retrieve all version snapshots for a specific song (requires read permissions)",
+        "parameters": [
+          {
+            "description": "Song ID",
+            "in": "path",
+            "minimum": 1,
+            "name": "song_id",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Version history retrieved successfully",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Success"
+                },
+                {
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "versions": {
+                          "items": {
+                            "properties": {
+                              "content": {
+                                "type": "string"
+                              },
+                              "created_at": {
+                                "format": "date-time",
+                                "type": "string"
+                              },
+                              "id": {
+                                "type": "integer"
+                              },
+                              "song_id": {
+                                "type": "integer"
+                              },
+                              "title": {
+                                "type": "string"
+                              },
+                              "user_id": {
+                                "type": "integer"
+                              },
+                              "version_number": {
+                                "type": "integer"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "type": "array"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              ]
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "403": {
+            "description": "Insufficient permissions",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Song not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Get version history for a song",
+        "tags": [
+          "Songs"
+        ]
+      }
+    },
+    "/songs/{song_id}/versions/{version_id}": {
+      "get": {
+        "description": "Retrieve a specific version snapshot of a song (requires read permissions)",
+        "parameters": [
+          {
+            "description": "Song ID",
+            "in": "path",
+            "minimum": 1,
+            "name": "song_id",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "description": "Version ID",
+            "in": "path",
+            "minimum": 1,
+            "name": "version_id",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Version retrieved successfully",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Success"
+                },
+                {
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "content": {
+                          "type": "string"
+                        },
+                        "created_at": {
+                          "format": "date-time",
+                          "type": "string"
+                        },
+                        "id": {
+                          "type": "integer"
+                        },
+                        "song_id": {
+                          "type": "integer"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "user_id": {
+                          "type": "integer"
+                        },
+                        "version_number": {
+                          "type": "integer"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              ]
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "403": {
+            "description": "Insufficient permissions",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Version not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Get a specific version of a song",
+        "tags": [
+          "Songs"
         ]
       }
     }
