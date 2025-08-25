@@ -12,19 +12,7 @@ import {
   BREAKPOINTS
 } from './responsive';
 
-// Mock window object
-const mockWindow = {
-  innerWidth: 1024,
-  innerHeight: 768,
-  addEventListener: vi.fn(),
-  removeEventListener: vi.fn(),
-  matchMedia: vi.fn(),
-};
-
-// Mock navigator
-const mockNavigator = {
-  maxTouchPoints: 0,
-};
+// Mock window and navigator objects for testing
 
 beforeEach(() => {
   // Reset window mock
@@ -153,7 +141,7 @@ describe('Responsive Utilities', () => {
       expect(getTouchTargetSize(50)).toBe(50);
       
       // Mock non-touch device
-      delete (window as any).ontouchstart;
+      delete (window as unknown as { ontouchstart?: unknown }).ontouchstart;
       expect(getTouchTargetSize(30)).toBe(30);
     });
   });
