@@ -9,7 +9,7 @@ interface StorageIndicatorProps {
 
 const StorageIndicator: React.FC<StorageIndicatorProps> = ({ onClick }) => {
   const currentBackend = apiService.getCurrentBackend();
-  
+
   const getBackendInfo = (backend: StorageBackendType) => {
     switch (backend) {
       case 'api':
@@ -29,7 +29,7 @@ const StorageIndicator: React.FC<StorageIndicatorProps> = ({ onClick }) => {
   const isAvailable = apiService.isBackendAvailable(currentBackend);
 
   return (
-    <div 
+    <div
       className={`storage-indicator ${onClick ? 'clickable' : ''} ${!isAvailable ? 'unavailable' : ''}`}
       onClick={onClick}
       title={`Storage: ${backendInfo.name}${!isAvailable ? ' (Unavailable)' : ''}`}

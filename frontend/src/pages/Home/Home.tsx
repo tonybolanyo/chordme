@@ -23,16 +23,16 @@ import './Home.css';
 
 const Home: React.FC = () => {
   const { user } = useAuth();
-  
+
   // Use real-time songs hook instead of manual state management
-  const { 
-    songs, 
-    loading: isLoading, 
-    error: songsError, 
-    isRealTime, 
-    refetch: reloadSongs 
+  const {
+    songs,
+    loading: isLoading,
+    error: songsError,
+    isRealTime,
+    refetch: reloadSongs,
   } = useRealtimeSongs();
-  
+
   const [error, setError] = useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newSong, setNewSong] = useState({ title: '', content: '' });
@@ -63,7 +63,7 @@ const Home: React.FC = () => {
 
   // Version history and undo/redo state
   const [showHistoryPanel, setShowHistoryPanel] = useState(false);
-  
+
   // Initialize undo/redo for editing
   const undoRedo = useUndoRedo({
     title: editSongData.title,
@@ -71,10 +71,8 @@ const Home: React.FC = () => {
   });
 
   // Subscribe to real-time updates for the song being edited
-  const { 
-    song: realtimeEditingSong, 
-    isRealTime: isEditingRealTime 
-  } = useRealtimeSong(editingSong?.id || null);
+  const { song: realtimeEditingSong, isRealTime: isEditingRealTime } =
+    useRealtimeSong(editingSong?.id || null);
 
   // Combine real-time songs error with other errors
   const displayError = error || songsError;
@@ -87,9 +85,11 @@ const Home: React.FC = () => {
     }
 
     // Check if the real-time song data differs from our editing state
-    const hasContentChanged = realtimeEditingSong.content !== editSongData.content;
+    const hasContentChanged =
+      realtimeEditingSong.content !== editSongData.content;
     const hasTitleChanged = realtimeEditingSong.title !== editSongData.title;
-    const hasTimestampChanged = realtimeEditingSong.updated_at !== editingSong.updated_at;
+    const hasTimestampChanged =
+      realtimeEditingSong.updated_at !== editingSong.updated_at;
 
     // Only consider it an external change if the timestamp is newer than when we started editing
     if ((hasContentChanged || hasTitleChanged) && hasTimestampChanged) {
@@ -170,9 +170,9 @@ const Home: React.FC = () => {
     try {
       setIsExportingPDF(true);
       setError(null);
-      
+
       await apiService.exportSongAsPDF(songToExportPDF.id, options);
-      
+
       // Close modal on success
       setPdfExportModalOpen(false);
       setSongToExportPDF(null);
@@ -195,11 +195,11 @@ const Home: React.FC = () => {
     setEditingSong(song);
     const initialState = { title: song.title, content: song.content };
     setEditSongData(initialState);
-    
+
     // Reset undo/redo history and set initial state
     undoRedo.clearHistory();
     undoRedo.setState(initialState);
-    
+
     setShowCreateForm(false); // Hide create form if open
     setViewingSong(null); // Hide view if open
     setHasExternalChanges(false); // Reset conflict state
@@ -247,7 +247,9 @@ const Home: React.FC = () => {
       setHasExternalChanges(false);
       setShowConflictDialog(false);
     } else {
-      setError('External song data is incomplete or invalid. Please try again or reload.');
+      setError(
+        'External song data is incomplete or invalid. Please try again or reload.'
+      );
     }
   };
 
@@ -303,11 +305,16 @@ const Home: React.FC = () => {
   const handlePreviewVersion = (version: SongVersion) => {
     // For now, just show an alert with version info
     // In a more advanced implementation, this could show a side-by-side preview
-    alert(`Preview of Version ${version.version_number}:\n\nTitle: ${version.title}\n\nCreated: ${new Date(version.created_at).toLocaleString()}`);
+    alert(
+      `Preview of Version ${version.version_number}:\n\nTitle: ${version.title}\n\nCreated: ${new Date(version.created_at).toLocaleString()}`
+    );
   };
 
   // Update undo/redo state when edit data changes
-  const handleEditDataChange = (newData: { title?: string; content?: string }) => {
+  const handleEditDataChange = (newData: {
+    title?: string;
+    content?: string;
+  }) => {
     const updatedData = { ...editSongData, ...newData };
     setEditSongData(updatedData);
     undoRedo.setState(updatedData);
@@ -577,23 +584,15 @@ const Home: React.FC = () => {
     // For real-time, the updates will come automatically
   };
 
-  const addNotification = (notification: Omit<SharingNotification, 'id'>) => {
-    const newNotification: SharingNotification = {
-      ...notification,
-      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-    };
-    setNotifications(prev => [...prev, newNotification]);
-  };
-
   const removeNotification = (id: string) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
   };
 
   // Helper function to get user permission level for a song
   const getUserPermission = (song: Song): string => {
     const currentUser = localStorage.getItem('authUser');
     if (!currentUser) return 'none';
-    
+
     try {
       const user = JSON.parse(currentUser);
       if (song.author_id === user.id) return 'owner';
@@ -611,31 +610,46 @@ const Home: React.FC = () => {
 
   // Helper functions to categorize songs
   const getMySongs = (): Song[] => {
-    return songs.filter(song => getUserPermission(song) === 'owner');
+    return songs.filter((song) => getUserPermission(song) === 'owner');
   };
 
   const getSharedSongs = (): Song[] => {
-    return songs.filter(song => {
+    return songs.filter((song) => {
       const permission = getUserPermission(song);
-      return permission === 'read' || permission === 'edit' || permission === 'admin';
+      return (
+        permission === 'read' || permission === 'edit' || permission === 'admin'
+      );
     });
   };
 
   // Sorting and filtering state for dashboard sections
-  const [mySongsSort, setMySongsSort] = useState<'title' | 'date' | 'updated'>('updated');
-  const [sharedSongsSort, setSharedSongsSort] = useState<'title' | 'date' | 'updated'>('updated');
-  const [sharedSongsFilter, setSharedSongsFilter] = useState<'all' | 'read' | 'edit' | 'admin'>('all');
+  const [mySongsSort, setMySongsSort] = useState<'title' | 'date' | 'updated'>(
+    'updated'
+  );
+  const [sharedSongsSort, setSharedSongsSort] = useState<
+    'title' | 'date' | 'updated'
+  >('updated');
+  const [sharedSongsFilter, setSharedSongsFilter] = useState<
+    'all' | 'read' | 'edit' | 'admin'
+  >('all');
 
   // Apply sorting to songs
-  const sortSongs = (songList: Song[], sortBy: 'title' | 'date' | 'updated'): Song[] => {
+  const sortSongs = (
+    songList: Song[],
+    sortBy: 'title' | 'date' | 'updated'
+  ): Song[] => {
     return [...songList].sort((a, b) => {
       switch (sortBy) {
         case 'title':
           return a.title.localeCompare(b.title);
         case 'date':
-          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+          return (
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          );
         case 'updated':
-          return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+          return (
+            new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+          );
         default:
           return 0;
       }
@@ -643,9 +657,12 @@ const Home: React.FC = () => {
   };
 
   // Apply filtering to shared songs
-  const filterSharedSongs = (songList: Song[], filterBy: 'all' | 'read' | 'edit' | 'admin'): Song[] => {
+  const filterSharedSongs = (
+    songList: Song[],
+    filterBy: 'all' | 'read' | 'edit' | 'admin'
+  ): Song[] => {
     if (filterBy === 'all') return songList;
-    return songList.filter(song => getUserPermission(song) === filterBy);
+    return songList.filter((song) => getUserPermission(song) === filterBy);
   };
 
   // Get processed song lists
@@ -931,7 +948,14 @@ const Home: React.FC = () => {
               border: '2px solid #4169e1',
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '1rem',
+              }}
+            >
               <h3 style={{ margin: 0 }}>Edit Song: {editingSong.title}</h3>
               <UndoRedoControls
                 canUndo={undoRedo.canUndo}
@@ -941,34 +965,39 @@ const Home: React.FC = () => {
                 onShowHistory={handleShowHistory}
               />
             </div>
-            
+
             {/* Real-time status indicator */}
             {isEditingRealTime && (
-              <div style={{ 
-                marginBottom: '1rem', 
-                padding: '0.5rem', 
-                backgroundColor: '#d4edda', 
-                border: '1px solid #c3e6cb', 
-                borderRadius: '4px',
-                color: '#155724',
-                fontSize: '0.9em'
-              }}>
-                🔄 Real-time editing enabled - Changes from other users will be detected
+              <div
+                style={{
+                  marginBottom: '1rem',
+                  padding: '0.5rem',
+                  backgroundColor: '#d4edda',
+                  border: '1px solid #c3e6cb',
+                  borderRadius: '4px',
+                  color: '#155724',
+                  fontSize: '0.9em',
+                }}
+              >
+                🔄 Real-time editing enabled - Changes from other users will be
+                detected
               </div>
             )}
-            
+
             {/* Conflict notification */}
             {hasExternalChanges && !showConflictDialog && (
-              <div style={{ 
-                marginBottom: '1rem', 
-                padding: '0.75rem', 
-                backgroundColor: '#fff3cd', 
-                border: '1px solid #ffeaa7', 
-                borderRadius: '4px',
-                color: '#856404'
-              }}>
-                ⚠️ This song has been updated by another user. 
-                <button 
+              <div
+                style={{
+                  marginBottom: '1rem',
+                  padding: '0.75rem',
+                  backgroundColor: '#fff3cd',
+                  border: '1px solid #ffeaa7',
+                  borderRadius: '4px',
+                  color: '#856404',
+                }}
+              >
+                ⚠️ This song has been updated by another user.
+                <button
                   type="button"
                   onClick={handleShowConflictDialog}
                   style={{
@@ -978,33 +1007,41 @@ const Home: React.FC = () => {
                     color: '#856404',
                     padding: '0.25rem 0.5rem',
                     borderRadius: '3px',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
                   }}
                 >
                   Review changes
                 </button>
               </div>
             )}
-            
+
             {/* Conflict resolution dialog */}
             {showConflictDialog && realtimeEditingSong && (
-              <div style={{ 
-                marginBottom: '1rem', 
-                padding: '1rem', 
-                backgroundColor: '#f8d7da', 
-                border: '1px solid #f5c6cb', 
-                borderRadius: '4px',
-                color: '#721c24'
-              }}>
-                <h4 style={{ margin: '0 0 1rem 0' }}>⚠️ Conflicting Changes Detected</h4>
+              <div
+                style={{
+                  marginBottom: '1rem',
+                  padding: '1rem',
+                  backgroundColor: '#f8d7da',
+                  border: '1px solid #f5c6cb',
+                  borderRadius: '4px',
+                  color: '#721c24',
+                }}
+              >
+                <h4 style={{ margin: '0 0 1rem 0' }}>
+                  ⚠️ Conflicting Changes Detected
+                </h4>
                 <p style={{ margin: '0 0 1rem 0' }}>
-                  The song has been updated by another user. Choose how to proceed:
+                  The song has been updated by another user. Choose how to
+                  proceed:
                 </p>
                 <div style={{ marginBottom: '1rem' }}>
-                  <strong>Last updated:</strong> {formatRelativeTime(realtimeEditingSong.updated_at)}
+                  <strong>Last updated:</strong>{' '}
+                  {formatRelativeTime(realtimeEditingSong.updated_at)}
                 </div>
-                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                  <button 
+                <div
+                  style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}
+                >
+                  <button
                     type="button"
                     onClick={handleAcceptExternalChanges}
                     style={{
@@ -1013,12 +1050,12 @@ const Home: React.FC = () => {
                       border: 'none',
                       padding: '0.5rem 1rem',
                       borderRadius: '4px',
-                      cursor: 'pointer'
+                      cursor: 'pointer',
                     }}
                   >
                     Accept external changes
                   </button>
-                  <button 
+                  <button
                     type="button"
                     onClick={handleKeepLocalChanges}
                     style={{
@@ -1027,7 +1064,7 @@ const Home: React.FC = () => {
                       border: 'none',
                       padding: '0.5rem 1rem',
                       borderRadius: '4px',
-                      cursor: 'pointer'
+                      cursor: 'pointer',
                     }}
                   >
                     Keep my changes
@@ -1054,9 +1091,7 @@ const Home: React.FC = () => {
               <ChordProEditor
                 id="edit-content"
                 value={editSongData.content}
-                onChange={(value) =>
-                  handleEditDataChange({ content: value })
-                }
+                onChange={(value) => handleEditDataChange({ content: value })}
                 placeholder="Enter chords and lyrics in ChordPro format&#10;Example:&#10;{title: My Song}&#10;{artist: Artist Name}&#10;# This is a comment&#10;[C]Here are the [G]lyrics [Am]with [F]chords"
                 required
                 rows={8}
@@ -1141,10 +1176,10 @@ const Home: React.FC = () => {
                   type="button"
                   className="btn"
                   onClick={() => handleExportSongAsPDF(viewingSong)}
-                  style={{ 
+                  style={{
                     marginRight: '0.5rem',
                     backgroundColor: '#dc3545',
-                    color: 'white'
+                    color: 'white',
                   }}
                   aria-label="Export the song as PDF"
                   title="Export the song as PDF"
@@ -1194,17 +1229,24 @@ const Home: React.FC = () => {
 
       {/* My Songs Section */}
       <div className="my-songs-section">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1rem',
+            marginBottom: '1rem',
+          }}
+        >
           <h2>My Songs ({getMySongs().length})</h2>
           {isRealTime && (
-            <span 
-              style={{ 
-                fontSize: '12px', 
-                color: '#28a745', 
-                backgroundColor: '#e8f5e8', 
-                padding: '2px 8px', 
+            <span
+              style={{
+                fontSize: '12px',
+                color: '#28a745',
+                backgroundColor: '#e8f5e8',
+                padding: '2px 8px',
                 borderRadius: '12px',
-                border: '1px solid #28a745'
+                border: '1px solid #28a745',
               }}
               title="Songs update automatically when changes are made"
             >
@@ -1215,22 +1257,38 @@ const Home: React.FC = () => {
 
         {/* My Songs Controls */}
         {getMySongs().length > 0 && (
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '1rem', 
-            marginBottom: '1rem',
-            padding: '0.5rem',
-            backgroundColor: '#f8f9fa',
-            borderRadius: '4px',
-            border: '1px solid #dee2e6'
-          }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '1rem',
+              marginBottom: '1rem',
+              padding: '0.5rem',
+              backgroundColor: '#f8f9fa',
+              borderRadius: '4px',
+              border: '1px solid #dee2e6',
+            }}
+          >
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                fontSize: '0.9rem',
+              }}
+            >
               Sort by:
-              <select 
-                value={mySongsSort} 
-                onChange={(e) => setMySongsSort(e.target.value as 'title' | 'date' | 'updated')}
-                style={{ padding: '0.25rem', fontSize: '0.9rem', borderRadius: '3px', border: '1px solid #ccc' }}
+              <select
+                value={mySongsSort}
+                onChange={(e) =>
+                  setMySongsSort(e.target.value as 'title' | 'date' | 'updated')
+                }
+                style={{
+                  padding: '0.25rem',
+                  fontSize: '0.9rem',
+                  borderRadius: '3px',
+                  border: '1px solid #ccc',
+                }}
               >
                 <option value="updated">Last Modified</option>
                 <option value="title">Title</option>
@@ -1261,19 +1319,32 @@ const Home: React.FC = () => {
                   backgroundColor: '#fff',
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: '0.5rem',
+                  }}
+                >
                   <h3 style={{ margin: 0 }}>{song.title}</h3>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                    }}
+                  >
                     {/* Ownership/Permission indicator */}
                     {getUserPermission(song) === 'owner' && (
-                      <span 
-                        style={{ 
-                          fontSize: '0.75rem', 
-                          backgroundColor: '#4169e1', 
-                          color: 'white', 
-                          padding: '0.2rem 0.5rem', 
+                      <span
+                        style={{
+                          fontSize: '0.75rem',
+                          backgroundColor: '#4169e1',
+                          color: 'white',
+                          padding: '0.2rem 0.5rem',
                           borderRadius: '10px',
-                          fontWeight: '500'
+                          fontWeight: '500',
                         }}
                         title="You own this song"
                       >
@@ -1281,14 +1352,14 @@ const Home: React.FC = () => {
                       </span>
                     )}
                     {getUserPermission(song) === 'admin' && (
-                      <span 
-                        style={{ 
-                          fontSize: '0.75rem', 
-                          backgroundColor: '#dc3545', 
-                          color: 'white', 
-                          padding: '0.2rem 0.5rem', 
+                      <span
+                        style={{
+                          fontSize: '0.75rem',
+                          backgroundColor: '#dc3545',
+                          color: 'white',
+                          padding: '0.2rem 0.5rem',
                           borderRadius: '10px',
-                          fontWeight: '500'
+                          fontWeight: '500',
                         }}
                         title="You have admin access to this song"
                       >
@@ -1296,14 +1367,14 @@ const Home: React.FC = () => {
                       </span>
                     )}
                     {getUserPermission(song) === 'edit' && (
-                      <span 
-                        style={{ 
-                          fontSize: '0.75rem', 
-                          backgroundColor: '#7b1fa2', 
-                          color: 'white', 
-                          padding: '0.2rem 0.5rem', 
+                      <span
+                        style={{
+                          fontSize: '0.75rem',
+                          backgroundColor: '#7b1fa2',
+                          color: 'white',
+                          padding: '0.2rem 0.5rem',
                           borderRadius: '10px',
-                          fontWeight: '500'
+                          fontWeight: '500',
                         }}
                         title="You can edit this song"
                       >
@@ -1311,14 +1382,14 @@ const Home: React.FC = () => {
                       </span>
                     )}
                     {getUserPermission(song) === 'read' && (
-                      <span 
-                        style={{ 
-                          fontSize: '0.75rem', 
-                          backgroundColor: '#1976d2', 
-                          color: 'white', 
-                          padding: '0.2rem 0.5rem', 
+                      <span
+                        style={{
+                          fontSize: '0.75rem',
+                          backgroundColor: '#1976d2',
+                          color: 'white',
+                          padding: '0.2rem 0.5rem',
                           borderRadius: '10px',
-                          fontWeight: '500'
+                          fontWeight: '500',
                         }}
                         title="You have read-only access to this song"
                       >
@@ -1327,14 +1398,14 @@ const Home: React.FC = () => {
                     )}
                     {/* Collaboration indicator */}
                     {song.shared_with && song.shared_with.length > 0 && (
-                      <span 
-                        style={{ 
-                          fontSize: '0.75rem', 
-                          backgroundColor: '#28a745', 
-                          color: 'white', 
-                          padding: '0.2rem 0.5rem', 
+                      <span
+                        style={{
+                          fontSize: '0.75rem',
+                          backgroundColor: '#28a745',
+                          color: 'white',
+                          padding: '0.2rem 0.5rem',
                           borderRadius: '10px',
-                          fontWeight: '500'
+                          fontWeight: '500',
                         }}
                         title={`Shared with ${song.shared_with.length} collaborator${song.shared_with.length === 1 ? '' : 's'}`}
                       >
@@ -1473,17 +1544,24 @@ const Home: React.FC = () => {
 
       {/* Shared with Me Section */}
       <div className="shared-songs-section" style={{ marginTop: '3rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1rem',
+            marginBottom: '1rem',
+          }}
+        >
           <h2>Shared with Me ({getSharedSongs().length})</h2>
           {isRealTime && (
-            <span 
-              style={{ 
-                fontSize: '12px', 
-                color: '#28a745', 
-                backgroundColor: '#e8f5e8', 
-                padding: '2px 8px', 
+            <span
+              style={{
+                fontSize: '12px',
+                color: '#28a745',
+                backgroundColor: '#e8f5e8',
+                padding: '2px 8px',
                 borderRadius: '12px',
-                border: '1px solid #28a745'
+                border: '1px solid #28a745',
               }}
               title="Shared songs update automatically when changes are made"
             >
@@ -1494,22 +1572,40 @@ const Home: React.FC = () => {
 
         {/* Shared Songs Controls */}
         {getSharedSongs().length > 0 && (
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '1rem', 
-            marginBottom: '1rem',
-            padding: '0.5rem',
-            backgroundColor: '#f8f9fa',
-            borderRadius: '4px',
-            border: '1px solid #dee2e6'
-          }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '1rem',
+              marginBottom: '1rem',
+              padding: '0.5rem',
+              backgroundColor: '#f8f9fa',
+              borderRadius: '4px',
+              border: '1px solid #dee2e6',
+            }}
+          >
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                fontSize: '0.9rem',
+              }}
+            >
               Filter by permission:
-              <select 
-                value={sharedSongsFilter} 
-                onChange={(e) => setSharedSongsFilter(e.target.value as 'all' | 'read' | 'edit' | 'admin')}
-                style={{ padding: '0.25rem', fontSize: '0.9rem', borderRadius: '3px', border: '1px solid #ccc' }}
+              <select
+                value={sharedSongsFilter}
+                onChange={(e) =>
+                  setSharedSongsFilter(
+                    e.target.value as 'all' | 'read' | 'edit' | 'admin'
+                  )
+                }
+                style={{
+                  padding: '0.25rem',
+                  fontSize: '0.9rem',
+                  borderRadius: '3px',
+                  border: '1px solid #ccc',
+                }}
               >
                 <option value="all">All Permissions</option>
                 <option value="admin">Admin Access</option>
@@ -1517,12 +1613,28 @@ const Home: React.FC = () => {
                 <option value="read">Read Only</option>
               </select>
             </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                fontSize: '0.9rem',
+              }}
+            >
               Sort by:
-              <select 
-                value={sharedSongsSort} 
-                onChange={(e) => setSharedSongsSort(e.target.value as 'title' | 'date' | 'updated')}
-                style={{ padding: '0.25rem', fontSize: '0.9rem', borderRadius: '3px', border: '1px solid #ccc' }}
+              <select
+                value={sharedSongsSort}
+                onChange={(e) =>
+                  setSharedSongsSort(
+                    e.target.value as 'title' | 'date' | 'updated'
+                  )
+                }
+                style={{
+                  padding: '0.25rem',
+                  fontSize: '0.9rem',
+                  borderRadius: '3px',
+                  border: '1px solid #ccc',
+                }}
               >
                 <option value="updated">Last Modified</option>
                 <option value="title">Title</option>
@@ -1533,15 +1645,19 @@ const Home: React.FC = () => {
         )}
 
         {getSharedSongs().length === 0 ? (
-          <div className="no-shared-songs" style={{ 
-            padding: '2rem', 
-            textAlign: 'center', 
-            backgroundColor: '#f8f9fa', 
-            borderRadius: '8px',
-            border: '1px solid #dee2e6'
-          }}>
+          <div
+            className="no-shared-songs"
+            style={{
+              padding: '2rem',
+              textAlign: 'center',
+              backgroundColor: '#f8f9fa',
+              borderRadius: '8px',
+              border: '1px solid #dee2e6',
+            }}
+          >
             <p style={{ margin: 0, color: '#6c757d' }}>
-              No songs have been shared with you yet. When other users share songs with you, they'll appear here.
+              No songs have been shared with you yet. When other users share
+              songs with you, they'll appear here.
             </p>
           </div>
         ) : (
@@ -1558,19 +1674,32 @@ const Home: React.FC = () => {
                   backgroundColor: '#fff',
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: '0.5rem',
+                  }}
+                >
                   <h3 style={{ margin: 0 }}>{song.title}</h3>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                    }}
+                  >
                     {/* Permission indicator for shared songs */}
                     {getUserPermission(song) === 'admin' && (
-                      <span 
-                        style={{ 
-                          fontSize: '0.75rem', 
-                          backgroundColor: '#dc3545', 
-                          color: 'white', 
-                          padding: '0.2rem 0.5rem', 
+                      <span
+                        style={{
+                          fontSize: '0.75rem',
+                          backgroundColor: '#dc3545',
+                          color: 'white',
+                          padding: '0.2rem 0.5rem',
                           borderRadius: '10px',
-                          fontWeight: '500'
+                          fontWeight: '500',
                         }}
                         title="You have admin access to this song"
                       >
@@ -1578,14 +1707,14 @@ const Home: React.FC = () => {
                       </span>
                     )}
                     {getUserPermission(song) === 'edit' && (
-                      <span 
-                        style={{ 
-                          fontSize: '0.75rem', 
-                          backgroundColor: '#7b1fa2', 
-                          color: 'white', 
-                          padding: '0.2rem 0.5rem', 
+                      <span
+                        style={{
+                          fontSize: '0.75rem',
+                          backgroundColor: '#7b1fa2',
+                          color: 'white',
+                          padding: '0.2rem 0.5rem',
                           borderRadius: '10px',
-                          fontWeight: '500'
+                          fontWeight: '500',
                         }}
                         title="You can edit this song"
                       >
@@ -1593,14 +1722,14 @@ const Home: React.FC = () => {
                       </span>
                     )}
                     {getUserPermission(song) === 'read' && (
-                      <span 
-                        style={{ 
-                          fontSize: '0.75rem', 
-                          backgroundColor: '#1976d2', 
-                          color: 'white', 
-                          padding: '0.2rem 0.5rem', 
+                      <span
+                        style={{
+                          fontSize: '0.75rem',
+                          backgroundColor: '#1976d2',
+                          color: 'white',
+                          padding: '0.2rem 0.5rem',
                           borderRadius: '10px',
-                          fontWeight: '500'
+                          fontWeight: '500',
                         }}
                         title="You have read-only access to this song"
                       >
@@ -1609,14 +1738,14 @@ const Home: React.FC = () => {
                     )}
                     {/* Collaboration indicator */}
                     {song.shared_with && song.shared_with.length > 0 && (
-                      <span 
-                        style={{ 
-                          fontSize: '0.75rem', 
-                          backgroundColor: '#28a745', 
-                          color: 'white', 
-                          padding: '0.2rem 0.5rem', 
+                      <span
+                        style={{
+                          fontSize: '0.75rem',
+                          backgroundColor: '#28a745',
+                          color: 'white',
+                          padding: '0.2rem 0.5rem',
                           borderRadius: '10px',
-                          fontWeight: '500'
+                          fontWeight: '500',
                         }}
                         title={`Shared with ${song.shared_with.length} collaborator${song.shared_with.length === 1 ? '' : 's'}`}
                       >
@@ -1677,7 +1806,8 @@ const Home: React.FC = () => {
                     View
                   </button>
                   {/* Only show edit button if user has edit or admin permission */}
-                  {(getUserPermission(song) === 'edit' || getUserPermission(song) === 'admin') && (
+                  {(getUserPermission(song) === 'edit' ||
+                    getUserPermission(song) === 'admin') && (
                     <button
                       className="btn btn-secondary"
                       onClick={() => handleEditSong(song)}

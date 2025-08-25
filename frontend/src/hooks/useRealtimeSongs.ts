@@ -43,7 +43,7 @@ export function useRealtimeSongs(): UseRealtimeSongsResult {
     // Check if real-time updates are supported
     if (apiService.supportsRealTimeUpdates()) {
       setIsRealTime(true);
-      
+
       // Set up real-time subscription
       unsubscribe = apiService.subscribeToSongs((realtimeSongs: Song[]) => {
         setSongs(realtimeSongs);
@@ -52,7 +52,7 @@ export function useRealtimeSongs(): UseRealtimeSongsResult {
       });
     } else {
       setIsRealTime(false);
-      
+
       // Fall back to regular API fetch for Flask backend
       fetchSongs();
     }

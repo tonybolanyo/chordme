@@ -149,5 +149,5 @@ export type {
   OptimisticUpdate,
   CollaborationSession,
   PermissionChange,
-  CollaborationEvent
+  CollaborationEvent,
 } from './collaboration';

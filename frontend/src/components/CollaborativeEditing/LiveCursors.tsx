@@ -22,19 +22,23 @@ export const LiveCursors: React.FC<LiveCursorsProps> = ({
   participants,
 }) => {
   const { cursors } = useCollaborativePresence(songId);
-  const [cursorPositions, setCursorPositions] = useState<Map<string, CursorPosition>>(new Map());
+  const [cursorPositions, setCursorPositions] = useState<
+    Map<string, CursorPosition>
+  >(new Map());
 
   // Calculate pixel position from line/column coordinates
-  const calculateCursorPosition = (cursor: UserCursor): CursorPosition | null => {
+  const calculateCursorPosition = (
+    cursor: UserCursor
+  ): CursorPosition | null => {
     const editor = editorRef.current;
     if (!editor) return null;
 
     const content = editor.value;
     const lines = content.split('\n');
-    
+
     // Validate cursor position
     if (cursor.position.line >= lines.length) return null;
-    
+
     const line = lines[cursor.position.line];
     if (cursor.position.column > line.length) return null;
 
@@ -58,14 +62,13 @@ export const LiveCursors: React.FC<LiveCursorsProps> = ({
     document.body.removeChild(measureElement);
 
     // Calculate position relative to editor
-    const editorRect = editor.getBoundingClientRect();
     const editorStyle = window.getComputedStyle(editor);
     const paddingLeft = parseInt(editorStyle.paddingLeft, 10);
     const paddingTop = parseInt(editorStyle.paddingTop, 10);
 
     return {
       x: paddingLeft + textWidth,
-      y: paddingTop + (cursor.position.line * lineHeight),
+      y: paddingTop + cursor.position.line * lineHeight,
       height: lineHeight,
     };
   };
@@ -86,7 +89,7 @@ export const LiveCursors: React.FC<LiveCursorsProps> = ({
 
   // Get user info for cursor
   const getUserForCursor = (userId: string): CollaborationUser | null => {
-    return participants.find(p => p.id === userId) || null;
+    return participants.find((p) => p.id === userId) || null;
   };
 
   const getUserName = (user: CollaborationUser): string => {
@@ -98,7 +101,7 @@ export const LiveCursors: React.FC<LiveCursorsProps> = ({
       {cursors.map((cursor) => {
         const position = cursorPositions.get(cursor.userId);
         const user = getUserForCursor(cursor.userId);
-        
+
         if (!position || !user) return null;
 
         return (
@@ -115,19 +118,24 @@ export const LiveCursors: React.FC<LiveCursorsProps> = ({
           />
         );
       })}
-      
+
       {/* Render selections if they exist */}
       {cursors.map((cursor) => {
         const position = cursorPositions.get(cursor.userId);
         const user = getUserForCursor(cursor.userId);
-        
-        if (!position || !user || !cursor.position.selectionStart || !cursor.position.selectionEnd) {
+
+        if (
+          !position ||
+          !user ||
+          !cursor.position.selectionStart ||
+          !cursor.position.selectionEnd
+        ) {
           return null;
         }
 
         const selectionStart = cursor.position.selectionStart;
         const selectionEnd = cursor.position.selectionEnd;
-        
+
         if (selectionStart === selectionEnd) return null;
 
         // Calculate selection rectangle (simplified for single-line selections)
@@ -136,14 +144,14 @@ export const LiveCursors: React.FC<LiveCursorsProps> = ({
 
         const content = editor.value;
         const lines = content.split('\n');
-        
+
         // For simplicity, only handle single-line selections
         const startLine = cursor.position.line;
         const line = lines[startLine];
-        
+
         const startCol = Math.max(0, selectionStart);
         const endCol = Math.min(line.length, selectionEnd);
-        
+
         if (startCol >= endCol) return null;
 
         // Measure selection width

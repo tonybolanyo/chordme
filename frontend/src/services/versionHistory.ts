@@ -1,4 +1,4 @@
-import { apiService } from './api';
+// import { apiService } from './api'; // TODO: Implement when version history API is ready
 
 export interface SongVersion {
   id: number;
@@ -45,46 +45,43 @@ export class VersionHistoryService {
    * Get all versions for a song
    */
   async getVersions(songId: string | number): Promise<SongVersion[]> {
-    const response = await apiService.request<VersionHistoryResponse>({
-      endpoint: `/songs/${songId}/versions`,
-      method: 'GET',
-    });
-
-    if (response.status === 'success') {
-      return response.data.versions;
-    } else {
-      throw new Error(response.message || 'Failed to fetch version history');
-    }
+    // TODO: Implement version history API endpoint
+    console.warn('Version history not yet implemented for song:', songId);
+    return [];
   }
 
   /**
    * Get a specific version by ID
    */
-  async getVersion(songId: string | number, versionId: string | number): Promise<SongVersion> {
-    const response = await apiService.request<SingleVersionResponse>({
-      endpoint: `/songs/${songId}/versions/${versionId}`,
-      method: 'GET',
-    });
-
-    if (response.status === 'success') {
-      return response.data;
-    } else {
-      throw new Error(response.message || 'Failed to fetch version');
-    }
+  async getVersion(
+    songId: string | number,
+    versionId: string | number
+  ): Promise<SongVersion> {
+    // TODO: Implement version history API endpoint
+    console.warn(
+      'Version history not yet implemented for song:',
+      songId,
+      'version:',
+      versionId
+    );
+    throw new Error('Version history not yet implemented');
   }
 
   /**
    * Restore a song to a specific version
    */
-  async restoreVersion(songId: string | number, versionId: string | number): Promise<void> {
-    const response = await apiService.request<RestoreVersionResponse>({
-      endpoint: `/songs/${songId}/restore/${versionId}`,
-      method: 'POST',
-    });
-
-    if (response.status !== 'success') {
-      throw new Error(response.message || 'Failed to restore version');
-    }
+  async restoreVersion(
+    songId: string | number,
+    versionId: string | number
+  ): Promise<void> {
+    // TODO: Implement version restore API endpoint
+    console.warn(
+      'Version restore not yet implemented for song:',
+      songId,
+      'version:',
+      versionId
+    );
+    throw new Error('Version restore not yet implemented');
   }
 
   /**
@@ -98,7 +95,7 @@ export class VersionHistoryService {
   } {
     const date = new Date(version.created_at);
     const relativeTime = this.formatRelativeTime(date);
-    
+
     return {
       title: `Version ${version.version_number}`,
       subtitle: version.title,

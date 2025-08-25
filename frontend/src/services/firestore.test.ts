@@ -16,25 +16,32 @@ const mockWhere = vi.fn();
 const mockOrderBy = vi.fn();
 const mockOnSnapshot = vi.fn();
 const mockTimestamp = {
-  now: vi.fn(() => ({ 
-    seconds: 1234567890, 
+  now: vi.fn(() => ({
+    seconds: 1234567890,
     nanoseconds: 0,
     toDate: () => new Date(1234567890 * 1000),
-    toMillis: () => 1234567890 * 1000
+    toMillis: () => 1234567890 * 1000,
   })),
-  fromDate: vi.fn((date: Date) => ({ 
-    seconds: Math.floor(date.getTime() / 1000), 
+  fromDate: vi.fn((date: Date) => ({
+    seconds: Math.floor(date.getTime() / 1000),
     nanoseconds: 0,
     toDate: () => date,
-    toMillis: () => date.getTime()
+    toMillis: () => date.getTime(),
   })),
 };
 
 // Create a mock Timestamp class for instanceof checks
 class MockTimestampClass {
-  constructor(public seconds: number, public nanoseconds: number) {}
-  toDate() { return new Date(this.seconds * 1000); }
-  toMillis() { return this.seconds * 1000; }
+  constructor(
+    public seconds: number,
+    public nanoseconds: number
+  ) {}
+  toDate() {
+    return new Date(this.seconds * 1000);
+  }
+  toMillis() {
+    return this.seconds * 1000;
+  }
 }
 
 vi.mock('firebase/firestore', () => ({
@@ -53,7 +60,7 @@ vi.mock('firebase/firestore', () => ({
   Timestamp: {
     ...mockTimestamp,
     // Add the constructor for instanceof checks
-    constructor: MockTimestampClass
+    constructor: MockTimestampClass,
   },
 }));
 
@@ -68,11 +75,11 @@ vi.mock('./firebase', () => ({
 describe('FirestoreService - CRUD Operations', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockTimestamp.now.mockReturnValue({ 
-      seconds: 1234567890, 
+    mockTimestamp.now.mockReturnValue({
+      seconds: 1234567890,
       nanoseconds: 0,
       toDate: () => new Date(1234567890 * 1000),
-      toMillis: () => 1234567890 * 1000
+      toMillis: () => 1234567890 * 1000,
     });
   });
 
@@ -99,7 +106,7 @@ describe('FirestoreService - CRUD Operations', () => {
     it('should report unavailable when Firebase is not initialized', async () => {
       const { firebaseService } = await import('./firebase');
       vi.mocked(firebaseService.isInitialized).mockReturnValue(false);
-      
+
       const { firestoreService } = await import('./firestore');
       expect(firestoreService.isAvailable()).toBe(false);
     });
@@ -158,8 +165,8 @@ describe('FirestoreService - CRUD Operations', () => {
       });
 
       it('should return empty array when no songs found', async () => {
-        const mockSnapshot = { 
-          forEach: vi.fn()
+        const mockSnapshot = {
+          forEach: vi.fn(),
         };
         mockGetDocs.mockResolvedValue(mockSnapshot);
 
@@ -173,8 +180,10 @@ describe('FirestoreService - CRUD Operations', () => {
         mockGetDocs.mockRejectedValue(new Error('Firestore error'));
 
         const { firestoreService } = await import('./firestore');
-        
-        await expect(firestoreService.getSongs('user-123')).rejects.toThrow('Failed to fetch songs from Firestore');
+
+        await expect(firestoreService.getSongs('user-123')).rejects.toThrow(
+          'Failed to fetch songs from Firestore'
+        );
       });
     });
 
@@ -201,7 +210,11 @@ describe('FirestoreService - CRUD Operations', () => {
           updated_at: '2023-02-13T21:31:30.000Z',
         });
 
-        expect(mockDoc).toHaveBeenCalledWith(expect.anything(), 'songs', 'song-123');
+        expect(mockDoc).toHaveBeenCalledWith(
+          expect.anything(),
+          'songs',
+          'song-123'
+        );
       });
 
       it('should return null when song does not exist', async () => {
@@ -231,7 +244,10 @@ describe('FirestoreService - CRUD Operations', () => {
         mockGetDoc.mockResolvedValue(mockSnapshot);
 
         const { firestoreService } = await import('./firestore');
-        const song = await firestoreService.createSong(mockSongData, 'user-123');
+        const song = await firestoreService.createSong(
+          mockSongData,
+          'user-123'
+        );
 
         expect(song.id).toBe('song-123');
         expect(song.title).toBe('Test Song');
@@ -253,7 +269,7 @@ describe('FirestoreService - CRUD Operations', () => {
         mockAddDoc.mockRejectedValue(new Error('Creation failed'));
 
         const { firestoreService } = await import('./firestore');
-        
+
         await expect(
           firestoreService.createSong(mockSongData, 'user-123')
         ).rejects.toThrow('Failed to create song in Firestore');
@@ -262,7 +278,10 @@ describe('FirestoreService - CRUD Operations', () => {
 
     describe('updateSong', () => {
       it('should update an existing song', async () => {
-        const updateData = { title: 'Updated Title', author_id: 'updated-user' };
+        const updateData = {
+          title: 'Updated Title',
+          author_id: 'updated-user',
+        };
         const updatedFirestoreSong = {
           ...mockFirestoreSong,
           title: 'Updated Title',
@@ -299,7 +318,7 @@ describe('FirestoreService - CRUD Operations', () => {
         mockUpdateDoc.mockRejectedValue(new Error('Update failed'));
 
         const { firestoreService } = await import('./firestore');
-        
+
         await expect(
           firestoreService.updateSong('song-123', { title: 'New Title' })
         ).rejects.toThrow('Failed to update song in Firestore');
@@ -312,10 +331,16 @@ describe('FirestoreService - CRUD Operations', () => {
         mockDeleteDoc.mockResolvedValue(undefined);
 
         const { firestoreService } = await import('./firestore');
-        
-        await expect(firestoreService.deleteSong('song-123')).resolves.not.toThrow();
 
-        expect(mockDoc).toHaveBeenCalledWith(expect.anything(), 'songs', 'song-123');
+        await expect(
+          firestoreService.deleteSong('song-123')
+        ).resolves.not.toThrow();
+
+        expect(mockDoc).toHaveBeenCalledWith(
+          expect.anything(),
+          'songs',
+          'song-123'
+        );
         expect(mockDeleteDoc).toHaveBeenCalledWith('song-doc');
       });
 
@@ -323,8 +348,10 @@ describe('FirestoreService - CRUD Operations', () => {
         mockDeleteDoc.mockRejectedValue(new Error('Deletion failed'));
 
         const { firestoreService } = await import('./firestore');
-        
-        await expect(firestoreService.deleteSong('song-123')).rejects.toThrow('Failed to delete song from Firestore');
+
+        await expect(firestoreService.deleteSong('song-123')).rejects.toThrow(
+          'Failed to delete song from Firestore'
+        );
       });
     });
   });
@@ -384,15 +411,19 @@ describe('FirestoreService - CRUD Operations', () => {
         mockGetDoc.mockResolvedValue(mockSnapshot);
 
         const { firestoreService } = await import('./firestore');
-        const user = await firestoreService.createUser({ 
+        const user = await firestoreService.createUser({
           email: 'test@example.com',
-          id: 'user-123'
+          id: 'user-123',
         });
 
         expect(user.id).toBe('user-123');
         expect(user.email).toBe('test@example.com');
 
-        expect(mockDoc).toHaveBeenCalledWith(expect.anything(), 'users', 'user-123');
+        expect(mockDoc).toHaveBeenCalledWith(
+          expect.anything(),
+          'users',
+          'user-123'
+        );
         expect(mockSetDoc).toHaveBeenCalled();
       });
 
@@ -462,7 +493,10 @@ describe('FirestoreService - CRUD Operations', () => {
         mockOnSnapshot.mockReturnValue(mockUnsubscribe);
 
         const { firestoreService } = await import('./firestore');
-        const unsubscribe = firestoreService.subscribeToSongs('user-123', callback);
+        const unsubscribe = firestoreService.subscribeToSongs(
+          'user-123',
+          callback
+        );
 
         expect(unsubscribe).toBe(mockUnsubscribe);
         expect(mockOnSnapshot).toHaveBeenCalled();
@@ -509,10 +543,17 @@ describe('FirestoreService - CRUD Operations', () => {
         mockOnSnapshot.mockReturnValue(mockUnsubscribe);
 
         const { firestoreService } = await import('./firestore');
-        const unsubscribe = firestoreService.subscribeToSong('song-123', callback);
+        const unsubscribe = firestoreService.subscribeToSong(
+          'song-123',
+          callback
+        );
 
         expect(unsubscribe).toBe(mockUnsubscribe);
-        expect(mockDoc).toHaveBeenCalledWith(expect.anything(), 'songs', 'song-123');
+        expect(mockDoc).toHaveBeenCalledWith(
+          expect.anything(),
+          'songs',
+          'song-123'
+        );
         expect(mockOnSnapshot).toHaveBeenCalled();
       });
 

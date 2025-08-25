@@ -38,7 +38,7 @@ describe('VersionHistoryService', () => {
     it('should fetch versions successfully', async () => {
       const { apiService } = await import('./api');
       const mockRequest = vi.mocked(apiService.request);
-      
+
       mockRequest.mockResolvedValue({
         status: 'success',
         message: 'Versions retrieved',
@@ -57,7 +57,7 @@ describe('VersionHistoryService', () => {
     it('should handle API errors', async () => {
       const { apiService } = await import('./api');
       const mockRequest = vi.mocked(apiService.request);
-      
+
       mockRequest.mockResolvedValue({
         status: 'error',
         message: 'Song not found',
@@ -72,7 +72,7 @@ describe('VersionHistoryService', () => {
     it('should handle API errors without message', async () => {
       const { apiService } = await import('./api');
       const mockRequest = vi.mocked(apiService.request);
-      
+
       mockRequest.mockResolvedValue({
         status: 'error',
         message: '',
@@ -90,7 +90,7 @@ describe('VersionHistoryService', () => {
       const { apiService } = await import('./api');
       const mockRequest = vi.mocked(apiService.request);
       const mockVersion = mockVersions[0];
-      
+
       mockRequest.mockResolvedValue({
         status: 'success',
         message: 'Version retrieved',
@@ -109,7 +109,7 @@ describe('VersionHistoryService', () => {
     it('should handle version not found', async () => {
       const { apiService } = await import('./api');
       const mockRequest = vi.mocked(apiService.request);
-      
+
       mockRequest.mockResolvedValue({
         status: 'error',
         message: 'Version not found',
@@ -126,7 +126,7 @@ describe('VersionHistoryService', () => {
     it('should restore version successfully', async () => {
       const { apiService } = await import('./api');
       const mockRequest = vi.mocked(apiService.request);
-      
+
       mockRequest.mockResolvedValue({
         status: 'success',
         message: 'Version restored',
@@ -153,7 +153,7 @@ describe('VersionHistoryService', () => {
     it('should handle restore errors', async () => {
       const { apiService } = await import('./api');
       const mockRequest = vi.mocked(apiService.request);
-      
+
       mockRequest.mockResolvedValue({
         status: 'error',
         message: 'Insufficient permissions',
@@ -167,9 +167,9 @@ describe('VersionHistoryService', () => {
         },
       });
 
-      await expect(versionHistoryService.restoreVersion(123, 1)).rejects.toThrow(
-        'Insufficient permissions'
-      );
+      await expect(
+        versionHistoryService.restoreVersion(123, 1)
+      ).rejects.toThrow('Insufficient permissions');
     });
   });
 
@@ -189,13 +189,14 @@ describe('VersionHistoryService', () => {
     // Test the private method indirectly through formatVersionForDisplay
     it('should format relative time correctly', () => {
       const now = new Date();
-      
+
       // Test "Just now"
       const recentVersion: SongVersion = {
         ...mockVersions[0],
         created_at: now.toISOString(),
       };
-      const recentDisplay = versionHistoryService.formatVersionForDisplay(recentVersion);
+      const recentDisplay =
+        versionHistoryService.formatVersionForDisplay(recentVersion);
       expect(recentDisplay.timestamp).toBe('Just now');
 
       // Test minutes ago
@@ -204,7 +205,8 @@ describe('VersionHistoryService', () => {
         ...mockVersions[0],
         created_at: minutesAgo.toISOString(),
       };
-      const minutesDisplay = versionHistoryService.formatVersionForDisplay(minutesVersion);
+      const minutesDisplay =
+        versionHistoryService.formatVersionForDisplay(minutesVersion);
       expect(minutesDisplay.timestamp).toBe('5 minutes ago');
 
       // Test hours ago
@@ -213,7 +215,8 @@ describe('VersionHistoryService', () => {
         ...mockVersions[0],
         created_at: hoursAgo.toISOString(),
       };
-      const hoursDisplay = versionHistoryService.formatVersionForDisplay(hoursVersion);
+      const hoursDisplay =
+        versionHistoryService.formatVersionForDisplay(hoursVersion);
       expect(hoursDisplay.timestamp).toBe('2 hours ago');
 
       // Test days ago
@@ -222,7 +225,8 @@ describe('VersionHistoryService', () => {
         ...mockVersions[0],
         created_at: daysAgo.toISOString(),
       };
-      const daysDisplay = versionHistoryService.formatVersionForDisplay(daysVersion);
+      const daysDisplay =
+        versionHistoryService.formatVersionForDisplay(daysVersion);
       expect(daysDisplay.timestamp).toBe('3 days ago');
 
       // Test weeks ago (should show date)
@@ -231,20 +235,22 @@ describe('VersionHistoryService', () => {
         ...mockVersions[0],
         created_at: weeksAgo.toISOString(),
       };
-      const weeksDisplay = versionHistoryService.formatVersionForDisplay(weeksVersion);
+      const weeksDisplay =
+        versionHistoryService.formatVersionForDisplay(weeksVersion);
       expect(weeksDisplay.timestamp).toMatch(/\d{1,2}\/\d{1,2}\/\d{4}/); // Should be a date format
     });
 
     it('should handle singular vs plural correctly', () => {
       const now = new Date();
-      
+
       // Test 1 minute ago (singular)
       const oneMinuteAgo = new Date(now.getTime() - 1 * 60 * 1000);
       const oneMinuteVersion: SongVersion = {
         ...mockVersions[0],
         created_at: oneMinuteAgo.toISOString(),
       };
-      const oneMinuteDisplay = versionHistoryService.formatVersionForDisplay(oneMinuteVersion);
+      const oneMinuteDisplay =
+        versionHistoryService.formatVersionForDisplay(oneMinuteVersion);
       expect(oneMinuteDisplay.timestamp).toBe('1 minute ago');
 
       // Test 1 hour ago (singular)
@@ -253,7 +259,8 @@ describe('VersionHistoryService', () => {
         ...mockVersions[0],
         created_at: oneHourAgo.toISOString(),
       };
-      const oneHourDisplay = versionHistoryService.formatVersionForDisplay(oneHourVersion);
+      const oneHourDisplay =
+        versionHistoryService.formatVersionForDisplay(oneHourVersion);
       expect(oneHourDisplay.timestamp).toBe('1 hour ago');
 
       // Test 1 day ago (singular)
@@ -262,7 +269,8 @@ describe('VersionHistoryService', () => {
         ...mockVersions[0],
         created_at: oneDayAgo.toISOString(),
       };
-      const oneDayDisplay = versionHistoryService.formatVersionForDisplay(oneDayVersion);
+      const oneDayDisplay =
+        versionHistoryService.formatVersionForDisplay(oneDayVersion);
       expect(oneDayDisplay.timestamp).toBe('1 day ago');
     });
   });

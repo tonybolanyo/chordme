@@ -34,22 +34,25 @@ const StorageSettings: React.FC<StorageSettingsProps> = ({
         {
           id: 'api',
           name: 'REST API Storage',
-          description: 'Server-based storage using Flask backend. Reliable and consistent.',
+          description:
+            'Server-based storage using Flask backend. Reliable and consistent.',
           available: true,
         },
         {
           id: 'firebase',
           name: 'Firebase/Firestore',
-          description: 'Real-time cloud storage with live synchronization across devices.',
+          description:
+            'Real-time cloud storage with live synchronization across devices.',
           available: isFirebaseConfigured,
-          configurationRequired: !isFirebaseConfigured 
+          configurationRequired: !isFirebaseConfigured
             ? 'Firebase configuration required in environment variables'
             : undefined,
         },
         {
           id: 'googledrive',
           name: 'Google Drive',
-          description: 'Store songs as files in your Google Drive. Import/export ChordPro files.',
+          description:
+            'Store songs as files in your Google Drive. Import/export ChordPro files.',
           available: isGoogleOAuthConfigured,
           configurationRequired: !isGoogleOAuthConfigured
             ? 'Google OAuth configuration required'
@@ -60,9 +63,10 @@ const StorageSettings: React.FC<StorageSettingsProps> = ({
           name: 'Local Storage',
           description: 'Browser-based storage. Data stays on this device only.',
           available: typeof localStorage !== 'undefined',
-          configurationRequired: typeof localStorage === 'undefined'
-            ? 'Local storage not supported in this browser'
-            : undefined,
+          configurationRequired:
+            typeof localStorage === 'undefined'
+              ? 'Local storage not supported in this browser'
+              : undefined,
         },
       ];
     };
@@ -93,7 +97,7 @@ const StorageSettings: React.FC<StorageSettingsProps> = ({
       <div className="storage-settings-modal">
         <div className="storage-settings-header">
           <h2>Storage Backend Settings</h2>
-          <button 
+          <button
             className="close-button"
             onClick={handleCancel}
             aria-label="Close settings"
@@ -101,12 +105,13 @@ const StorageSettings: React.FC<StorageSettingsProps> = ({
             ×
           </button>
         </div>
-        
+
         <div className="storage-settings-content">
           <p className="settings-description">
-            Choose how and where your songs are stored. You can change this setting at any time.
+            Choose how and where your songs are stored. You can change this
+            setting at any time.
           </p>
-          
+
           <div className="backend-options">
             {backends.map((backend) => (
               <div
@@ -114,7 +119,9 @@ const StorageSettings: React.FC<StorageSettingsProps> = ({
                 className={`backend-option ${
                   selectedBackend === backend.id ? 'selected' : ''
                 } ${!backend.available ? 'disabled' : ''}`}
-                onClick={() => backend.available && handleBackendSelect(backend.id)}
+                onClick={() =>
+                  backend.available && handleBackendSelect(backend.id)
+                }
               >
                 <div className="backend-option-header">
                   <input
@@ -126,7 +133,10 @@ const StorageSettings: React.FC<StorageSettingsProps> = ({
                     disabled={!backend.available}
                     onChange={() => handleBackendSelect(backend.id)}
                   />
-                  <label htmlFor={`backend-${backend.id}`} className="backend-name">
+                  <label
+                    htmlFor={`backend-${backend.id}`}
+                    className="backend-name"
+                  >
                     {backend.name}
                   </label>
                   {!backend.available && (
@@ -143,18 +153,17 @@ const StorageSettings: React.FC<StorageSettingsProps> = ({
             ))}
           </div>
         </div>
-        
+
         <div className="storage-settings-footer">
-          <button 
-            className="btn btn-secondary" 
-            onClick={handleCancel}
-          >
+          <button className="btn btn-secondary" onClick={handleCancel}>
             Cancel
           </button>
-          <button 
-            className="btn btn-primary" 
+          <button
+            className="btn btn-primary"
             onClick={handleSave}
-            disabled={!backends.find(b => b.id === selectedBackend)?.available}
+            disabled={
+              !backends.find((b) => b.id === selectedBackend)?.available
+            }
           >
             Save Settings
           </button>

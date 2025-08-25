@@ -53,7 +53,7 @@ describe('SongSharingModal', () => {
 
   it('renders modal when open', () => {
     render(<SongSharingModal {...defaultProps} />);
-    
+
     expect(screen.getByText('Share "Test Song"')).toBeInTheDocument();
     expect(screen.getByText('Invite Collaborator')).toBeInTheDocument();
     expect(screen.getByText('Current Collaborators')).toBeInTheDocument();
@@ -61,16 +61,18 @@ describe('SongSharingModal', () => {
 
   it('does not render when closed', () => {
     render(<SongSharingModal {...defaultProps} isOpen={false} />);
-    
+
     expect(screen.queryByText('Share "Test Song"')).not.toBeInTheDocument();
   });
 
   it('renders invitation form with proper inputs', () => {
     render(<SongSharingModal {...defaultProps} />);
-    
+
     expect(screen.getByLabelText('Email address:')).toBeInTheDocument();
     expect(screen.getByLabelText('Permission level:')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Share Song' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Share Song' })
+    ).toBeInTheDocument();
   });
 
   it('loads sharing information when modal opens', async () => {
@@ -79,7 +81,7 @@ describe('SongSharingModal', () => {
     });
 
     render(<SongSharingModal {...defaultProps} />);
-    
+
     await waitFor(() => {
       expect(apiService.getSongSharingInfo).toHaveBeenCalledWith('test-song-1');
     });
@@ -92,7 +94,7 @@ describe('SongSharingModal', () => {
     };
 
     render(<SongSharingModal {...defaultProps} song={songWithShares} />);
-    
+
     expect(apiService.getSongSharingInfo).not.toHaveBeenCalled();
   });
 
@@ -102,7 +104,7 @@ describe('SongSharingModal', () => {
     });
 
     render(<SongSharingModal {...defaultProps} />);
-    
+
     await waitFor(() => {
       expect(screen.getByText('collaborator@example.com')).toBeInTheDocument();
       expect(screen.getByText('editor@example.com')).toBeInTheDocument();
@@ -115,9 +117,11 @@ describe('SongSharingModal', () => {
     });
 
     render(<SongSharingModal {...defaultProps} />);
-    
+
     await waitFor(() => {
-      expect(screen.getByText('This song is not shared with anyone yet.')).toBeInTheDocument();
+      expect(
+        screen.getByText('This song is not shared with anyone yet.')
+      ).toBeInTheDocument();
     });
   });
 
@@ -131,7 +135,7 @@ describe('SongSharingModal', () => {
     });
 
     render(<SongSharingModal {...defaultProps} />);
-    
+
     const emailInput = screen.getByLabelText('Email address:');
     const permissionSelect = screen.getByLabelText('Permission level:');
     const shareButton = screen.getByRole('button', { name: 'Share Song' });
@@ -162,7 +166,7 @@ describe('SongSharingModal', () => {
     });
 
     render(<SongSharingModal {...defaultProps} />);
-    
+
     const emailInput = screen.getByLabelText('Email address:');
     const shareButton = screen.getByRole('button', { name: 'Share Song' });
 
@@ -184,7 +188,7 @@ describe('SongSharingModal', () => {
     });
 
     render(<SongSharingModal {...defaultProps} />);
-    
+
     await waitFor(() => {
       expect(screen.getByText('collaborator@example.com')).toBeInTheDocument();
     });
@@ -193,10 +197,13 @@ describe('SongSharingModal', () => {
     fireEvent.change(permissionSelects[0], { target: { value: 'admin' } });
 
     await waitFor(() => {
-      expect(apiService.updateSongPermissions).toHaveBeenCalledWith('test-song-1', {
-        user_email: 'collaborator@example.com',
-        permission_level: 'admin',
-      });
+      expect(apiService.updateSongPermissions).toHaveBeenCalledWith(
+        'test-song-1',
+        {
+          user_email: 'collaborator@example.com',
+          permission_level: 'admin',
+        }
+      );
     });
   });
 
@@ -214,7 +221,7 @@ describe('SongSharingModal', () => {
     });
 
     render(<SongSharingModal {...defaultProps} />);
-    
+
     await waitFor(() => {
       expect(screen.getByText('collaborator@example.com')).toBeInTheDocument();
     });
@@ -227,7 +234,10 @@ describe('SongSharingModal', () => {
     );
 
     await waitFor(() => {
-      expect(apiService.revokeSongAccess).toHaveBeenCalledWith('test-song-1', 'user-2');
+      expect(apiService.revokeSongAccess).toHaveBeenCalledWith(
+        'test-song-1',
+        'user-2'
+      );
     });
 
     // Restore original confirm
@@ -244,7 +254,7 @@ describe('SongSharingModal', () => {
     });
 
     render(<SongSharingModal {...defaultProps} />);
-    
+
     await waitFor(() => {
       expect(screen.getByText('collaborator@example.com')).toBeInTheDocument();
     });
@@ -262,7 +272,7 @@ describe('SongSharingModal', () => {
   it('closes modal when close button is clicked', () => {
     const onClose = vi.fn();
     render(<SongSharingModal {...defaultProps} onClose={onClose} />);
-    
+
     const closeButton = screen.getByLabelText('Close');
     fireEvent.click(closeButton);
 
@@ -272,7 +282,7 @@ describe('SongSharingModal', () => {
   it('closes modal when overlay is clicked', () => {
     const onClose = vi.fn();
     render(<SongSharingModal {...defaultProps} onClose={onClose} />);
-    
+
     const overlay = screen.getByRole('dialog').parentElement;
     fireEvent.click(overlay!);
 
@@ -282,7 +292,7 @@ describe('SongSharingModal', () => {
   it('does not close modal when content is clicked', () => {
     const onClose = vi.fn();
     render(<SongSharingModal {...defaultProps} onClose={onClose} />);
-    
+
     const content = screen.getByRole('dialog');
     fireEvent.click(content);
 
@@ -299,8 +309,10 @@ describe('SongSharingModal', () => {
       shared_users: [],
     });
 
-    render(<SongSharingModal {...defaultProps} onShareUpdate={onShareUpdate} />);
-    
+    render(
+      <SongSharingModal {...defaultProps} onShareUpdate={onShareUpdate} />
+    );
+
     const emailInput = screen.getByLabelText('Email address:');
     const shareButton = screen.getByRole('button', { name: 'Share Song' });
 
@@ -322,7 +334,7 @@ describe('SongSharingModal', () => {
     });
 
     render(<SongSharingModal {...defaultProps} />);
-    
+
     const emailInput = screen.getByLabelText('Email address:');
     const shareButton = screen.getByRole('button', { name: 'Share Song' });
 

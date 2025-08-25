@@ -1,6 +1,9 @@
 // Collaborative editing header component showing real-time status and participants
 import React from 'react';
-import { useCollaborativePresence, useCollaborativeNetwork } from '../../hooks/useCollaborativeEditing';
+import {
+  useCollaborativePresence,
+  useCollaborativeNetwork,
+} from '../../hooks/useCollaborativeEditing';
 import type { CollaborationUser } from '../../types/collaboration';
 import './CollaborativeEditing.css';
 
@@ -16,31 +19,43 @@ export const CollaborationHeader: React.FC<CollaborationHeaderProps> = ({
   participants,
 }) => {
   const { activePeerCount } = useCollaborativePresence(songId);
-  const { networkStatus, isOnline, connectionQuality } = useCollaborativeNetwork();
+  const { isOnline, connectionQuality } = useCollaborativeNetwork();
 
   const getNetworkIcon = () => {
     if (!isOnline) return '📡';
     switch (connectionQuality) {
-      case 'excellent': return '📶';
-      case 'good': return '📶';
-      case 'poor': return '📶';
-      default: return '📡';
+      case 'excellent':
+        return '📶';
+      case 'good':
+        return '📶';
+      case 'poor':
+        return '📶';
+      default:
+        return '📡';
     }
   };
 
   const getConnectionText = () => {
     if (!isOnline) return 'Offline';
     switch (connectionQuality) {
-      case 'excellent': return 'Excellent';
-      case 'good': return 'Good';
-      case 'poor': return 'Poor connection';
-      default: return 'Connected';
+      case 'excellent':
+        return 'Excellent';
+      case 'good':
+        return 'Good';
+      case 'poor':
+        return 'Poor connection';
+      default:
+        return 'Connected';
     }
   };
 
   const getUserInitials = (user: CollaborationUser): string => {
     if (user.name) {
-      return user.name.split(' ').map(n => n[0]).join('').toUpperCase();
+      return user.name
+        .split(' ')
+        .map((n) => n[0])
+        .join('')
+        .toUpperCase();
     }
     return user.email.slice(0, 2).toUpperCase();
   };
@@ -52,12 +67,16 @@ export const CollaborationHeader: React.FC<CollaborationHeaderProps> = ({
   return (
     <div className="collaboration-header">
       <div className="collaboration-status">
-        <div className={`collaboration-indicator ${isCollaborating ? 'active' : ''}`}>
+        <div
+          className={`collaboration-indicator ${isCollaborating ? 'active' : ''}`}
+        >
           <span>⚡</span>
           <span>Live Collaboration</span>
         </div>
         {activePeerCount > 0 && (
-          <span>• {activePeerCount} other{activePeerCount !== 1 ? 's' : ''} online</span>
+          <span>
+            • {activePeerCount} other{activePeerCount !== 1 ? 's' : ''} online
+          </span>
         )}
       </div>
 

@@ -1,5 +1,5 @@
 // Firebase Authentication service
-import { 
+import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
@@ -37,13 +37,18 @@ class FirebaseAuthService {
    * Check if Firebase Auth is available
    */
   public isAvailable(): boolean {
-    return firebaseService.isInitialized() && firebaseService.getAuth() !== null;
+    return (
+      firebaseService.isInitialized() && firebaseService.getAuth() !== null
+    );
   }
 
   /**
    * Sign up with email and password
    */
-  public async signUpWithEmailAndPassword(email: string, password: string): Promise<FirebaseAuthResult> {
+  public async signUpWithEmailAndPassword(
+    email: string,
+    password: string
+  ): Promise<FirebaseAuthResult> {
     if (!this.isAvailable()) {
       throw new Error('Firebase Auth is not available');
     }
@@ -54,7 +59,8 @@ class FirebaseAuthService {
     }
 
     try {
-      const userCredential: UserCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential: UserCredential =
+        await createUserWithEmailAndPassword(auth, email, password);
       return {
         user: this.mapFirebaseUser(userCredential.user),
         isNewUser: true,
@@ -67,7 +73,10 @@ class FirebaseAuthService {
   /**
    * Sign in with email and password
    */
-  public async signInWithEmailAndPassword(email: string, password: string): Promise<FirebaseAuthResult> {
+  public async signInWithEmailAndPassword(
+    email: string,
+    password: string
+  ): Promise<FirebaseAuthResult> {
     if (!this.isAvailable()) {
       throw new Error('Firebase Auth is not available');
     }
@@ -78,7 +87,11 @@ class FirebaseAuthService {
     }
 
     try {
-      const userCredential: UserCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userCredential: UserCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       return {
         user: this.mapFirebaseUser(userCredential.user),
         isNewUser: false,
@@ -102,11 +115,16 @@ class FirebaseAuthService {
     }
 
     try {
-      const userCredential: UserCredential = await signInWithPopup(auth, this.googleProvider);
-      
+      const userCredential: UserCredential = await signInWithPopup(
+        auth,
+        this.googleProvider
+      );
+
       return {
         user: this.mapFirebaseUser(userCredential.user),
-        isNewUser: userCredential.user.metadata.creationTime === userCredential.user.metadata.lastSignInTime,
+        isNewUser:
+          userCredential.user.metadata.creationTime ===
+          userCredential.user.metadata.lastSignInTime,
       };
     } catch (error: unknown) {
       throw this.mapAuthError(error);
@@ -152,7 +170,9 @@ class FirebaseAuthService {
   /**
    * Listen to auth state changes
    */
-  public onAuthStateChanged(callback: (user: FirebaseAuthUser | null) => void): () => void {
+  public onAuthStateChanged(
+    callback: (user: FirebaseAuthUser | null) => void
+  ): () => void {
     if (!this.isAvailable()) {
       // Return a no-op unsubscribe function
       return () => {};
@@ -205,21 +225,29 @@ class FirebaseAuthService {
       case 'auth/email-already-in-use':
         return new Error('An account with this email address already exists');
       case 'auth/weak-password':
-        return new Error('Password is too weak. Please choose a stronger password');
+        return new Error(
+          'Password is too weak. Please choose a stronger password'
+        );
       case 'auth/operation-not-allowed':
         return new Error('This sign-in method is not enabled');
       case 'auth/popup-closed-by-user':
         return new Error('Sign-in was cancelled');
       case 'auth/popup-blocked':
-        return new Error('Pop-up was blocked by your browser. Please allow pop-ups and try again');
+        return new Error(
+          'Pop-up was blocked by your browser. Please allow pop-ups and try again'
+        );
       case 'auth/cancelled-popup-request':
         return new Error('Sign-in was cancelled');
       case 'auth/network-request-failed':
-        return new Error('Network error. Please check your connection and try again');
+        return new Error(
+          'Network error. Please check your connection and try again'
+        );
       case 'auth/too-many-requests':
         return new Error('Too many failed attempts. Please try again later');
       default:
-        return new Error(firebaseError.message || 'An error occurred during authentication');
+        return new Error(
+          firebaseError.message || 'An error occurred during authentication'
+        );
     }
   }
 }

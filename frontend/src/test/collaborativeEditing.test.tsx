@@ -1,13 +1,19 @@
 // Comprehensive tests for collaborative editing features
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  act,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { OperationalTransform } from '../services/operationalTransform';
-import type { 
-  TextOperation, 
-  EditOperation, 
+import type {
+  TextOperation,
+  EditOperation,
   CollaborationUser,
-  DocumentState 
+  DocumentState,
 } from '../types/collaboration';
 
 // Mock Firebase services
@@ -30,7 +36,7 @@ vi.mock('../services/collaborationService', () => {
     onNetworkStatusChange: vi.fn(() => () => {}),
     onPermissionChange: vi.fn(() => () => {}),
   };
-  
+
   return {
     collaborationService: mockService,
     CollaborationService: vi.fn(() => mockService),
@@ -98,7 +104,7 @@ describe('Operational Transformation', () => {
       };
 
       const transformed = OperationalTransform.transform(op1, op2);
-      
+
       // op2 should be adjusted to account for op1's insertion
       expect(transformed).toEqual({
         type: 'insert',
@@ -123,7 +129,7 @@ describe('Operational Transformation', () => {
       };
 
       const transformed = OperationalTransform.transform(insertOp, deleteOp);
-      
+
       // Delete position should be adjusted for the insert
       expect(transformed).toEqual({
         type: 'delete',
@@ -146,7 +152,7 @@ describe('Operational Transformation', () => {
       };
 
       const transformed = OperationalTransform.transform(op1, op2);
-      
+
       // Should merge overlapping deletes
       expect(transformed.type).toBe('delete');
       expect(transformed.position).toBe(5);
@@ -198,7 +204,7 @@ describe('Operational Transformation', () => {
       const newText = 'Hello Beautiful World';
 
       const operations = OperationalTransform.generateDiff(oldText, newText);
-      
+
       expect(operations).toHaveLength(2);
       expect(operations[0]).toEqual({
         type: 'delete',
@@ -218,7 +224,7 @@ describe('Operational Transformation', () => {
       const newText = 'Hello World';
 
       const operations = OperationalTransform.generateDiff(oldText, newText);
-      
+
       expect(operations).toHaveLength(1);
       expect(operations[0]).toEqual({
         type: 'insert',
@@ -233,7 +239,7 @@ describe('Operational Transformation', () => {
       const newText = 'Hello';
 
       const operations = OperationalTransform.generateDiff(oldText, newText);
-      
+
       expect(operations).toHaveLength(1);
       expect(operations[0]).toEqual({
         type: 'delete',
@@ -252,8 +258,11 @@ describe('Operational Transformation', () => {
         length: 10,
       };
 
-      const inverted = OperationalTransform.invertOperation(operation, 'Hello World');
-      
+      const inverted = OperationalTransform.invertOperation(
+        operation,
+        'Hello World'
+      );
+
       expect(inverted).toEqual({
         type: 'delete',
         position: 5,
@@ -269,8 +278,11 @@ describe('Operational Transformation', () => {
         length: 10,
       };
 
-      const inverted = OperationalTransform.invertOperation(operation, originalContent);
-      
+      const inverted = OperationalTransform.invertOperation(
+        operation,
+        originalContent
+      );
+
       expect(inverted).toEqual({
         type: 'insert',
         position: 5,
@@ -296,8 +308,18 @@ describe('Collaborative Editing Integration', () => {
       const session1 = {
         songId,
         participants: [
-          { id: user1Id, email: 'user1@test.com', color: '#FF6B6B', lastSeen: new Date().toISOString() },
-          { id: user2Id, email: 'user2@test.com', color: '#4ECDC4', lastSeen: new Date().toISOString() },
+          {
+            id: user1Id,
+            email: 'user1@test.com',
+            color: '#FF6B6B',
+            lastSeen: new Date().toISOString(),
+          },
+          {
+            id: user2Id,
+            email: 'user2@test.com',
+            color: '#4ECDC4',
+            lastSeen: new Date().toISOString(),
+          },
         ],
         cursors: [],
         presences: [],
@@ -309,11 +331,16 @@ describe('Collaborative Editing Integration', () => {
         },
         pendingOperations: [],
         optimisticUpdates: [],
-        networkStatus: { online: true, connectionQuality: 'excellent' as const },
+        networkStatus: {
+          online: true,
+          connectionQuality: 'excellent' as const,
+        },
         permissions: {},
       };
 
-      vi.mocked(collaborationService.startCollaborationSession).mockResolvedValue(session1);
+      vi.mocked(
+        collaborationService.startCollaborationSession
+      ).mockResolvedValue(session1);
       vi.mocked(collaborationService.getSession).mockReturnValue(session1);
 
       // User 1 makes an edit
@@ -333,15 +360,18 @@ describe('Collaborative Editing Integration', () => {
       };
 
       // Apply operations with transformation
-      const transformedUser2Op = OperationalTransform.transform(user1Operation, user2Operation);
-      
+      const transformedUser2Op = OperationalTransform.transform(
+        user1Operation,
+        user2Operation
+      );
+
       expect(transformedUser2Op.position).toBe(7); // Adjusted for user1's insertion
-      
+
       // Verify both operations can be applied
       let content = 'Initial content';
       content = OperationalTransform.applyOperation(content, user2Operation); // User 2's op first
       content = OperationalTransform.applyOperation(content, user1Operation); // Then user 1's transformed op
-      
+
       expect(content).toBe('Prefix Initial updated content');
     });
 
@@ -355,7 +385,7 @@ describe('Collaborative Editing Integration', () => {
       ];
 
       let content = '';
-      operations.forEach(op => {
+      operations.forEach((op) => {
         content = OperationalTransform.applyOperation(content, op);
       });
 
@@ -366,18 +396,20 @@ describe('Collaborative Editing Integration', () => {
   describe('Network Failure Scenarios', () => {
     it('should handle network interruption during editing', async () => {
       const mockNetworkCallback = vi.fn();
-      
+
       // Simulate network status changes
       let networkCallbacks: Array<(status: any) => void> = [];
-      vi.mocked(collaborationService.onNetworkStatusChange).mockImplementation((callback) => {
-        networkCallbacks.push(callback);
-        return () => {
-          networkCallbacks = networkCallbacks.filter(cb => cb !== callback);
-        };
-      });
+      vi.mocked(collaborationService.onNetworkStatusChange).mockImplementation(
+        (callback) => {
+          networkCallbacks.push(callback);
+          return () => {
+            networkCallbacks = networkCallbacks.filter((cb) => cb !== callback);
+          };
+        }
+      );
 
       // Trigger network offline event
-      networkCallbacks.forEach(callback => {
+      networkCallbacks.forEach((callback) => {
         callback({
           online: false,
           connectionQuality: 'offline',
@@ -396,7 +428,9 @@ describe('Collaborative Editing Integration', () => {
           songId: 'song1',
           userId: 'user1',
           timestamp: new Date().toISOString(),
-          operations: [{ type: 'insert', position: 0, content: 'A', length: 1 }],
+          operations: [
+            { type: 'insert', position: 0, content: 'A', length: 1 },
+          ],
           version: 1,
           attribution: { userId: 'user1', timestamp: new Date().toISOString() },
         } as EditOperation,
@@ -410,7 +444,9 @@ describe('Collaborative Editing Integration', () => {
         timestamp: new Date().toISOString(),
       };
 
-      vi.mocked(collaborationService.applyTextOperation).mockResolvedValue(mockOptimisticUpdate);
+      vi.mocked(collaborationService.applyTextOperation).mockResolvedValue(
+        mockOptimisticUpdate
+      );
 
       const operation: TextOperation = {
         type: 'insert',
@@ -419,8 +455,12 @@ describe('Collaborative Editing Integration', () => {
         length: 1,
       };
 
-      const result = await collaborationService.applyTextOperation('song1', [operation], true);
-      
+      const result = await collaborationService.applyTextOperation(
+        'song1',
+        [operation],
+        true
+      );
+
       expect(result).toEqual(mockOptimisticUpdate);
       expect(result?.status).toBe('pending');
     });
@@ -438,15 +478,19 @@ describe('Collaborative Editing Integration', () => {
       };
 
       let permissionCallbacks: Array<(change: any) => void> = [];
-      vi.mocked(collaborationService.onPermissionChange).mockImplementation((callback) => {
-        permissionCallbacks.push(callback);
-        return () => {
-          permissionCallbacks = permissionCallbacks.filter(cb => cb !== callback);
-        };
-      });
+      vi.mocked(collaborationService.onPermissionChange).mockImplementation(
+        (callback) => {
+          permissionCallbacks.push(callback);
+          return () => {
+            permissionCallbacks = permissionCallbacks.filter(
+              (cb) => cb !== callback
+            );
+          };
+        }
+      );
 
       // Trigger permission change
-      permissionCallbacks.forEach(callback => {
+      permissionCallbacks.forEach((callback) => {
         callback(mockPermissionChange);
       });
 
@@ -457,8 +501,20 @@ describe('Collaborative Editing Integration', () => {
 
 describe('Collaborative UI Components', () => {
   const mockParticipants: CollaborationUser[] = [
-    { id: 'user1', email: 'alice@test.com', name: 'Alice', color: '#FF6B6B', lastSeen: new Date().toISOString() },
-    { id: 'user2', email: 'bob@test.com', name: 'Bob', color: '#4ECDC4', lastSeen: new Date().toISOString() },
+    {
+      id: 'user1',
+      email: 'alice@test.com',
+      name: 'Alice',
+      color: '#FF6B6B',
+      lastSeen: new Date().toISOString(),
+    },
+    {
+      id: 'user2',
+      email: 'bob@test.com',
+      name: 'Bob',
+      color: '#4ECDC4',
+      lastSeen: new Date().toISOString(),
+    },
   ];
 
   describe('CollaborationHeader', () => {
@@ -531,7 +587,9 @@ describe('Collaborative UI Components', () => {
         />
       );
 
-      expect(screen.getByText('Conflicting Changes Detected')).toBeInTheDocument();
+      expect(
+        screen.getByText('Conflicting Changes Detected')
+      ).toBeInTheDocument();
       expect(screen.getByText('Your Changes')).toBeInTheDocument();
       expect(screen.getByText("Alice's Changes")).toBeInTheDocument();
       expect(screen.getByText('Local version of content')).toBeInTheDocument();
@@ -590,7 +648,9 @@ describe('Collaborative UI Components', () => {
       await user.click(generateButton);
 
       // Should show textarea for manual editing
-      expect(screen.getByLabelText(/Edit the merged content/)).toBeInTheDocument();
+      expect(
+        screen.getByLabelText(/Edit the merged content/)
+      ).toBeInTheDocument();
     });
 
     it('should not render when isOpen is false', () => {
@@ -609,71 +669,81 @@ describe('Collaborative UI Components', () => {
   });
 });
 
-  describe('Error Handling and Recovery', () => {
-    beforeEach(() => {
-      vi.clearAllMocks();
-    });
-
-    it('should handle Firestore connection errors gracefully', async () => {
-      const error = new Error('Firestore connection failed');
-      vi.mocked(collaborationService.startCollaborationSession).mockRejectedValue(error);
-
-      try {
-        await collaborationService.startCollaborationSession('song1');
-      } catch (e) {
-        expect(e).toBe(error);
-      }
-
-      expect(collaborationService.startCollaborationSession).toHaveBeenCalledWith('song1');
-    });
-
-    it('should handle operation transformation errors', () => {
-      // Test with invalid operation data
-      const invalidOperation: any = {
-        type: 'invalid',
-        position: -1,
-        length: -5,
-      };
-
-      const content = 'Test content';
-      
-      // Should handle gracefully without crashing
-      expect(() => {
-        OperationalTransform.applyOperation(content, invalidOperation);
-      }).not.toThrow();
-    });
-
-    it('should handle rollback scenarios for failed optimistic updates', async () => {
-      const mockFailedUpdate = {
-        id: 'failed-update',
-        operation: {
-          id: 'op1',
-          songId: 'song1',
-          userId: 'user1',
-          timestamp: new Date().toISOString(),
-          operations: [{ type: 'insert', position: 0, content: 'A', length: 1 }],
-          version: 1,
-          attribution: { userId: 'user1', timestamp: new Date().toISOString() },
-        } as EditOperation,
-        localState: {
-          content: 'A',
-          version: 1,
-          lastModified: new Date().toISOString(),
-          lastModifiedBy: 'user1',
-        },
-        rollbackData: {
-          previousContent: '',
-          previousVersion: 0,
-        },
-        status: 'failed' as const,
-        timestamp: new Date().toISOString(),
-      };
-
-      // Simulate a failed operation that needs rollback
-      vi.mocked(collaborationService.applyTextOperation).mockResolvedValue(mockFailedUpdate);
-
-      const result = await collaborationService.applyTextOperation('song1', [], true);
-      expect(result?.status).toBe('failed');
-      expect(result?.rollbackData).toBeDefined();
-    });
+describe('Error Handling and Recovery', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
   });
+
+  it('should handle Firestore connection errors gracefully', async () => {
+    const error = new Error('Firestore connection failed');
+    vi.mocked(collaborationService.startCollaborationSession).mockRejectedValue(
+      error
+    );
+
+    try {
+      await collaborationService.startCollaborationSession('song1');
+    } catch (e) {
+      expect(e).toBe(error);
+    }
+
+    expect(collaborationService.startCollaborationSession).toHaveBeenCalledWith(
+      'song1'
+    );
+  });
+
+  it('should handle operation transformation errors', () => {
+    // Test with invalid operation data
+    const invalidOperation: any = {
+      type: 'invalid',
+      position: -1,
+      length: -5,
+    };
+
+    const content = 'Test content';
+
+    // Should handle gracefully without crashing
+    expect(() => {
+      OperationalTransform.applyOperation(content, invalidOperation);
+    }).not.toThrow();
+  });
+
+  it('should handle rollback scenarios for failed optimistic updates', async () => {
+    const mockFailedUpdate = {
+      id: 'failed-update',
+      operation: {
+        id: 'op1',
+        songId: 'song1',
+        userId: 'user1',
+        timestamp: new Date().toISOString(),
+        operations: [{ type: 'insert', position: 0, content: 'A', length: 1 }],
+        version: 1,
+        attribution: { userId: 'user1', timestamp: new Date().toISOString() },
+      } as EditOperation,
+      localState: {
+        content: 'A',
+        version: 1,
+        lastModified: new Date().toISOString(),
+        lastModifiedBy: 'user1',
+      },
+      rollbackData: {
+        previousContent: '',
+        previousVersion: 0,
+      },
+      status: 'failed' as const,
+      timestamp: new Date().toISOString(),
+    };
+
+    // Simulate a failed operation that needs rollback
+    vi.mocked(collaborationService.applyTextOperation).mockResolvedValue(
+      mockFailedUpdate
+    );
+
+    const result = await collaborationService.applyTextOperation(
+      'song1',
+      [],
+      true
+    );
+    expect(result?.status).toBe('failed');
+    expect(result?.rollbackData).toBeDefined();
+  });
+});

@@ -1,5 +1,5 @@
 // Operational Transformation engine for real-time collaborative editing
-import type { TextOperation, EditOperation, DocumentState } from '../types/collaboration';
+import type { TextOperation } from '../types/collaboration';
 
 /**
  * Operational Transformation (OT) class for handling concurrent text editing
@@ -22,7 +22,7 @@ export class OperationalTransform {
     if (op1.type === 'insert' && op2.type === 'insert') {
       const pos1 = op1.position || 0;
       const pos2 = op2.position || 0;
-      
+
       if (pos1 <= pos2) {
         // op1 comes before op2, adjust op2's position
         return {
@@ -110,7 +110,10 @@ export class OperationalTransform {
         return {
           type: 'delete',
           position: newPos,
-          length: newEnd - newPos - Math.max(0, Math.min(end1, end2) - Math.max(pos1, pos2)),
+          length:
+            newEnd -
+            newPos -
+            Math.max(0, Math.min(end1, end2) - Math.max(pos1, pos2)),
         };
       }
     }
@@ -122,8 +125,11 @@ export class OperationalTransform {
   /**
    * Apply a series of operations to transform them against a base operation
    */
-  static transformOperations(operations: TextOperation[], baseOp: TextOperation): TextOperation[] {
-    return operations.map(op => this.transform(op, baseOp));
+  static transformOperations(
+    operations: TextOperation[],
+    baseOp: TextOperation
+  ): TextOperation[] {
+    return operations.map((op) => this.transform(op, baseOp));
   }
 
   /**
@@ -139,12 +145,14 @@ export class OperationalTransform {
 
       if (pos1 + len1 === pos2) {
         // Adjacent inserts can be combined
-        return [{
-          type: 'insert',
-          position: pos1,
-          content: (op1.content || '') + (op2.content || ''),
-          length: len1 + (op2.content?.length || 0),
-        }];
+        return [
+          {
+            type: 'insert',
+            position: pos1,
+            content: (op1.content || '') + (op2.content || ''),
+            length: len1 + (op2.content?.length || 0),
+          },
+        ];
       }
     }
 
@@ -154,11 +162,13 @@ export class OperationalTransform {
 
       if (pos1 === pos2) {
         // Adjacent deletes at same position can be combined
-        return [{
-          type: 'delete',
-          position: pos1,
-          length: op1.length + op2.length,
-        }];
+        return [
+          {
+            type: 'delete',
+            position: pos1,
+            length: op1.length + op2.length,
+          },
+        ];
       }
     }
 
@@ -174,7 +184,9 @@ export class OperationalTransform {
       case 'insert':
         const insertPos = operation.position || 0;
         const insertContent = operation.content || '';
-        return content.slice(0, insertPos) + insertContent + content.slice(insertPos);
+        return (
+          content.slice(0, insertPos) + insertContent + content.slice(insertPos)
+        );
 
       case 'delete':
         const deletePos = operation.position || 0;
@@ -194,13 +206,19 @@ export class OperationalTransform {
    * Apply a series of operations to document content
    */
   static applyOperations(content: string, operations: TextOperation[]): string {
-    return operations.reduce((acc, op) => this.applyOperation(acc, op), content);
+    return operations.reduce(
+      (acc, op) => this.applyOperation(acc, op),
+      content
+    );
   }
 
   /**
    * Calculate the inverse of an operation for rollback purposes
    */
-  static invertOperation(operation: TextOperation, originalContent: string): TextOperation {
+  static invertOperation(
+    operation: TextOperation,
+    originalContent: string
+  ): TextOperation {
     switch (operation.type) {
       case 'insert':
         // Inverse of insert is delete
@@ -213,7 +231,10 @@ export class OperationalTransform {
       case 'delete':
         // Inverse of delete is insert (need to get the deleted content)
         const deletePos = operation.position || 0;
-        const deletedContent = originalContent.slice(deletePos, deletePos + operation.length);
+        const deletedContent = originalContent.slice(
+          deletePos,
+          deletePos + operation.length
+        );
         return {
           type: 'insert',
           position: deletePos,
@@ -256,12 +277,12 @@ export class OperationalTransform {
    */
   static generateDiff(oldText: string, newText: string): TextOperation[] {
     const operations: TextOperation[] = [];
-    
+
     // Simple character-by-character diff
     // In a production system, you'd want a more sophisticated algorithm like Myers' diff
     let oldIndex = 0;
     let newIndex = 0;
-    
+
     while (oldIndex < oldText.length || newIndex < newText.length) {
       if (oldIndex >= oldText.length) {
         // Only new text remains - insert
@@ -288,14 +309,17 @@ export class OperationalTransform {
         // Characters differ - need to determine if it's insert, delete, or replace
         let insertEnd = newIndex;
         let deleteEnd = oldIndex;
-        
+
         // Find end of differing section
-        while (insertEnd < newText.length && deleteEnd < oldText.length && 
-               newText[insertEnd] !== oldText[deleteEnd]) {
+        while (
+          insertEnd < newText.length &&
+          deleteEnd < oldText.length &&
+          newText[insertEnd] !== oldText[deleteEnd]
+        ) {
           insertEnd++;
           deleteEnd++;
         }
-        
+
         // Delete old content
         if (deleteEnd > oldIndex) {
           operations.push({
@@ -304,7 +328,7 @@ export class OperationalTransform {
             length: deleteEnd - oldIndex,
           });
         }
-        
+
         // Insert new content
         if (insertEnd > newIndex) {
           operations.push({
@@ -314,12 +338,12 @@ export class OperationalTransform {
             length: insertEnd - newIndex,
           });
         }
-        
+
         oldIndex = deleteEnd;
         newIndex = insertEnd;
       }
     }
-    
+
     return operations;
   }
 
@@ -338,7 +362,10 @@ export class OperationalTransform {
   /**
    * Check if two sets of operations can be automatically merged
    */
-  static canAutoMerge(localOps: TextOperation[], remoteOps: TextOperation[]): boolean {
+  static canAutoMerge(
+    localOps: TextOperation[],
+    remoteOps: TextOperation[]
+  ): boolean {
     // Check for conflicts between operation sets
     for (const localOp of localOps) {
       for (const remoteOp of remoteOps) {
@@ -353,22 +380,26 @@ export class OperationalTransform {
   /**
    * Validate that a sequence of operations can be applied consistently
    */
-  static validateOperationSequence(operations: TextOperation[], initialContent: string): boolean {
+  static validateOperationSequence(
+    operations: TextOperation[],
+    initialContent: string
+  ): boolean {
     let content = initialContent;
-    
+
     try {
       for (const op of operations) {
         // Check bounds
         const pos = op.position || 0;
-        
+
         if (pos < 0) return false;
-        
+
         if (op.type === 'insert') {
           if (pos > content.length) return false;
         } else if (op.type === 'delete') {
-          if (pos >= content.length || pos + op.length > content.length) return false;
+          if (pos >= content.length || pos + op.length > content.length)
+            return false;
         }
-        
+
         // Apply operation to validate
         content = this.applyOperation(content, op);
       }
@@ -381,7 +412,10 @@ export class OperationalTransform {
   /**
    * Compute new document version after applying operations
    */
-  static computeVersionAfterOperations(initialVersion: number, operations: TextOperation[]): number {
+  static computeVersionAfterOperations(
+    initialVersion: number,
+    operations: TextOperation[]
+  ): number {
     return initialVersion + operations.length;
   }
 }

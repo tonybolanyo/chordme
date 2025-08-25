@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback } from 'react';
 
 interface UndoRedoState {
   title: string;
@@ -25,17 +25,20 @@ export function useUndoRedo(initialState: UndoRedoState): UndoRedoHook {
   const [undoStack, setUndoStack] = useState<UndoRedoState[]>([]);
   const [redoStack, setRedoStack] = useState<UndoRedoState[]>([]);
 
-  const setState = useCallback((newState: UndoRedoState) => {
-    // Only add to history if state actually changed
-    if (
-      newState.title !== currentState.title ||
-      newState.content !== currentState.content
-    ) {
-      setUndoStack(prev => [...prev, currentState]);
-      setRedoStack([]); // Clear redo stack when new changes are made
-      setCurrentState(newState);
-    }
-  }, [currentState]);
+  const setState = useCallback(
+    (newState: UndoRedoState) => {
+      // Only add to history if state actually changed
+      if (
+        newState.title !== currentState.title ||
+        newState.content !== currentState.content
+      ) {
+        setUndoStack((prev) => [...prev, currentState]);
+        setRedoStack([]); // Clear redo stack when new changes are made
+        setCurrentState(newState);
+      }
+    },
+    [currentState]
+  );
 
   const undo = useCallback((): UndoRedoState | null => {
     if (undoStack.length === 0) return null;
@@ -43,10 +46,10 @@ export function useUndoRedo(initialState: UndoRedoState): UndoRedoHook {
     const previousState = undoStack[undoStack.length - 1];
     const newUndoStack = undoStack.slice(0, -1);
 
-    setRedoStack(prev => [...prev, currentState]);
+    setRedoStack((prev) => [...prev, currentState]);
     setUndoStack(newUndoStack);
     setCurrentState(previousState);
-    
+
     return previousState;
   }, [undoStack, currentState]);
 
@@ -56,10 +59,10 @@ export function useUndoRedo(initialState: UndoRedoState): UndoRedoHook {
     const nextState = redoStack[redoStack.length - 1];
     const newRedoStack = redoStack.slice(0, -1);
 
-    setUndoStack(prev => [...prev, currentState]);
+    setUndoStack((prev) => [...prev, currentState]);
     setRedoStack(newRedoStack);
     setCurrentState(nextState);
-    
+
     return nextState;
   }, [redoStack, currentState]);
 

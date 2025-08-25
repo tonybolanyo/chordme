@@ -29,9 +29,15 @@
 }
 
 @keyframes pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.7; }
-  100% { opacity: 1; }
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 .network-status {
@@ -400,32 +406,32 @@
     flex-direction: column;
     gap: 0.5rem;
   }
-  
+
   .conflict-dialog {
     width: 95%;
     margin: 1rem;
   }
-  
+
   .conflict-changes {
     grid-template-columns: 1fr;
   }
-  
+
   .presence-indicators {
     gap: 0.25rem;
   }
-  
+
   .user-avatar {
     width: 28px;
     height: 28px;
     font-size: 0.7rem;
   }
-  
+
   .optimistic-updates {
     bottom: 10px;
     right: 10px;
     left: 10px;
   }
-  
+
   .permission-notification {
     top: 10px;
     right: 10px;

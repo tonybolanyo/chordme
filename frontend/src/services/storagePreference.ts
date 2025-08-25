@@ -1,7 +1,11 @@
 // Service for managing user storage backend preferences
 const STORAGE_PREFERENCE_KEY = 'chordme_storage_preference';
 
-export type StorageBackendType = 'api' | 'firebase' | 'googledrive' | 'localstorage';
+export type StorageBackendType =
+  | 'api'
+  | 'firebase'
+  | 'googledrive'
+  | 'localstorage';
 
 export interface StoragePreference {
   backend: StorageBackendType;
@@ -20,9 +24,12 @@ class StoragePreferenceService {
         return preference.backend;
       }
     } catch (error) {
-      console.warn('Failed to get storage preference from localStorage:', error);
+      console.warn(
+        'Failed to get storage preference from localStorage:',
+        error
+      );
     }
-    
+
     // Default fallback: check environment variable, then default to 'api'
     const envDataSource = import.meta.env.VITE_DATA_SOURCE;
     if (envDataSource === 'firebase') {
@@ -42,7 +49,10 @@ class StoragePreferenceService {
       };
       localStorage.setItem(STORAGE_PREFERENCE_KEY, JSON.stringify(preference));
     } catch (error) {
-      console.error('Failed to save storage preference to localStorage:', error);
+      console.error(
+        'Failed to save storage preference to localStorage:',
+        error
+      );
     }
   }
 
@@ -53,7 +63,10 @@ class StoragePreferenceService {
     try {
       localStorage.removeItem(STORAGE_PREFERENCE_KEY);
     } catch (error) {
-      console.warn('Failed to clear storage preference from localStorage:', error);
+      console.warn(
+        'Failed to clear storage preference from localStorage:',
+        error
+      );
     }
   }
 

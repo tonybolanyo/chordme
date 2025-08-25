@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { 
-  formatDate, 
-  formatRelativeTime, 
-  debounce, 
+import {
+  formatDate,
+  formatRelativeTime,
+  debounce,
   capitalizeFirstLetter,
   validateEmail,
   validatePassword,
-  isTokenExpired
+  isTokenExpired,
 } from './index';
 
 describe('Utility Functions', () => {
@@ -36,7 +36,7 @@ describe('Utility Functions', () => {
     it('returns "Just now" for recent times', () => {
       const now = new Date('2023-01-15T12:00:00Z');
       vi.setSystemTime(now);
-      
+
       const recent = new Date('2023-01-15T11:59:30Z').toISOString();
       expect(formatRelativeTime(recent)).toBe('Just now');
     });
@@ -44,10 +44,10 @@ describe('Utility Functions', () => {
     it('returns minutes ago for times within an hour', () => {
       const now = new Date('2023-01-15T12:00:00Z');
       vi.setSystemTime(now);
-      
+
       const twoMinutesAgo = new Date('2023-01-15T11:58:00Z').toISOString();
       expect(formatRelativeTime(twoMinutesAgo)).toBe('2 minutes ago');
-      
+
       const oneMinuteAgo = new Date('2023-01-15T11:59:00Z').toISOString();
       expect(formatRelativeTime(oneMinuteAgo)).toBe('1 minute ago');
     });
@@ -55,10 +55,10 @@ describe('Utility Functions', () => {
     it('returns hours ago for times within a day', () => {
       const now = new Date('2023-01-15T12:00:00Z');
       vi.setSystemTime(now);
-      
+
       const twoHoursAgo = new Date('2023-01-15T10:00:00Z').toISOString();
       expect(formatRelativeTime(twoHoursAgo)).toBe('2 hours ago');
-      
+
       const oneHourAgo = new Date('2023-01-15T11:00:00Z').toISOString();
       expect(formatRelativeTime(oneHourAgo)).toBe('1 hour ago');
     });
@@ -66,10 +66,10 @@ describe('Utility Functions', () => {
     it('returns days ago for times within a week', () => {
       const now = new Date('2023-01-15T12:00:00Z');
       vi.setSystemTime(now);
-      
+
       const twoDaysAgo = new Date('2023-01-13T12:00:00Z');
       expect(formatRelativeTime(twoDaysAgo.toISOString())).toBe('2 days ago');
-      
+
       const oneDayAgo = new Date('2023-01-14T12:00:00Z');
       expect(formatRelativeTime(oneDayAgo.toISOString())).toBe('1 day ago');
     });
@@ -77,7 +77,7 @@ describe('Utility Functions', () => {
     it('returns formatted date for times older than a week', () => {
       const now = new Date('2023-01-15T12:00:00Z');
       vi.setSystemTime(now);
-      
+
       const oldDate = new Date('2023-01-01T12:00:00Z').toISOString();
       expect(formatRelativeTime(oldDate)).toBe('Jan 1, 2023');
     });
@@ -103,10 +103,10 @@ describe('Utility Functions', () => {
     it('delays function execution', () => {
       const mockFn = vi.fn();
       const debouncedFn = debounce(mockFn, 100);
-      
+
       debouncedFn('test');
       expect(mockFn).not.toHaveBeenCalled();
-      
+
       vi.advanceTimersByTime(100);
       expect(mockFn).toHaveBeenCalledWith('test');
     });
@@ -114,13 +114,13 @@ describe('Utility Functions', () => {
     it('cancels previous calls', () => {
       const mockFn = vi.fn();
       const debouncedFn = debounce(mockFn, 100);
-      
+
       debouncedFn('first');
       debouncedFn('second');
       debouncedFn('third');
-      
+
       vi.advanceTimersByTime(100);
-      
+
       expect(mockFn).toHaveBeenCalledTimes(1);
       expect(mockFn).toHaveBeenCalledWith('third');
     });
@@ -128,22 +128,22 @@ describe('Utility Functions', () => {
     it('works with multiple arguments', () => {
       const mockFn = vi.fn();
       const debouncedFn = debounce(mockFn, 100);
-      
+
       debouncedFn('arg1', 'arg2', 123);
       vi.advanceTimersByTime(100);
-      
+
       expect(mockFn).toHaveBeenCalledWith('arg1', 'arg2', 123);
     });
 
     it('handles multiple calls with different delays', () => {
       const mockFn = vi.fn();
       const debouncedFn = debounce(mockFn, 100);
-      
+
       debouncedFn('first');
       vi.advanceTimersByTime(50);
       debouncedFn('second');
       vi.advanceTimersByTime(100);
-      
+
       expect(mockFn).toHaveBeenCalledTimes(1);
       expect(mockFn).toHaveBeenCalledWith('second');
     });
@@ -190,13 +190,13 @@ describe('Utility Functions', () => {
     it('validation functions work correctly', () => {
       const validEmailResult = validateEmail('test@example.com');
       expect(validEmailResult.isValid).toBe(true);
-      
+
       const invalidEmailResult = validateEmail('invalid-email');
       expect(invalidEmailResult.isValid).toBe(false);
-      
+
       const validPasswordResult = validatePassword('Password123!');
       expect(validPasswordResult.isValid).toBe(true);
-      
+
       const weakPasswordResult = validatePassword('weak');
       expect(weakPasswordResult.isValid).toBe(false);
     });

@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
-import { firebaseAuthService, type FirebaseAuthUser } from '../../services/firebaseAuth';
+import {
+  firebaseAuthService,
+  type FirebaseAuthUser,
+} from '../../services/firebaseAuth';
 import { validateEmail, validatePassword } from '../../utils';
 import './FirebaseAuth.css';
 
@@ -29,8 +32,10 @@ const FirebaseEmailForm: React.FC<FirebaseEmailFormProps> = ({
   const [isLoading, setIsLoading] = useState(false);
 
   // Dynamic import to avoid breaking tests that don't have AuthProvider
-  const [authContext, setAuthContext] = useState<{ useAuth?: () => { loginWithFirebase: (user: FirebaseAuthUser) => void } } | null>(null);
-  
+  const [authContext, setAuthContext] = useState<{
+    useAuth?: () => { loginWithFirebase: (user: FirebaseAuthUser) => void };
+  } | null>(null);
+
   React.useEffect(() => {
     const loadAuthContext = async () => {
       try {
@@ -131,16 +136,18 @@ const FirebaseEmailForm: React.FC<FirebaseEmailFormProps> = ({
         loginWithFirebase(result.user);
       }
 
-      const message = mode === 'register'
-        ? 'Account created successfully! Welcome to ChordMe.'
-        : 'Welcome back! You have been signed in.';
+      const message =
+        mode === 'register'
+          ? 'Account created successfully! Welcome to ChordMe.'
+          : 'Welcome back! You have been signed in.';
 
       onSuccess?.(message);
 
       // Redirect to home page
       window.location.hash = '';
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Authentication failed';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Authentication failed';
       onError?.(errorMessage);
     } finally {
       setIsLoading(false);
@@ -155,9 +162,7 @@ const FirebaseEmailForm: React.FC<FirebaseEmailFormProps> = ({
   return (
     <div className="firebase-auth-form">
       <div className="auth-divider">
-        <span>
-          {mode === 'login' ? 'Sign in' : 'Sign up'} with Firebase
-        </span>
+        <span>{mode === 'login' ? 'Sign in' : 'Sign up'} with Firebase</span>
       </div>
 
       <form onSubmit={handleSubmit}>
@@ -186,9 +191,15 @@ const FirebaseEmailForm: React.FC<FirebaseEmailFormProps> = ({
             value={formData.password}
             onChange={handleInputChange}
             className={errors.password ? 'error' : ''}
-            placeholder={mode === 'register' ? 'Create a strong password' : 'Enter your password'}
+            placeholder={
+              mode === 'register'
+                ? 'Create a strong password'
+                : 'Enter your password'
+            }
             disabled={disabled || isLoading}
-            autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
+            autoComplete={
+              mode === 'register' ? 'new-password' : 'current-password'
+            }
           />
           {errors.password && (
             <span className="error-text">{errors.password}</span>
@@ -221,9 +232,12 @@ const FirebaseEmailForm: React.FC<FirebaseEmailFormProps> = ({
           disabled={disabled || isLoading}
         >
           {isLoading
-            ? mode === 'register' ? 'Creating account...' : 'Signing in...'
-            : mode === 'register' ? 'Create Account with Firebase' : 'Sign In with Firebase'
-          }
+            ? mode === 'register'
+              ? 'Creating account...'
+              : 'Signing in...'
+            : mode === 'register'
+              ? 'Create Account with Firebase'
+              : 'Sign In with Firebase'}
         </button>
       </form>
     </div>

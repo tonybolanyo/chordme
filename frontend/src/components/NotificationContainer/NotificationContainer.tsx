@@ -17,7 +17,11 @@ const NotificationContainer: React.FC<NotificationContainerProps> = ({
   }
 
   return (
-    <div className="notification-container" aria-live="polite" aria-label="Notifications">
+    <div
+      className="notification-container"
+      aria-live="polite"
+      aria-label="Notifications"
+    >
       {notifications.map((notification) => (
         <NotificationToast
           key={notification.id}

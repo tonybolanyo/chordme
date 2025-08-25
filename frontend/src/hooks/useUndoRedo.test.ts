@@ -19,7 +19,10 @@ describe('useUndoRedo', () => {
       result.current.setState({ title: 'New Title', content: 'New Content' });
     });
 
-    expect(result.current.currentState).toEqual({ title: 'New Title', content: 'New Content' });
+    expect(result.current.currentState).toEqual({
+      title: 'New Title',
+      content: 'New Content',
+    });
     expect(result.current.canUndo).toBe(true);
     expect(result.current.canRedo).toBe(false);
   });
@@ -81,7 +84,10 @@ describe('useUndoRedo', () => {
     expect(result.current.canRedo).toBe(true);
 
     act(() => {
-      result.current.setState({ title: 'New Branch', content: 'New Branch Content' });
+      result.current.setState({
+        title: 'New Branch',
+        content: 'New Branch Content',
+      });
     });
 
     expect(result.current.canRedo).toBe(false); // Redo stack should be cleared
@@ -211,7 +217,10 @@ describe('useUndoRedo', () => {
     const { result } = renderHook(() => useUndoRedo(initialState));
 
     act(() => {
-      result.current.setState({ title: 'Updated Title', content: initialState.content });
+      result.current.setState({
+        title: 'Updated Title',
+        content: initialState.content,
+      });
     });
 
     expect(result.current.currentState.title).toBe('Updated Title');

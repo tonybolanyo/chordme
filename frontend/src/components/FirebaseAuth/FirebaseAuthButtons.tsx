@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
-import { firebaseAuthService, type FirebaseAuthUser } from '../../services/firebaseAuth';
+import {
+  firebaseAuthService,
+  type FirebaseAuthUser,
+} from '../../services/firebaseAuth';
 import './FirebaseAuth.css';
 
 interface FirebaseAuthButtonsProps {
@@ -18,8 +21,10 @@ const FirebaseAuthButtons: React.FC<FirebaseAuthButtonsProps> = ({
   const [isLoading, setIsLoading] = useState(false);
 
   // Dynamic import to avoid breaking tests that don't have AuthProvider
-  const [authContext, setAuthContext] = useState<{ useAuth?: () => { loginWithFirebase: (user: FirebaseAuthUser) => void } } | null>(null);
-  
+  const [authContext, setAuthContext] = useState<{
+    useAuth?: () => { loginWithFirebase: (user: FirebaseAuthUser) => void };
+  } | null>(null);
+
   React.useEffect(() => {
     const loadAuthContext = async () => {
       try {
@@ -47,23 +52,24 @@ const FirebaseAuthButtons: React.FC<FirebaseAuthButtonsProps> = ({
 
     try {
       const result = await firebaseAuthService.signInWithGoogle();
-      
+
       // Use auth context if available
       if (authContext?.useAuth) {
         const { loginWithFirebase } = authContext.useAuth();
         loginWithFirebase(result.user);
       }
-      
-      const message = result.isNewUser 
+
+      const message = result.isNewUser
         ? 'Welcome! Your account has been created successfully.'
         : 'Welcome back! You have been signed in.';
-      
+
       onSuccess?.(message);
-      
+
       // Redirect to home page
       window.location.hash = '';
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Google sign-in failed';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Google sign-in failed';
       onError?.(errorMessage);
     } finally {
       setIsLoading(false);
@@ -80,7 +86,7 @@ const FirebaseAuthButtons: React.FC<FirebaseAuthButtonsProps> = ({
       <div className="auth-divider">
         <span>or {mode === 'login' ? 'sign in' : 'sign up'} with</span>
       </div>
-      
+
       <button
         type="button"
         className="btn btn-google"

@@ -70,7 +70,7 @@ describe('FirebaseService - SDK Initialization Tests', () => {
       // Re-import to get fresh instance with new env vars
       vi.resetModules();
       const { firebaseService } = await import('./firebase');
-      
+
       const result = firebaseService.initialize();
 
       expect(result).toBe(true);
@@ -99,9 +99,9 @@ describe('FirebaseService - SDK Initialization Tests', () => {
 
       vi.resetModules();
       const { firebaseService } = await import('./firebase');
-      
+
       const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-      
+
       const result = firebaseService.initialize();
 
       expect(result).toBe(false);
@@ -110,7 +110,7 @@ describe('FirebaseService - SDK Initialization Tests', () => {
         'Firebase initialization skipped - missing configuration:',
         ['apiKey']
       );
-      
+
       consoleSpy.mockRestore();
     });
 
@@ -121,14 +121,14 @@ describe('FirebaseService - SDK Initialization Tests', () => {
         VITE_FIREBASE_PROJECT_ID: '', // Missing
         VITE_FIREBASE_STORAGE_BUCKET: 'test-project.appspot.com',
         VITE_FIREBASE_MESSAGING_SENDER_ID: '123456789',
-        VITE_FIREBASE_APP_ID: '',  // Missing
+        VITE_FIREBASE_APP_ID: '', // Missing
       });
 
       vi.resetModules();
       const { firebaseService } = await import('./firebase');
-      
+
       const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-      
+
       const result = firebaseService.initialize();
 
       expect(result).toBe(false);
@@ -137,7 +137,7 @@ describe('FirebaseService - SDK Initialization Tests', () => {
         'Firebase initialization skipped - missing configuration:',
         ['authDomain', 'projectId', 'appId']
       );
-      
+
       consoleSpy.mockRestore();
     });
 
@@ -158,15 +158,20 @@ describe('FirebaseService - SDK Initialization Tests', () => {
 
       vi.resetModules();
       const { firebaseService } = await import('./firebase');
-      
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      
+
+      const consoleSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+
       const result = firebaseService.initialize();
 
       expect(result).toBe(false);
       expect(firebaseService.isInitialized()).toBe(false);
-      expect(consoleSpy).toHaveBeenCalledWith('Failed to initialize Firebase:', initError);
-      
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Failed to initialize Firebase:',
+        initError
+      );
+
       consoleSpy.mockRestore();
     });
   });
@@ -189,7 +194,7 @@ describe('FirebaseService - SDK Initialization Tests', () => {
 
       vi.resetModules();
       const { firebaseService } = await import('./firebase');
-      
+
       firebaseService.initialize();
 
       expect(firebaseService.isEnabled()).toBe(true);
@@ -212,7 +217,7 @@ describe('FirebaseService - SDK Initialization Tests', () => {
 
       vi.resetModules();
       const { firebaseService } = await import('./firebase');
-      
+
       firebaseService.initialize();
 
       expect(firebaseService.isEnabled()).toBe(false);
@@ -238,7 +243,7 @@ describe('FirebaseService - SDK Initialization Tests', () => {
 
       vi.resetModules();
       const { firebaseService } = await import('./firebase');
-      
+
       firebaseService.initialize();
 
       expect(firebaseService.getApp()).toBe(mockApp);
@@ -261,7 +266,7 @@ describe('FirebaseService - SDK Initialization Tests', () => {
 
       vi.resetModules();
       const { firebaseService } = await import('./firebase');
-      
+
       // Don't initialize
       expect(firebaseService.getApp()).toBeNull();
       expect(firebaseService.getFirestore()).toBeNull();

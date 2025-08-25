@@ -43,9 +43,15 @@ vi.mock('../../components', () => ({
   ChordProViewer: ({ content }: { content: string }) => (
     <div data-testid="chordpro-viewer">{content}</div>
   ),
-  GoogleDriveFileList: () => <div data-testid="google-drive-file-list">Google Drive Files</div>,
-  SongSharingModal: () => <div data-testid="song-sharing-modal">Sharing Modal</div>,
-  NotificationContainer: () => <div data-testid="notification-container">Notifications</div>,
+  GoogleDriveFileList: () => (
+    <div data-testid="google-drive-file-list">Google Drive Files</div>
+  ),
+  SongSharingModal: () => (
+    <div data-testid="song-sharing-modal">Sharing Modal</div>
+  ),
+  NotificationContainer: () => (
+    <div data-testid="notification-container">Notifications</div>
+  ),
 }));
 
 // Mock the Google OAuth service
@@ -57,11 +63,11 @@ vi.mock('../../services/googleOAuth', () => ({
 }));
 
 // Mock user for auth context
-const mockUser: User = { 
-  id: '1', 
-  email: 'test@example.com', 
-  created_at: '2023-01-01T00:00:00Z', 
-  updated_at: '2023-01-01T00:00:00Z' 
+const mockUser: User = {
+  id: '1',
+  email: 'test@example.com',
+  created_at: '2023-01-01T00:00:00Z',
+  updated_at: '2023-01-01T00:00:00Z',
 };
 
 // Mock the AuthContext
@@ -175,7 +181,7 @@ describe('Dashboard - Song Separation', () => {
     // Should show correct counts
     expect(screen.getByText('My Songs (1)')).toBeInTheDocument();
     expect(screen.getByText('Shared with Me (1)')).toBeInTheDocument();
-    
+
     // Should show both songs
     expect(screen.getByText('My Owned Song')).toBeInTheDocument();
     expect(screen.getByText('Shared Song')).toBeInTheDocument();
@@ -195,9 +201,17 @@ describe('Dashboard - Song Separation', () => {
     // Should show empty states
     expect(screen.getByText('My Songs (0)')).toBeInTheDocument();
     expect(screen.getByText('Shared with Me (0)')).toBeInTheDocument();
-    
-    expect(screen.getByText("You haven't created any songs yet. Create your first song to get started!")).toBeInTheDocument();
-    expect(screen.getByText("No songs have been shared with you yet. When other users share songs with you, they'll appear here.")).toBeInTheDocument();
+
+    expect(
+      screen.getByText(
+        "You haven't created any songs yet. Create your first song to get started!"
+      )
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "No songs have been shared with you yet. When other users share songs with you, they'll appear here."
+      )
+    ).toBeInTheDocument();
   });
 
   it('shows real-time indicators when real-time is enabled', () => {
@@ -248,11 +262,11 @@ describe('Dashboard - Song Separation', () => {
 
     // Should show sort control for My Songs section
     expect(screen.getByText('Sort by:')).toBeInTheDocument();
-    
+
     // Should show filter and sort controls for Shared section (when there are shared songs)
     // Since our shared song should appear in the shared section, it should show controls
     expect(screen.getByText('Filter by permission:')).toBeInTheDocument();
-    
+
     // Check that control options exist
     expect(screen.getByText('Last Modified')).toBeInTheDocument();
     expect(screen.getByText('Title')).toBeInTheDocument();

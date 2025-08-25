@@ -133,32 +133,32 @@
   .auth-divider::after {
     background: #444;
   }
-  
+
   .auth-divider {
     color: #ccc;
   }
-  
+
   .btn-google {
     background: #2c2c2c;
     border-color: #444;
     color: #fff;
   }
-  
+
   .btn-google:hover:not(:disabled) {
     background: #3c3c3c;
     border-color: #555;
   }
-  
+
   .firebase-auth-form .form-group label {
     color: #ccc;
   }
-  
+
   .firebase-auth-form .form-group input {
     background: #2c2c2c;
     border-color: #444;
     color: #fff;
   }
-  
+
   .firebase-auth-form .form-group input:focus {
     border-color: #3498db;
   }

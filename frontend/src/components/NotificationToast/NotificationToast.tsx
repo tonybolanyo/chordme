@@ -60,17 +60,22 @@ const NotificationToast: React.FC<NotificationToastProps> = ({
   };
 
   return (
-    <div className={`notification-toast ${getNotificationClass()}`} role="alert">
+    <div
+      className={`notification-toast ${getNotificationClass()}`}
+      role="alert"
+    >
       <div className="notification-content">
-        <div className="notification-icon" role="img" aria-label="Notification icon">
+        <div
+          className="notification-icon"
+          role="img"
+          aria-label="Notification icon"
+        >
           {getNotificationIcon()}
         </div>
-        <div className="notification-message">
-          {getNotificationMessage()}
-        </div>
+        <div className="notification-message">{getNotificationMessage()}</div>
       </div>
-      <button 
-        className="notification-close" 
+      <button
+        className="notification-close"
         onClick={onClose}
         aria-label="Close notification"
         title="Close notification"

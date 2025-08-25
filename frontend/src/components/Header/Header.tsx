@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { StorageIndicator, StorageSettings } from '../';
 import { apiService } from '../../services/api';
+import { useViewport } from '../../utils/responsive';
 import './Header.css';
 
 interface HeaderProps {
@@ -11,9 +12,12 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ title = 'ChordMe' }) => {
   const { isAuthenticated, user, logout } = useAuth();
   const [showStorageSettings, setShowStorageSettings] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { isMobile } = useViewport();
 
   const handleLogout = () => {
     logout();
+    setMobileMenuOpen(false);
   };
 
   const handleStorageSettingsOpen = () => {
@@ -25,59 +29,114 @@ const Header: React.FC<HeaderProps> = ({ title = 'ChordMe' }) => {
   };
 
   const handleBackendChange = (backendId: string) => {
-    apiService.setStorageBackend(backendId as any);
+    apiService.setStorageBackend(
+      backendId as 'localstorage' | 'firebase' | 'googledrive'
+    );
     setShowStorageSettings(false);
     // You might want to trigger a refresh or reload here
     // For now, let's just close the settings
   };
 
-  return (
-    <header className="header">
-      <div className="header-container">
-        <h1 className="header-title">
-          <a href="#home" style={{ textDecoration: 'none', color: 'inherit' }}>
-            {title}
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false);
+  };
+
+  const renderNavLinks = () => {
+    if (isAuthenticated) {
+      return (
+        <>
+          <a href="#home" className="nav-link" onClick={closeMobileMenu}>
+            Home
           </a>
-        </h1>
-        <nav className="header-nav">
-          {isAuthenticated ? (
-            <>
-              <a href="#home" className="nav-link">
-                Home
+          <a href="#songs" className="nav-link" onClick={closeMobileMenu}>
+            Songs
+          </a>
+          <div className="auth-links">
+            <StorageIndicator onClick={handleStorageSettingsOpen} />
+            <span className="user-info">Welcome, {user?.email}</span>
+            <button
+              onClick={handleLogout}
+              className="nav-link auth-link btn-logout touch-target"
+            >
+              Logout
+            </button>
+          </div>
+        </>
+      );
+    } else {
+      return (
+        <>
+          <a href="#demo" className="nav-link" onClick={closeMobileMenu}>
+            Demo
+          </a>
+          <div className="auth-links">
+            <StorageIndicator onClick={handleStorageSettingsOpen} />
+            <a
+              href="#login"
+              className="nav-link auth-link"
+              onClick={closeMobileMenu}
+            >
+              Login
+            </a>
+            <a
+              href="#register"
+              className="nav-link auth-link btn-register"
+              onClick={closeMobileMenu}
+            >
+              Sign Up
+            </a>
+          </div>
+        </>
+      );
+    }
+  };
+
+  return (
+    <>
+      <header className="header">
+        <div className="header-container">
+          <div className="header-top">
+            <h1 className="header-title">
+              <a
+                href="#home"
+                style={{ textDecoration: 'none', color: 'inherit' }}
+              >
+                {title}
               </a>
-              <a href="#songs" className="nav-link">
-                Songs
-              </a>
-              <div className="auth-links">
-                <StorageIndicator onClick={handleStorageSettingsOpen} />
-                <span className="user-info">Welcome, {user?.email}</span>
-                <button
-                  onClick={handleLogout}
-                  className="nav-link auth-link btn-logout"
-                >
-                  Logout
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              <a href="#demo" className="nav-link">
-                Demo
-              </a>
-              <div className="auth-links">
-                <StorageIndicator onClick={handleStorageSettingsOpen} />
-                <a href="#login" className="nav-link auth-link">
-                  Login
-                </a>
-                <a href="#register" className="nav-link auth-link btn-register">
-                  Sign Up
-                </a>
-              </div>
-            </>
-          )}
-        </nav>
-      </div>
-      
+            </h1>
+
+            {isMobile && (
+              <button
+                className="mobile-menu-toggle touch-target"
+                onClick={toggleMobileMenu}
+                aria-label="Toggle navigation menu"
+              >
+                <span className={`hamburger ${mobileMenuOpen ? 'open' : ''}`}>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </span>
+              </button>
+            )}
+          </div>
+
+          <nav
+            className={`header-nav ${isMobile ? 'mobile-nav' : ''} ${mobileMenuOpen ? 'open' : ''}`}
+          >
+            {renderNavLinks()}
+          </nav>
+        </div>
+
+        {/* Mobile menu overlay */}
+        {isMobile && mobileMenuOpen && (
+          <div className="nav-overlay open" onClick={closeMobileMenu}></div>
+        )}
+      </header>
+
       {showStorageSettings && (
         <StorageSettings
           currentBackend={apiService.getCurrentBackend()}
@@ -85,7 +144,7 @@ const Header: React.FC<HeaderProps> = ({ title = 'ChordMe' }) => {
           onClose={handleStorageSettingsClose}
         />
       )}
-    </header>
+    </>
   );
 };
 

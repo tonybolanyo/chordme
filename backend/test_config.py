@@ -7,4 +7,3 @@ JWT_SECRET_KEY = 'test-jwt-secret-key'
 JWT_EXPIRATION_DELTA = 3600
 TESTING = True
 WTF_CSRF_ENABLED = False
-HTTPS_ENFORCED = False  # Disable HTTPS enforcement in tests

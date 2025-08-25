@@ -36,7 +36,7 @@ describe('Main Entry Point', () => {
   it('attempts to find root element', async () => {
     // Import the main module which executes the code
     await import('./main');
-    
+
     // Verify that getElementById was called with 'root'
     expect(document.getElementById).toHaveBeenCalledWith('root');
   });

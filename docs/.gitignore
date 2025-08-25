@@ -1,0 +1,19 @@
+# Jekyll build artifacts
+_site/
+.jekyll-cache/
+.bundle/
+
+# Vendor directory
+vendor/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# Logs
+*.log

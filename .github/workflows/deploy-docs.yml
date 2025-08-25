@@ -77,9 +77,12 @@ jobs:
         run: |
           cd docs
           
-          # Verify Gemfile.lock exists
-          if [ ! -f "Gemfile.lock" ]; then
-            echo "Warning: Gemfile.lock not found, running bundle install"
+          # Configure bundler to use vendor/bundle
+          bundle config set --local path 'vendor/bundle'
+          
+          # Verify Gemfile.lock exists, regenerate if corrupted
+          if [ ! -f "Gemfile.lock" ] || ! bundle check; then
+            echo "Installing/updating dependencies"
             bundle install
           fi
           
