@@ -23,6 +23,15 @@ vi.mock('../../contexts/AuthContext', () => ({
 vi.mock('./FirebaseAuth.css', () => ({}));
 
 describe('FirebaseAuthButtons Component', () => {
+  // Get references to mocked functions
+  let mockSignInWithGoogle: ReturnType<typeof vi.fn>;
+  let mockIsAvailable: ReturnType<typeof vi.fn>;
+  let mockUseAuth: ReturnType<typeof vi.fn>;
+  let mockSignInWithGoogle: ReturnType<typeof vi.fn> = vi.fn();
+  let mockIsAvailable: ReturnType<typeof vi.fn> = vi.fn();
+  let mockUseAuth: ReturnType<typeof vi.fn> = vi.fn();
+  let mockLoginWithFirebase: ReturnType<typeof vi.fn> = vi.fn();
+
   const defaultProps = {
     mode: 'login' as const,
     disabled: false,
@@ -33,9 +42,18 @@ describe('FirebaseAuthButtons Component', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     
-    // Get the mocked service
+    // Get references to the mocked functions
     const { firebaseAuthService } = await import('../../services/firebaseAuth');
-    vi.mocked(firebaseAuthService.isAvailable).mockReturnValue(true);
+    mockSignInWithGoogle = vi.mocked(firebaseAuthService.signInWithGoogle);
+    mockIsAvailable = vi.mocked(firebaseAuthService.isAvailable);
+    mockIsAvailable.mockReturnValue(true);
+
+    const { useAuth } = await import('../../contexts/AuthContext');
+    mockUseAuth = vi.mocked(useAuth);
+    mockLoginWithFirebase = vi.fn();
+    mockUseAuth.mockReturnValue({
+      loginWithFirebase: mockLoginWithFirebase,
+    });
 
     // Mock window.location.hash
     Object.defineProperty(window, 'location', {
