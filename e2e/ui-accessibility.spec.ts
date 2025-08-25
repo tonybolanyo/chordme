@@ -247,6 +247,77 @@ test.describe('ChordMe UI and Accessibility Tests', () => {
         { width: 320, height: 568, name: 'Mobile' },
         { width: 768, height: 1024, name: 'Tablet' },
         { width: 1200, height: 800, name: 'Desktop' },
+      ];
+
+      for (const viewport of viewports) {
+        await page.setViewportSize({ width: viewport.width, height: viewport.height });
+        await page.goto('/#demo');
+        
+        // Check navigation visibility
+        await expect(page.locator('nav')).toBeVisible();
+        
+        // Check responsive layout behavior
+        if (viewport.width < 768) {
+          // Mobile: should have hamburger menu or stacked layout
+          const headerContainer = page.locator('.header-container, .header');
+          await expect(headerContainer).toBeVisible();
+          
+          // Check for mobile-specific navigation behavior
+          const navLinks = page.locator('.nav-link');
+          await expect(navLinks.first()).toBeVisible();
+        } else {
+          // Desktop/Tablet: should have horizontal layout
+          const navList = page.locator('.nav-list, .header-nav');
+          await expect(navList).toBeVisible();
+        }
+        
+        // Test editor responsiveness on demo page
+        const editorContainer = page.locator('.editor-layout-responsive, .editor-container');
+        if (await editorContainer.count() > 0) {
+          await expect(editorContainer).toBeVisible();
+          
+          if (viewport.width < 1024) {
+            // Mobile/Tablet: should stack vertically
+            // The editor and sidebar should be in column layout
+          } else {
+            // Desktop: should be side by side
+            // The editor and sidebar should be in row layout
+          }
+        }
+        
+        // Test form responsiveness on login page
+        await page.goto('/#login');
+        const form = page.locator('form, .form');
+        if (await form.count() > 0) {
+          await expect(form).toBeVisible();
+          
+          // Form should be properly sized for viewport
+          const formBox = await form.boundingBox();
+          expect(formBox?.width).toBeLessThanOrEqual(viewport.width);
+        }
+      }
+    });
+
+    test('should have touch-friendly elements on mobile', async ({ page }) => {
+      await page.setViewportSize({ width: 375, height: 667 }); // iPhone-like viewport
+      await page.goto('/#demo');
+      
+      // Check that interactive elements meet minimum touch target size (44px)
+      const buttons = page.locator('button, .btn, .nav-link');
+      const buttonCount = await buttons.count();
+      
+      for (let i = 0; i < Math.min(buttonCount, 5); i++) {
+        const button = buttons.nth(i);
+        if (await button.isVisible()) {
+          const box = await button.boundingBox();
+          if (box) {
+            // Touch targets should be at least 44px in both dimensions
+            expect(box.height).toBeGreaterThanOrEqual(40); // Allow some tolerance
+            expect(box.width).toBeGreaterThanOrEqual(40);
+          }
+        }
+      }
+    });
         { width: 1920, height: 1080, name: 'Large Desktop' }
       ];
       

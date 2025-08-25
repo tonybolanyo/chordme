@@ -6,6 +6,7 @@ import {
   TranspositionControls,
 } from '../components';
 import { transposeChordProContent } from '../services/chordService';
+import '../styles/responsive.css';
 
 const ChordProDemo: React.FC = () => {
   const [content, setContent] = useState(`{title: Amazing Grace}
@@ -69,35 +70,36 @@ The [Em]hour I [D]first be[G]lieved
   };
 
   return (
-    <div style={{ padding: '20px', maxWidth: '1400px', margin: '0 auto' }}>
-      <h1>ChordPro Syntax Highlighting Demo</h1>
-      <p>This demonstrates the ChordPro syntax highlighting features:</p>
-      <ul>
-        <li>
-          <strong>Chords</strong> in square brackets: <code>[C]</code>,{' '}
-          <code>[G]</code>, <code>[Am]</code> - highlighted in blue
-        </li>
-        <li>
-          <strong>Directives</strong> in curly braces:{' '}
-          <code>{`{title: Song}`}</code>, <code>{`{chorus}`}</code> -
-          highlighted in red
-        </li>
-        <li>
-          <strong>Comments</strong> starting with #:{' '}
-          <code># This is a comment</code> - highlighted in gray italic
-        </li>
-        <li>
-          <strong>Lyrics</strong> as regular text - highlighted in dark gray
-        </li>
-      </ul>
-      <p>
-        <strong>Interactive Features:</strong>
-      </p>
-      <ul>
-        <li>
-          <strong>Direct Chord Entry:</strong> Type chord names within square
-          brackets <code>[Am]</code> with real-time validation
-        </li>
+    <div className="container-responsive spacing-responsive">
+      <h1 className="page-title">ChordPro Syntax Highlighting Demo</h1>
+      <div className="text-responsive">
+        <p>This demonstrates the ChordPro syntax highlighting features:</p>
+        <ul style={{ marginBottom: '1rem' }}>
+          <li>
+            <strong>Chords</strong> in square brackets: <code>[C]</code>,{' '}
+            <code>[G]</code>, <code>[Am]</code> - highlighted in blue
+          </li>
+          <li>
+            <strong>Directives</strong> in curly braces:{' '}
+            <code>{`{title: Song}`}</code>, <code>{`{chorus}`}</code> -
+            highlighted in red
+          </li>
+          <li>
+            <strong>Comments</strong> starting with #:{' '}
+            <code># This is a comment</code> - highlighted in gray italic
+          </li>
+          <li>
+            <strong>Lyrics</strong> as regular text - highlighted in dark gray
+          </li>
+        </ul>
+        <p>
+          <strong>Interactive Features:</strong>
+        </p>
+        <ul style={{ marginBottom: '1.5rem' }}>
+          <li>
+            <strong>Direct Chord Entry:</strong> Type chord names within square
+            brackets <code>[Am]</code> with real-time validation
+          </li>
         <li>
           <strong>Autocomplete:</strong> Start typing a chord like{' '}
           <code>[C</code> to see suggestions
@@ -118,29 +120,19 @@ The [Em]hour I [D]first be[G]lieved
           <strong>Visual Feedback:</strong> Invalid chord names are highlighted
           with red underlines
         </li>
-      </ul>
+        </ul>
+      </div>
 
-      <div
-        style={{
-          display: 'flex',
-          gap: '20px',
-          alignItems: 'flex-start',
-          marginTop: '20px',
-        }}
-      >
-        <div style={{ flex: '1' }}>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '10px',
-            }}
-          >
+      <div className="editor-layout-responsive" style={{ marginTop: 'var(--space-lg)' }}>
+        <div className="editor-main-responsive">
+          <div className="flex-responsive-md-row" style={{ 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            marginBottom: 'var(--space-md)'
+          }}>
             <h2>Interactive Editor</h2>
             <TranspositionControls
               onTranspose={handleTranspose}
-              style={{ marginLeft: 'auto' }}
             />
           </div>
           <ChordProEditor
@@ -149,37 +141,39 @@ The [Em]hour I [D]first be[G]lieved
             onChange={setContent}
             rows={15}
             placeholder="Enter your ChordPro content here..."
-            style={{ width: '100%', marginTop: '10px' }}
+            style={{ width: '100%', marginTop: 'var(--space-sm)' }}
           />
 
-          <h2>Rendered Output</h2>
+          <h2 style={{ marginTop: 'var(--space-lg)' }}>Rendered Output</h2>
           <div
             style={{
               border: '1px solid #ddd',
               borderRadius: '4px',
-              marginTop: '10px',
+              marginTop: 'var(--space-sm)',
             }}
           >
             <ChordProViewer content={content} />
           </div>
         </div>
 
-        <div style={{ width: '300px', flexShrink: 0 }}>
-          <ChordPalette
-            onChordSelect={handleChordSelect}
-            style={{ position: 'sticky', top: '20px' }}
-          />
+        <div className="editor-sidebar-responsive">
+          <div style={{ position: 'sticky', top: 'var(--space-lg)' }}>
+            <ChordPalette
+              onChordSelect={handleChordSelect}
+            />
+          </div>
         </div>
       </div>
 
-      <h2>Raw Content</h2>
+      <h2 style={{ marginTop: 'var(--space-lg)' }}>Raw Content</h2>
       <pre
         style={{
           backgroundColor: '#f5f5f5',
-          padding: '10px',
+          padding: 'var(--space-md)',
           borderRadius: '4px',
           fontSize: '12px',
           overflow: 'auto',
+          marginTop: 'var(--space-sm)',
         }}
       >
         {content}
