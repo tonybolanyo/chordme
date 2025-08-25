@@ -25,7 +25,8 @@ exclude:
   - vendor/
   - Gemfile
   - Gemfile.lock
-  - README.md
+  - node_modules/
+  - "*.gemspec"
 
 include:
   - .nojekyll

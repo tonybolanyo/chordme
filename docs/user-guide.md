@@ -269,10 +269,52 @@ Improve your workflow with keyboard shortcuts:
 
 ### Exporting Songs
 
-- **ChordPro format**: Export individual or multiple songs
-- **PDF generation**: Create printable sheet music
+ChordMe provides multiple export options to suit different needs:
+
+- **ChordPro format**: Export individual or multiple songs in standard ChordPro format (.cho files)
+- **PDF generation**: Create beautifully formatted, printable sheet music with proper chord positioning
 - **Text format**: Simple text export for sharing
 - **JSON export**: Machine-readable format for integration
+
+#### PDF Export
+
+The PDF export feature transforms your ChordPro songs into professional-looking sheet music suitable for printing or digital sharing.
+
+**To export a song as PDF:**
+
+1. **From Song List**: Click the red "PDF" button next to any song
+2. **From Song Viewer**: Click the "Export PDF" button while viewing a song
+
+**PDF Export Options:**
+
+- **Paper Size**: Choose between A4, Letter, or Legal paper sizes
+- **Orientation**: Select Portrait or Landscape layout
+- **Title Override**: Optionally customize the title displayed in the PDF
+- **Artist Override**: Optionally add or change the artist name in the PDF
+
+**PDF Features:**
+
+- **Proper Chord Positioning**: Chords are positioned accurately above their corresponding lyrics
+- **Song Structure**: Verses, choruses, and bridges are clearly labeled and formatted
+- **Metadata Display**: Title, artist, key, and tempo are prominently displayed
+- **Professional Layout**: Clean, readable fonts and spacing optimized for musicians
+- **Multiple Page Support**: Long songs automatically flow across multiple pages
+
+**Example PDF Export Workflow:**
+
+1. Select a song with comprehensive ChordPro content
+2. Click the "PDF" button to open the export dialog
+3. Choose your preferred paper size (A4 recommended for international use)
+4. Select orientation (Portrait for most songs, Landscape for songs with many chord changes)
+5. Optionally customize the title or add artist information
+6. Click "Export PDF" to download your formatted sheet music
+
+The resulting PDF will show:
+- Song title and artist at the top
+- Key and tempo information (if specified in ChordPro)
+- Chords positioned precisely above their lyrics
+- Clear section labels (Verse 1, Chorus, Bridge, etc.)
+- Professional typography suitable for performance use
 
 ## Collaboration Features
 

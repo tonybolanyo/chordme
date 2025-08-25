@@ -377,6 +377,252 @@ def create_song(current_user):
     }), 201
 ```
 
+## PDF Export System
+
+The PDF export feature provides professional-quality sheet music generation from ChordPro content using server-side rendering.
+
+### Architecture Overview
+
+The PDF export system consists of three main components:
+
+1. **PDF Generation Utility** (`backend/chordme/pdf_generator.py`)
+2. **API Endpoint** (`/api/v1/songs/{id}/export/pdf`)
+3. **Frontend Integration** (modal dialog and API service)
+
+### PDF Generation Utility
+
+#### ChordProPDFGenerator Class
+
+The core PDF generation is handled by the `ChordProPDFGenerator` class:
+
+```python
+from chordme.pdf_generator import ChordProPDFGenerator
+
+# Initialize with custom options
+generator = ChordProPDFGenerator(
+    paper_size='a4',  # 'a4', 'letter', 'legal'
+    orientation='portrait'  # 'portrait', 'landscape'
+)
+
+# Generate PDF from ChordPro content
+pdf_bytes = generator.generate_pdf(
+    content=chordpro_content,
+    title="Song Title",
+    artist="Artist Name"
+)
+```
+
+#### Key Features
+
+- **ChordPro Parsing**: Extracts title, artist, key, tempo, and song sections
+- **Chord Positioning**: Places chords accurately above lyrics with proper alignment
+- **Section Handling**: Supports verses, choruses, bridges with clear labeling
+- **Customizable Layout**: Multiple paper sizes and orientations
+- **Professional Styling**: Clean typography optimized for musicians
+
+#### PDF Template Structure
+
+The PDF generator creates documents with this structure:
+
+```
+┌─────────────────────────────┐
+│ Song Title (centered, large) │
+│ by Artist Name (centered)    │
+│ Key: G | Tempo: 120 BPM     │
+│                             │
+│ Verse 1                     │
+│ C       G       Am      F   │
+│ Hello   world   this is test│
+│                             │
+│ Chorus                      │
+│ F       C       G       Am  │
+│ Chorus  lyrics  go     here │
+│                             │
+│ (additional sections...)     │
+└─────────────────────────────┘
+```
+
+### API Implementation
+
+#### Endpoint Definition
+
+```python
+@app.route('/api/v1/songs/<int:song_id>/export/pdf', methods=['GET'])
+@auth_required
+@validate_positive_integer('song_id')
+@rate_limit(max_requests=5, window_seconds=60)
+@security_headers
+def export_song_pdf(song_id):
+    """Export song as PDF with customizable options."""
+```
+
+#### Query Parameters
+
+- `paper_size`: Paper size ('a4', 'letter', 'legal')
+- `orientation`: Page orientation ('portrait', 'landscape')
+- `title`: Override song title in PDF
+- `artist`: Override artist name in PDF
+
+#### Example API Usage
+
+```bash
+# Basic export
+GET /api/v1/songs/123/export/pdf
+
+# With custom options
+GET /api/v1/songs/123/export/pdf?paper_size=letter&orientation=landscape&title=Custom%20Title&artist=Custom%20Artist
+```
+
+#### Response Format
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/pdf
+Content-Disposition: attachment; filename="song-title.pdf"
+
+[PDF binary content]
+```
+
+### Frontend Integration
+
+#### API Service Method
+
+```typescript
+// services/api.ts
+async exportSongAsPDF(
+  id: string,
+  options: {
+    paperSize?: 'a4' | 'letter' | 'legal';
+    orientation?: 'portrait' | 'landscape';
+    title?: string;
+    artist?: string;
+  } = {}
+): Promise<void> {
+  // Implementation handles query parameters and file download
+}
+```
+
+#### PDF Export Modal
+
+The `PDFExportModal` component provides:
+
+- Paper size selection
+- Orientation options
+- Title/artist overrides
+- Export progress indication
+- Error handling
+
+#### Usage Example
+
+```tsx
+import { PDFExportModal } from '../components';
+
+// In component
+const [showPDFModal, setShowPDFModal] = useState(false);
+const [isExporting, setIsExporting] = useState(false);
+
+const handlePDFExport = async (options: PDFExportOptions) => {
+  setIsExporting(true);
+  try {
+    await apiService.exportSongAsPDF(song.id, options);
+    setShowPDFModal(false);
+  } catch (error) {
+    // Handle error
+  } finally {
+    setIsExporting(false);
+  }
+};
+```
+
+### Customization Options
+
+#### Adding New Paper Sizes
+
+1. Update `PAPER_SIZES` dictionary in `pdf_generator.py`:
+```python
+PAPER_SIZES = {
+    'letter': letter,
+    'a4': A4,
+    'legal': legal,
+    'tabloid': (792, 1224),  # Add new size
+}
+```
+
+2. Update validation in API endpoint
+3. Update frontend dropdown options
+
+#### Modifying PDF Styling
+
+The PDF generator uses ReportLab's styling system:
+
+```python
+# Custom title style
+title_style = ParagraphStyle(
+    'CustomTitle',
+    fontSize=20,           # Font size
+    spaceAfter=16,         # Space after element
+    alignment=TA_CENTER,   # Text alignment
+    textColor=blue,        # Text color
+    fontName='Helvetica-Bold'  # Font family
+)
+```
+
+#### Chord Layout Customization
+
+Modify the `_format_chord_line` method to adjust chord positioning:
+
+```python
+def _format_chord_line(self, chords, lyrics):
+    # Custom chord spacing logic
+    chord_spacing = 2  # Minimum spaces between chords
+    # Implementation here...
+```
+
+### Error Handling
+
+The PDF export system includes comprehensive error handling:
+
+```python
+# Backend error scenarios
+- Invalid paper size/orientation
+- Missing song or insufficient permissions
+- PDF generation failures
+- Rate limiting violations
+
+# Frontend error handling
+- Network connectivity issues
+- Authentication failures
+- Server errors with user-friendly messages
+- Loading states during export
+```
+
+### Performance Considerations
+
+- **Rate Limiting**: 5 PDF exports per minute per user
+- **Caching**: Generated PDFs could be cached for identical parameters
+- **Memory Management**: Large documents handled efficiently
+- **File Size**: Optimized PDF output without unnecessary bloat
+
+### Testing Coverage
+
+#### Unit Tests (24 test cases)
+- PDF generator utility functions
+- ChordPro parsing accuracy
+- Styling and layout verification
+- Error condition handling
+
+#### Integration Tests (15 test cases)
+- API endpoint functionality
+- Authentication and permissions
+- Parameter validation
+- File download verification
+
+#### E2E Tests (15 test scenarios)
+- Complete user workflow
+- Modal interaction
+- Download validation
+- Error scenario testing
+
 ## Testing Strategy
 
 ### Frontend Testing
