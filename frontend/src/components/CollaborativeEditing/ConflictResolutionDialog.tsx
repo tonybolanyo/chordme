@@ -212,10 +212,11 @@ export const ConflictResolutionDialog: React.FC<ConflictResolutionProps> = ({
                   
                   {showManualMerge && (
                     <div>
-                      <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+                      <label htmlFor="merge-content-textarea" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
                         Edit the merged content:
                       </label>
                       <textarea
+                        id="merge-content-textarea"
                         value={manualMergeContent}
                         onChange={(e) => setManualMergeContent(e.target.value)}
                         style={{

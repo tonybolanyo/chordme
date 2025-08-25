@@ -322,4 +322,66 @@ export class OperationalTransform {
     
     return operations;
   }
+
+  /**
+   * Generate conflict markers for manual merge resolution
+   */
+  static generateConflictMarkers(
+    localContent: string,
+    remoteContent: string,
+    localUser: string,
+    remoteUser: string
+  ): string {
+    return `<<<<<<< ${localUser}\n${localContent}\n=======\n${remoteContent}\n>>>>>>> ${remoteUser}`;
+  }
+
+  /**
+   * Check if two sets of operations can be automatically merged
+   */
+  static canAutoMerge(localOps: TextOperation[], remoteOps: TextOperation[]): boolean {
+    // Check for conflicts between operation sets
+    for (const localOp of localOps) {
+      for (const remoteOp of remoteOps) {
+        if (this.operationsConflict(localOp, remoteOp)) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Validate that a sequence of operations can be applied consistently
+   */
+  static validateOperationSequence(operations: TextOperation[], initialContent: string): boolean {
+    let content = initialContent;
+    
+    try {
+      for (const op of operations) {
+        // Check bounds
+        const pos = op.position || 0;
+        
+        if (pos < 0) return false;
+        
+        if (op.type === 'insert') {
+          if (pos > content.length) return false;
+        } else if (op.type === 'delete') {
+          if (pos >= content.length || pos + op.length > content.length) return false;
+        }
+        
+        // Apply operation to validate
+        content = this.applyOperation(content, op);
+      }
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Compute new document version after applying operations
+   */
+  static computeVersionAfterOperations(initialVersion: number, operations: TextOperation[]): number {
+    return initialVersion + operations.length;
+  }
 }
