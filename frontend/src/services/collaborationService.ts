@@ -6,11 +6,8 @@ import {
   updateDoc,
   addDoc,
   query,
-  where,
   orderBy,
   serverTimestamp,
-  Timestamp,
-  deleteDoc,
   writeBatch,
 } from 'firebase/firestore';
 import type { Unsubscribe } from 'firebase/firestore';
@@ -23,11 +20,9 @@ import type {
   UserPresence,
   EditOperation,
   TextOperation,
-  DocumentState,
   OptimisticUpdate,
   NetworkStatus,
   PermissionChange,
-  CollaborationEvent,
 } from '../types/collaboration';
 
 /**
@@ -67,7 +62,7 @@ export class CollaborationService {
    */
   async initializeUser(
     userId: string,
-    userInfo: { email: string; name?: string }
+    _userInfo: { email: string; name?: string }
   ): Promise<void> {
     this.currentUserId = userId;
     this.currentUserColor = this.generateUserColor(userId);
@@ -362,7 +357,7 @@ export class CollaborationService {
       if (!session) return;
 
       session.cursors = snapshot.docs
-        .map((doc) => ({ id: doc.id, ...doc.data() }) as UserCursor)
+        .map((doc) => ({ id: doc.id, ...doc.data() }) as unknown as UserCursor)
         .filter((cursor) => cursor.userId !== this.currentUserId);
 
       this.notifySessionUpdate(songId, session);
@@ -381,7 +376,7 @@ export class CollaborationService {
       if (!session) return;
 
       session.presences = snapshot.docs.map(
-        (doc) => ({ id: doc.id, ...doc.data() }) as UserPresence
+        (doc) => ({ id: doc.id, ...doc.data() }) as unknown as UserPresence
       );
       this.notifySessionUpdate(songId, session);
     });
@@ -400,7 +395,7 @@ export class CollaborationService {
           const permissionChange = {
             id: change.doc.id,
             ...change.doc.data(),
-          } as PermissionChange;
+          } as unknown as PermissionChange;
           this.handlePermissionChange(permissionChange);
         }
       });

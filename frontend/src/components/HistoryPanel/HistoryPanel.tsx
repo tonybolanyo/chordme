@@ -16,7 +16,6 @@ interface HistoryPanelProps {
 const HistoryPanel: React.FC<HistoryPanelProps> = ({
   songId,
   currentTitle,
-  currentContent,
   isOpen,
   onClose,
   onRestore,

@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import type { Song } from '../types';
 
 interface PDFExportModalProps {
@@ -133,7 +134,7 @@ const PDFExportModal: React.FC<PDFExportModalProps> = ({
         </form>
       </div>
 
-      <style jsx>{`
+      <style>{`
         .modal-overlay {
           position: fixed;
           top: 0;

@@ -1,6 +1,7 @@
 /**
  * Responsive utilities and viewport detection functions
  */
+import { useState, useEffect } from 'react';
 
 // Breakpoint constants
 export const BREAKPOINTS = {
@@ -161,8 +162,8 @@ export const useIsTouchDevice = (): boolean => {
       return (
         'ontouchstart' in window ||
         navigator.maxTouchPoints > 0 ||
-        (navigator as unknown as { msMaxTouchPoints?: number })
-          .msMaxTouchPoints > 0
+        ((navigator as unknown as { msMaxTouchPoints?: number })
+          ?.msMaxTouchPoints ?? 0) > 0
       );
     };
 

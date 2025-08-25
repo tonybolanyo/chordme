@@ -62,7 +62,6 @@ export const LiveCursors: React.FC<LiveCursorsProps> = ({
     document.body.removeChild(measureElement);
 
     // Calculate position relative to editor
-    const editorRect = editor.getBoundingClientRect();
     const editorStyle = window.getComputedStyle(editor);
     const paddingLeft = parseInt(editorStyle.paddingLeft, 10);
     const paddingTop = parseInt(editorStyle.paddingTop, 10);

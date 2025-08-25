@@ -584,14 +584,6 @@ const Home: React.FC = () => {
     // For real-time, the updates will come automatically
   };
 
-  const addNotification = (notification: Omit<SharingNotification, 'id'>) => {
-    const newNotification: SharingNotification = {
-      ...notification,
-      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-    };
-    setNotifications((prev) => [...prev, newNotification]);
-  };
-
   const removeNotification = (id: string) => {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
   };

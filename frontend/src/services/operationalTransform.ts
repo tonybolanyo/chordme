@@ -1,9 +1,5 @@
 // Operational Transformation engine for real-time collaborative editing
-import type {
-  TextOperation,
-  EditOperation,
-  DocumentState,
-} from '../types/collaboration';
+import type { TextOperation } from '../types/collaboration';
 
 /**
  * Operational Transformation (OT) class for handling concurrent text editing

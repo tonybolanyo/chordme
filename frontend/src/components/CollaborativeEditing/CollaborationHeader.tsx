@@ -19,8 +19,7 @@ export const CollaborationHeader: React.FC<CollaborationHeaderProps> = ({
   participants,
 }) => {
   const { activePeerCount } = useCollaborativePresence(songId);
-  const { networkStatus, isOnline, connectionQuality } =
-    useCollaborativeNetwork();
+  const { isOnline, connectionQuality } = useCollaborativeNetwork();
 
   const getNetworkIcon = () => {
     if (!isOnline) return '📡';

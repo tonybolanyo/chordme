@@ -30,7 +30,7 @@ const Header: React.FC<HeaderProps> = ({ title = 'ChordMe' }) => {
 
   const handleBackendChange = (backendId: string) => {
     apiService.setStorageBackend(
-      backendId as 'localStorage' | 'firebase' | 'googleDrive'
+      backendId as 'localstorage' | 'firebase' | 'googledrive'
     );
     setShowStorageSettings(false);
     // You might want to trigger a refresh or reload here

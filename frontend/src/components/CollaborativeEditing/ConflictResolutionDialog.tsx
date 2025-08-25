@@ -1,7 +1,7 @@
 // Conflict resolution dialog for handling concurrent edits
 import React, { useState } from 'react';
 import { formatRelativeTime } from '../../utils';
-import type { EditOperation, DocumentState } from '../../types/collaboration';
+import type { EditOperation } from '../../types/collaboration';
 import './CollaborativeEditing.css';
 
 interface ConflictResolutionProps {
