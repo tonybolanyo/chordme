@@ -16,7 +16,9 @@ import {
   NotificationContainer,
   HistoryPanel,
   UndoRedoControls,
+  PDFExportModal,
 } from '../../components';
+import type { PDFExportOptions } from '../../components';
 import './Home.css';
 
 const Home: React.FC = () => {
@@ -49,6 +51,11 @@ const Home: React.FC = () => {
   const [sharingModalOpen, setSharingModalOpen] = useState(false);
   const [songToShare, setSongToShare] = useState<Song | null>(null);
   const [notifications, setNotifications] = useState<SharingNotification[]>([]);
+
+  // PDF Export state
+  const [pdfExportModalOpen, setPdfExportModalOpen] = useState(false);
+  const [songToExportPDF, setSongToExportPDF] = useState<Song | null>(null);
+  const [isExportingPDF, setIsExportingPDF] = useState(false);
 
   // Real-time editing state
   const [hasExternalChanges, setHasExternalChanges] = useState(false);
@@ -149,6 +156,38 @@ const Home: React.FC = () => {
     } catch (err) {
       console.error('Error downloading song:', err);
       setError(err instanceof Error ? err.message : 'Failed to download song');
+    }
+  };
+
+  const handleExportSongAsPDF = (song: Song) => {
+    setSongToExportPDF(song);
+    setPdfExportModalOpen(true);
+  };
+
+  const handlePDFExport = async (options: PDFExportOptions) => {
+    if (!songToExportPDF) return;
+
+    try {
+      setIsExportingPDF(true);
+      setError(null);
+      
+      await apiService.exportSongAsPDF(songToExportPDF.id, options);
+      
+      // Close modal on success
+      setPdfExportModalOpen(false);
+      setSongToExportPDF(null);
+    } catch (err) {
+      console.error('Error exporting PDF:', err);
+      setError(err instanceof Error ? err.message : 'Failed to export PDF');
+    } finally {
+      setIsExportingPDF(false);
+    }
+  };
+
+  const handleClosePDFModal = () => {
+    if (!isExportingPDF) {
+      setPdfExportModalOpen(false);
+      setSongToExportPDF(null);
     }
   };
 
@@ -1098,6 +1137,20 @@ const Home: React.FC = () => {
                 >
                   Download
                 </button>
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={() => handleExportSongAsPDF(viewingSong)}
+                  style={{ 
+                    marginRight: '0.5rem',
+                    backgroundColor: '#dc3545',
+                    color: 'white'
+                  }}
+                  aria-label="Export the song as PDF"
+                  title="Export the song as PDF"
+                >
+                  Export PDF
+                </button>
                 {googleOAuth2Service.isAuthenticated() && (
                   <button
                     type="button"
@@ -1359,6 +1412,18 @@ const Home: React.FC = () => {
                     title="Download as ChordPro file"
                   >
                     Download
+                  </button>
+                  <button
+                    className="btn"
+                    onClick={() => handleExportSongAsPDF(song)}
+                    style={{
+                      marginRight: '0.5rem',
+                      backgroundColor: '#dc3545',
+                      color: 'white',
+                    }}
+                    title="Export as PDF"
+                  >
+                    PDF
                   </button>
                   {googleOAuth2Service.isAuthenticated() && (
                     <button
@@ -1633,6 +1698,18 @@ const Home: React.FC = () => {
                   >
                     Download
                   </button>
+                  <button
+                    className="btn"
+                    onClick={() => handleExportSongAsPDF(song)}
+                    style={{
+                      marginRight: '0.5rem',
+                      backgroundColor: '#dc3545',
+                      color: 'white',
+                    }}
+                    title="Export as PDF"
+                  >
+                    PDF
+                  </button>
                   {googleOAuth2Service.isAuthenticated() && (
                     <button
                       className="btn"
@@ -1690,6 +1767,17 @@ const Home: React.FC = () => {
           isOpen={sharingModalOpen}
           onClose={handleCloseSharingModal}
           onShareUpdate={handleShareUpdate}
+        />
+      )}
+
+      {/* PDF Export Modal */}
+      {songToExportPDF && (
+        <PDFExportModal
+          song={songToExportPDF}
+          isOpen={pdfExportModalOpen}
+          onClose={handleClosePDFModal}
+          onExport={handlePDFExport}
+          isExporting={isExportingPDF}
         />
       )}
 
