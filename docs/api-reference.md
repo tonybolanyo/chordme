@@ -1223,4 +1223,213 @@ When conflicting edits occur:
 
 ---
 
+## Version History Management
+
+The ChordMe API provides comprehensive version history functionality, automatically creating snapshots of songs whenever they are modified. This enables users to track changes over time and restore previous versions when needed.
+
+### Get Song Versions
+
+Retrieve the version history for a specific song.
+
+#### `GET /songs/{id}/versions`
+
+**Description**: Get all version snapshots for a song, ordered by creation date (newest first).
+
+**Authentication**: Required
+
+**Path Parameters**:
+- `id`: Song ID (integer)
+
+**Success Response** (200):
+```json
+{
+  "status": "success",
+  "message": "Retrieved 3 versions",
+  "data": {
+    "versions": [
+      {
+        "id": 5,
+        "song_id": 123,
+        "version_number": 3,
+        "title": "Amazing Grace (Updated)",
+        "content": "{title: Amazing Grace (Updated)}\n{artist: John Newton}\n\n[C]Amazing [F]grace...",
+        "user_id": 1,
+        "created_at": "2024-01-15T14:30:00Z"
+      },
+      {
+        "id": 4,
+        "song_id": 123,
+        "version_number": 2,
+        "title": "Amazing Grace (Draft)",
+        "content": "{title: Amazing Grace (Draft)}\n{artist: John Newton}\n\n[C]Amazing [F]grace...",
+        "user_id": 1,
+        "created_at": "2024-01-15T11:15:00Z"
+      },
+      {
+        "id": 3,
+        "song_id": 123,
+        "version_number": 1,
+        "title": "Amazing Grace",
+        "content": "{title: Amazing Grace}\n{artist: John Newton}\n\n[C]Amazing [F]grace...",
+        "user_id": 1,
+        "created_at": "2024-01-15T10:30:00Z"
+      }
+    ]
+  }
+}
+```
+
+**Error Responses**:
+
+*404 - Song Not Found*:
+```json
+{
+  "status": "error",
+  "message": "Song not found",
+  "error": "Song with ID 999 does not exist or you don't have permission to access it"
+}
+```
+
+**Example**:
+```bash
+curl -X GET http://localhost:5000/api/v1/songs/123/versions \
+  -H "Authorization: Bearer <your-token>"
+```
+
+### Get Specific Version
+
+Retrieve a specific version of a song by version ID.
+
+#### `GET /songs/{id}/versions/{version_id}`
+
+**Description**: Get detailed information about a specific version snapshot.
+
+**Authentication**: Required
+
+**Path Parameters**:
+- `id`: Song ID (integer)
+- `version_id`: Version ID (integer)
+
+**Success Response** (200):
+```json
+{
+  "status": "success",
+  "message": "Version retrieved successfully",
+  "data": {
+    "id": 3,
+    "song_id": 123,
+    "version_number": 1,
+    "title": "Amazing Grace",
+    "content": "{title: Amazing Grace}\n{artist: John Newton}\n\n[C]Amazing [F]grace how [C]sweet the sound\n[Am]That saved a [F]wretch like [C]me",
+    "user_id": 1,
+    "created_at": "2024-01-15T10:30:00Z"
+  }
+}
+```
+
+**Error Responses**:
+
+*404 - Version Not Found*:
+```json
+{
+  "status": "error",
+  "message": "Version not found",
+  "error": "Version with ID 999 does not exist for this song"
+}
+```
+
+**Example**:
+```bash
+curl -X GET http://localhost:5000/api/v1/songs/123/versions/3 \
+  -H "Authorization: Bearer <your-token>"
+```
+
+### Restore Song Version
+
+Restore a song to a previous version state.
+
+#### `POST /songs/{id}/restore/{version_id}`
+
+**Description**: Restore a song to the state of a specific version. This creates a new version with the restored content.
+
+**Authentication**: Required
+
+**Path Parameters**:
+- `id`: Song ID (integer)
+- `version_id`: Version ID to restore (integer)
+
+**Success Response** (200):
+```json
+{
+  "status": "success",
+  "message": "Song restored to version 1 successfully",
+  "data": {
+    "id": 123,
+    "title": "Amazing Grace",
+    "content": "{title: Amazing Grace}\n{artist: John Newton}\n\n[C]Amazing [F]grace how [C]sweet the sound",
+    "author_id": 1,
+    "created_at": "2024-01-15T10:30:00Z",
+    "updated_at": "2024-01-15T15:45:00Z"
+  }
+}
+```
+
+**Error Responses**:
+
+*403 - Insufficient Permissions*:
+```json
+{
+  "status": "error",
+  "message": "Insufficient permissions to edit this song",
+  "error": "You need edit permissions to restore song versions"
+}
+```
+
+*404 - Version Not Found*:
+```json
+{
+  "status": "error", 
+  "message": "Version not found",
+  "error": "Version with ID 999 does not exist for this song"
+}
+```
+
+**Example**:
+```bash
+curl -X POST http://localhost:5000/api/v1/songs/123/restore/3 \
+  -H "Authorization: Bearer <your-token>"
+```
+
+### Version History Behavior
+
+#### Automatic Version Creation
+
+Version snapshots are automatically created in the following scenarios:
+
+1. **Song Updates**: Every time a song's title or content is modified via `PUT /songs/{id}`
+2. **Version Restoration**: When a song is restored to a previous version
+3. **Collaborative Edits**: When multiple users edit the same song
+
+#### Version Numbering
+
+- Version numbers start at 1 and increment sequentially
+- Version numbers are unique per song
+- Deleted versions maintain their numbers (no renumbering)
+
+#### Storage Considerations
+
+- Each version stores the complete song state (title and content)
+- Versions include metadata: user who made the change, timestamp
+- Old versions are never automatically deleted
+
+#### Permission Requirements
+
+| Operation | Required Permission |
+|-----------|-------------------|
+| View versions | Read access to song |
+| Get specific version | Read access to song |
+| Restore version | Edit access to song |
+
+---
+
 *For more information about using the ChordMe API, see the [User Guide](user-guide.md) and [Developer Guide](developer-guide.md).*

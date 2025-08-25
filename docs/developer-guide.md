@@ -987,6 +987,209 @@ describe('SongSharingModal', () => {
 4. **Logging**: Log errors with appropriate detail for debugging
 5. **Status Codes**: Use proper HTTP status codes for different error types
 
+## Version History and Undo/Redo Implementation
+
+ChordMe implements a comprehensive version control system for songs, combining local undo/redo functionality with persistent server-side version history.
+
+### Data Schema
+
+#### SongVersion Model
+
+```python
+class SongVersion(db.Model):
+    __tablename__ = 'song_versions'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    song_id = db.Column(db.Integer, db.ForeignKey('songs.id'), nullable=False)
+    version_number = db.Column(db.Integer, nullable=False)
+    title = db.Column(db.String(200), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    song = db.relationship('Song', backref=db.backref('versions', lazy=True, order_by='SongVersion.created_at.desc()'))
+    user = db.relationship('User', backref='song_versions')
+    
+    # Composite unique constraint
+    __table_args__ = (db.UniqueConstraint('song_id', 'version_number', name='unique_song_version'),)
+```
+
+**Key Design Decisions:**
+- **Complete Snapshots**: Each version stores the full song state (title + content)
+- **Sequential Numbering**: Version numbers increment per song (1, 2, 3...)
+- **User Tracking**: Each version records who made the change
+- **Immutable History**: Versions are never modified after creation
+
+### Backend Implementation
+
+#### Automatic Version Creation
+
+```python
+def create_version_snapshot(song, user_id):
+    """Create a version snapshot of a song before modification."""
+    # Get the next version number for this song
+    latest_version = SongVersion.query.filter_by(song_id=song.id)\
+                                     .order_by(SongVersion.version_number.desc())\
+                                     .first()
+    
+    next_version_number = (latest_version.version_number + 1) if latest_version else 1
+    
+    # Create the version snapshot
+    version = SongVersion(
+        song_id=song.id,
+        version_number=next_version_number,
+        title=song.title,
+        content=song.content,
+        user_id=user_id
+    )
+    
+    db.session.add(version)
+    return version
+```
+
+**Integration Points:**
+- Called automatically in `update_song()` endpoint before applying changes
+- Called before `restore_version()` to preserve current state
+- Respects database transactions for consistency
+
+#### API Endpoints
+
+Three new endpoints provide version history functionality:
+
+1. **GET `/songs/{id}/versions`**: List all versions (newest first)
+2. **GET `/songs/{id}/versions/{version_id}`**: Get specific version details
+3. **POST `/songs/{id}/restore/{version_id}`**: Restore to previous version
+
+**Permission Validation:**
+- All endpoints respect existing song permission system
+- Version access requires read permission to the song
+- Version restoration requires edit permission to the song
+
+### Frontend Implementation
+
+#### Undo/Redo State Management
+
+```typescript
+interface UndoRedoState {
+  title: string;
+  content: string;
+}
+
+interface UndoRedoHook {
+  currentState: UndoRedoState;
+  canUndo: boolean;
+  canRedo: boolean;
+  setState: (state: UndoRedoState) => void;
+  undo: () => UndoRedoState | null;
+  redo: () => UndoRedoState | null;
+  clearHistory: () => void;
+}
+```
+
+**Key Features:**
+- **Real-time Tracking**: Changes tracked as user types
+- **Stack-based Storage**: Undo stack for previous states, redo stack for forward states
+- **Branching Logic**: Redo stack cleared when new changes made after undo
+- **Session Scope**: History maintained during editing session only
+
+#### Component Architecture
+
+```
+Home.tsx
+├── UndoRedoControls
+│   ├── Undo Button (Ctrl+Z)
+│   ├── Redo Button (Ctrl+Y)
+│   └── History Button
+└── HistoryPanel (Modal)
+    ├── Current Version Display
+    ├── Version List
+    │   ├── Version Item
+    │   │   ├── Version Info
+    │   │   ├── Preview Button
+    │   │   └── Restore Button
+    │   └── Content Preview (expandable)
+    └── Loading/Error States
+```
+
+#### Service Layer
+
+```typescript
+class VersionHistoryService {
+  async getVersions(songId: string | number): Promise<SongVersion[]>
+  async getVersion(songId: string | number, versionId: string | number): Promise<SongVersion>
+  async restoreVersion(songId: string | number, versionId: string | number): Promise<void>
+  formatVersionForDisplay(version: SongVersion): DisplayFormat
+}
+```
+
+### Integration with Existing Features
+
+#### Real-time Collaboration
+
+- Version creation respects collaboration permissions
+- External changes trigger conflict resolution before version creation
+- Collaborative edits create versions attributed to the modifying user
+
+#### Conflict Resolution
+
+```typescript
+const handleAcceptExternalChanges = () => {
+  if (realtimeEditingSong) {
+    const newState = {
+      title: realtimeEditingSong.title,
+      content: realtimeEditingSong.content,
+    };
+    setEditSongData(newState);
+    undoRedo.setState(newState); // Update undo/redo state
+    setHasExternalChanges(false);
+    setShowConflictDialog(false);
+  }
+};
+```
+
+### Performance Considerations
+
+1. **Database Indexing**: Index shared_with and permissions fields for faster queries
+2. **Caching**: Cache collaborator data to reduce database load
+3. **Pagination**: Use pagination for large collaborator lists
+4. **Debouncing**: Debounce real-time updates to prevent excessive API calls
+5. **Optimistic Updates**: Use optimistic UI updates for better user experience
+
+### Error Handling Patterns
+
+1. **Graceful Degradation**: Fall back when real-time features are unavailable
+2. **User-Friendly Messages**: Provide clear, actionable error messages
+3. **Automatic Retry**: Implement retry logic for transient failures
+4. **Logging**: Log errors with appropriate detail for debugging
+5. **Status codes**: Use proper HTTP status codes for different error types
+
+#### Version-Specific Considerations
+
+- **Storage Efficiency**: Consider compression for large song content
+- **Retention Policy**: Implement policies for old version cleanup if needed
+- **Backup Integration**: Ensure versions are included in backup strategies
+- **Migration Strategy**: Plan for schema changes affecting version data
+
+### Testing Strategy
+
+#### Backend Tests
+- Model validation and constraints
+- API endpoint functionality  
+- Permission enforcement
+- Error handling
+
+#### Frontend Tests
+- Undo/redo state management
+- Component rendering and interactions
+- Service layer API communication
+- Keyboard shortcut handling
+
+#### Integration Tests
+- End-to-end version creation workflow
+- Permission validation across user boundaries
+- Conflict resolution with version creation
+
 ---
 
 *For more information about using ChordMe, see the [User Guide](user-guide.md) and [API Reference](api-reference.md).*

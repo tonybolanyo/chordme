@@ -6,12 +6,16 @@ import { formatRelativeTime } from '../../utils';
 import { useRealtimeSongs } from '../../hooks/useRealtimeSongs';
 import { useRealtimeSong } from '../../hooks/useRealtimeSong';
 import type { Song, DriveFile, SharingNotification } from '../../types';
+import type { SongVersion } from '../../services/versionHistory';
+import { useUndoRedo } from '../../hooks/useUndoRedo';
 import {
   ChordProEditor,
   ChordProViewer,
   GoogleDriveFileList,
   SongSharingModal,
   NotificationContainer,
+  HistoryPanel,
+  UndoRedoControls,
 } from '../../components';
 import './Home.css';
 
@@ -49,6 +53,15 @@ const Home: React.FC = () => {
   // Real-time editing state
   const [hasExternalChanges, setHasExternalChanges] = useState(false);
   const [showConflictDialog, setShowConflictDialog] = useState(false);
+
+  // Version history and undo/redo state
+  const [showHistoryPanel, setShowHistoryPanel] = useState(false);
+  
+  // Initialize undo/redo for editing
+  const undoRedo = useUndoRedo({
+    title: editSongData.title,
+    content: editSongData.content,
+  });
 
   // Subscribe to real-time updates for the song being edited
   const { 
@@ -141,7 +154,13 @@ const Home: React.FC = () => {
 
   const handleEditSong = (song: Song) => {
     setEditingSong(song);
-    setEditSongData({ title: song.title, content: song.content });
+    const initialState = { title: song.title, content: song.content };
+    setEditSongData(initialState);
+    
+    // Reset undo/redo history and set initial state
+    undoRedo.clearHistory();
+    undoRedo.setState(initialState);
+    
     setShowCreateForm(false); // Hide create form if open
     setViewingSong(null); // Hide view if open
     setHasExternalChanges(false); // Reset conflict state
@@ -180,10 +199,12 @@ const Home: React.FC = () => {
   // Conflict resolution handlers
   const handleAcceptExternalChanges = () => {
     if (realtimeEditingSong) {
-      setEditSongData({
+      const newState = {
         title: realtimeEditingSong.title,
         content: realtimeEditingSong.content,
-      });
+      };
+      setEditSongData(newState);
+      undoRedo.setState(newState);
       setHasExternalChanges(false);
       setShowConflictDialog(false);
     } else {
@@ -205,6 +226,52 @@ const Home: React.FC = () => {
     setEditSongData({ title: '', content: '' });
     setHasExternalChanges(false);
     setShowConflictDialog(false);
+    undoRedo.clearHistory();
+  };
+
+  // Undo/Redo handlers
+  const handleUndo = () => {
+    const previousState = undoRedo.undo();
+    if (previousState) {
+      setEditSongData(previousState);
+    }
+  };
+
+  const handleRedo = () => {
+    const nextState = undoRedo.redo();
+    if (nextState) {
+      setEditSongData(nextState);
+    }
+  };
+
+  // Version history handlers
+  const handleShowHistory = () => {
+    setShowHistoryPanel(true);
+  };
+
+  const handleCloseHistory = () => {
+    setShowHistoryPanel(false);
+  };
+
+  const handleRestoreVersion = (version: SongVersion) => {
+    // Update the editing state with restored content
+    const restoredState = { title: version.title, content: version.content };
+    setEditSongData(restoredState);
+    undoRedo.setState(restoredState);
+    setShowHistoryPanel(false);
+  };
+
+  const handlePreviewVersion = (version: SongVersion) => {
+    // For now, just show an alert with version info
+    // In a more advanced implementation, this could show a side-by-side preview
+    alert(`Preview of Version ${version.version_number}:\n\nTitle: ${version.title}\n\nCreated: ${new Date(version.created_at).toLocaleString()}`);
+  };
+
+  // Update undo/redo state when edit data changes
+  const handleEditDataChange = (newData: { title?: string; content?: string }) => {
+    const updatedData = { ...editSongData, ...newData };
+    setEditSongData(updatedData);
+    undoRedo.setState(updatedData);
   };
 
   const handleViewSong = (song: Song) => {
@@ -825,7 +892,16 @@ const Home: React.FC = () => {
               border: '2px solid #4169e1',
             }}
           >
-            <h3>Edit Song: {editingSong.title}</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h3 style={{ margin: 0 }}>Edit Song: {editingSong.title}</h3>
+              <UndoRedoControls
+                canUndo={undoRedo.canUndo}
+                canRedo={undoRedo.canRedo}
+                onUndo={handleUndo}
+                onRedo={handleRedo}
+                onShowHistory={handleShowHistory}
+              />
+            </div>
             
             {/* Real-time status indicator */}
             {isEditingRealTime && (
@@ -927,7 +1003,7 @@ const Home: React.FC = () => {
                 id="edit-title"
                 value={editSongData.title}
                 onChange={(e) =>
-                  setEditSongData({ ...editSongData, title: e.target.value })
+                  handleEditDataChange({ title: e.target.value })
                 }
                 placeholder="Enter song title"
                 required
@@ -940,7 +1016,7 @@ const Home: React.FC = () => {
                 id="edit-content"
                 value={editSongData.content}
                 onChange={(value) =>
-                  setEditSongData({ ...editSongData, content: value })
+                  handleEditDataChange({ content: value })
                 }
                 placeholder="Enter chords and lyrics in ChordPro format&#10;Example:&#10;{title: My Song}&#10;{artist: Artist Name}&#10;# This is a comment&#10;[C]Here are the [G]lyrics [Am]with [F]chords"
                 required
@@ -1622,6 +1698,19 @@ const Home: React.FC = () => {
         notifications={notifications}
         onRemoveNotification={removeNotification}
       />
+
+      {/* Version History Panel */}
+      {editingSong && (
+        <HistoryPanel
+          songId={editingSong.id}
+          currentTitle={editSongData.title}
+          currentContent={editSongData.content}
+          isOpen={showHistoryPanel}
+          onClose={handleCloseHistory}
+          onRestore={handleRestoreVersion}
+          onPreview={handlePreviewVersion}
+        />
+      )}
     </div>
   );
 };

@@ -1,5 +1,5 @@
 from . import app, db, __version__
-from .models import User, Song, Chord, SongSection
+from .models import User, Song, Chord, SongSection, SongVersion
 from .utils import validate_email, validate_password, create_error_response, create_success_response, generate_jwt_token, sanitize_input, auth_required, validate_positive_integer, validate_request_size, sanitize_html_content
 from .rate_limiter import rate_limit
 from .csrf_protection import csrf_protect, get_csrf_token
@@ -649,6 +649,29 @@ def get_song(song_id):
         )
 
 
+
+def create_version_snapshot(song, user_id):
+    """Create a version snapshot of a song before modification."""
+    # Get the next version number for this song
+    latest_version = SongVersion.query.filter_by(song_id=song.id)\
+                                     .order_by(SongVersion.version_number.desc())\
+                                     .first()
+    
+    next_version_number = (latest_version.version_number + 1) if latest_version else 1
+    
+    # Create the version snapshot
+    version = SongVersion(
+        song_id=song.id,
+        version_number=next_version_number,
+        title=song.title,
+        content=song.content,
+        user_id=user_id
+    )
+    
+    db.session.add(version)
+    return version
+
+
 @app.route('/api/v1/songs/<int:song_id>', methods=['PUT'])
 @auth_required
 @validate_positive_integer('song_id')
@@ -759,13 +782,21 @@ def update_song(song_id):
         if title:
             if len(title) > 200:
                 return create_error_response("Title must be 200 characters or less", 400)
+        
+        if content:
+            # Delete existing sections for this song
+            SongSection.query.filter_by(song_id=song.id).delete()
+        
+        # Create version snapshot before making changes
+        if title or content:
+            create_version_snapshot(song, g.current_user_id)
+        
+        # Apply the updates
+        if title:
             song.title = title
         
         if content:
             song.content = content
-            
-            # Delete existing sections for this song
-            SongSection.query.filter_by(song_id=song.id).delete()
             
             # Parse and store new sections
             sections = ChordProValidator.extract_sections(content)
@@ -973,6 +1004,322 @@ def download_song(song_id):
     except Exception as e:
         return security_error_handler.handle_server_error(
             "An error occurred while downloading the song",
+            exception=e,
+            ip_address=request.remote_addr
+        )
+
+
+@app.route('/api/v1/songs/<int:song_id>/versions', methods=['GET'])
+@auth_required
+@validate_positive_integer('song_id')
+@rate_limit(max_requests=30, window_seconds=300)  # 30 requests per 5 minutes
+@security_headers
+def get_song_versions(song_id):
+    """
+    Get version history for a song
+    ---
+    tags:
+      - Songs
+    summary: Get song version history
+    description: Retrieve all version snapshots for a specific song (requires read permissions)
+    security:
+      - Bearer: []
+    parameters:
+      - in: path
+        name: song_id
+        description: Song ID
+        required: true
+        type: integer
+        minimum: 1
+    responses:
+      200:
+        description: Version history retrieved successfully
+        schema:
+          allOf:
+            - $ref: '#/definitions/Success'
+            - type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    versions:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                          song_id:
+                            type: integer
+                          version_number:
+                            type: integer
+                          title:
+                            type: string
+                          content:
+                            type: string
+                          user_id:
+                            type: integer
+                          created_at:
+                            type: string
+                            format: date-time
+      401:
+        description: Authentication required
+        schema:
+          $ref: '#/definitions/Error'
+      403:
+        description: Insufficient permissions
+        schema:
+          $ref: '#/definitions/Error'
+      404:
+        description: Song not found
+        schema:
+          $ref: '#/definitions/Error'
+      500:
+        description: Internal server error
+        schema:
+          $ref: '#/definitions/Error'
+    """
+    try:
+        from .permission_helpers import check_song_permission
+        
+        # Check if user has read access to the song
+        song, has_permission = check_song_permission(song_id, g.current_user_id, 'read')
+        
+        if not song or not has_permission:
+            return create_error_response("Song not found", 404)
+        
+        # Get all versions for this song
+        versions = SongVersion.query.filter_by(song_id=song_id)\
+                                  .order_by(SongVersion.created_at.desc())\
+                                  .all()
+        
+        # Convert to dict format
+        versions_data = [version.to_dict() for version in versions]
+        
+        return create_success_response(
+            data={'versions': versions_data},
+            message=f"Retrieved {len(versions_data)} versions"
+        )
+        
+    except Exception as e:
+        return security_error_handler.handle_server_error(
+            "An error occurred while retrieving song versions",
+            exception=e,
+            ip_address=request.remote_addr
+        )
+
+
+@app.route('/api/v1/songs/<int:song_id>/versions/<int:version_id>', methods=['GET'])
+@auth_required
+@validate_positive_integer('song_id')
+@validate_positive_integer('version_id')
+@rate_limit(max_requests=30, window_seconds=300)  # 30 requests per 5 minutes
+@security_headers
+def get_song_version(song_id, version_id):
+    """
+    Get a specific version of a song
+    ---
+    tags:
+      - Songs
+    summary: Get specific song version
+    description: Retrieve a specific version snapshot of a song (requires read permissions)
+    security:
+      - Bearer: []
+    parameters:
+      - in: path
+        name: song_id
+        description: Song ID
+        required: true
+        type: integer
+        minimum: 1
+      - in: path
+        name: version_id
+        description: Version ID
+        required: true
+        type: integer
+        minimum: 1
+    responses:
+      200:
+        description: Version retrieved successfully
+        schema:
+          allOf:
+            - $ref: '#/definitions/Success'
+            - type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    song_id:
+                      type: integer
+                    version_number:
+                      type: integer
+                    title:
+                      type: string
+                    content:
+                      type: string
+                    user_id:
+                      type: integer
+                    created_at:
+                      type: string
+                      format: date-time
+      401:
+        description: Authentication required
+        schema:
+          $ref: '#/definitions/Error'
+      403:
+        description: Insufficient permissions
+        schema:
+          $ref: '#/definitions/Error'
+      404:
+        description: Version not found
+        schema:
+          $ref: '#/definitions/Error'
+      500:
+        description: Internal server error
+        schema:
+          $ref: '#/definitions/Error'
+    """
+    try:
+        from .permission_helpers import check_song_permission
+        
+        # Check if user has read access to the song
+        song, has_permission = check_song_permission(song_id, g.current_user_id, 'read')
+        
+        if not song or not has_permission:
+            return create_error_response("Song not found", 404)
+        
+        # Get the specific version
+        version = SongVersion.query.filter_by(id=version_id, song_id=song_id).first()
+        
+        if not version:
+            return create_error_response("Version not found", 404)
+        
+        return create_success_response(
+            data=version.to_dict(),
+            message="Version retrieved successfully"
+        )
+        
+    except Exception as e:
+        return security_error_handler.handle_server_error(
+            "An error occurred while retrieving the song version",
+            exception=e,
+            ip_address=request.remote_addr
+        )
+
+
+@app.route('/api/v1/songs/<int:song_id>/restore/<int:version_id>', methods=['POST'])
+@auth_required
+@validate_positive_integer('song_id')
+@validate_positive_integer('version_id')
+@rate_limit(max_requests=10, window_seconds=300)  # 10 restores per 5 minutes
+@csrf_protect(require_token=False)  # CSRF optional for API endpoints
+@security_headers
+def restore_song_version(song_id, version_id):
+    """
+    Restore a song to a specific version
+    ---
+    tags:
+      - Songs
+    summary: Restore song version
+    description: Restore a song to a specific version state (requires edit permissions)
+    security:
+      - Bearer: []
+    parameters:
+      - in: path
+        name: song_id
+        description: Song ID
+        required: true
+        type: integer
+        minimum: 1
+      - in: path
+        name: version_id
+        description: Version ID to restore
+        required: true
+        type: integer
+        minimum: 1
+    responses:
+      200:
+        description: Song restored successfully
+        schema:
+          allOf:
+            - $ref: '#/definitions/Success'
+            - type: object
+              properties:
+                data:
+                  $ref: '#/definitions/Song'
+      401:
+        description: Authentication required
+        schema:
+          $ref: '#/definitions/Error'
+      403:
+        description: Insufficient permissions
+        schema:
+          $ref: '#/definitions/Error'
+      404:
+        description: Song or version not found
+        schema:
+          $ref: '#/definitions/Error'
+      500:
+        description: Internal server error
+        schema:
+          $ref: '#/definitions/Error'
+    """
+    try:
+        from .permission_helpers import check_song_permission
+        
+        # Check if user has edit access to the song
+        song, has_permission = check_song_permission(song_id, g.current_user_id, 'edit')
+        
+        if not song:
+            return create_error_response("Song not found", 404)
+        
+        if not has_permission:
+            return create_error_response("Insufficient permissions to edit this song", 403)
+        
+        # Get the version to restore
+        version = SongVersion.query.filter_by(id=version_id, song_id=song_id).first()
+        
+        if not version:
+            return create_error_response("Version not found", 404)
+        
+        # Create a snapshot of current state before restoring
+        create_version_snapshot(song, g.current_user_id)
+        
+        # Restore the song to the version state
+        song.title = version.title
+        song.content = version.content
+        
+        # Delete existing sections and recreate from restored content
+        SongSection.query.filter_by(song_id=song.id).delete()
+        
+        # Parse and store sections from restored content
+        sections = ChordProValidator.extract_sections(version.content)
+        for section_data in sections:
+            section = SongSection(
+                song_id=song.id,
+                section_type=section_data['section_type'],
+                section_number=section_data['section_number'],
+                content=section_data['content'],
+                order_index=section_data['order_index']
+            )
+            db.session.add(section)
+        
+        # Save changes
+        db.session.commit()
+        
+        app.logger.info(f"Song restored to version {version.version_number}: {song.title} by user {g.current_user_id} from IP {request.remote_addr}")
+        
+        return create_success_response(
+            data=song.to_dict(),
+            message=f"Song restored to version {version.version_number} successfully"
+        )
+        
+    except Exception as e:
+        db.session.rollback()
+        return security_error_handler.handle_server_error(
+            "An error occurred while restoring the song version",
             exception=e,
             ip_address=request.remote_addr
         )

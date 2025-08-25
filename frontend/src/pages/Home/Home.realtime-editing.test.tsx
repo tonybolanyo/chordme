@@ -27,6 +27,20 @@ vi.mock('../../hooks/useRealtimeSong', () => ({
   useRealtimeSong: vi.fn(),
 }));
 
+// Mock the useUndoRedo hook
+vi.mock('../../hooks/useUndoRedo', () => ({
+  useUndoRedo: vi.fn(() => ({
+    currentState: { title: '', content: '' },
+    canUndo: false,
+    canRedo: false,
+    setState: vi.fn(),
+    undo: vi.fn(),
+    redo: vi.fn(),
+    clearHistory: vi.fn(),
+    getHistorySize: vi.fn(() => 0),
+  })),
+}));
+
 // Mock the components
 vi.mock('../../components', () => ({
   ChordProEditor: ({
@@ -48,6 +62,34 @@ vi.mock('../../components', () => ({
   GoogleDriveFileList: () => <div data-testid="google-drive-file-list">Google Drive Files</div>,
   SongSharingModal: () => <div data-testid="song-sharing-modal">Sharing Modal</div>,
   NotificationContainer: () => <div data-testid="notification-container">Notifications</div>,
+  HistoryPanel: () => <div data-testid="history-panel">History Panel</div>,
+  UndoRedoControls: ({
+    canUndo,
+    canRedo,
+    onUndo,
+    onRedo,
+    onShowHistory,
+  }: {
+    canUndo: boolean;
+    canRedo: boolean;
+    onUndo: () => void;
+    onRedo: () => void;
+    onShowHistory?: () => void;
+  }) => (
+    <div data-testid="undo-redo-controls">
+      <button data-testid="undo-button" onClick={onUndo} disabled={!canUndo}>
+        Undo
+      </button>
+      <button data-testid="redo-button" onClick={onRedo} disabled={!canRedo}>
+        Redo
+      </button>
+      {onShowHistory && (
+        <button data-testid="history-button" onClick={onShowHistory}>
+          History
+        </button>
+      )}
+    </div>
+  ),
 }));
 
 // Mock other dependencies

@@ -92,6 +92,67 @@ Send a POST request to `/api/v1/songs`:
 4. Changes are preserved in real-time
 5. Save your modifications
 
+### Version History and Undo/Redo
+
+ChordMe provides comprehensive version tracking and editing controls to help you manage changes to your songs safely and efficiently.
+
+#### Undo/Redo Controls
+
+While editing a song, you'll see undo/redo controls in the top-right corner of the editing interface:
+
+**Features:**
+- **Undo Button**: Reverts the last change made to the song
+- **Redo Button**: Reapplies a previously undone change  
+- **History Button**: Opens the version history panel
+
+**Keyboard Shortcuts:**
+- `Ctrl+Z` (or `Cmd+Z` on Mac): Undo last change
+- `Ctrl+Y` (or `Cmd+Shift+Z` on Mac): Redo last change
+
+**How It Works:**
+- Changes are tracked in real-time as you type
+- Undo/redo works for both title and content changes
+- History is maintained throughout your editing session
+- History is cleared when you start editing a different song
+
+#### Version History Panel
+
+Click the "History" button to open the version history panel, which shows all saved versions of your song.
+
+**Panel Features:**
+
+1. **Current Version**: Shows at the top, indicating the song's current state
+2. **Version List**: Displays all previous versions with:
+   - Version number (e.g., "Version 1", "Version 2")
+   - Song title at the time of that version
+   - Timestamp showing when the version was created
+   - Action buttons for each version
+
+**Available Actions:**
+
+- **Preview**: View the content of a previous version without making changes
+- **Restore**: Revert the song to a previous version (creates a new version)
+
+**When Versions Are Created:**
+
+Versions are automatically created in these situations:
+- Every time you save changes to a song
+- When you restore to a previous version
+- When another user modifies a shared song
+
+**Important Notes:**
+- Restoring to a previous version creates a new version (doesn't delete history)
+- All versions are permanently stored and never automatically deleted
+- You need edit permissions to restore versions of shared songs
+- Version history is shared among all collaborators on a song
+
+#### Best Practices for Version Management
+
+1. **Use Descriptive Titles**: Update song titles to reflect major changes
+2. **Save Frequently**: Regular saves create more granular version history
+3. **Preview Before Restoring**: Always preview a version before restoring
+4. **Coordinate with Collaborators**: Communicate major changes when working with others
+
 ### Organizing Songs
 
 - **Search**: Find songs by title, artist, or content

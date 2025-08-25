@@ -11,6 +11,8 @@ export { default as StorageIndicator } from './StorageIndicator';
 export { default as SongSharingModal } from './SongSharingModal';
 export { default as NotificationToast } from './NotificationToast';
 export { default as NotificationContainer } from './NotificationContainer';
+export { default as HistoryPanel } from './HistoryPanel';
+export { default as UndoRedoControls } from './UndoRedoControls';
 
 // Google Auth components
 export * from './GoogleAuth';
