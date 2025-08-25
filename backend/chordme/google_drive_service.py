@@ -502,9 +502,17 @@ class GoogleDriveService:
             return result
             
         except HttpError as e:
-            if 'storage quota' in str(e):
-                raise ValueError("Google Drive storage quota exceeded")
-            elif e.resp.status == 401:
+            # Check for storage quota exceeded using status code and error code
+            if e.resp.status == 403:
+                try:
+                    error_details = json.loads(e.content.decode('utf-8'))
+                    errors = error_details.get('error', {}).get('errors', [])
+                    for error in errors:
+                        if error.get('reason') == 'storageQuotaExceeded':
+                            raise ValueError("Google Drive storage quota exceeded")
+                except Exception:
+                    pass  # Fall through to generic error handling
+            if e.resp.status == 401:
                 raise ValueError("Invalid or expired access token")
             else:
                 raise ValueError(f"Google Drive API error: {e.resp.reason}")
