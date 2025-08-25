@@ -835,4 +835,392 @@ songs = api.get_songs()
 
 ---
 
+## Collaboration Endpoints
+
+All collaboration endpoints require authentication and appropriate permissions.
+
+### Share Song with User
+
+Share a song with another user and grant them specific permissions.
+
+#### `POST /songs/{id}/share`
+
+**Description**: Share a song with another user by email and assign permission level.
+
+**Authentication**: Required (Owner or Admin permissions)
+
+**Path Parameters**:
+- `id`: Song ID (integer)
+
+**Request Body**:
+```json
+{
+  "user_email": "collaborator@example.com",
+  "permission_level": "edit"
+}
+```
+
+**Permission Levels**:
+- `read`: View song content only
+- `edit`: View and modify song content
+- `admin`: Full access including sharing management
+
+**Success Response** (200):
+```json
+{
+  "status": "success",
+  "message": "Song shared successfully with collaborator@example.com",
+  "data": {
+    "song_id": 1,
+    "user_email": "collaborator@example.com",
+    "permission_level": "edit",
+    "shared_at": "2024-01-15T12:00:00Z"
+  }
+}
+```
+
+**Error Responses**:
+
+*400 - Invalid Permission Level*:
+```json
+{
+  "status": "error",
+  "message": "Invalid permission level",
+  "error": "Permission level must be read, edit, or admin"
+}
+```
+
+*400 - User Not Found*:
+```json
+{
+  "status": "error",
+  "message": "User not found",
+  "error": "No user found with email collaborator@example.com"
+}
+```
+
+*400 - Cannot Share with Self*:
+```json
+{
+  "status": "error",
+  "message": "Cannot share song with yourself",
+  "error": "You cannot share a song with your own email address"
+}
+```
+
+*403 - Insufficient Permissions*:
+```json
+{
+  "status": "error",
+  "message": "Access denied",
+  "error": "You need owner or admin permissions to share this song"
+}
+```
+
+**Example**:
+```bash
+curl -X POST http://localhost:5000/api/v1/songs/1/share \
+  -H "Authorization: Bearer <your-token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "user_email": "collaborator@example.com",
+    "permission_level": "edit"
+  }'
+```
+
+### Get Song Collaborators
+
+Retrieve a list of all users who have access to a song.
+
+#### `GET /songs/{id}/collaborators`
+
+**Description**: Get detailed information about all collaborators for a song, including the owner.
+
+**Authentication**: Required (Must have access to the song)
+
+**Path Parameters**:
+- `id`: Song ID (integer)
+
+**Success Response** (200):
+```json
+{
+  "status": "success",
+  "message": "Retrieved 3 collaborators",
+  "data": {
+    "owner": {
+      "user_id": 1,
+      "email": "owner@example.com",
+      "permission_level": "owner",
+      "shared_at": "2024-01-10T10:00:00Z"
+    },
+    "collaborators": [
+      {
+        "user_id": 2,
+        "email": "editor@example.com",
+        "permission_level": "edit",
+        "shared_at": "2024-01-12T14:30:00Z"
+      },
+      {
+        "user_id": 3,
+        "email": "reader@example.com",
+        "permission_level": "read",
+        "shared_at": "2024-01-13T09:15:00Z"
+      }
+    ],
+    "total_collaborators": 2,
+    "total_with_owner": 3
+  }
+}
+```
+
+**Error Responses**:
+
+*404 - Song Not Found*:
+```json
+{
+  "status": "error",
+  "message": "Song not found",
+  "error": "You do not have access to this song or it does not exist"
+}
+```
+
+**Example**:
+```bash
+curl -X GET http://localhost:5000/api/v1/songs/1/collaborators \
+  -H "Authorization: Bearer <your-token>"
+```
+
+### Update User Permissions
+
+Change the permission level for an existing collaborator.
+
+#### `PUT /songs/{id}/permissions`
+
+**Description**: Update the permission level for a user who already has access to the song.
+
+**Authentication**: Required (Owner or Admin permissions)
+
+**Path Parameters**:
+- `id`: Song ID (integer)
+
+**Request Body**:
+```json
+{
+  "user_email": "collaborator@example.com",
+  "permission_level": "admin"
+}
+```
+
+**Success Response** (200):
+```json
+{
+  "status": "success",
+  "message": "User permissions updated successfully",
+  "data": {
+    "song_id": 1,
+    "user_email": "collaborator@example.com",
+    "old_permission": "edit",
+    "new_permission": "admin",
+    "updated_at": "2024-01-15T12:30:00Z"
+  }
+}
+```
+
+**Error Responses**:
+
+*400 - User Not Collaborator*:
+```json
+{
+  "status": "error",
+  "message": "User is not a collaborator",
+  "error": "collaborator@example.com does not have access to this song"
+}
+```
+
+*400 - Cannot Change Owner*:
+```json
+{
+  "status": "error",
+  "message": "Cannot change owner permissions",
+  "error": "Song owner permissions cannot be modified"
+}
+```
+
+**Example**:
+```bash
+curl -X PUT http://localhost:5000/api/v1/songs/1/permissions \
+  -H "Authorization: Bearer <your-token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "user_email": "collaborator@example.com",
+    "permission_level": "admin"
+  }'
+```
+
+### Remove Collaborator Access
+
+Remove a user's access to a song completely.
+
+#### `DELETE /songs/{id}/share/{user_id}`
+
+**Description**: Revoke all access permissions for a user on a specific song.
+
+**Authentication**: Required (Owner or Admin permissions)
+
+**Path Parameters**:
+- `id`: Song ID (integer)
+- `user_id`: User ID to remove (integer)
+
+**Success Response** (200):
+```json
+{
+  "status": "success",
+  "message": "User access revoked successfully",
+  "data": {
+    "song_id": 1,
+    "removed_user_id": 3,
+    "removed_user_email": "collaborator@example.com",
+    "removed_at": "2024-01-15T13:00:00Z"
+  }
+}
+```
+
+**Error Responses**:
+
+*400 - User Not Collaborator*:
+```json
+{
+  "status": "error",
+  "message": "User is not a collaborator",
+  "error": "User does not have access to this song"
+}
+```
+
+*400 - Cannot Remove Owner*:
+```json
+{
+  "status": "error",
+  "message": "Cannot remove owner access",
+  "error": "Song owner access cannot be removed"
+}
+```
+
+**Example**:
+```bash
+curl -X DELETE http://localhost:5000/api/v1/songs/1/share/3 \
+  -H "Authorization: Bearer <your-token>"
+```
+
+### List Shared Songs
+
+Get all songs that have been shared with the authenticated user.
+
+#### `GET /songs/shared`
+
+**Description**: Retrieve all songs that other users have shared with the authenticated user.
+
+**Authentication**: Required
+
+**Query Parameters**:
+- `permission` (optional): Filter by permission level (`read`, `edit`, `admin`)
+- `page` (optional): Page number for pagination (default: 1)
+- `limit` (optional): Number of songs per page (default: 50, max: 100)
+
+**Success Response** (200):
+```json
+{
+  "status": "success",
+  "message": "Retrieved 2 shared songs",
+  "data": {
+    "shared_songs": [
+      {
+        "id": 5,
+        "title": "Shared Song 1",
+        "artist": "Artist Name",
+        "owner": {
+          "user_id": 2,
+          "email": "owner@example.com"
+        },
+        "my_permission": "edit",
+        "shared_at": "2024-01-12T14:30:00Z",
+        "last_modified": "2024-01-14T16:20:00Z",
+        "content_preview": "{title: Shared Song 1}\n[C]Example content..."
+      },
+      {
+        "id": 8,
+        "title": "Shared Song 2", 
+        "artist": "Another Artist",
+        "owner": {
+          "user_id": 4,
+          "email": "another@example.com"
+        },
+        "my_permission": "read",
+        "shared_at": "2024-01-13T09:15:00Z",
+        "last_modified": "2024-01-13T09:15:00Z",
+        "content_preview": "{title: Shared Song 2}\n[G]More content..."
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 50,
+      "total": 2,
+      "pages": 1
+    }
+  }
+}
+```
+
+**Example**:
+```bash
+curl -X GET http://localhost:5000/api/v1/songs/shared \
+  -H "Authorization: Bearer <your-token>"
+
+# Filter by permission level
+curl -X GET "http://localhost:5000/api/v1/songs/shared?permission=edit" \
+  -H "Authorization: Bearer <your-token>"
+```
+
+---
+
+## Real-Time Collaboration Features
+
+ChordMe supports real-time collaborative editing when Firebase integration is enabled. These features enhance the collaboration experience with live updates and conflict resolution.
+
+### Real-Time Session Management
+
+When multiple users edit the same song simultaneously, ChordMe automatically:
+
+1. **Starts collaboration sessions** when multiple users access the same song
+2. **Synchronizes text operations** using operational transformation (OT)
+3. **Shows live cursor positions** of all active collaborators
+4. **Displays user presence indicators** showing who is currently editing
+5. **Handles conflict resolution** automatically or with user intervention
+
+### Operational Transformation
+
+ChordMe implements sophisticated operational transformation to ensure:
+- **Conflict-free editing**: Multiple users can edit simultaneously without corruption
+- **Intention preservation**: User edits maintain their intended meaning
+- **Document consistency**: All users see the same final state
+- **Real-time synchronization**: Changes appear instantly across all clients
+
+### Live Cursor Tracking
+
+Real-time features include:
+- **Cursor position sharing**: See where other users are editing
+- **User identification**: Color-coded cursors with user names
+- **Selection highlighting**: Visual indication of selected text by collaborators
+- **Presence indicators**: Online/offline status of collaborators
+
+### Conflict Resolution
+
+When conflicting edits occur:
+
+1. **Automatic resolution**: Simple conflicts are resolved using OT algorithms
+2. **Manual resolution**: Complex conflicts present a resolution dialog
+3. **Merge preview**: Users can preview merged content before accepting
+4. **Rollback capability**: Failed operations can be rolled back safely
+
+---
+
 *For more information about using the ChordMe API, see the [User Guide](user-guide.md) and [Developer Guide](developer-guide.md).*

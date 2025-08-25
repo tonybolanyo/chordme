@@ -753,4 +753,240 @@ npx playwright install --with-deps
 
 ---
 
+## Collaboration Feature Implementation
+
+This section provides comprehensive guidelines for developers working on collaboration features in ChordMe.
+
+### Architecture Overview
+
+The collaboration system is built on several key components:
+
+```
+Frontend (React)           Backend (Flask)         External Services
+┌─────────────────┐        ┌──────────────────┐    ┌──────────────────┐
+│ Collaboration   │        │ Sharing API      │    │ Firebase         │
+│ Hooks & Context │◄──────►│ Permission Mgmt  │    │ Firestore        │
+│                 │        │ User Management  │    │ Real-time DB     │
+├─────────────────┤        ├──────────────────┤    ├──────────────────┤
+│ UI Components   │        │ JWT Auth         │    │ WebSocket        │
+│ - Sharing Modal │        │ Rate Limiting    │    │ Connections      │
+│ - Notifications │        │ Security Headers │    │ Presence System  │
+│ - Indicators    │        │ CSRF Protection  │    │ Operation Store  │
+└─────────────────┘        └──────────────────┘    └──────────────────┘
+```
+
+### Backend Implementation Guidelines
+
+#### Database Models
+
+The sharing system uses JSON fields to store collaboration data efficiently:
+
+```python
+# chordme/models/song.py
+class Song(db.Model):
+    # Collaboration fields
+    shared_with = db.Column(db.JSON, default=lambda: [])  # List of user IDs
+    permissions = db.Column(db.JSON, default=lambda: {})  # user_id -> permission_level
+    share_settings = db.Column(db.String(20), default='private')  # private/public/link-shared
+    
+    def add_shared_user(self, user_id, permission_level):
+        """Add or update a user's sharing permissions."""
+        if self.shared_with is None:
+            self.shared_with = []
+        if self.permissions is None:
+            self.permissions = {}
+            
+        if user_id not in self.shared_with:
+            self.shared_with.append(user_id)
+        
+        self.permissions[str(user_id)] = permission_level
+        db.session.commit()
+    
+    def get_user_permission(self, user_id):
+        """Get a user's permission level for this song."""
+        if user_id == self.author_id:
+            return 'owner'
+        if self.permissions and str(user_id) in self.permissions:
+            return self.permissions[str(user_id)]
+        return None
+```
+
+#### Permission Validation
+
+Use decorators for consistent permission checking:
+
+```python
+# chordme/permission_helpers.py
+def require_song_permission(required_permission='read'):
+    """Decorator to check song access permissions."""
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            song_id = kwargs.get('song_id')
+            song = Song.query.filter_by(id=song_id).first()
+            if not song:
+                return create_error_response("Song not found", 404)
+            
+            user_permission = song.get_user_permission(g.current_user_id)
+            permission_hierarchy = {
+                'read': ['read', 'edit', 'admin', 'owner'],
+                'edit': ['edit', 'admin', 'owner'],
+                'admin': ['admin', 'owner'],
+                'owner': ['owner']
+            }
+            
+            if user_permission not in permission_hierarchy.get(required_permission, []):
+                return create_error_response("Insufficient permissions", 403)
+            
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
+```
+
+### Frontend Implementation Guidelines
+
+#### Context and State Management
+
+Use React Context for collaboration state:
+
+```typescript
+// src/contexts/CollaborationContext.tsx
+const CollaborationContext = createContext<{
+  state: CollaborationState;
+  startCollaboration: (songId: string) => Promise<void>;
+  shareSong: (songId: string, email: string, permission: string) => Promise<void>;
+} | null>(null);
+
+export const useCollaboration = (songId?: string) => {
+  const context = useContext(CollaborationContext);
+  if (!context) {
+    throw new Error('useCollaboration must be used within CollaborationProvider');
+  }
+  
+  return context;
+};
+```
+
+#### Component Design Patterns
+
+**Modal Components**: Use controlled components with proper accessibility:
+
+```typescript
+// src/components/SongSharingModal/SongSharingModal.tsx
+export const SongSharingModal: React.FC<SongSharingModalProps> = ({
+  songId,
+  isOpen,
+  onClose,
+  userPermission
+}) => {
+  // Form state management
+  const [email, setEmail] = useState('');
+  const [permission, setPermission] = useState('read');
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // Accessibility and keyboard handling
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+      return () => document.removeEventListener('keydown', handleEscape);
+    }
+  }, [isOpen, onClose]);
+  
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        {/* Modal content with proper ARIA labels */}
+      </div>
+    </div>
+  );
+};
+```
+
+### Testing Guidelines
+
+#### Backend Testing Patterns
+
+```python
+# tests/test_collaboration_endpoints.py
+class TestSongSharingEndpoints:
+    @pytest.fixture
+    def sample_song(self, users_and_tokens):
+        """Create a sample song with collaborators for testing."""
+        owner = users_and_tokens['owner']
+        song = Song(
+            title='Collaborative Song',
+            content='{title: Test}\n[C]Content',
+            author_id=owner['user'].id
+        )
+        db.session.add(song)
+        db.session.commit()
+        return song
+    
+    def test_share_song_success(self, test_client, users_and_tokens, sample_song):
+        """Test successful song sharing."""
+        response = test_client.post(f'/api/v1/songs/{sample_song.id}/share',
+                                  json={'user_email': 'test@example.com', 'permission_level': 'edit'},
+                                  headers=users_and_tokens['owner']['headers'])
+        assert response.status_code == 200
+```
+
+#### Frontend Testing Patterns
+
+```typescript
+// src/components/SongSharingModal/SongSharingModal.test.tsx
+describe('SongSharingModal', () => {
+  const renderWithProvider = (component: React.ReactElement) => {
+    return render(
+      <CollaborationProvider>
+        {component}
+      </CollaborationProvider>
+    );
+  };
+  
+  it('validates email before sharing', async () => {
+    renderWithProvider(<SongSharingModal {...defaultProps} />);
+    
+    const emailInput = screen.getByLabelText('Collaborator Email:');
+    fireEvent.change(emailInput, { target: { value: 'invalid-email' } });
+    
+    const shareButton = screen.getByText('Share Song', { selector: 'button' });
+    fireEvent.click(shareButton);
+    
+    await waitFor(() => {
+      expect(screen.getByText('Please enter a valid email address')).toBeInTheDocument();
+    });
+  });
+});
+```
+
+### Security Best Practices
+
+1. **Server-side Validation**: Always validate permissions on the backend
+2. **Rate Limiting**: Implement rate limits for sharing endpoints
+3. **Input Sanitization**: Validate and sanitize all user inputs
+4. **Audit Logging**: Log all sharing activities for security audits
+5. **CSRF Protection**: Use CSRF tokens for state-changing operations
+
+### Performance Considerations
+
+1. **Database Indexing**: Index shared_with and permissions fields for faster queries
+2. **Caching**: Cache collaborator data to reduce database load
+3. **Pagination**: Use pagination for large collaborator lists
+4. **Debouncing**: Debounce real-time updates to prevent excessive API calls
+5. **Optimistic Updates**: Use optimistic UI updates for better user experience
+
+### Error Handling Patterns
+
+1. **Graceful Degradation**: Fall back when real-time features are unavailable
+2. **User-Friendly Messages**: Provide clear, actionable error messages
+3. **Automatic Retry**: Implement retry logic for transient failures
+4. **Logging**: Log errors with appropriate detail for debugging
+5. **Status Codes**: Use proper HTTP status codes for different error types
+
+---
+
 *For more information about using ChordMe, see the [User Guide](user-guide.md) and [API Reference](api-reference.md).*

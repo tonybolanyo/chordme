@@ -653,4 +653,290 @@ curl -I http://localhost:5173
 
 ---
 
+## Collaboration and Sharing Issues
+
+### Song Sharing Problems
+
+#### "Share button not visible"
+**Problem**: Cannot find the share button for a song.
+
+**Solutions**:
+1. **Check permissions**: Only owners and admin users can share songs
+2. **Verify song ownership**: Ensure you're viewing your own songs, not shared songs
+3. **Check user interface**: Share button appears as 📤 icon next to song title
+4. **Refresh the page**: Sometimes UI state needs to be refreshed
+
+```bash
+# Check your permission level in the browser console
+console.log('Current user songs:', userSongs);
+console.log('User permissions:', userPermissions);
+```
+
+#### "User not found" when sharing
+**Problem**: Error when trying to share with a user's email.
+
+**Solutions**:
+1. **Verify email address**: Double-check the email is typed correctly
+2. **Confirm user exists**: Ask the user to register for ChordMe first
+3. **Check for typos**: Copy and paste the email to avoid typing errors
+4. **Try different email**: The user might have multiple email addresses
+
+#### "Cannot share song with yourself"
+**Problem**: Attempting to share a song with your own email address.
+
+**Solution**:
+- Use a different email address for the collaborator
+- Verify you're not accidentally entering your own email
+
+#### "Insufficient permissions to share"
+**Problem**: Don't have the required permissions to share a song.
+
+**Solutions**:
+1. **Check your role**: Only owners and admin users can share songs
+2. **Contact the owner**: Ask the song owner to grant you admin permissions
+3. **Verify song access**: Ensure you have access to the song in question
+
+### Permission Management Issues
+
+#### "Access denied" errors
+**Problem**: Cannot perform actions on shared songs.
+
+**Solutions**:
+1. **Check permission level**: Verify your permission badge next to the song title
+   - 🔵 **Reader**: View-only access
+   - 🟣 **Editor**: Can edit content
+   - 🔴 **Admin**: Can manage sharing
+   - 🔵 **Owner**: Full control
+2. **Contact the owner**: Request higher permissions if needed
+3. **Refresh permissions**: Log out and log back in to refresh permissions
+
+#### "Permission changed" notifications
+**Problem**: Unexpected notifications about permission changes.
+
+**Solutions**:
+1. **Check current permissions**: Look at permission badges in your song list
+2. **Contact the owner**: Ask about recent permission changes
+3. **Review notification details**: Check what specific permission was changed
+4. **Update your workflow**: Adjust based on new permission level
+
+#### "Cannot edit shared song"
+**Problem**: Cannot modify content in a shared song.
+
+**Solutions**:
+1. **Verify edit permissions**: Ensure you have Editor, Admin, or Owner permissions
+2. **Check real-time status**: Look for 🔄 indicator showing real-time editing is active
+3. **Try refreshing**: Reload the page and try editing again
+4. **Check for conflicts**: Another user might be editing the same section
+
+### Real-Time Collaboration Issues
+
+#### "Real-time editing not working"
+**Problem**: Changes don't appear in real-time for other users.
+
+**Solutions**:
+1. **Check Firebase configuration**: Verify environment variables are set correctly
+   ```bash
+   # Check in browser console
+   console.log('Firebase config:', firebaseConfig);
+   ```
+2. **Verify internet connection**: Ensure stable internet connectivity
+3. **Check browser console**: Look for WebSocket connection errors
+4. **Reload the page**: Refresh and try real-time editing again
+
+#### "Conflicts not resolving automatically"
+**Problem**: Edit conflicts aren't being resolved by the system.
+
+**Solutions**:
+1. **Manual resolution**: Use the conflict resolution dialog when it appears
+2. **Check conflict complexity**: Some conflicts require manual intervention
+3. **Coordinate with collaborators**: Communicate about who is editing what
+4. **Edit smaller sections**: Make smaller, incremental changes to reduce conflicts
+
+#### "Cursor positions not showing"
+**Problem**: Can't see where other users are editing.
+
+**Solutions**:
+1. **Check real-time indicators**: Ensure 🔄 symbol is visible
+2. **Verify collaborator presence**: Confirm other users are actively editing
+3. **Browser compatibility**: Try a different browser (Chrome, Firefox, Safari)
+4. **Clear browser cache**: Clear cache and cookies, then try again
+
+#### "User presence indicators missing"
+**Problem**: Cannot see who else is currently editing.
+
+**Solutions**:
+1. **Check Firestore connection**: Verify real-time database connectivity
+2. **Refresh collaboration session**: Exit and re-enter the editing mode
+3. **Verify permissions**: All users need at least read access to show presence
+4. **Network issues**: Check for firewall or network restrictions
+
+### Conflict Resolution Problems
+
+#### "Merge dialog not appearing"
+**Problem**: Expected conflict resolution dialog doesn't show.
+
+**Solutions**:
+1. **Check conflict severity**: Simple conflicts are resolved automatically
+2. **Force conflict**: Try editing the exact same text simultaneously with another user
+3. **Browser console**: Look for JavaScript errors preventing dialog display
+4. **Popup blockers**: Disable popup blockers that might prevent modal dialogs
+
+#### "Cannot choose merge option"
+**Problem**: Conflict resolution options are not working.
+
+**Solutions**:
+1. **Try different browser**: Switch to a different browser and test
+2. **Disable browser extensions**: Extensions might interfere with conflict resolution
+3. **Check JavaScript**: Ensure JavaScript is enabled in your browser
+4. **Contact support**: Report the specific conflict scenario
+
+#### "Changes lost during conflict"
+**Problem**: Edits disappear after conflict resolution.
+
+**Solutions**:
+1. **Check version history**: Look for previous versions of your changes
+2. **Undo/Redo**: Try using Ctrl+Z to undo recent changes
+3. **Manual recovery**: Re-enter your changes if they were lost
+4. **Backup practice**: Keep external backups of important changes
+
+### Performance Issues
+
+#### "Slow collaboration response"
+**Problem**: Real-time updates are delayed or sluggish.
+
+**Solutions**:
+1. **Check internet speed**: Verify your connection speed is adequate
+2. **Reduce concurrent users**: Limit the number of simultaneous editors
+3. **Browser performance**: Close other tabs and applications
+4. **Clear browser data**: Clear cache, cookies, and local storage
+
+#### "High memory usage during collaboration"
+**Problem**: Browser becomes slow during real-time editing sessions.
+
+**Solutions**:
+1. **Restart browser**: Close and reopen your browser
+2. **Limit session length**: Take breaks from long editing sessions
+3. **Update browser**: Ensure you're using the latest browser version
+4. **Check extensions**: Disable unnecessary browser extensions
+
+### Network and Connectivity Issues
+
+#### "WebSocket connection failed"
+**Problem**: Real-time features fail due to connection issues.
+
+**Solutions**:
+1. **Check firewall settings**: Ensure WebSocket connections are allowed
+2. **Verify network configuration**: Check if corporate networks block WebSockets
+3. **Try different network**: Switch to a different internet connection
+4. **Contact IT support**: Ask about WebSocket policies in corporate environments
+
+#### "Firestore access denied"
+**Problem**: Cannot connect to Firebase/Firestore services.
+
+**Solutions**:
+1. **Check Firebase rules**: Verify security rules allow authenticated access
+2. **Verify authentication**: Ensure you're properly logged in
+3. **Check API keys**: Verify Firebase configuration is correct
+4. **Review browser security**: Disable strict browser security if necessary
+
+### Troubleshooting Tools and Diagnostics
+
+#### Browser Developer Tools
+
+**Console Checks**:
+```javascript
+// Check collaboration status
+console.log('Collaboration active:', isCollaborationActive);
+console.log('Real-time enabled:', isRealtimeEnabled);
+console.log('Current user permissions:', userPermissions);
+
+// Check Firebase connection
+console.log('Firebase auth:', firebase.auth().currentUser);
+console.log('Firestore connection:', firestore);
+
+// Check WebSocket status
+console.log('WebSocket ready state:', webSocket.readyState);
+```
+
+**Network Tab Monitoring**:
+- Monitor WebSocket connections (ws:// or wss://)
+- Check for failed Firestore requests
+- Verify authentication token is being sent
+
+#### API Testing
+
+Test collaboration endpoints manually:
+
+```bash
+# Test sharing endpoint
+curl -X POST http://localhost:5000/api/v1/songs/1/share \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"user_email":"test@example.com","permission_level":"edit"}'
+
+# Test collaborators endpoint
+curl -X GET http://localhost:5000/api/v1/songs/1/collaborators \
+  -H "Authorization: Bearer YOUR_TOKEN"
+
+# Test permission update
+curl -X PUT http://localhost:5000/api/v1/songs/1/permissions \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"user_email":"test@example.com","permission_level":"admin"}'
+```
+
+#### Firebase Console Debugging
+
+1. **Check Firestore data structure**:
+   - Verify collaboration collections exist
+   - Check document permissions and data format
+   - Monitor real-time listeners
+
+2. **Review security rules**:
+   - Test rules in the Firebase console simulator
+   - Verify authenticated users can read/write collaboration data
+
+3. **Monitor usage metrics**:
+   - Check read/write operation counts
+   - Monitor concurrent connections
+   - Review error logs
+
+### Getting Help with Collaboration Issues
+
+#### Self-Diagnosis Checklist
+
+Before reporting collaboration issues:
+
+- [ ] Verify you have appropriate permissions for the action
+- [ ] Check that real-time indicators are showing (🔄 symbol)
+- [ ] Confirm other users are actively collaborating
+- [ ] Test with a simple example song and collaborator
+- [ ] Check browser console for error messages
+- [ ] Try the same actions in a different browser
+- [ ] Verify internet connection is stable
+
+#### Reporting Collaboration Bugs
+
+When reporting collaboration issues, include:
+
+1. **User permissions**: Your permission level and the permission levels of other collaborators
+2. **Steps to reproduce**: Exact sequence of actions that cause the issue
+3. **Expected vs actual behavior**: What should happen vs what actually happens
+4. **Browser information**: Browser type, version, and any extensions
+5. **Console errors**: Any JavaScript errors shown in browser console
+6. **Network environment**: Corporate network, home network, mobile data, etc.
+7. **Collaboration context**: Number of users, song size, editing patterns
+
+#### Emergency Recovery Procedures
+
+If collaboration features completely fail:
+
+1. **Switch to offline editing**: Edit songs individually and merge manually
+2. **Export current state**: Download songs to preserve current content
+3. **Communicate externally**: Use email/chat to coordinate with collaborators
+4. **Version control**: Keep manual backups of important changes
+5. **Contact support**: Report critical issues immediately for priority assistance
+
+---
+
 *If you can't find a solution here, please open an issue on [GitHub](https://github.com/tonybolanyo/chordme/issues) with detailed information about your problem.*

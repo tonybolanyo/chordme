@@ -128,34 +128,71 @@ Actions:
 
 ### Overview
 
-The ChordMe API supports comprehensive song sharing capabilities with granular permission controls.
+The ChordMe API supports comprehensive song sharing capabilities with granular permission controls and real-time collaboration features.
 
 ### Permission Levels
 
-- **read**: User can view the song content
-- **edit**: User can view and modify the song content
+- **read**: User can view the song content and download it
+- **edit**: User can view and modify the song content in real-time
 - **admin**: User can view, modify, and manage sharing settings
+- **owner**: Complete control over song and sharing (assigned automatically)
 
 ### Share Settings
 
 - **private**: Song is only accessible to the owner and explicitly shared users
-- **public**: Song is accessible to all users
-- **link-shared**: Song is accessible to users with explicit sharing permissions (for future link-based sharing)
+- **public**: Song is accessible to all authenticated users (future feature)
+- **link-shared**: Song is accessible via shareable links (future feature)
 
 ### Sharing Workflow
 
 1. **Create a song**: Song starts as private by default
-2. **Share with users**: Add users to `shared_with` array with appropriate permission levels
-3. **Modify permissions**: Update permission levels for existing shared users
-4. **Change visibility**: Update `share_settings` to control overall access
-5. **Remove access**: Remove users from sharing list
+2. **Share with users**: Use POST `/songs/{id}/share` to add collaborators
+3. **Modify permissions**: Use PUT `/songs/{id}/permissions` to update access levels
+4. **Monitor collaboration**: Use GET `/songs/{id}/collaborators` to view all users
+5. **Remove access**: Use DELETE `/songs/{id}/share/{user_id}` to revoke access
+
+### Real-Time Collaboration Features
+
+When Firebase integration is enabled, the API supports:
+
+- **Operational Transformation**: Conflict-free concurrent editing
+- **Live Cursor Tracking**: Real-time cursor position sharing
+- **Presence Management**: Active user status and indicators
+- **Automatic Conflict Resolution**: Smart merging of simultaneous edits
+- **Session Management**: Collaborative editing session lifecycle
+
+### API Endpoints for Collaboration
+
+#### Core Sharing Endpoints
+
+- `POST /api/v1/songs/{id}/share` - Share song with user
+- `GET /api/v1/songs/{id}/collaborators` - List all collaborators
+- `PUT /api/v1/songs/{id}/permissions` - Update user permissions
+- `DELETE /api/v1/songs/{id}/share/{user_id}` - Remove collaborator access
+- `GET /api/v1/songs/shared` - List songs shared with current user
+
+#### Real-Time Session Endpoints
+
+- `POST /api/v1/collaboration/{song_id}/start` - Start collaboration session
+- `GET /api/v1/collaboration/{song_id}/status` - Get session status
+- `POST /api/v1/collaboration/{song_id}/operations` - Submit text operations
+- `GET /api/v1/collaboration/{song_id}/cursors` - Get cursor positions
+- `POST /api/v1/collaboration/{song_id}/presence` - Update user presence
 
 ### Permission Validation
 
-- Song owners (author) always have full access regardless of sharing settings
-- Public songs are accessible to all authenticated users
-- Private and link-shared songs require explicit permission grants
-- Permission levels are hierarchical (admin > edit > read)
+The API implements hierarchical permission checking:
+
+1. **Owner**: Has all permissions automatically
+2. **Admin**: Can perform owner actions except transferring ownership
+3. **Edit**: Can modify content and view metadata
+4. **Read**: Can view and download content only
+
+Server-side validation ensures:
+- All operations check user permissions before execution
+- Permission changes are logged for audit purposes
+- Users cannot escalate their own permissions
+- Owner permissions cannot be removed or transferred
 
 ### Database Indexing
 
