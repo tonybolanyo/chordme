@@ -21,15 +21,16 @@ vi.mock('../../contexts/AuthContext', () => ({
   })),
 }));
 
-vi.mock('../../contexts/AuthContext', () => ({
-  default: mockAuthContext,
-}));
-
 // Mock CSS import
 vi.mock('./FirebaseAuth.css', () => ({}));
 
 describe('FirebaseEmailForm Component', () => {
   const user = userEvent.setup();
+  
+  // Get references to mocked functions
+  let mockSignInWithEmailAndPassword: ReturnType<typeof vi.fn>;
+  let mockSignUpWithEmailAndPassword: ReturnType<typeof vi.fn>;
+  let mockLoginWithFirebase: ReturnType<typeof vi.fn>;
 
   const defaultProps = {
     mode: 'login' as const,
@@ -41,9 +42,18 @@ describe('FirebaseEmailForm Component', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     
-    // Reset mock defaults
+    // Get references to the mocked functions
     const { firebaseAuthService } = await import('../../services/firebaseAuth');
+    mockSignInWithEmailAndPassword = vi.mocked(firebaseAuthService.signInWithEmailAndPassword);
+    mockSignUpWithEmailAndPassword = vi.mocked(firebaseAuthService.signUpWithEmailAndPassword);
     vi.mocked(firebaseAuthService.isAvailable).mockReturnValue(true);
+
+    const { useAuth } = await import('../../contexts/AuthContext');
+    const mockUseAuth = vi.mocked(useAuth);
+    mockLoginWithFirebase = vi.fn();
+    mockUseAuth.mockReturnValue({
+      loginWithFirebase: mockLoginWithFirebase,
+    });
 
     // Mock window.location.hash
     Object.defineProperty(window, 'location', {
@@ -57,11 +67,11 @@ describe('FirebaseEmailForm Component', () => {
       render(<FirebaseEmailForm {...defaultProps} />);
 
       expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+      expect(screen.getByLabelText('Password')).toBeInTheDocument();
       expect(
         screen.getByRole('button', { name: /sign in with firebase/i })
       ).toBeInTheDocument();
-      expect(screen.getByText(/sign in with firebase/i)).toBeInTheDocument();
+      expect(screen.getByText('Sign in with Firebase')).toBeInTheDocument();
     });
 
     it('should not render anything when Firebase is not available', async () => {
@@ -88,7 +98,7 @@ describe('FirebaseEmailForm Component', () => {
     it('should show different text for login mode', () => {
       render(<FirebaseEmailForm {...defaultProps} mode="login" />);
 
-      expect(screen.getByText(/sign in with firebase/i)).toBeInTheDocument();
+      expect(screen.getByText('Sign in with Firebase')).toBeInTheDocument();
       expect(
         screen.getByRole('button', { name: /sign in with firebase/i })
       ).toBeInTheDocument();
@@ -101,7 +111,7 @@ describe('FirebaseEmailForm Component', () => {
       render(<FirebaseEmailForm {...defaultProps} disabled={true} />);
 
       expect(screen.getByLabelText(/email/i)).toBeDisabled();
-      expect(screen.getByLabelText(/password/i)).toBeDisabled();
+      expect(screen.getByLabelText('Password')).toBeDisabled();
       expect(screen.getByRole('button')).toBeDisabled();
     });
   });
@@ -111,7 +121,7 @@ describe('FirebaseEmailForm Component', () => {
       render(<FirebaseEmailForm {...defaultProps} />);
 
       const emailInput = screen.getByLabelText(/email/i);
-      const passwordInput = screen.getByLabelText(/password/i);
+      const passwordInput = screen.getByLabelText('Password');
       const submitButton = screen.getByRole('button');
 
       await user.type(emailInput, 'invalid-email');
@@ -130,7 +140,7 @@ describe('FirebaseEmailForm Component', () => {
     it('should show error for missing email', async () => {
       render(<FirebaseEmailForm {...defaultProps} />);
 
-      const passwordInput = screen.getByLabelText(/password/i);
+      const passwordInput = screen.getByLabelText('Password');
       const submitButton = screen.getByRole('button');
 
       await user.type(passwordInput, 'password123');
@@ -159,7 +169,7 @@ describe('FirebaseEmailForm Component', () => {
       render(<FirebaseEmailForm {...defaultProps} mode="register" />);
 
       const emailInput = screen.getByLabelText(/email/i);
-      const passwordInput = screen.getByLabelText(/password/i);
+      const passwordInput = screen.getByLabelText('Password');
       const submitButton = screen.getByRole('button');
 
       await user.type(emailInput, 'test@example.com');
@@ -211,7 +221,7 @@ describe('FirebaseEmailForm Component', () => {
       render(<FirebaseEmailForm {...defaultProps} mode="login" />);
 
       const emailInput = screen.getByLabelText(/email/i);
-      const passwordInput = screen.getByLabelText(/password/i);
+      const passwordInput = screen.getByLabelText('Password');
       const submitButton = screen.getByRole('button');
 
       await user.type(emailInput, 'test@example.com');
@@ -245,7 +255,7 @@ describe('FirebaseEmailForm Component', () => {
       render(<FirebaseEmailForm {...defaultProps} mode="login" />);
 
       const emailInput = screen.getByLabelText(/email/i);
-      const passwordInput = screen.getByLabelText(/password/i);
+      const passwordInput = screen.getByLabelText('Password');
       const submitButton = screen.getByRole('button');
 
       await user.type(emailInput, 'test@example.com');
@@ -280,7 +290,7 @@ describe('FirebaseEmailForm Component', () => {
       render(<FirebaseEmailForm {...defaultProps} mode="register" />);
 
       const emailInput = screen.getByLabelText(/email/i);
-      const passwordInput = screen.getByLabelText(/password/i);
+      const passwordInput = screen.getByLabelText('Password');
       const submitButton = screen.getByRole('button');
 
       await user.type(emailInput, 'new@example.com');
@@ -311,7 +321,7 @@ describe('FirebaseEmailForm Component', () => {
       render(<FirebaseEmailForm {...defaultProps} mode="register" />);
 
       const emailInput = screen.getByLabelText(/email/i);
-      const passwordInput = screen.getByLabelText(/password/i);
+      const passwordInput = screen.getByLabelText('Password');
       const submitButton = screen.getByRole('button');
 
       await user.type(emailInput, 'existing@example.com');
@@ -334,7 +344,7 @@ describe('FirebaseEmailForm Component', () => {
       render(<FirebaseEmailForm {...defaultProps} />);
 
       const emailInput = screen.getByLabelText(/email/i);
-      const passwordInput = screen.getByLabelText(/password/i);
+      const passwordInput = screen.getByLabelText('Password');
       const submitButton = screen.getByRole('button');
 
       await user.type(emailInput, 'test@example.com');
@@ -366,7 +376,7 @@ describe('FirebaseEmailForm Component', () => {
       render(<FirebaseEmailForm {...defaultProps} />);
 
       const emailInput = screen.getByLabelText(/email/i);
-      const passwordInput = screen.getByLabelText(/password/i);
+      const passwordInput = screen.getByLabelText('Password');
       const submitButton = screen.getByRole('button');
 
       await user.type(emailInput, 'test@example.com');
@@ -387,7 +397,7 @@ describe('FirebaseEmailForm Component', () => {
       render(<FirebaseEmailForm {...defaultProps} />);
 
       const emailInput = screen.getByLabelText(/email/i);
-      const passwordInput = screen.getByLabelText(/password/i);
+      const passwordInput = screen.getByLabelText('Password');
       const submitButton = screen.getByRole('button');
 
       await user.type(emailInput, 'test@example.com');
@@ -415,7 +425,7 @@ describe('FirebaseEmailForm Component', () => {
       render(<FirebaseEmailForm {...defaultProps} mode="login" />);
 
       const emailInput = screen.getByLabelText(/email/i);
-      const passwordInput = screen.getByLabelText(/password/i);
+      const passwordInput = screen.getByLabelText('Password');
       const submitButton = screen.getByRole('button');
 
       await user.type(emailInput, 'test@example.com');
@@ -457,7 +467,7 @@ describe('FirebaseEmailForm Component', () => {
       render(<FirebaseEmailForm {...defaultProps} />);
 
       const emailInput = screen.getByLabelText(/email/i);
-      const passwordInput = screen.getByLabelText(/password/i);
+      const passwordInput = screen.getByLabelText('Password');
       const submitButton = screen.getByRole('button');
 
       await user.type(emailInput, 'test@example.com');
@@ -478,7 +488,7 @@ describe('FirebaseEmailForm Component', () => {
       );
 
       const emailInput = screen.getByLabelText(/email/i);
-      const passwordInput = screen.getByLabelText(/password/i);
+      const passwordInput = screen.getByLabelText('Password');
 
       fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
       fireEvent.change(passwordInput, { target: { value: 'password123' } });
@@ -490,7 +500,7 @@ describe('FirebaseEmailForm Component', () => {
 
       // Form should be cleared
       expect(screen.getByLabelText(/email/i)).toHaveValue('');
-      expect(screen.getByLabelText(/password/i)).toHaveValue('');
+      expect(screen.getByLabelText('Password')).toHaveValue('');
     });
   });
 
@@ -499,7 +509,7 @@ describe('FirebaseEmailForm Component', () => {
       render(<FirebaseEmailForm {...defaultProps} />);
 
       expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+      expect(screen.getByLabelText('Password')).toBeInTheDocument();
 
       const form = screen.getByRole('form', { hidden: true });
       expect(form).toBeInTheDocument();
@@ -524,7 +534,7 @@ describe('FirebaseEmailForm Component', () => {
       render(<FirebaseEmailForm {...defaultProps} />);
 
       const emailInput = screen.getByLabelText(/email/i);
-      const passwordInput = screen.getByLabelText(/password/i);
+      const passwordInput = screen.getByLabelText('Password');
       const submitButton = screen.getByRole('button');
 
       emailInput.focus();
@@ -551,7 +561,7 @@ describe('FirebaseEmailForm Component', () => {
       render(<FirebaseEmailForm {...defaultProps} />);
 
       const emailInput = screen.getByLabelText(/email/i);
-      const passwordInput = screen.getByLabelText(/password/i);
+      const passwordInput = screen.getByLabelText('Password');
 
       await user.type(emailInput, 'test@example.com');
       await user.type(passwordInput, 'password123');
