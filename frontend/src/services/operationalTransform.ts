@@ -268,7 +268,15 @@ export class OperationalTransform {
     const range1 = getRange(op1);
     const range2 = getRange(op2);
 
-    // Check for overlap
+    // Special case: Insert operations conflict if they're at the boundary of a delete operation
+    if (this.isInsertDeleteBoundaryConflict(op1, op2)) {
+      return true;
+    }
+    if (this.isInsertDeleteBoundaryConflict(op2, op1)) {
+      return true;
+    }
+
+    // Check for overlap for other cases
     return !(range1.end <= range2.start || range2.end <= range1.start);
   }
 

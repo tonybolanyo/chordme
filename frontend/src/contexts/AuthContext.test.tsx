@@ -83,6 +83,7 @@ describe('AuthContext', () => {
 
       localStorage.setItem('authToken', testToken);
       localStorage.setItem('authUser', JSON.stringify(testUser));
+      localStorage.setItem('authProvider', 'jwt');
       mockIsTokenExpired.mockReturnValue(false);
 
       render(
@@ -108,6 +109,7 @@ describe('AuthContext', () => {
 
       localStorage.setItem('authToken', expiredToken);
       localStorage.setItem('authUser', JSON.stringify(testUser));
+      localStorage.setItem('authProvider', 'jwt');
       mockIsTokenExpired.mockReturnValue(true);
 
       render(
@@ -132,6 +134,7 @@ describe('AuthContext', () => {
     it('handles invalid stored user data', async () => {
       localStorage.setItem('authToken', 'valid-token');
       localStorage.setItem('authUser', 'invalid-json');
+      localStorage.setItem('authProvider', 'jwt');
       mockIsTokenExpired.mockReturnValue(false);
 
       render(
@@ -235,6 +238,7 @@ describe('AuthContext', () => {
 
       localStorage.setItem('authToken', testToken);
       localStorage.setItem('authUser', JSON.stringify(testUser));
+      localStorage.setItem('authProvider', 'jwt');
       mockIsTokenExpired.mockReturnValue(false);
 
       render(
@@ -380,13 +384,14 @@ describe('AuthContext', () => {
 
   describe('Token Expiration Handling', () => {
     it('logs expired token message when clearing stored data', async () => {
-      const consoleSpy = vi.spyOn(console, 'log');
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
       localStorage.setItem('authToken', 'expired-token');
       localStorage.setItem(
         'authUser',
         JSON.stringify({ id: '1', email: 'test@example.com' })
       );
+      localStorage.setItem('authProvider', 'jwt');
       mockIsTokenExpired.mockReturnValue(true);
 
       render(
@@ -405,10 +410,11 @@ describe('AuthContext', () => {
     });
 
     it('logs parsing error when user data is invalid', async () => {
-      const consoleSpy = vi.spyOn(console, 'error');
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
       localStorage.setItem('authToken', 'valid-token');
       localStorage.setItem('authUser', 'invalid-json');
+      localStorage.setItem('authProvider', 'jwt');
       mockIsTokenExpired.mockReturnValue(false);
 
       render(

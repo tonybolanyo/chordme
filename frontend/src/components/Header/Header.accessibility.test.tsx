@@ -2,29 +2,24 @@ import { render, screen } from '@testing-library/react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import Header from './Header';
+import { useAuth } from '../../contexts/AuthContext';
+import { useViewport } from '../../utils/responsive';
 
 // Extend Jest matchers
 expect.extend(toHaveNoViolations);
 
-// Mock hooks and dependencies
-const mockUseAuth = {
-  isAuthenticated: false,
-  user: null,
-  logout: vi.fn(),
-};
-
-const mockUseViewport = {
-  isMobile: false,
-};
-
 // Mock all dependencies
 vi.mock('../../contexts/AuthContext', () => ({
-  useAuth: () => mockUseAuth,
+  useAuth: vi.fn(),
 }));
 
 vi.mock('../../utils/responsive', () => ({
-  useViewport: () => mockUseViewport,
+  useViewport: vi.fn(),
 }));
+
+// Get mocked functions
+const mockUseAuth = vi.mocked(useAuth);
+const mockUseViewport = vi.mocked(useViewport);
 
 vi.mock('../../services/api', () => ({
   apiService: {
@@ -45,6 +40,23 @@ vi.mock('../StorageSettings', () => ({
 describe('Header Accessibility', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    
+    // Set up default mock implementations
+    mockUseAuth.mockReturnValue({
+      isAuthenticated: false,
+      user: null,
+      firebaseUser: null,
+      token: null,
+      isLoading: false,
+      authProvider: null,
+      login: vi.fn(),
+      loginWithFirebase: vi.fn(),
+      logout: vi.fn(),
+    });
+    
+    mockUseViewport.mockReturnValue({
+      isMobile: false,
+    });
   });
 
   it('should not have accessibility violations', async () => {
@@ -74,7 +86,8 @@ describe('Header Accessibility', () => {
   });
 
   it('should have keyboard accessible mobile menu', () => {
-    mockUseViewport.isMobile = true;
+    // Override the mock for this specific test
+    vi.mocked(useViewport).mockReturnValue({ isMobile: true });
     render(<Header />);
 
     const menuButton = screen.getByLabelText(/navigation menu/i);
@@ -92,8 +105,17 @@ describe('Header Accessibility', () => {
 
   describe('when user is authenticated', () => {
     beforeEach(() => {
-      mockUseAuth.isAuthenticated = true;
-      mockUseAuth.user = { email: 'test@example.com' };
+      mockUseAuth.mockReturnValue({
+        isAuthenticated: true,
+        user: { id: '1', email: 'test@example.com' },
+        firebaseUser: null,
+        token: 'test-token',
+        isLoading: false,
+        authProvider: 'jwt',
+        login: vi.fn(),
+        loginWithFirebase: vi.fn(),
+        logout: vi.fn(),
+      });
     });
 
     it('should show user info with proper semantics', () => {
