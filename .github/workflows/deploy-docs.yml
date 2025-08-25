@@ -23,10 +23,9 @@ permissions:
   pages: write
   id-token: write
 
-# Allow only one concurrent deployment, skipping runs queued between the
-# run in-progress and latest queued.
+# Allow only one concurrent documentation deployment
 concurrency:
-  group: "pages"
+  group: "docs-deploy"
   cancel-in-progress: false
 
 jobs:
@@ -46,7 +45,7 @@ jobs:
 
       - name: Setup Pages
         id: pages
-        uses: actions/configure-pages@v4
+        uses: actions/configure-pages@v5
 
       - name: Update documentation with version info
         run: |
@@ -60,21 +59,34 @@ jobs:
           # Update version in documentation
           echo "Updating documentation with version: $VERSION"
 
-          # Add version badge to main README
-          sed -i "1i![Version](https://img.shields.io/badge/version-$VERSION-blue)" docs/README.md
-
-          # Add last updated timestamp
+          # Create a temporary file to avoid modifying excluded files
+          TEMP_FILE="docs/_version_info.md"
+          echo "---" > "$TEMP_FILE"
+          echo "layout: default" >> "$TEMP_FILE"
+          echo "title: Version Information" >> "$TEMP_FILE"
+          echo "---" >> "$TEMP_FILE"
+          echo "" >> "$TEMP_FILE"
+          echo "![Version](https://img.shields.io/badge/version-$VERSION-blue)" >> "$TEMP_FILE"
+          echo "" >> "$TEMP_FILE"
+          echo "**Version:** $VERSION" >> "$TEMP_FILE"
+          echo "" >> "$TEMP_FILE"
           TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
-          echo "" >> docs/README.md
-          echo "---" >> docs/README.md
-          echo "*Documentation last updated: $TIMESTAMP*" >> docs/README.md
-          echo "*Version: $VERSION*" >> docs/README.md
+          echo "**Last Updated:** $TIMESTAMP" >> "$TEMP_FILE"
 
       - name: Build with Jekyll
         run: |
           cd docs
+          
+          # Verify Gemfile.lock exists
+          if [ ! -f "Gemfile.lock" ]; then
+            echo "Warning: Gemfile.lock not found, running bundle install"
+            bundle install
+          fi
+          
+          # Build with Jekyll
           bundle exec jekyll build \
-            --baseurl "${{ steps.pages.outputs.base_path }}"
+            --baseurl "${{ steps.pages.outputs.base_path }}" \
+            --verbose
         env:
           JEKYLL_ENV: production
 

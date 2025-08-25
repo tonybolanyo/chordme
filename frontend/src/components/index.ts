@@ -13,6 +13,8 @@ export { default as NotificationToast } from './NotificationToast';
 export { default as NotificationContainer } from './NotificationContainer';
 export { default as HistoryPanel } from './HistoryPanel';
 export { default as UndoRedoControls } from './UndoRedoControls';
+export { default as PDFExportModal } from './PDFExportModal';
+export type { PDFExportOptions } from './PDFExportModal';
 
 // Google Auth components
 export * from './GoogleAuth';

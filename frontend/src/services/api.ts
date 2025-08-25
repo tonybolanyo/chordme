@@ -348,6 +348,108 @@ class ApiService {
     window.URL.revokeObjectURL(url);
   }
 
+  async exportSongAsPDF(
+    id: string,
+    options: {
+      paperSize?: 'a4' | 'letter' | 'legal';
+      orientation?: 'portrait' | 'landscape';
+      title?: string;
+      artist?: string;
+    } = {}
+  ): Promise<void> {
+    if (this.shouldUseFirebase()) {
+      // For Firebase, we don't have server-side PDF generation
+      // We could implement client-side PDF generation here if needed
+      throw new Error('PDF export is not currently supported with Firebase storage');
+    }
+    
+    // Build query parameters
+    const params = new URLSearchParams();
+    if (options.paperSize) params.append('paper_size', options.paperSize);
+    if (options.orientation) params.append('orientation', options.orientation);
+    if (options.title) params.append('title', options.title);
+    if (options.artist) params.append('artist', options.artist);
+    
+    const queryString = params.toString();
+    const url = `${API_BASE_URL}/api/v1/songs/${id}/export/pdf${queryString ? `?${queryString}` : ''}`;
+    
+    const token = this.getAuthToken();
+
+    // Check if token is expired before making the request
+    if (token && isTokenExpired(token)) {
+      console.log('Token has expired, clearing authentication data');
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('authUser');
+      window.location.hash = 'login';
+      throw new Error('Your session has expired. Please log in again.');
+    }
+
+    const headers: Record<string, string> = {};
+
+    // Add Authorization header if token exists
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers,
+    });
+
+    if (!response.ok) {
+      // If we get a 401, it means the token is invalid
+      if (response.status === 401 && token) {
+        // Clear invalid token and redirect to login
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('authUser');
+        window.location.hash = 'login';
+        throw new Error('Authentication failed. Please log in again.');
+      }
+
+      const errorText = await response.text();
+      let errorMessage = `PDF export failed: ${response.statusText}`;
+
+      try {
+        const errorData = JSON.parse(errorText);
+        if (errorData.error) {
+          errorMessage = errorData.error;
+        }
+      } catch {
+        // If response is not JSON, use status text
+      }
+
+      throw new Error(errorMessage);
+    }
+
+    // Get the filename from the Content-Disposition header
+    const contentDisposition = response.headers.get('Content-Disposition');
+    let filename = 'song.pdf'; // default filename
+
+    if (contentDisposition) {
+      const filenameMatch = contentDisposition.match(/filename="([^"]+)"/);
+      if (filenameMatch) {
+        filename = filenameMatch[1];
+      }
+    }
+
+    // Create a blob from the response
+    const blob = await response.blob();
+
+    // Create a temporary URL for the blob
+    const blobUrl = window.URL.createObjectURL(blob);
+
+    // Create a temporary anchor element to trigger the download
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+
+    // Clean up
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(blobUrl);
+  }
+
   // Authentication API calls (these don't require authentication)
   async register(userData: RegisterRequest): Promise<AuthResponse> {
     return this.fetchApi('/api/v1/auth/register', {

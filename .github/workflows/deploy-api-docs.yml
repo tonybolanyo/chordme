@@ -13,10 +13,9 @@ permissions:
   pages: write
   id-token: write
 
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+# Allow only one concurrent API documentation deployment  
 concurrency:
-  group: "pages"
+  group: "api-docs-deploy"
   cancel-in-progress: false
 
 jobs:
@@ -27,17 +26,38 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+          working-directory: ./docs
+      
       - name: Setup Pages
+        id: pages
         uses: actions/configure-pages@v5
       
       - name: Build with Jekyll
-        uses: actions/jekyll-build-pages@v1
-        with:
-          source: ./docs
-          destination: ./_site
+        run: |
+          cd docs
+          
+          # Verify Gemfile.lock exists
+          if [ ! -f "Gemfile.lock" ]; then
+            echo "Warning: Gemfile.lock not found, running bundle install"
+            bundle install
+          fi
+          
+          # Build with Jekyll
+          bundle exec jekyll build \
+            --baseurl "${{ steps.pages.outputs.base_path }}" \
+            --verbose
+        env:
+          JEKYLL_ENV: production
       
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/_site
 
   # Deployment job
   deploy:
