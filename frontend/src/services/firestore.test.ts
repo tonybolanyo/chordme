@@ -30,6 +30,13 @@ const mockTimestamp = {
   })),
 };
 
+// Create a mock Timestamp class for instanceof checks
+class MockTimestampClass {
+  constructor(public seconds: number, public nanoseconds: number) {}
+  toDate() { return new Date(this.seconds * 1000); }
+  toMillis() { return this.seconds * 1000; }
+}
+
 vi.mock('firebase/firestore', () => ({
   doc: mockDoc,
   collection: mockCollection,
@@ -43,7 +50,11 @@ vi.mock('firebase/firestore', () => ({
   where: mockWhere,
   orderBy: mockOrderBy,
   onSnapshot: mockOnSnapshot,
-  Timestamp: mockTimestamp,
+  Timestamp: {
+    ...mockTimestamp,
+    // Add the constructor for instanceof checks
+    constructor: MockTimestampClass
+  },
 }));
 
 // Mock the firebase service
@@ -106,18 +117,8 @@ describe('FirestoreService - CRUD Operations', () => {
       title: 'Test Song',
       author_id: 'user-123',
       content: '{title: Test Song}\n[C]Hello [G]World',
-      created_at: { 
-        seconds: 1234567890, 
-        nanoseconds: 0,
-        toDate: () => new Date(1234567890 * 1000),
-        toMillis: () => 1234567890 * 1000
-      },
-      updated_at: { 
-        seconds: 1234567890, 
-        nanoseconds: 0,
-        toDate: () => new Date(1234567890 * 1000),
-        toMillis: () => 1234567890 * 1000
-      },
+      created_at: '2023-02-13T21:31:30.000Z',
+      updated_at: '2023-02-13T21:31:30.000Z',
     };
 
     describe('getSongs', () => {
@@ -147,8 +148,8 @@ describe('FirestoreService - CRUD Operations', () => {
           title: 'Test Song',
           author_id: 'user-123',
           content: '{title: Test Song}\n[C]Hello [G]World',
-          created_at: new Date(1234567890 * 1000).toISOString(),
-          updated_at: new Date(1234567890 * 1000).toISOString(),
+          created_at: '2023-02-13T21:31:30.000Z',
+          updated_at: '2023-02-13T21:31:30.000Z',
         });
 
         expect(mockCollection).toHaveBeenCalledWith(expect.anything(), 'songs');
@@ -196,8 +197,8 @@ describe('FirestoreService - CRUD Operations', () => {
           title: 'Test Song',
           author_id: 'user-123',
           content: '{title: Test Song}\n[C]Hello [G]World',
-          created_at: new Date(1234567890 * 1000).toISOString(),
-          updated_at: new Date(1234567890 * 1000).toISOString(),
+          created_at: '2023-02-13T21:31:30.000Z',
+          updated_at: '2023-02-13T21:31:30.000Z',
         });
 
         expect(mockDoc).toHaveBeenCalledWith(expect.anything(), 'songs', 'song-123');
@@ -333,18 +334,8 @@ describe('FirestoreService - CRUD Operations', () => {
     const mockFirestoreUser = {
       id: 'user-123',
       email: 'test@example.com',
-      created_at: { 
-        seconds: 1234567890, 
-        nanoseconds: 0,
-        toDate: () => new Date(1234567890 * 1000),
-        toMillis: () => 1234567890 * 1000
-      },
-      updated_at: { 
-        seconds: 1234567890, 
-        nanoseconds: 0,
-        toDate: () => new Date(1234567890 * 1000),
-        toMillis: () => 1234567890 * 1000
-      },
+      created_at: '2023-02-13T21:31:30.000Z',
+      updated_at: '2023-02-13T21:31:30.000Z',
     };
 
     describe('getUser', () => {
@@ -364,8 +355,8 @@ describe('FirestoreService - CRUD Operations', () => {
         expect(user).toEqual({
           id: 'user-123',
           email: 'test@example.com',
-          created_at: new Date(1234567890 * 1000).toISOString(),
-          updated_at: new Date(1234567890 * 1000).toISOString(),
+          created_at: '2023-02-13T21:31:30.000Z',
+          updated_at: '2023-02-13T21:31:30.000Z',
         });
       });
 

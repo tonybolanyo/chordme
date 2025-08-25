@@ -5,29 +5,20 @@ import '@testing-library/jest-dom';
 import FirebaseAuthButtons from './FirebaseAuthButtons';
 
 // Mock Firebase Auth service
-const mockSignInWithGoogle = vi.fn();
-const mockIsAvailable = vi.fn();
-
 vi.mock('../../services/firebaseAuth', () => ({
   firebaseAuthService: {
-    signInWithGoogle: mockSignInWithGoogle,
-    isAvailable: mockIsAvailable,
+    signInWithGoogle: vi.fn(),
+    isAvailable: vi.fn(),
   },
 }));
 
 // Mock Auth Context
-const mockLoginWithFirebase = vi.fn();
-const mockUseAuth = vi.fn(() => ({
-  loginWithFirebase: mockLoginWithFirebase,
-}));
-
-const mockAuthContext = {
-  useAuth: mockUseAuth,
-};
-
-// Mock dynamic import of AuthContext
 vi.mock('../../contexts/AuthContext', () => ({
-  default: mockAuthContext,
+  default: {
+    useAuth: vi.fn(() => ({
+      loginWithFirebase: vi.fn(),
+    })),
+  },
 }));
 
 // Mock CSS import
@@ -43,7 +34,10 @@ describe('FirebaseAuthButtons Component', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockIsAvailable.mockReturnValue(true);
+    
+    // Get the mocked services and set default returns
+    const { firebaseAuthService } = require('../../services/firebaseAuth');
+    vi.mocked(firebaseAuthService.isAvailable).mockReturnValue(true);
     
     // Mock window.location.hash
     Object.defineProperty(window, 'location', {
