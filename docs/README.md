@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: ChordMe API Documentation
+---
+
 # ChordMe API Documentation
 
 This directory contains the auto-generated API documentation for ChordMe.

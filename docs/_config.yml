@@ -60,7 +60,35 @@ defaults:
     values:
       layout: "default"
   - scope:
-      path: "*-es.md"
+      path: "README-es.md"
+    values:
+      lang: "es"
+  - scope:
+      path: "getting-started-es.md"
+    values:
+      lang: "es"
+  - scope:
+      path: "user-guide-es.md"
+    values:
+      lang: "es"
+  - scope:
+      path: "chordpro-format-es.md"
+    values:
+      lang: "es"
+  - scope:
+      path: "api-reference-es.md"
+    values:
+      lang: "es"
+  - scope:
+      path: "developer-guide-es.md"
+    values:
+      lang: "es"
+  - scope:
+      path: "troubleshooting-es.md"
+    values:
+      lang: "es"
+  - scope:
+      path: "index-es.md"
     values:
       lang: "es"
 

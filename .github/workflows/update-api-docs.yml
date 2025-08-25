@@ -56,8 +56,25 @@ jobs:
         EOF
     
     - name: Generate API documentation
-      run: python generate_docs.py
+      run: |
+        echo "::group::API Documentation Generation"
+        if python generate_docs.py; then
+          echo "✅ API documentation generated successfully"
+        else
+          echo "❌ API documentation generation failed"
+          echo "::error title=API Documentation Generation Failed::Please check the Flask application and generate_docs.py script"
+          # Continue anyway as this might be expected in some cases
+        fi
+        echo "::endgroup::"
       continue-on-error: true
+    
+    - name: Validate generated documentation
+      run: |
+        echo "::group::Documentation Format Validation"
+        chmod +x ../scripts/validate-docs.sh
+        ../scripts/validate-docs.sh
+        echo "::endgroup::"
+      working-directory: ./
     
     - name: Check if docs changed
       id: docs-changed

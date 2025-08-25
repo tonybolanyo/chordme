@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: ChordPro Format Guide
+---
+
 # ChordPro Format Guide
 
 ChordMe fully supports the ChordPro format, the industry standard for storing and displaying songs with chords and lyrics. This guide explains everything you need to know about using ChordPro in ChordMe.
