@@ -114,7 +114,11 @@ const Header: React.FC<HeaderProps> = ({ title = 'ChordMe' }) => {
               <button
                 className="mobile-menu-toggle touch-target"
                 onClick={toggleMobileMenu}
-                aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+                aria-label={
+                  mobileMenuOpen
+                    ? 'Close navigation menu'
+                    : 'Open navigation menu'
+                }
                 aria-expanded={mobileMenuOpen}
                 aria-controls="main-navigation"
               >
@@ -140,8 +144,8 @@ const Header: React.FC<HeaderProps> = ({ title = 'ChordMe' }) => {
 
         {/* Mobile menu overlay */}
         {isMobile && mobileMenuOpen && (
-          <div 
-            className="nav-overlay open" 
+          <div
+            className="nav-overlay open"
             onClick={closeMobileMenu}
             aria-label="Close navigation menu"
             role="button"

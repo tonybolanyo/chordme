@@ -6,27 +6,20 @@ import '@testing-library/jest-dom';
 import FirebaseEmailForm from './FirebaseEmailForm';
 
 // Mock Firebase Auth service
-const mockSignInWithEmailAndPassword = vi.fn();
-const mockSignUpWithEmailAndPassword = vi.fn();
-const mockIsAvailable = vi.fn();
-
 vi.mock('../../services/firebaseAuth', () => ({
   firebaseAuthService: {
-    signInWithEmailAndPassword: mockSignInWithEmailAndPassword,
-    signUpWithEmailAndPassword: mockSignUpWithEmailAndPassword,
-    isAvailable: mockIsAvailable,
+    signInWithEmailAndPassword: vi.fn(),
+    signUpWithEmailAndPassword: vi.fn(),
+    isAvailable: vi.fn().mockReturnValue(true),
   },
 }));
 
 // Mock Auth Context
-const mockLoginWithFirebase = vi.fn();
-const mockUseAuth = vi.fn(() => ({
-  loginWithFirebase: mockLoginWithFirebase,
+vi.mock('../../contexts/AuthContext', () => ({
+  useAuth: vi.fn(() => ({
+    loginWithFirebase: vi.fn(),
+  })),
 }));
-
-const mockAuthContext = {
-  useAuth: mockUseAuth,
-};
 
 vi.mock('../../contexts/AuthContext', () => ({
   default: mockAuthContext,
@@ -45,9 +38,12 @@ describe('FirebaseEmailForm Component', () => {
     onError: vi.fn(),
   };
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
-    mockIsAvailable.mockReturnValue(true);
+    
+    // Reset mock defaults
+    const { firebaseAuthService } = await import('../../services/firebaseAuth');
+    vi.mocked(firebaseAuthService.isAvailable).mockReturnValue(true);
 
     // Mock window.location.hash
     Object.defineProperty(window, 'location', {
@@ -68,8 +64,9 @@ describe('FirebaseEmailForm Component', () => {
       expect(screen.getByText(/sign in with firebase/i)).toBeInTheDocument();
     });
 
-    it('should not render anything when Firebase is not available', () => {
-      mockIsAvailable.mockReturnValue(false);
+    it('should not render anything when Firebase is not available', async () => {
+      const { firebaseAuthService } = await import('../../services/firebaseAuth');
+      vi.mocked(firebaseAuthService.isAvailable).mockReturnValue(false);
 
       const { container } = render(<FirebaseEmailForm {...defaultProps} />);
 

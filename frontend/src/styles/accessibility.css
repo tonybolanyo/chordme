@@ -5,31 +5,31 @@
   --primary-color: #1e3a8a; /* Dark blue - 7.47:1 contrast with white */
   --primary-hover: #1e40af; /* Slightly lighter for hover - 6.78:1 contrast */
   --primary-light: #3b82f6; /* For backgrounds - 4.52:1 contrast */
-  
+
   /* Secondary colors */
   --secondary-color: #374151; /* Dark gray - 8.87:1 contrast with white */
   --secondary-hover: #4b5563; /* Lighter gray - 7.07:1 contrast */
-  
+
   /* Text colors */
   --text-primary: #111827; /* Very dark gray - 16.91:1 contrast with white */
   --text-secondary: #374151; /* Dark gray - 8.87:1 contrast with white */
   --text-muted: #6b7280; /* Medium gray - 4.59:1 contrast with white */
-  
+
   /* Error and success colors */
   --error-color: #dc2626; /* Red - 5.47:1 contrast with white */
   --error-bg: #fef2f2; /* Light red background */
   --success-color: #059669; /* Green - 4.84:1 contrast with white */
   --success-bg: #ecfdf5; /* Light green background */
-  
+
   /* Focus colors */
   --focus-color: #2563eb; /* Blue for focus indicators - 5.85:1 contrast */
   --focus-outline: 0 0 0 2px var(--focus-color);
-  
+
   /* Background colors */
   --bg-primary: #ffffff;
   --bg-secondary: #f9fafb;
   --bg-elevated: #ffffff;
-  
+
   /* Border colors */
   --border-color: #d1d5db;
   --border-focus: var(--focus-color);

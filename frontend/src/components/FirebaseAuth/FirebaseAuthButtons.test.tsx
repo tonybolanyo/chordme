@@ -8,17 +8,15 @@ import FirebaseAuthButtons from './FirebaseAuthButtons';
 vi.mock('../../services/firebaseAuth', () => ({
   firebaseAuthService: {
     signInWithGoogle: vi.fn(),
-    isAvailable: vi.fn(),
+    isAvailable: vi.fn().mockReturnValue(true),
   },
 }));
 
 // Mock Auth Context
 vi.mock('../../contexts/AuthContext', () => ({
-  default: {
-    useAuth: vi.fn(() => ({
-      loginWithFirebase: vi.fn(),
-    })),
-  },
+  useAuth: vi.fn(() => ({
+    loginWithFirebase: vi.fn(),
+  })),
 }));
 
 // Mock CSS import
@@ -32,11 +30,11 @@ describe('FirebaseAuthButtons Component', () => {
     onError: vi.fn(),
   };
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
-
-    // Get the mocked services and set default returns
-    const { firebaseAuthService } = require('../../services/firebaseAuth');
+    
+    // Get the mocked service
+    const { firebaseAuthService } = await import('../../services/firebaseAuth');
     vi.mocked(firebaseAuthService.isAvailable).mockReturnValue(true);
 
     // Mock window.location.hash
@@ -57,8 +55,9 @@ describe('FirebaseAuthButtons Component', () => {
       expect(button).not.toBeDisabled();
     });
 
-    it('should not render anything when Firebase is not available', () => {
-      mockIsAvailable.mockReturnValue(false);
+    it('should not render anything when Firebase is not available', async () => {
+      const { firebaseAuthService } = await import('../../services/firebaseAuth');
+      vi.mocked(firebaseAuthService.isAvailable).mockReturnValue(false);
 
       const { container } = render(<FirebaseAuthButtons {...defaultProps} />);
 
@@ -68,8 +67,9 @@ describe('FirebaseAuthButtons Component', () => {
     it('should show Google logo in the button', () => {
       render(<FirebaseAuthButtons {...defaultProps} />);
 
-      const svg = screen.getByRole('img', { hidden: true });
+      const svg = screen.getByRole('button').querySelector('svg');
       expect(svg).toBeInTheDocument();
+      expect(svg).toHaveClass('google-icon');
     });
 
     it('should disable button when disabled prop is true', () => {
