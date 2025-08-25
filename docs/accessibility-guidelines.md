@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: ChordMe Accessibility Guidelines
+---
+
 # ChordMe Accessibility Guidelines
 
 This document outlines the accessibility standards and implementation guidelines for ChordMe to ensure WCAG 2.1 AA compliance.

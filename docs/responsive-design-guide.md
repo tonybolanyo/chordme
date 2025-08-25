@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: ChordMe Responsive Design Style Guide
+---
+
 # ChordMe Responsive Design Style Guide
 
 ## Overview
