@@ -850,14 +850,15 @@ def delete_song(song_id):
     try:
         from .permission_helpers import check_song_permission
         
-        # Check if user has admin access to the song (only owner can delete)
-        song, has_permission = check_song_permission(song_id, g.current_user_id, 'admin')
+        # Check if user is the actual owner (only owner can delete, not admins)
+        song = Song.query.filter_by(id=song_id).first()
         
         if not song:
             return create_error_response("Song not found", 404)
         
-        if not has_permission:
-            return create_error_response("Insufficient permissions to delete this song", 403)
+        # Only the song author can delete the song
+        if song.author_id != g.current_user_id:
+            return create_error_response("Only the song owner can delete this song", 403)
         
         song_title = song.title  # Store for logging
         
