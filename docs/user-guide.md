@@ -215,19 +215,227 @@ Improve your workflow with keyboard shortcuts:
 
 ## Collaboration Features
 
-### Sharing Songs
+ChordMe provides comprehensive collaboration tools that allow you to work together with other musicians, share songs, and collaborate in real-time.
 
-- **Public links**: Share songs with non-users
-- **Collaboration mode**: Work on songs with other users
-- **Version history**: Track changes over time
-- **Comments and notes**: Add collaborative feedback
+### Understanding Permission Levels
 
-### User Permissions
+Before sharing songs, it's important to understand the different permission levels:
 
-- **Private songs**: Keep songs personal to your account
-- **Shared collections**: Collaborate with specific users
-- **Public library**: Share songs with the community
-- **Read-only sharing**: Allow viewing without editing
+#### **Owner** (Blue Badge 🔵)
+- **Full control** over the song and all sharing settings
+- Can edit content, manage collaborators, and delete the song
+- Cannot be removed from their own songs
+
+#### **Admin** (Red Badge 🔴) 
+- **Management access** including sharing and permission control
+- Can edit song content and invite/remove other collaborators
+- Can change permissions for other users (except owner)
+
+#### **Editor** (Purple Badge 🟣)
+- **Edit access** to modify song content and structure
+- Can make changes to lyrics, chords, and song metadata
+- Cannot manage sharing or permissions
+
+#### **Reader** (Light Blue Badge 🔵)
+- **View-only access** to song content
+- Can view and download songs but cannot make changes
+- Perfect for students, fans, or casual collaborators
+
+### Sharing Songs with Others
+
+#### Step 1: Access the Sharing Interface
+
+1. **Navigate to your songs** on the dashboard
+2. **Locate the song** you want to share
+3. **Click the "Share" button** (📤) next to the song title
+   - *Note: Share button only appears for songs you own or have admin access to*
+
+#### Step 2: Invite Collaborators
+
+1. **Enter the collaborator's email address** in the sharing form
+2. **Select the appropriate permission level** from the dropdown:
+   - Choose **Read** for viewers who just need to see the song
+   - Choose **Edit** for collaborators who will modify content
+   - Choose **Admin** for trusted partners who can manage sharing
+3. **Click "Share Song"** to send the invitation
+
+#### Step 3: Manage Existing Collaborators
+
+1. **View current collaborators** in the bottom section of the sharing modal
+2. **Change permissions** using the dropdown next to each user's name
+3. **Remove access** by clicking the "Remove" button (with confirmation)
+4. **Monitor collaboration count** (👥 N) showing total number of collaborators
+
+### Working with Shared Songs
+
+#### Accessing Shared Songs
+
+1. **Check your dashboard** for the "Shared with Me" section
+2. **Look for permission badges** next to song titles indicating your access level
+3. **Use the filter options** to view songs by permission type:
+   - All Permissions
+   - Admin Access
+   - Edit Access  
+   - Read Only
+
+#### Understanding Visual Indicators
+
+- **Permission badges**: Color-coded indicators showing your access level
+- **Collaboration count**: 👥 N shows how many people have access
+- **Real-time indicator**: 🔄 appears when live collaboration is active
+- **Last modified**: Shows when the song was last updated
+
+### Real-Time Collaborative Editing
+
+When Firebase integration is enabled, ChordMe supports sophisticated real-time collaboration:
+
+#### Starting a Real-Time Session
+
+1. **Open a shared song** with edit or admin permissions
+2. **Click the "Edit" button** to enter editing mode
+3. **Look for the real-time indicator** (🔄 Real-time editing enabled)
+4. **See other collaborators** who are currently editing
+
+#### Live Collaboration Features
+
+**Live Cursor Tracking**:
+- See color-coded cursors showing where other users are editing
+- User names appear next to their cursor positions
+- Selected text is highlighted in each user's color
+
+**Presence Indicators**:
+- View list of users currently editing the song
+- See online/offline status of collaborators
+- Monitor active editing sessions
+
+**Automatic Synchronization**:
+- Changes appear instantly across all users' screens
+- Optimistic updates provide immediate feedback
+- Automatic rollback if operations fail
+
+#### Conflict Resolution
+
+When multiple users edit the same content simultaneously:
+
+**Automatic Resolution**:
+- Simple conflicts are resolved automatically using operational transformation
+- Most edits can be merged without user intervention
+- Changes maintain their intended meaning
+
+**Manual Resolution**:
+- Complex conflicts show a resolution dialog
+- View both versions side by side
+- Choose to keep local changes, accept remote changes, or manually merge
+- Preview merged content before accepting
+
+**Conflict Prevention**:
+- Real-time cursor positions help avoid editing conflicts
+- Visual indicators show what others are currently editing
+- Smart conflict detection prevents most issues
+
+### Best Practices for Collaboration
+
+#### For Song Owners/Admins
+
+1. **Set appropriate permissions**:
+   - Use **Read** for casual sharing or performances
+   - Use **Edit** for active co-writing collaborations  
+   - Use **Admin** only for trusted long-term partners
+
+2. **Communicate with collaborators**:
+   - Clearly explain the purpose of sharing
+   - Set expectations about editing and changes
+   - Use external communication for complex discussions
+
+3. **Monitor collaboration activity**:
+   - Check the collaborators list regularly
+   - Review recent changes and updates
+   - Remove access when collaboration ends
+
+#### For Collaborators
+
+1. **Respect permission levels**:
+   - Don't ask for higher permissions unless necessary
+   - Use read access responsibly for viewing/downloading
+   - Coordinate with owners before major changes
+
+2. **Collaborate effectively**:
+   - Be aware of others' cursor positions during real-time editing
+   - Make small, incremental changes rather than large rewrites
+   - Test conflict resolution in non-critical situations
+
+3. **Communicate changes**:
+   - Let other collaborators know about significant edits
+   - Use external communication for planning major changes
+   - Be responsive during real-time editing sessions
+
+### Troubleshooting Collaboration Issues
+
+#### Sharing Problems
+
+**"Share button not visible"**:
+- Check that you have owner or admin permissions
+- Ensure you're viewing your own songs, not shared songs
+- Refresh the page and try again
+
+**"User not found" error**:
+- Verify the email address is typed correctly
+- Ensure the user has a ChordMe account
+- Ask them to register first if needed
+
+**"Cannot share with yourself" error**:
+- Double-check you're not entering your own email
+- Use a different email address for the collaborator
+
+#### Real-Time Editing Issues
+
+**"Real-time not working"**:
+- Check that Firebase integration is enabled
+- Verify your internet connection
+- Refresh the page and try again
+- Check browser console for error messages
+
+**"Conflicts not detected"**:
+- Ensure real-time indicators are showing
+- Check that WebSocket connections are active
+- Try making small test edits first
+
+**"Changes not syncing"**:
+- Verify your permissions allow editing
+- Check for network connectivity issues
+- Look for error notifications or messages
+
+#### Permission Issues
+
+**"Access denied" errors**:
+- Confirm you have appropriate permissions for the action
+- Check if your permissions were recently changed
+- Contact the song owner if you believe you should have access
+
+**"Permission changed" notifications**:
+- Check your current permission level in the song list
+- Contact the song owner if you have questions about changes
+- Adjust your workflow based on new permission level
+
+### Advanced Collaboration Features
+
+#### Bulk Operations
+
+- **Multiple song sharing**: Select multiple songs to share with the same collaborator
+- **Permission batch updates**: Change permissions for multiple users at once
+- **Group management**: Organize collaborators into teams or groups (coming soon)
+
+#### Integration Features
+
+- **External notifications**: Email notifications for sharing events (when configured)
+- **Activity feeds**: Detailed history of collaboration activities
+- **Export shared songs**: Download collections including shared content
+
+#### Performance and Optimization
+
+- **Smart caching**: Collaboration data is cached for faster access
+- **Optimized updates**: Only changed content is synchronized
+- **Connection management**: Automatic reconnection and error recovery
 
 ## Performance and Optimization
 

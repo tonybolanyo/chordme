@@ -2,7 +2,60 @@
 
 ## Architecture Overview
 
-The real-time collaborative editing system implements sophisticated operational transformation (OT) techniques to enable conflict-free concurrent editing while maintaining document consistency across multiple users.
+The real-time collaborative editing system implements sophisticated operational transformation (OT) techniques to enable conflict-free concurrent editing while maintaining document consistency across multiple users. The system is built on a modern stack combining React frontend components with Firebase Firestore for real-time data synchronization.
+
+### System Architecture Diagram
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   User A        │    │   User B        │    │   User C        │
+│   (React App)   │    │   (React App)   │    │   (React App)   │
+└─────────┬───────┘    └─────────┬───────┘    └─────────┬───────┘
+          │                      │                      │
+          │ Operations, Cursors, │                      │
+          │ Presence Data        │                      │
+          │                      │                      │
+    ┌─────▼──────────────────────▼──────────────────────▼─────┐
+    │                Firebase Firestore                       │
+    │  - Real-time synchronization                           │
+    │  - Operation transformation                             │
+    │  - Conflict resolution                                  │
+    │  - Presence management                                  │
+    └─────┬──────────────────────┬──────────────────────┬─────┘
+          │                      │                      │
+    ┌─────▼───────┐        ┌─────▼───────┐        ┌─────▼───────┐
+    │ Collaboration│        │ Collaboration│        │ Collaboration│
+    │ Service A    │        │ Service B    │        │ Service C    │
+    │ - OT Engine  │        │ - OT Engine  │        │ - OT Engine  │
+    │ - State Mgmt │        │ - State Mgmt │        │ - State Mgmt │
+    └─────────────┘        └─────────────┘        └─────────────┘
+```
+
+### Technology Stack
+
+**Frontend**: 
+- React 19 with TypeScript for type safety
+- Custom hooks for collaboration state management
+- Optimistic UI updates for responsiveness
+
+**Backend**:
+- Firebase Firestore for real-time data synchronization
+- Flask API for song management and permissions
+- JWT authentication for secure access
+
+**Real-time Engine**:
+- Operational Transformation (OT) algorithms
+- WebSocket connections via Firestore
+- Conflict detection and resolution
+
+### Security and Permissions Integration
+
+The collaborative editing system integrates seamlessly with ChordMe's permission model:
+
+- **Authentication**: JWT tokens validate user identity
+- **Authorization**: Server-side permission checks before allowing collaboration
+- **Session Security**: Users can only join sessions for songs they have access to
+- **Data Validation**: All operations are validated for security and consistency
 
 ### Core Components
 
