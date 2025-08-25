@@ -57,7 +57,7 @@ check_front_matter() {
         fi
         
         # Check for valid YAML syntax (basic check)
-        if echo "$front_matter" | grep -q $'\t'; then
+        if echo "$front_matter" | grep -qP '\t'; then
             echo -e "${RED}❌ $file: Front matter contains tabs (use spaces)${NC}"
             return 1
         fi
