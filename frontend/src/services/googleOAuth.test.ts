@@ -82,11 +82,24 @@ describe('GoogleOAuth2Service', () => {
     });
 
     it('should handle malformed token data', () => {
+      // Temporarily suppress console.error for this test since we expect it
+      const originalConsoleError = console.error;
+      console.error = vi.fn();
+      
       localStorage.setItem('googleTokens', 'invalid-json');
       const tokens = googleOAuth2Service.getStoredTokens();
 
       expect(tokens).toBeNull();
       expect(localStorage.getItem('googleTokens')).toBeNull();
+      
+      // Verify console.error was called with expected message
+      expect(console.error).toHaveBeenCalledWith(
+        'Error parsing stored Google tokens:', 
+        expect.any(SyntaxError)
+      );
+      
+      // Restore console.error
+      console.error = originalConsoleError;
     });
 
     it('should clear tokens and user info', () => {
@@ -370,11 +383,21 @@ describe('GoogleOAuth2Service', () => {
     });
 
     it('should handle malformed stored user info', () => {
+      // Temporarily suppress console.error for this test since we expect it
+      const originalConsoleError = console.error;
+      console.error = vi.fn();
+      
       localStorage.setItem('googleUserInfo', 'invalid-json');
       const userInfo = googleOAuth2Service.getStoredUserInfo();
 
       expect(userInfo).toBeNull();
       expect(localStorage.getItem('googleUserInfo')).toBeNull();
+      
+      // Verify console.error was called
+      expect(console.error).toHaveBeenCalled();
+      
+      // Restore console.error
+      console.error = originalConsoleError;
     });
   });
 
