@@ -285,6 +285,47 @@ class Song(db.Model):
         return f'<Song {self.title}>'
 
 
+class SongVersion(db.Model):
+    __tablename__ = 'song_versions'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    song_id = db.Column(db.Integer, db.ForeignKey('songs.id'), nullable=False)
+    version_number = db.Column(db.Integer, nullable=False)
+    title = db.Column(db.String(200), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    song = db.relationship('Song', backref=db.backref('versions', lazy=True, order_by='SongVersion.created_at.desc()'))
+    user = db.relationship('User', backref='song_versions')
+    
+    # Composite unique constraint to ensure version numbers are unique per song
+    __table_args__ = (db.UniqueConstraint('song_id', 'version_number', name='unique_song_version'),)
+    
+    def __init__(self, song_id, version_number, title, content, user_id):
+        self.song_id = song_id
+        self.version_number = version_number
+        self.title = title
+        self.content = content
+        self.user_id = user_id
+    
+    def to_dict(self):
+        """Convert song version to dictionary."""
+        return {
+            'id': self.id,
+            'song_id': self.song_id,
+            'version_number': self.version_number,
+            'title': self.title,
+            'content': self.content,
+            'user_id': self.user_id,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+    
+    def __repr__(self):
+        return f'<SongVersion {self.song_id}v{self.version_number}>'
+
+
 # Create indexes for efficient permission queries
 db.Index('idx_songs_author_id', Song.author_id)
 db.Index('idx_songs_share_settings', Song.share_settings)
