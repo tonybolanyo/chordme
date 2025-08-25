@@ -27,7 +27,10 @@ describe('FirebaseAuthButtons Component', () => {
   let mockSignInWithGoogle: ReturnType<typeof vi.fn>;
   let mockIsAvailable: ReturnType<typeof vi.fn>;
   let mockUseAuth: ReturnType<typeof vi.fn>;
-  let mockLoginWithFirebase: ReturnType<typeof vi.fn>;
+  let mockSignInWithGoogle: ReturnType<typeof vi.fn> = vi.fn();
+  let mockIsAvailable: ReturnType<typeof vi.fn> = vi.fn();
+  let mockUseAuth: ReturnType<typeof vi.fn> = vi.fn();
+  let mockLoginWithFirebase: ReturnType<typeof vi.fn> = vi.fn();
 
   const defaultProps = {
     mode: 'login' as const,
