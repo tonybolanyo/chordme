@@ -269,18 +269,11 @@ export class OperationalTransform {
     const range2 = getRange(op2);
 
     // Special case: Insert operations conflict if they're at the boundary of a delete operation
-    if (op1.type === 'insert' && op2.type === 'delete') {
-      const insertPos = op1.position || 0;
-      const deleteStart = op2.position || 0;
-      const deleteEnd = deleteStart + op2.length;
-      return insertPos >= deleteStart && insertPos <= deleteEnd;
+    if (this.isInsertDeleteBoundaryConflict(op1, op2)) {
+      return true;
     }
-    
-    if (op2.type === 'insert' && op1.type === 'delete') {
-      const insertPos = op2.position || 0;
-      const deleteStart = op1.position || 0;
-      const deleteEnd = deleteStart + op1.length;
-      return insertPos >= deleteStart && insertPos <= deleteEnd;
+    if (this.isInsertDeleteBoundaryConflict(op2, op1)) {
+      return true;
     }
 
     // Check for overlap for other cases
