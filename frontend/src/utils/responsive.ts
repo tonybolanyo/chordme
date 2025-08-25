@@ -75,8 +75,6 @@ export const getCurrentBreakpoint = (): Breakpoint => {
 /**
  * Hook for responsive behavior with viewport detection
  */
-import { useState, useEffect } from 'react';
-
 export interface ViewportInfo {
   width: number;
   height: number;
