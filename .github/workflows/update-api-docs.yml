@@ -72,7 +72,8 @@ jobs:
       run: |
         echo "::group::Documentation Format Validation"
         chmod +x ../scripts/validate-docs.sh
-        ../scripts/validate-docs.sh
+        chmod +x scripts/validate-docs.sh
+        scripts/validate-docs.sh
         echo "::endgroup::"
       working-directory: ./
     
