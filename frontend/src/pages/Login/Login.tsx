@@ -131,9 +131,9 @@ const Login: React.FC = () => {
         </p>
 
         {successMessage && (
-          <div 
-            className="success-message" 
-            role="status" 
+          <div
+            className="success-message"
+            role="status"
             aria-live="polite"
             aria-label="Success message"
           >
@@ -141,8 +141,8 @@ const Login: React.FC = () => {
           </div>
         )}
 
-        <form 
-          onSubmit={handleSubmit} 
+        <form
+          onSubmit={handleSubmit}
           className="login-form"
           noValidate
           aria-label="ChordMe account login form"
@@ -165,8 +165,8 @@ const Login: React.FC = () => {
               required
             />
             {errors.email && (
-              <span 
-                className="error-text" 
+              <span
+                className="error-text"
                 id="email-error"
                 role="alert"
                 aria-live="polite"
@@ -193,8 +193,8 @@ const Login: React.FC = () => {
               required
             />
             {errors.password && (
-              <span 
-                className="error-text" 
+              <span
+                className="error-text"
                 id="password-error"
                 role="alert"
                 aria-live="polite"
@@ -205,8 +205,8 @@ const Login: React.FC = () => {
           </div>
 
           {errors.submit && (
-            <div 
-              className="error-message" 
+            <div
+              className="error-message"
               role="alert"
               aria-live="assertive"
               aria-label="Form submission error"
@@ -223,13 +223,9 @@ const Login: React.FC = () => {
           >
             {isLoading ? 'Signing in...' : 'Sign In'}
           </button>
-          
+
           {isLoading && (
-            <span 
-              id="loading-status" 
-              className="sr-only"
-              aria-live="polite"
-            >
+            <span id="loading-status" className="sr-only" aria-live="polite">
               Please wait, signing you in...
             </span>
           )}

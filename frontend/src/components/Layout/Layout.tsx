@@ -13,13 +13,18 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <a href="#main-content" className="skip-nav">
         Skip to main content
       </a>
-      
+
       <Header />
-      
-      <main id="main-content" className="main-content" role="main" aria-label="Main content">
+
+      <main
+        id="main-content"
+        className="main-content"
+        role="main"
+        aria-label="Main content"
+      >
         {children}
       </main>
-      
+
       <footer className="footer" role="contentinfo" aria-label="Site footer">
         <p>&copy; 2024 ChordMe. Lyrics and chords in a simple way.</p>
       </footer>
