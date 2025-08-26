@@ -11,8 +11,10 @@ vi.mock('./App.tsx', () => ({
   default: () => 'App Component',
 }));
 
-// Mock CSS import
+// Mock CSS imports
 vi.mock('./index.css', () => ({}));
+vi.mock('./styles/accessibility.css', () => ({}));
+vi.mock('./styles/responsive.css', () => ({}));
 
 // Mock DOM elements
 Object.defineProperty(document, 'getElementById', {
@@ -25,6 +27,8 @@ Object.defineProperty(document, 'getElementById', {
 describe('Main Entry Point', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Clear any cached modules
+    vi.resetModules();
   });
 
   it('imports required modules', async () => {
@@ -34,6 +38,9 @@ describe('Main Entry Point', () => {
   });
 
   it('attempts to find root element', async () => {
+    // Reset the mock before importing to ensure clean state
+    vi.mocked(document.getElementById).mockClear();
+    
     // Import the main module which executes the code
     await import('./main');
 
