@@ -157,6 +157,8 @@ jobs:
 
   pre-rollback-tests:
     name: Pre-Rollback Health Check
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     needs: [validate-rollback, backup-current-state]
     if: github.event.inputs.skip_tests != 'true'
