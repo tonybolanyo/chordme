@@ -48,3 +48,4 @@ jobs:
         with:
           sarif_file: ./frontend/eslint-results.sarif
           wait-for-processing: true
+        continue-on-error: true
