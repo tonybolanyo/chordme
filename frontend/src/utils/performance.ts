@@ -3,12 +3,84 @@
  * Provides performance metrics collection, monitoring, and reporting.
  */
 
+// Extended interfaces for performance entries with browser-specific properties
+/**
+ * Extends the standard PerformanceEntry with browser-specific properties for Web Vitals.
+ * Represents a layout shift entry as reported by browsers supporting the Layout Instability API.
+ * @see https://web.dev/cls/
+ * @property hadRecentInput - Indicates if the layout shift occurred shortly after user input.
+ * @property value - The layout shift score for this entry.
+ */
+interface LayoutShiftEntry extends PerformanceEntry {
+  hadRecentInput: boolean;
+  value: number;
+}
+
+/**
+ * Extends the standard PerformanceEntry with browser-specific properties for Web Vitals.
+ * Represents a first input entry as reported by browsers supporting the Event Timing API.
+ * @see https://web.dev/fid/
+ * @property processingStart - The timestamp when event processing started.
+ */
+interface FirstInputEntry extends PerformanceEntry {
+  processingStart: number;
+}
+
 export interface PerformanceMetrics {
   navigationTiming: PerformanceTiming | null;
   paintMetrics: { [key: string]: number };
   resourceTiming: PerformanceResourceTiming[];
   userInteractionMetrics: { [key: string]: number };
   customMetrics: { [key: string]: number };
+}
+
+/**
+ * Summary of key performance metrics for a page load.
+ * 
+ * Timing-related fields represent durations (in milliseconds) for different phases of page loading:
+ * - domainLookup: Time spent performing DNS lookup.
+ * - connection: Time spent establishing a connection to the server.
+ * - request: Time from sending the request to the server until the first byte is received.
+ * - response: Time taken to receive the full response from the server.
+ * - domProcessing: Time spent processing and parsing the DOM.
+ * - domContentLoaded: Time until the DOMContentLoaded event is fired.
+ * - loadComplete: Time until the load event is fired (page is fully loaded).
+ * 
+ * Other fields:
+ * - vitals: Core web vitals metrics (FCP, LCP, FID, CLS, TTFB).
+ * - paintMetrics: Paint timing metrics (e.g., first-paint, first-contentful-paint).
+ * - resourceCount: Number of resources loaded by the page.
+ * - customMetrics: Custom performance metrics recorded by the application.
+ * - userInteractions: Number of user interactions recorded.
+ * - error: Optional error message if metrics collection failed.
+ */
+interface PerformanceSummary {
+  /** Time spent performing DNS lookup (ms) */
+  domainLookup?: number;
+  /** Time spent establishing a connection to the server (ms) */
+  connection?: number;
+  /** Time from sending the request until the first byte is received (ms) */
+  request?: number;
+  /** Time taken to receive the full response from the server (ms) */
+  response?: number;
+  /** Time spent processing and parsing the DOM (ms) */
+  domProcessing?: number;
+  /** Time until the DOMContentLoaded event is fired (ms) */
+  domContentLoaded?: number;
+  /** Time until the load event is fired (page is fully loaded) (ms) */
+  loadComplete?: number;
+  /** Core web vitals metrics (FCP, LCP, FID, CLS, TTFB) */
+  vitals: VitalMetrics;
+  /** Paint timing metrics (e.g., first-paint, first-contentful-paint) */
+  paintMetrics: { [key: string]: number };
+  /** Number of resources loaded by the page */
+  resourceCount: number;
+  /** Custom performance metrics recorded by the application */
+  customMetrics: { [key: string]: number };
+  /** Number of user interactions recorded */
+  userInteractions: number;
+  /** Optional error message if metrics collection failed */
+  error?: string;
 }
 
 export interface VitalMetrics {
@@ -127,8 +199,9 @@ class PerformanceMonitor {
         let clsValue = 0;
         const observer = new PerformanceObserver((list) => {
           for (const entry of list.getEntries()) {
-            if (!(entry as any).hadRecentInput) {
-              clsValue += (entry as any).value;
+            const layoutShiftEntry = entry as LayoutShiftEntry;
+            if (!layoutShiftEntry.hadRecentInput) {
+              clsValue += layoutShiftEntry.value;
               this.vitals.CLS = clsValue;
             }
           }
@@ -147,7 +220,8 @@ class PerformanceMonitor {
       try {
         const observer = new PerformanceObserver((list) => {
           for (const entry of list.getEntries()) {
-            this.vitals.FID = (entry as any).processingStart - entry.startTime;
+            const firstInputEntry = entry as FirstInputEntry;
+            this.vitals.FID = firstInputEntry.processingStart - entry.startTime;
           }
         });
         
@@ -205,11 +279,18 @@ class PerformanceMonitor {
   /**
    * Get performance summary for logging
    */
-  getPerformanceSummary(): any {
+  getPerformanceSummary(): PerformanceSummary {
     const navigation = this.metrics.navigationTiming;
     
     if (!navigation) {
-      return { error: 'Navigation timing not available' };
+      return { 
+        error: 'Navigation timing not available',
+        vitals: this.vitals,
+        paintMetrics: this.metrics.paintMetrics,
+        resourceCount: this.metrics.resourceTiming.length,
+        customMetrics: this.metrics.customMetrics,
+        userInteractions: Object.keys(this.metrics.userInteractionMetrics).length
+      };
     }
 
     return {
