@@ -17,6 +17,7 @@ Este directorio contiene el manual de usuario completo para ChordMe, generado au
 - **[Referencia de la API](api-reference-es.html)** - Documentación completa de la API
 - **[Guía del desarrollador](developer-guide-es.html)** - Contribución y desarrollo
 - **[Solución de problemas](troubleshooting-es.html)** - Problemas comunes y soluciones
+- **[Documentación Swagger de la API](swagger.html)** - Documentación interactiva de la API
 
 ## Configuración de GitHub Pages
 
