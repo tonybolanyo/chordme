@@ -91,13 +91,13 @@ function errorReducer(state: ErrorState, action: ErrorAction): ErrorState {
         },
       };
     
-    case 'RESET_RETRY_ATTEMPTS':
+    case 'RESET_RETRY_ATTEMPTS': {
       const { [action.payload]: _, ...remaining } = state.retryAttempts;
       return {
         ...state,
         retryAttempts: remaining,
       };
-    
+    }
     default:
       return state;
   }
