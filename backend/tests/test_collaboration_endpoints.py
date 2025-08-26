@@ -128,7 +128,7 @@ class TestSongSharingEndpoints:
         
         assert response.status_code == 403
         data = response.get_json()
-        assert 'insufficient permissions' in data['error'].lower()
+        assert 'insufficient permissions' in data['error']['message'].lower()
 
     def test_share_song_with_self(self, test_client, users_and_tokens, sample_song):
         """Test sharing a song with yourself (should fail)."""
@@ -145,7 +145,7 @@ class TestSongSharingEndpoints:
         
         assert response.status_code == 400
         data = response.get_json()
-        assert 'cannot share song with yourself' in data['error'].lower()
+        assert 'cannot share song with yourself' in data['error']['message'].lower()
 
     def test_share_song_invalid_permission_level(self, test_client, users_and_tokens, sample_song):
         """Test sharing with invalid permission level."""
@@ -163,7 +163,7 @@ class TestSongSharingEndpoints:
         
         assert response.status_code == 400
         data = response.get_json()
-        assert "permission level must be 'read', 'edit', or 'admin'" in data['error'].lower()
+        assert "permission level must be 'read', 'edit', or 'admin'" in data['error']['message'].lower()
 
     def test_share_song_nonexistent_user(self, test_client, users_and_tokens, sample_song):
         """Test sharing with a non-existent user."""
@@ -180,7 +180,7 @@ class TestSongSharingEndpoints:
         
         assert response.status_code == 404
         data = response.get_json()
-        assert 'user not found' in data['error'].lower()
+        assert 'user not found' in data['error']['message'].lower()
 
     def test_get_collaborators(self, test_client, users_and_tokens, sample_song):
         """Test getting list of collaborators."""
@@ -284,7 +284,7 @@ class TestSongSharingEndpoints:
         
         assert response.status_code == 400
         data = response.get_json()
-        assert 'cannot change your own permissions' in data['error'].lower()
+        assert 'cannot change your own permissions' in data['error']['message'].lower()
 
     def test_revoke_access(self, test_client, users_and_tokens):
         """Test revoking user access."""
@@ -329,7 +329,7 @@ class TestSongSharingEndpoints:
         
         assert response.status_code == 400
         data = response.get_json()
-        assert 'cannot revoke your own access' in data['error'].lower()
+        assert 'cannot revoke your own access' in data['error']['message'].lower()
 
     def test_revoke_access_user_without_access(self, test_client, users_and_tokens, sample_song):
         """Test revoking access from user who doesn't have access."""
@@ -341,7 +341,7 @@ class TestSongSharingEndpoints:
         
         assert response.status_code == 400
         data = response.get_json()
-        assert 'does not have access' in data['error'].lower()
+        assert 'does not have access' in data['error']['message'].lower()
 
 
 class TestCollaborativePermissions:
@@ -389,7 +389,7 @@ class TestCollaborativePermissions:
         
         assert response.status_code == 403
         data = response.get_json()
-        assert 'insufficient permissions to edit' in data['error'].lower()
+        assert 'insufficient permissions to edit' in data['error']['message'].lower()
 
     def test_shared_song_cannot_delete(self, test_client, users_and_tokens, sample_song):
         """Test that collaborators cannot delete songs (only owner can)."""
@@ -400,7 +400,7 @@ class TestCollaborativePermissions:
         
         assert response.status_code == 403
         data = response.get_json()
-        assert 'insufficient permissions to delete' in data['error'].lower()
+        assert 'only the song owner can delete' in data['error']['message'].lower()
 
     def test_shared_song_download_access(self, test_client, users_and_tokens, sample_song):
         """Test that users with read access can download songs."""
@@ -431,7 +431,7 @@ class TestCollaborativePermissions:
         # Cannot read
         response = test_client.get(f'/api/v1/songs/{sample_song.id}',
                                   headers=unauthorized['headers'])
-        assert response.status_code == 404
+        assert response.status_code == 404  # API returns 404 for unauthorized access to prevent info disclosure
         
         # Cannot edit
         update_data = {'title': 'Hack attempt'}
@@ -439,12 +439,12 @@ class TestCollaborativePermissions:
                                   data=json.dumps(update_data),
                                   content_type='application/json',
                                   headers=unauthorized['headers'])
-        assert response.status_code == 404
+        assert response.status_code == 404  # API returns 404 for unauthorized access to prevent info disclosure
         
         # Cannot delete
         response = test_client.delete(f'/api/v1/songs/{sample_song.id}',
                                      headers=unauthorized['headers'])
-        assert response.status_code == 404
+        assert response.status_code == 404  # API returns 404 for unauthorized access to prevent info disclosure
 
 
 class TestPublicSongs:

@@ -544,7 +544,7 @@ class TestAdvancedAttackVectors:
         for response in responses:
             response_data = response.get_json()
             if response_data and 'error' in response_data:
-                error_message = response_data['error'].lower()
+                error_message = response_data['error']['message'].lower()
                 # Should not reveal database info, internal paths, etc.
                 assert 'database' not in error_message
                 assert 'sql' not in error_message

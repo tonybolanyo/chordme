@@ -358,4 +358,4 @@ class TestSecurityEnhancements:
             
             assert response2.status_code == 409
             data = json.loads(response2.data)
-            assert 'already exists' in data['error']
+            assert 'already exists' in data['error']['message']

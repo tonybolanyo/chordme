@@ -150,7 +150,7 @@ class TestErrorResponseUtils:
             
             data = response.get_json()
             
-            assert 'details' in data['error']
+            assert 'details' in data['error']['message']
             assert data['error']['details']['field'] == 'email'
     
     def test_create_error_response_no_details_production_mode(self):

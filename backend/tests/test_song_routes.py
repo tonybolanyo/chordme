@@ -66,7 +66,7 @@ class TestSongRoutesAuthentication:
         assert response.status_code == 401
         data = json.loads(response.data)
         assert data['status'] == 'error'
-        assert 'authorization header is required' in data['error'].lower()
+        assert 'authorization header is required' in data['error']['message'].lower()
 
     def test_create_song_requires_auth(self, test_client):
         """Test that POST /api/v1/songs requires authentication."""
@@ -80,7 +80,7 @@ class TestSongRoutesAuthentication:
         assert response.status_code == 401
         data = json.loads(response.data)
         assert data['status'] == 'error'
-        assert 'authorization header is required' in data['error'].lower()
+        assert 'authorization header is required' in data['error']['message'].lower()
 
     def test_get_song_requires_auth(self, test_client):
         """Test that GET /api/v1/songs/<id> requires authentication."""
@@ -88,7 +88,7 @@ class TestSongRoutesAuthentication:
         assert response.status_code == 401
         data = json.loads(response.data)
         assert data['status'] == 'error'
-        assert 'authorization header is required' in data['error'].lower()
+        assert 'authorization header is required' in data['error']['message'].lower()
 
     def test_update_song_requires_auth(self, test_client):
         """Test that PUT /api/v1/songs/<id> requires authentication."""
@@ -102,7 +102,7 @@ class TestSongRoutesAuthentication:
         assert response.status_code == 401
         data = json.loads(response.data)
         assert data['status'] == 'error'
-        assert 'authorization header is required' in data['error'].lower()
+        assert 'authorization header is required' in data['error']['message'].lower()
 
     def test_delete_song_requires_auth(self, test_client):
         """Test that DELETE /api/v1/songs/<id> requires authentication."""
@@ -110,7 +110,7 @@ class TestSongRoutesAuthentication:
         assert response.status_code == 401
         data = json.loads(response.data)
         assert data['status'] == 'error'
-        assert 'authorization header is required' in data['error'].lower()
+        assert 'authorization header is required' in data['error']['message'].lower()
 
     def test_invalid_token_returns_401(self, test_client):
         """Test that invalid token returns 401."""
@@ -119,7 +119,7 @@ class TestSongRoutesAuthentication:
         assert response.status_code == 401
         data = json.loads(response.data)
         assert data['status'] == 'error'
-        assert 'invalid or expired token' in data['error'].lower()
+        assert 'invalid or expired token' in data['error']['message'].lower()
 
     def test_malformed_auth_header_returns_401(self, test_client):
         """Test that malformed Authorization header returns 401."""
@@ -129,7 +129,7 @@ class TestSongRoutesAuthentication:
         assert response.status_code == 401
         data = json.loads(response.data)
         assert data['status'] == 'error'
-        assert 'invalid authorization header format' in data['error'].lower()
+        assert 'invalid authorization header format' in data['error']['message'].lower()
 
         # Wrong token type
         headers = {'Authorization': 'Basic token123'}
@@ -137,7 +137,7 @@ class TestSongRoutesAuthentication:
         assert response.status_code == 401
         data = json.loads(response.data)
         assert data['status'] == 'error'
-        assert 'authorization header must be bearer token' in data['error'].lower()
+        assert 'authorization header must be bearer token' in data['error']['message'].lower()
 
 
 class TestSongRoutesWithAuth:
@@ -242,7 +242,7 @@ class TestSongRoutesWithAuth:
                                headers=headers)
         assert response.status_code == 400
         data = json.loads(response.data)
-        assert 'title is required' in data['error'].lower()
+        assert 'title is required' in data['error']['message'].lower()
         
         # Missing content
         response = test_client.post('/api/v1/songs',
@@ -251,7 +251,7 @@ class TestSongRoutesWithAuth:
                                headers=headers)
         assert response.status_code == 400
         data = json.loads(response.data)
-        assert 'content is required' in data['error'].lower()
+        assert 'content is required' in data['error']['message'].lower()
         
         # Title too long
         long_title = 'x' * 201
@@ -261,7 +261,7 @@ class TestSongRoutesWithAuth:
                                headers=headers)
         assert response.status_code == 400
         data = json.loads(response.data)
-        assert 'title must be 200 characters or less' in data['error'].lower()
+        assert 'title must be 200 characters or less' in data['error']['message'].lower()
 
     def test_user_isolation(self, test_client):
         """Test that users can only access their own songs."""

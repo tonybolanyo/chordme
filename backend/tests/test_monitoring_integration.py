@@ -39,7 +39,7 @@ class TestHealthChecker:
             
             assert result['status'] == 'unhealthy'
             assert result['details'] == 'Database connection failed'
-            assert 'Connection failed' in result['error']
+            assert 'Connection failed' in result['error']['message']
     
     def test_check_application_healthy(self):
         """Test application health check when everything is healthy."""

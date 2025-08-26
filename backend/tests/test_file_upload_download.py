@@ -119,7 +119,7 @@ class TestFileUpload:
         assert response.status_code == 400
         data = response.get_json()
         assert data['status'] == 'error'
-        assert 'No file provided' in data['error']
+        assert 'No file provided' in data['error']['message']
     
     def test_upload_empty_filename(self, test_client, auth_token):
         """Test upload with empty filename."""
@@ -134,7 +134,7 @@ class TestFileUpload:
         assert response.status_code == 400
         data = response.get_json()
         assert data['status'] == 'error'
-        assert 'No file selected' in data['error']
+        assert 'No file selected' in data['error']['message']
     
     def test_upload_invalid_file_extension(self, test_client, auth_token):
         """Test upload with invalid file extension."""
@@ -149,7 +149,7 @@ class TestFileUpload:
         assert response.status_code == 400
         data = response.get_json()
         assert data['status'] == 'error'
-        assert 'Invalid file type' in data['error']
+        assert 'Invalid file type' in data['error']['message']
     
     def test_upload_empty_file(self, test_client, auth_token):
         """Test upload with empty file content."""
@@ -164,7 +164,7 @@ class TestFileUpload:
         assert response.status_code == 400
         data = response.get_json()
         assert data['status'] == 'error'
-        assert 'File is empty' in data['error']
+        assert 'File is empty' in data['error']['message']
     
     def test_upload_file_too_large(self, test_client, auth_token):
         """Test upload with file content too large."""
@@ -181,7 +181,7 @@ class TestFileUpload:
         assert response.status_code == 400
         data = response.get_json()
         assert data['status'] == 'error'
-        assert 'too large' in data['error']
+        assert 'too large' in data['error']['message']
     
     def test_upload_unauthorized(self, test_client):
         """Test upload without authentication."""
@@ -263,7 +263,7 @@ class TestMultipleFileUpload:
         assert response.status_code == 400
         data = response.get_json()
         assert data['status'] == 'error'
-        assert 'Too many files' in data['error']
+        assert 'Too many files' in data['error']['message']
 
 
 class TestBulkDownload:
@@ -312,7 +312,7 @@ class TestBulkDownload:
         assert response.status_code == 404
         data = response.get_json()
         assert data['status'] == 'error'
-        assert 'No songs found' in data['error']
+        assert 'No songs found' in data['error']['message']
     
     def test_download_all_unauthorized(self, test_client):
         """Test bulk download without authentication."""

@@ -193,7 +193,7 @@ class TestTransposeChordProEndpoint:
         assert response.status_code == 400
         result = json.loads(response.data)
         assert result['status'] == 'error'
-        assert 'Content is required' in result['error']
+        assert 'Content is required' in result['error']['message']
     
     def test_transpose_missing_semitones(self, client, auth_headers):
         """Test transposition with missing semitones."""
@@ -210,7 +210,7 @@ class TestTransposeChordProEndpoint:
         assert response.status_code == 400
         result = json.loads(response.data)
         assert result['status'] == 'error'
-        assert 'Semitones value is required' in result['error']
+        assert 'Semitones value is required' in result['error']['message']
     
     def test_transpose_empty_content(self, client, auth_headers):
         """Test transposition with empty content."""
@@ -228,7 +228,7 @@ class TestTransposeChordProEndpoint:
         assert response.status_code == 400
         result = json.loads(response.data)
         assert result['status'] == 'error'
-        assert 'Content cannot be empty' in result['error']
+        assert 'Content cannot be empty' in result['error']['message']
     
     def test_transpose_invalid_semitones_type(self, client, auth_headers):
         """Test transposition with invalid semitones type."""
@@ -246,7 +246,7 @@ class TestTransposeChordProEndpoint:
         assert response.status_code == 400
         result = json.loads(response.data)
         assert result['status'] == 'error'
-        assert 'Semitones must be an integer' in result['error']
+        assert 'Semitones must be an integer' in result['error']['message']
     
     def test_transpose_semitones_out_of_range(self, client, auth_headers):
         """Test transposition with semitones out of valid range."""
@@ -264,7 +264,7 @@ class TestTransposeChordProEndpoint:
         assert response.status_code == 400
         result = json.loads(response.data)
         assert result['status'] == 'error'
-        assert 'Semitones must be between -11 and 11' in result['error']
+        assert 'Semitones must be between -11 and 11' in result['error']['message']
         
         # Test negative out of range
         data['semitones'] = -15
@@ -304,7 +304,7 @@ class TestTransposeChordProEndpoint:
         assert response.status_code == 401
         result = json.loads(response.data)
         assert result['status'] == 'error'
-        assert 'Authorization header is required' in result['error']
+        assert 'Authorization header is required' in result['error']['message']
     
     def test_transpose_invalid_token(self, client):
         """Test transposition with invalid token."""

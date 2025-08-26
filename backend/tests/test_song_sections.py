@@ -393,4 +393,4 @@ Specific verse content for testing
         
         response_data = json.loads(response.data)
         assert response_data['status'] == 'error'
-        assert 'not found' in response_data['error'].lower()
+        assert 'not found' in response_data['error']['message'].lower()
