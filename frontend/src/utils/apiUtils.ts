@@ -188,7 +188,7 @@ export function createRetryFunction<T extends any[], R>(
 ) {
   return async (...args: T): Promise<R> => {
     const config = { ...DEFAULT_RETRY_OPTIONS, ...retryOptions };
-    let lastError: any;
+    let lastError: unknown;
 
     for (let attempt = 1; attempt <= config.maxAttempts; attempt++) {
       try {
