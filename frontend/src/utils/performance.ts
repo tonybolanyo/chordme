@@ -4,11 +4,24 @@
  */
 
 // Extended interfaces for performance entries with browser-specific properties
+/**
+ * Extends the standard PerformanceEntry with browser-specific properties for Web Vitals.
+ * Represents a layout shift entry as reported by browsers supporting the Layout Instability API.
+ * @see https://web.dev/cls/
+ * @property hadRecentInput - Indicates if the layout shift occurred shortly after user input.
+ * @property value - The layout shift score for this entry.
+ */
 interface LayoutShiftEntry extends PerformanceEntry {
   hadRecentInput: boolean;
   value: number;
 }
 
+/**
+ * Extends the standard PerformanceEntry with browser-specific properties for Web Vitals.
+ * Represents a first input entry as reported by browsers supporting the Event Timing API.
+ * @see https://web.dev/fid/
+ * @property processingStart - The timestamp when event processing started.
+ */
 interface FirstInputEntry extends PerformanceEntry {
   processingStart: number;
 }
