@@ -97,7 +97,7 @@ jobs:
       continue-on-error: ${{ github.event.inputs.fail_on_issues != 'true' }}
     
     - name: Upload Security Reports
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: security-audit-reports-${{ github.run_number }}
@@ -224,7 +224,7 @@ jobs:
         echo "- Application Availability: Verified" >> penetration_reports/PENETRATION_TEST_REPORT.md
     
     - name: Upload Penetration Test Reports
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: penetration-test-reports-${{ github.run_number }}
         path: penetration_reports/
@@ -238,7 +238,7 @@ jobs:
     
     steps:
     - name: Download Security Reports
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: security-audit-reports-${{ github.run_number }}
         path: security_reports/
