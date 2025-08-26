@@ -182,7 +182,7 @@ export async function fetchWithRetry(
 /**
  * Create a retry function for a specific operation
  */
-export function createRetryFunction<T extends any[], R>(
+export function createRetryFunction<T extends unknown[], R>(
   fn: (...args: T) => Promise<R>,
   retryOptions?: RetryOptions
 ) {
