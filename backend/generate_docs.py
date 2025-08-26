@@ -132,7 +132,13 @@ def generate_api_docs():
         print(f"Generated: {index_file}")
         
         # Create README for docs
-        readme_content = f"""# ChordMe API Documentation
+        readme_content = f"""---
+layout: default
+lang: en
+title: ChordMe API Documentation
+---
+
+# ChordMe API Documentation
 
 This directory contains the auto-generated API documentation for ChordMe.
 
