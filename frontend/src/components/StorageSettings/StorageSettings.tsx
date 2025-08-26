@@ -27,8 +27,22 @@ const StorageSettings: React.FC<StorageSettingsProps> = ({
 
   useEffect(() => {
     const checkBackendAvailability = () => {
-      const isFirebaseConfigured = firebaseService.isInitialized();
-      const isGoogleOAuthConfigured = googleOAuth2Service.isConfigured();
+      let isFirebaseConfigured = false;
+      let isGoogleOAuthConfigured = false;
+
+      try {
+        isFirebaseConfigured = firebaseService.isInitialized();
+      } catch (error) {
+        console.warn('Error checking Firebase configuration:', error);
+        isFirebaseConfigured = false;
+      }
+
+      try {
+        isGoogleOAuthConfigured = googleOAuth2Service.isConfigured();
+      } catch (error) {
+        console.warn('Error checking Google OAuth configuration:', error);
+        isGoogleOAuthConfigured = false;
+      }
 
       return [
         {
@@ -71,15 +85,27 @@ const StorageSettings: React.FC<StorageSettingsProps> = ({
       ];
     };
 
-    setBackends(checkBackendAvailability());
-  }, []);
+    const availableBackends = checkBackendAvailability();
+    setBackends(availableBackends);
+
+    // Validate currentBackend and default to 'api' if invalid or unavailable
+    const availableBackendIds = availableBackends
+      .filter(backend => backend.available)
+      .map(backend => backend.id);
+    
+    if (!availableBackendIds.includes(currentBackend)) {
+      setSelectedBackend('api');
+    }
+  }, [currentBackend]);
 
   const handleBackendSelect = (backendId: string) => {
     setSelectedBackend(backendId);
   };
 
   const handleSave = () => {
-    onBackendChange(selectedBackend);
+    if (selectedBackend !== currentBackend) {
+      onBackendChange(selectedBackend);
+    }
     if (onClose) {
       onClose();
     }
