@@ -195,9 +195,25 @@ npm run test:coverage
 
 ### Coverage Enforcement
 - **CI Integration**: GitHub Actions automatically check coverage on PRs
-- **Codecov Integration**: Detailed coverage tracking and reporting
-- **Build Failures**: Builds fail if coverage drops below thresholds
-- **Coverage Reports**: Generated for all pull requests
+- **Build Failures**: Builds **WILL FAIL** if coverage drops below thresholds (90% backend, 90% frontend)
+- **Codecov Integration**: Detailed coverage tracking and reporting with failure notifications
+- **Coverage Reports**: Generated for all pull requests with detailed breakdown
+
+### Recent Test Coverage Improvements
+
+#### Backend Test Enhancements (New in v1.0)
+- **Utils Module Coverage**: Added `test_utils_coverage.py` with 26 comprehensive tests covering:
+  - HTML sanitization and XSS prevention functions
+  - Email and password validation with edge cases  
+  - JWT token generation, verification, and expiration handling
+  - Input sanitization for DoS and injection prevention
+  - Authentication decorators and authorization checks
+  - Request validation and security helper functions
+
+#### Frontend Test Fixes (New in v1.0)
+- **Critical Test Failures Resolved**: Fixed 7 failing tests in core modules
+- **Firebase Integration**: Improved mocking and configuration handling
+- **Main Entry Point**: Enhanced module loading and DOM interaction tests
 
 ### Adding New Tests
 
