@@ -1,3 +1,9 @@
+---
+layout: default
+title: ChordMe - Lyrics and Chords Management
+description: A full-stack web application for managing lyrics and chords using the ChordPro format
+---
+
 # ChordMe
 
 Lyrics and chords in a simple way
