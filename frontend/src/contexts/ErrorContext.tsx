@@ -92,7 +92,7 @@ function errorReducer(state: ErrorState, action: ErrorAction): ErrorState {
       };
     
     case 'RESET_RETRY_ATTEMPTS': {
-      const { [action.payload]: __, ...remaining } = state.retryAttempts;
+      const { [action.payload]: _, ...remaining } = state.retryAttempts; // eslint-disable-line @typescript-eslint/no-unused-vars
       return {
         ...state,
         retryAttempts: remaining,
