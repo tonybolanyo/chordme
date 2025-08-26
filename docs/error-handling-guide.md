@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Error Handling Guide
+---
+
 # Error Handling Guide
 
 This guide covers the comprehensive error handling system in ChordMe, including error response formats, client-side error handling, retry mechanisms, and troubleshooting.
