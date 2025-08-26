@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useError, type NotificationError } from '../../contexts/ErrorContext';
 import './NotificationSystem.css';
 

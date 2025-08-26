@@ -50,8 +50,23 @@ export function parseApiError(response: Response, responseText: string): ApiErro
 
   const error = new Error() as ApiError;
   
+  // Helper function to check if errorData has the expected structure
+  const isErrorDataWithStatus = (data: unknown): data is { status: string; error: unknown } => {
+    return typeof data === 'object' && data !== null && 'status' in data && 'error' in data;
+  };
+  
+  const isErrorObject = (error: unknown): error is {
+    message?: string;
+    code?: string;
+    category?: string;
+    retryable?: boolean;
+    details?: Record<string, unknown>;
+  } => {
+    return typeof error === 'object' && error !== null;
+  };
+  
   // Handle new error format
-  if (errorData.status === 'error' && errorData.error && typeof errorData.error === 'object') {
+  if (isErrorDataWithStatus(errorData) && errorData.status === 'error' && isErrorObject(errorData.error)) {
     error.message = errorData.error.message || `HTTP ${response.status}: ${response.statusText}`;
     error.code = errorData.error.code;
     error.category = errorData.error.category;
@@ -59,7 +74,7 @@ export function parseApiError(response: Response, responseText: string): ApiErro
     error.details = errorData.error.details;
   }
   // Handle legacy error format
-  else if (errorData.error && typeof errorData.error === 'string') {
+  else if (isErrorDataWithStatus(errorData) && typeof errorData.error === 'string') {
     error.message = errorData.error;
     error.retryable = false; // Legacy errors are non-retryable by default
   }
@@ -151,9 +166,9 @@ export async function fetchWithRetry(
 
       lastError = apiError;
       
-    } catch (error) {
+    } catch (error: unknown) {
       // Handle network errors (fetch failures)
-      if (error instanceof TypeError || error.name === 'AbortError') {
+      if (error instanceof TypeError || (error instanceof Error && error.name === 'AbortError')) {
         const networkError = parseNetworkError(error as Error);
         
         // If this is the last attempt or error is not retryable, throw
