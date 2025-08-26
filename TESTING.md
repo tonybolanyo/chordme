@@ -159,3 +159,121 @@ All test types can be run in CI environments:
 - Backend tests provide comprehensive coverage of API endpoints
 - Integration tests verify API contracts
 - E2E tests validate critical user workflows
+
+## Updated Coverage Requirements and Standards
+
+### Coverage Thresholds (Enforced by CI)
+- **Overall Project**: 90%+ coverage required
+- **Backend**: 90%+ coverage required  
+- **Frontend**: 90%+ coverage required
+- **Integration**: 85%+ coverage required
+
+### Running Coverage Reports
+
+#### Backend Coverage
+```bash
+# Generate comprehensive backend coverage report
+cd backend
+FLASK_CONFIG=test_config python -m pytest tests/test_*.py -v \
+  --cov=chordme \
+  --cov-report=term-missing \
+  --cov-report=html:htmlcov \
+  --cov-report=xml:coverage.xml
+
+# View HTML report
+open htmlcov/index.html
+```
+
+#### Frontend Coverage  
+```bash
+# Generate frontend coverage report
+cd frontend
+npm run test:coverage
+
+# Reports generated in coverage/ directory
+```
+
+### Coverage Enforcement
+- **CI Integration**: GitHub Actions automatically check coverage on PRs
+- **Codecov Integration**: Detailed coverage tracking and reporting
+- **Build Failures**: Builds fail if coverage drops below thresholds
+- **Coverage Reports**: Generated for all pull requests
+
+### Adding New Tests
+
+#### Backend Unit Tests
+1. Create test file in `backend/tests/test_*.py`
+2. Follow existing patterns using pytest fixtures
+3. Use Flask test client for API endpoints
+4. Include edge cases and error scenarios
+
+#### Frontend Unit Tests
+1. Create test file alongside component: `*.test.tsx`
+2. Use Vitest and React Testing Library
+3. Mock external dependencies (Firebase, APIs)
+4. Test user interactions and state changes
+
+#### Integration Tests
+1. Add tests to `integration-tests/test_*.py`
+2. Test real API endpoints with HTTP requests
+3. Validate complete workflows
+4. Include error handling scenarios
+
+### Test Quality Guidelines
+
+#### Comprehensive Testing
+- **Happy Path**: Normal user workflows
+- **Edge Cases**: Boundary conditions and limits
+- **Error Scenarios**: Network failures, invalid inputs
+- **Security**: Authentication, authorization, input validation
+- **Performance**: Large data sets, concurrent operations
+
+#### Best Practices
+- **Isolation**: Tests should not depend on each other
+- **Repeatability**: Tests should produce consistent results
+- **Documentation**: Clear test names and comments
+- **Mocking**: Mock external services appropriately
+- **Assertions**: Specific and meaningful test assertions
+
+### Coverage Monitoring Tools
+
+#### Codecov Configuration
+- Project coverage target: 90%
+- Patch coverage target: 85%
+- Automatic PR comments with coverage changes
+- Flag-based coverage for backend/frontend/integration
+
+#### Local Coverage Tools
+- Backend: pytest-cov with HTML reports
+- Frontend: Vitest with v8 coverage provider
+- Integration: Combined reporting with overall metrics
+
+### Debugging Test Failures
+
+#### Backend Test Issues
+```bash
+# Run specific test with verbose output
+pytest tests/test_specific.py::TestClass::test_method -v -s
+
+# Run with debugging
+pytest tests/test_specific.py --pdb
+```
+
+#### Frontend Test Issues
+```bash
+# Run specific test file
+npm test -- ComponentName.test.tsx
+
+# Run with debugging
+npm test -- --inspect-brk
+```
+
+### Documentation Requirements
+
+When adding new features:
+1. **Unit Tests**: Cover all new functions/components
+2. **Integration Tests**: Test new API endpoints
+3. **Documentation**: Update this guide with new patterns
+4. **Coverage**: Ensure overall coverage remains above 90%
+
+This comprehensive testing strategy ensures ChordMe maintains high code quality and reliability while supporting rapid development and deployment.

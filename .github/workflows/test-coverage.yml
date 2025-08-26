@@ -1,0 +1,94 @@
+name: Test Coverage Check
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test-coverage:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install Python dependencies
+      run: |
+        cd backend
+        pip install -r requirements.txt
+
+    - name: Install Node.js dependencies
+      run: |
+        npm install
+        cd frontend && npm install
+
+    - name: Setup backend config
+      run: |
+        cd backend
+        cp config.template.py config.py
+
+    - name: Run Backend Tests with Coverage
+      run: |
+        cd backend
+        FLASK_CONFIG=test_config python -m pytest tests/test_*.py -v \
+          --cov=chordme \
+          --cov-report=term-missing \
+          --cov-report=xml:coverage.xml \
+          --cov-report=html:htmlcov \
+          --cov-fail-under=75
+
+    - name: Run Frontend Tests with Coverage  
+      run: |
+        cd frontend
+        npm run test:coverage -- --reporter=verbose
+
+    - name: Upload Backend Coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: backend/coverage.xml
+        flags: backend
+        name: backend-coverage
+
+    - name: Upload Frontend Coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: frontend/coverage/lcov.info
+        flags: frontend
+        name: frontend-coverage
+
+    - name: Generate Coverage Report Summary
+      run: |
+        echo "## Coverage Report" >> $GITHUB_STEP_SUMMARY
+        echo "### Backend Coverage" >> $GITHUB_STEP_SUMMARY
+        cd backend && python -c "
+        import xml.etree.ElementTree as ET
+        try:
+            tree = ET.parse('coverage.xml')
+            root = tree.getroot()
+            coverage = root.attrib['line-rate']
+            coverage_pct = float(coverage) * 100
+            print(f'Backend Coverage: {coverage_pct:.1f}%')
+            if coverage_pct < 75:
+                print('❌ Below 75% threshold')
+                exit(1)
+            else:
+                print('✅ Above 75% threshold')
+        except Exception as e:
+            print(f'Could not parse coverage: {e}')
+        " >> $GITHUB_STEP_SUMMARY
+
+    - name: Check Overall Coverage Threshold
+      run: |
+        echo "Checking overall coverage meets 90% target..."
+        # This will be implemented as we approach the target

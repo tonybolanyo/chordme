@@ -5,38 +5,38 @@ codecov:
 coverage:
   precision: 2
   round: down
-  range: "50...90"
+  range: "50...95"
   status:
     project:
       default:
-        target: 70%
-        threshold: 5%
+        target: 90%
+        threshold: 2%
         if_ci_failed: error
       backend:
-        target: 75%
-        threshold: 5%
+        target: 90%
+        threshold: 2%
         flags:
           - backend
         paths:
           - backend/
       frontend:
-        target: 60%
-        threshold: 5%
+        target: 90%
+        threshold: 2%
         flags:
           - frontend
         paths:
           - frontend/
       integration:
-        target: 50%
-        threshold: 10%
+        target: 85%
+        threshold: 5%
         flags:
           - integration
         paths:
           - integration-tests/
     patch:
       default:
-        target: 60%
-        threshold: 10%
+        target: 85%
+        threshold: 5%
 
 parsers:
   gcov:
