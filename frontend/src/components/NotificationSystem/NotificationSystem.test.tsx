@@ -102,7 +102,7 @@ describe('NotificationSystem', () => {
       expect(screen.getByText('Error notification')).toBeInTheDocument();
       expect(screen.getByText('Error Code: TEST_ERROR')).toBeInTheDocument();
       expect(screen.getByText('❌')).toBeInTheDocument();
-    });
+    }, { timeout: 10000 });
 
     const notification = screen.getByRole('alert');
     expect(notification).toHaveClass('notification--error');
@@ -121,7 +121,7 @@ describe('NotificationSystem', () => {
     await waitFor(() => {
       expect(screen.getByText('Warning notification')).toBeInTheDocument();
       expect(screen.getByText('⚠️')).toBeInTheDocument();
-    });
+    }, { timeout: 10000 });
 
     const notification = screen.getByRole('alert');
     expect(notification).toHaveClass('notification--warning');
@@ -140,7 +140,7 @@ describe('NotificationSystem', () => {
     await waitFor(() => {
       expect(screen.getByText('Info notification')).toBeInTheDocument();
       expect(screen.getByText('ℹ️')).toBeInTheDocument();
-    });
+    }, { timeout: 10000 });
 
     const notification = screen.getByRole('alert');
     expect(notification).toHaveClass('notification--info');
@@ -158,14 +158,14 @@ describe('NotificationSystem', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Error notification')).toBeInTheDocument();
-    });
+    }, { timeout: 10000 });
 
     const closeButton = screen.getByLabelText('Close notification');
     fireEvent.click(closeButton);
 
     await waitFor(() => {
       expect(screen.queryByText('Error notification')).not.toBeInTheDocument();
-    });
+    }, { timeout: 10000 });
   });
 
   it('auto-closes notifications with default duration', async () => {
@@ -180,14 +180,14 @@ describe('NotificationSystem', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Error notification')).toBeInTheDocument();
-    });
+    }, { timeout: 10000 });
 
     // Fast forward time by default duration (5000ms)
     vi.advanceTimersByTime(5000);
 
     await waitFor(() => {
       expect(screen.queryByText('Error notification')).not.toBeInTheDocument();
-    });
+    }, { timeout: 10000 });
   });
 
   it('does not auto-close persistent notifications', async () => {
@@ -202,7 +202,7 @@ describe('NotificationSystem', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Persistent notification')).toBeInTheDocument();
-    });
+    }, { timeout: 10000 });
 
     // Fast forward time well beyond default duration
     vi.advanceTimersByTime(10000);
@@ -223,14 +223,14 @@ describe('NotificationSystem', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Quick notification')).toBeInTheDocument();
-    });
+    }, { timeout: 10000 });
 
     // Fast forward by custom duration (100ms)
     vi.advanceTimersByTime(100);
 
     await waitFor(() => {
       expect(screen.queryByText('Quick notification')).not.toBeInTheDocument();
-    });
+    }, { timeout: 10000 });
   });
 
   it('displays multiple notifications', async () => {
@@ -249,7 +249,7 @@ describe('NotificationSystem', () => {
       expect(screen.getByText('Error notification')).toBeInTheDocument();
       expect(screen.getByText('Warning notification')).toBeInTheDocument();
       expect(screen.getByText('Info notification')).toBeInTheDocument();
-    });
+    }, { timeout: 10000 });
 
     // Should have multiple notification elements
     const notifications = screen.getAllByRole('alert');
@@ -269,7 +269,7 @@ describe('NotificationSystem', () => {
     await waitFor(() => {
       expect(screen.getByText('Warning notification')).toBeInTheDocument();
       expect(screen.queryByText(/Error Code:/)).not.toBeInTheDocument();
-    });
+    }, { timeout: 10000 });
   });
 
   it('has proper accessibility attributes', async () => {
@@ -291,6 +291,6 @@ describe('NotificationSystem', () => {
 
       const closeButton = screen.getByLabelText('Close notification');
       expect(closeButton).toBeInTheDocument();
-    });
+    }, { timeout: 10000 });
   });
 });

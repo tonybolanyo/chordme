@@ -246,18 +246,18 @@ describe('ErrorBoundary', () => {
     // Should show error UI
     expect(screen.getByText('Something went wrong')).toBeInTheDocument();
 
-    // Click try again
+    // Click try again to reset error state
     fireEvent.click(screen.getByRole('button', { name: 'Try Again' }));
 
-    // Re-render with non-throwing component
+    // Re-render with non-throwing component - this simulates fixing the underlying issue
     rerender(
       <ErrorBoundary>
-        <div data-testid="recovered">Recovered successfully</div>
+        <ThrowError shouldThrow={false} />
       </ErrorBoundary>
     );
 
     // Should show recovered content
-    expect(screen.getByTestId('recovered')).toBeInTheDocument();
+    expect(screen.getByTestId('non-throwing')).toBeInTheDocument();
     expect(screen.queryByText('Something went wrong')).not.toBeInTheDocument();
   });
 
