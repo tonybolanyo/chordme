@@ -61,6 +61,13 @@ jobs:
     - name: Build application
       run: npm run build
     
+    - name: Install Lighthouse CI
+      run: npm install -g @lhci/cli@0.15.x
+    
+    - name: Run Lighthouse CI
+      run: lhci autorun --upload.target=temporary-public-storage
+      continue-on-error: true
+    
     - name: Install Playwright browsers
       run: npx playwright install --with-deps
       continue-on-error: true

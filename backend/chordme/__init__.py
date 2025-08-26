@@ -211,6 +211,13 @@ swagger = Swagger(app, config=swagger_config, template=swagger_template)
 from .https_enforcement import HTTPSEnforcement
 https_enforcement = HTTPSEnforcement(app)
 
+# Initialize logging and monitoring
+from .logging_config import setup_logging
+from .monitoring import setup_monitoring
+
+setup_logging(app)
+setup_monitoring(app)
+
 # Import API routes (must come after db initialization)
 from . import api
 
