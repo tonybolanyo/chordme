@@ -899,6 +899,45 @@ volumes:
 2. **Bundle Analysis**: Regular analysis with `npm run build -- --analyze`
 3. **Asset Optimization**: Optimize images and static assets
 4. **Caching**: Implement proper browser caching strategies
+5. **Performance Monitoring**: Use built-in performance utilities
+
+#### Performance Monitoring
+
+ChordMe includes comprehensive frontend performance monitoring:
+
+```typescript
+import { performanceMonitor, performanceUtils } from '../utils/performance';
+
+// Monitor component render time
+const MyComponent = () => {
+  useEffect(() => {
+    const endMark = performanceUtils.markInteractionStart('component_mount');
+    // Component logic here
+    return () => endMark();
+  }, []);
+  
+  return <div>Component content</div>;
+};
+
+// Monitor async operations
+const fetchData = async () => {
+  return await performanceUtils.measureAsyncFunction(
+    () => fetch('/api/data'),
+    'api_fetch_data'
+  );
+};
+
+// Get performance metrics
+const metrics = performanceMonitor.getVitals();
+console.log('FCP:', metrics.FCP, 'LCP:', metrics.LCP);
+```
+
+#### Performance Benchmarks
+
+- **First Contentful Paint (FCP)**: < 2.0s
+- **Largest Contentful Paint (LCP)**: < 2.5s 
+- **Cumulative Layout Shift (CLS)**: < 0.1
+- **First Input Delay (FID)**: < 100ms
 
 ### Backend Optimization
 
@@ -906,6 +945,195 @@ volumes:
 2. **Query Optimization**: Use SQLAlchemy query optimization techniques
 3. **Caching**: Implement Redis caching for frequent operations
 4. **Connection Pooling**: Configure proper database connection pooling
+5. **Performance Logging**: Monitor request and database performance
+
+#### Performance Monitoring
+
+Backend performance is automatically monitored:
+
+```python
+from chordme.logging_config import log_request_metrics, log_database_operation
+from chordme.monitoring import monitor_request_metrics
+
+# Monitor API endpoints
+@log_request_metrics
+def my_endpoint():
+    return jsonify({'status': 'success'})
+
+# Monitor database operations
+@log_database_operation('SELECT')
+def get_user_songs(user_id):
+    return Song.query.filter_by(user_id=user_id).all()
+
+# Manual performance tracking
+with app.app_context():
+    app.logger_performance.log_slow_operation('file_upload', duration, threshold=2.0)
+```
+
+## Logging and Monitoring
+
+### Logging Configuration
+
+ChordMe uses structured logging for comprehensive monitoring and debugging.
+
+#### Log Levels
+
+- **DEBUG**: Detailed information for diagnosing problems
+- **INFO**: General information about application operation
+- **WARNING**: Something unexpected happened but the application is still working
+- **ERROR**: Due to a more serious problem, the software has not been able to perform some function
+- **CRITICAL**: A very serious error occurred that may prevent the program from continuing
+
+#### Log Schema
+
+All logs follow a structured JSON format:
+
+```json
+{
+  "timestamp": "2024-01-01T12:00:00.000Z",
+  "level": "INFO",
+  "message": "User login successful",
+  "service": "chordme-backend",
+  "request_id": "req-123456",
+  "method": "POST",
+  "url": "http://api.example.com/auth/login",
+  "remote_addr": "192.168.1.1",
+  "user_agent": "Mozilla/5.0...",
+  "user_id": 123,
+  "duration_ms": 150,
+  "status_code": 200,
+  "category": "authentication"
+}
+```
+
+#### Logging Best Practices
+
+1. **Use appropriate log levels**: Don't log everything as ERROR
+2. **Include context**: User IDs, request IDs, operation details
+3. **Structured data**: Use key-value pairs for searchable logs
+4. **Avoid sensitive data**: Never log passwords, tokens, or PII
+5. **Performance awareness**: Don't log in tight loops
+
+#### Custom Logging
+
+```python
+from chordme.logging_config import StructuredLogger
+
+logger = StructuredLogger('my_module')
+
+# Basic logging
+logger.info("Operation completed", operation_id=123, duration=0.5)
+
+# Audit logging
+logger.audit("USER_PASSWORD_CHANGE", {
+    "user_id": 456,
+    "ip_address": "192.168.1.1",
+    "timestamp": datetime.utcnow()
+}, severity="INFO")
+
+# Error logging with context
+logger.error("Database connection failed", 
+            database="users", 
+            error_code="CONNECTION_TIMEOUT",
+            retry_count=3)
+```
+
+### Application Performance Monitoring (APM)
+
+#### Health Monitoring
+
+ChordMe provides comprehensive health monitoring endpoints:
+
+- **Basic Health**: `GET /api/v1/health` - Simple service status
+- **Detailed Health**: `GET /api/v1/monitoring/health-detailed` - Comprehensive health checks
+- **Metrics**: `GET /api/v1/monitoring/metrics` - Performance metrics and statistics
+
+#### Health Check Components
+
+1. **Database Health**: Connection status and response time
+2. **Application Health**: Configuration and service status
+3. **System Health**: Memory, disk, and resource usage (when available)
+
+#### Metrics Collection
+
+The application automatically collects:
+
+- **Request Metrics**: Count, response times, error rates
+- **User Activity**: Login, song creation, collaboration events  
+- **Performance Metrics**: Database queries, slow operations
+- **System Metrics**: Uptime, active users
+
+#### Alerts and Thresholds
+
+Configure monitoring alerts for:
+
+- **Error Rate**: > 5% over 5 minutes
+- **Response Time**: > 2 seconds average
+- **Database Health**: Connection failures
+- **System Resources**: > 90% memory/disk usage
+
+#### Integration with External APM
+
+For production environments, integrate with:
+
+1. **Sentry**: Error tracking and performance monitoring
+   ```python
+   # Add to requirements.txt: sentry-sdk[flask]==2.20.0
+   import sentry_sdk
+   from sentry_sdk.integrations.flask import FlaskIntegration
+   
+   sentry_sdk.init(
+       dsn="YOUR_SENTRY_DSN",
+       integrations=[FlaskIntegration()],
+       traces_sample_rate=0.1
+   )
+   ```
+
+2. **New Relic**: Application performance monitoring
+3. **DataDog**: Infrastructure and application monitoring
+
+#### Performance Regression Testing
+
+Lighthouse CI automatically tests performance on every build:
+
+```bash
+# Run Lighthouse performance tests
+cd frontend
+npm run lighthouse
+
+# Results include:
+# - Performance score (target: >80)
+# - Accessibility score (target: >90)  
+# - Best practices score (target: >90)
+# - SEO score (target: >80)
+```
+
+#### Performance Hotspot Analysis
+
+1. **Frontend Profiling**:
+   - Use browser DevTools Performance tab
+   - Analyze React DevTools Profiler
+   - Monitor Core Web Vitals in production
+
+2. **Backend Profiling**:
+   - Use Python cProfile for CPU profiling
+   - Monitor database query performance
+   - Analyze slow operation logs
+
+3. **Database Optimization**:
+   - Use EXPLAIN QUERY PLAN for SQLite
+   - Monitor query execution times
+   - Add indexes for frequently queried columns
+
+#### Monitoring Dashboard
+
+Create monitoring dashboards with:
+
+- **Request Volume**: Requests per minute/hour
+- **Error Rates**: 4xx/5xx response percentages  
+- **Response Times**: P50, P90, P99 percentiles
+- **User Activity**: Active users, feature usage
+- **System Health**: Database status, application health
 
 ## Security Considerations
 

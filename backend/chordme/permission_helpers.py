@@ -53,6 +53,10 @@ class SecurityAuditLogger:
         # Also log to application logger for centralized monitoring
         current_app.logger.info(f"AUDIT: {json.dumps(log_entry)}")
         
+        # Log to structured logger if available
+        if hasattr(current_app, 'logger_structured'):
+            current_app.logger_structured.audit(event_type, details, severity)
+        
         return log_entry
 
     @staticmethod

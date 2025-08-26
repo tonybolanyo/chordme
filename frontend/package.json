@@ -14,7 +14,10 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "lighthouse": "lhci autorun",
+    "lighthouse:collect": "lhci collect",
+    "lighthouse:upload": "lhci upload"
   },
   "dependencies": {
     "firebase": "^12.1.0",
@@ -44,6 +47,7 @@
     "globals": "^16.3.0",
     "jest-axe": "^10.0.0",
     "jsdom": "^26.1.0",
+    "@lhci/cli": "^0.15.0",
     "prettier": "^3.6.2",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.35.1",

@@ -25,3 +25,10 @@ google-auth-oauthlib==1.2.1
 
 # PDF generation
 reportlab==4.0.9
+
+# System monitoring (to be installed when needed)
+# psutil==6.1.1
+
+# Monitoring and logging (to be installed when needed)
+# sentry-sdk[flask]==2.20.0
+# structlog==25.4.0
