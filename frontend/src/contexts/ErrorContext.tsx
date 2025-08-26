@@ -7,7 +7,7 @@ export interface AppError {
   message: string;
   category?: string;
   retryable?: boolean;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
   timestamp: number;
   source?: 'api' | 'network' | 'validation' | 'unknown';
 }
