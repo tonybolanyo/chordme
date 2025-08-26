@@ -44,75 +44,75 @@ def validate_email(email):
     - Special character handling
     
     Returns:
-        tuple: (is_valid: bool, error_message: str, normalized_email: str or None)
+        tuple: (is_valid: bool, error_message: str or None)
     """
     if not email:
-        return False, "Email is required", None
+        return False, "Email is required"
     
     # Strip whitespace and convert to lowercase first
     email = email.strip().lower()
     
     # Length validation
     if len(email) < 3:  # Minimum reasonable email length (a@b)
-        return False, "Email is too short", None
+        return False, "Email is too short"
     
     if len(email) > 120:
-        return False, "Email is too long", None
+        return False, "Email is too long"
     
     # Check for invalid characters at start/end
     if email.startswith('.') or email.endswith('.'):
-        return False, "Invalid email format", None
+        return False, "Invalid email format"
     
     if email.startswith('@') or email.endswith('@'):
-        return False, "Invalid email format", None
+        return False, "Invalid email format"
     
     # Basic structure validation
     if email.count('@') != 1:
-        return False, "Invalid email format", None
+        return False, "Invalid email format"
     
     local_part, domain_part = email.split('@')
     
     # Validate local part
     if not local_part or len(local_part) > 64:
-        return False, "Invalid email format", None
+        return False, "Invalid email format"
     
     # Check for consecutive dots in local part
     if '..' in local_part:
-        return False, "Invalid email format", None
+        return False, "Invalid email format"
     
     # Local part cannot start or end with dot
     if local_part.startswith('.') or local_part.endswith('.'):
-        return False, "Invalid email format", None
+        return False, "Invalid email format"
     
     # Validate domain part
     if not domain_part or len(domain_part) > 63:
-        return False, "Invalid email format", None
+        return False, "Invalid email format"
     
     # Check for consecutive dots in domain
     if '..' in domain_part:
-        return False, "Invalid email format", None
+        return False, "Invalid email format"
     
     # Domain must contain at least one dot
     if '.' not in domain_part:
-        return False, "Invalid email format", None
+        return False, "Invalid email format"
     
     # Check domain structure
     domain_parts = domain_part.split('.')
     if len(domain_parts) < 2:
-        return False, "Invalid email format", None
+        return False, "Invalid email format"
     
     # Validate each domain part
     for part in domain_parts:
         if not part:  # Empty part (consecutive dots)
-            return False, "Invalid email format", None
+            return False, "Invalid email format"
         
         if part.startswith('-') or part.endswith('-'):
-            return False, "Invalid email format", None
+            return False, "Invalid email format"
     
     # Validate TLD (last part) - must be at least 2 chars and not all digits
     tld = domain_parts[-1]
     if len(tld) < 2 or tld.isdigit():
-        return False, "Invalid email format", None
+        return False, "Invalid email format"
     
     # Use more permissive regex that handles Unicode
     # This pattern allows Unicode characters but still validates structure
@@ -120,19 +120,18 @@ def validate_email(email):
         # Basic email structure validation
         email_pattern = r'^[^@\s]+@[^@\s]+\.[^@\s]+$'
         if not re.match(email_pattern, email):
-            return False, "Invalid email format", None
+            return False, "Invalid email format"
         
         # Check for dangerous characters
         dangerous_chars = ['<', '>', '"', "'", '\\', '\x00', '\n', '\r', '\t', ' ', '#']
         for char in dangerous_chars:
             if char in email:
-                return False, "Invalid email format", None
+                return False, "Invalid email format"
         
     except Exception:
-        return False, "Invalid email format", None
+        return False, "Invalid email format"
     
-    return True, None, email
-
+    return True, None
 
 def validate_password(password):
     """

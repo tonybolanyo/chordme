@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import React from 'react';
-import { ErrorProvider, useError, createApiError, createNetworkError, createValidationError } from '../ErrorContext';
+import { ErrorProvider, useError, createApiError, createNetworkError, createValidationError } from './ErrorContext';
 
 // Test component that uses the error context
 function TestComponent() {

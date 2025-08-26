@@ -91,18 +91,116 @@ swagger_template = {
         "Error": {
             "type": "object",
             "properties": {
-                "success": {"type": "boolean", "example": False},
-                "message": {"type": "string", "description": "Error message"},
-                "status_code": {"type": "integer", "description": "HTTP status code"}
+                "status": {
+                    "type": "string", 
+                    "example": "error",
+                    "description": "Response status indicator"
+                },
+                "error": {
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "description": "Legacy error message format"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "code": {
+                                    "type": "string",
+                                    "description": "Standardized error code",
+                                    "example": "INVALID_EMAIL"
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "description": "User-friendly error message",
+                                    "example": "Please enter a valid email address"
+                                },
+                                "category": {
+                                    "type": "string",
+                                    "description": "Error category",
+                                    "enum": ["validation", "authentication", "authorization", "not_found", "conflict", "rate_limit", "server_error", "network"],
+                                    "example": "validation"
+                                },
+                                "retryable": {
+                                    "type": "boolean",
+                                    "description": "Whether the operation can be retried",
+                                    "example": false
+                                },
+                                "details": {
+                                    "type": "object",
+                                    "description": "Additional error details (debug mode only)"
+                                }
+                            },
+                            "required": ["message", "retryable"]
+                        }
+                    ]
+                }
+            },
+            "required": ["status", "error"]
+        },
+        "ValidationError": {
+            "type": "object",
+            "properties": {
+                "status": {"type": "string", "example": "error"},
+                "error": {
+                    "type": "object",
+                    "properties": {
+                        "code": {"type": "string", "example": "INVALID_EMAIL"},
+                        "message": {"type": "string", "example": "Please enter a valid email address"},
+                        "category": {"type": "string", "example": "validation"},
+                        "retryable": {"type": "boolean", "example": false}
+                    }
+                }
+            }
+        },
+        "AuthenticationError": {
+            "type": "object",
+            "properties": {
+                "status": {"type": "string", "example": "error"},
+                "error": {
+                    "type": "object",
+                    "properties": {
+                        "code": {"type": "string", "example": "TOKEN_EXPIRED"},
+                        "message": {"type": "string", "example": "Your session has expired. Please log in again"},
+                        "category": {"type": "string", "example": "authentication"},
+                        "retryable": {"type": "boolean", "example": false}
+                    }
+                }
+            }
+        },
+        "ServerError": {
+            "type": "object",
+            "properties": {
+                "status": {"type": "string", "example": "error"},
+                "error": {
+                    "type": "object",
+                    "properties": {
+                        "code": {"type": "string", "example": "INTERNAL_SERVER_ERROR"},
+                        "message": {"type": "string", "example": "An unexpected error occurred. Please try again"},
+                        "category": {"type": "string", "example": "server_error"},
+                        "retryable": {"type": "boolean", "example": true}
+                    }
+                }
             }
         },
         "Success": {
             "type": "object", 
             "properties": {
-                "success": {"type": "boolean", "example": True},
-                "message": {"type": "string", "description": "Success message"},
-                "data": {"type": "object", "description": "Response data"}
-            }
+                "status": {
+                    "type": "string", 
+                    "example": "success",
+                    "description": "Response status indicator"
+                },
+                "message": {
+                    "type": "string", 
+                    "description": "Success message"
+                },
+                "data": {
+                    "type": "object", 
+                    "description": "Response data"
+                }
+            },
+            "required": ["status"]
         }
     }
 }

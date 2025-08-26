@@ -75,7 +75,7 @@ describe('NotificationSystem', () => {
   });
 
   afterEach(() => {
-    vi.restoreAllTimers();
+    vi.useRealTimers();
   });
 
   it('renders nothing when no notifications', () => {
