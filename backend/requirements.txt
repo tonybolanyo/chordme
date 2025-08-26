@@ -26,6 +26,10 @@ google-auth-oauthlib==1.2.1
 # PDF generation
 reportlab==4.0.9
 
+# Security scanning tools
+safety==3.2.11
+bandit==1.7.10
+
 # System monitoring (to be installed when needed)
 # psutil==6.1.1
 
