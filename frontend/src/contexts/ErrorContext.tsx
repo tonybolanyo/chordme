@@ -220,6 +220,7 @@ export function ErrorProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useError() {
   const context = useContext(ErrorContext);
   if (context === undefined) {
@@ -229,6 +230,7 @@ export function useError() {
 }
 
 // Utility functions for common error operations
+// eslint-disable-next-line react-refresh/only-export-components
 export function createApiError(message: string, code?: string, category?: string, retryable?: boolean): Omit<AppError, 'id' | 'timestamp'> {
   return {
     message,
@@ -239,6 +241,7 @@ export function createApiError(message: string, code?: string, category?: string
   };
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function createNetworkError(message: string = 'Network error occurred'): Omit<AppError, 'id' | 'timestamp'> {
   return {
     message,
@@ -249,6 +252,7 @@ export function createNetworkError(message: string = 'Network error occurred'): 
   };
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function createValidationError(message: string, field?: string): Omit<AppError, 'id' | 'timestamp'> {
   return {
     message,

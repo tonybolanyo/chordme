@@ -3,12 +3,38 @@
  * Provides performance metrics collection, monitoring, and reporting.
  */
 
+// Extended interfaces for performance entries with browser-specific properties
+interface LayoutShiftEntry extends PerformanceEntry {
+  hadRecentInput: boolean;
+  value: number;
+}
+
+interface FirstInputEntry extends PerformanceEntry {
+  processingStart: number;
+}
+
 export interface PerformanceMetrics {
   navigationTiming: PerformanceTiming | null;
   paintMetrics: { [key: string]: number };
   resourceTiming: PerformanceResourceTiming[];
   userInteractionMetrics: { [key: string]: number };
   customMetrics: { [key: string]: number };
+}
+
+interface PerformanceSummary {
+  domainLookup?: number;
+  connection?: number;
+  request?: number;
+  response?: number;
+  domProcessing?: number;
+  domContentLoaded?: number;
+  loadComplete?: number;
+  vitals: VitalMetrics;
+  paintMetrics: { [key: string]: number };
+  resourceCount: number;
+  customMetrics: { [key: string]: number };
+  userInteractions: number;
+  error?: string;
 }
 
 export interface VitalMetrics {
@@ -127,8 +153,9 @@ class PerformanceMonitor {
         let clsValue = 0;
         const observer = new PerformanceObserver((list) => {
           for (const entry of list.getEntries()) {
-            if (!(entry as any).hadRecentInput) {
-              clsValue += (entry as any).value;
+            const layoutShiftEntry = entry as LayoutShiftEntry;
+            if (!layoutShiftEntry.hadRecentInput) {
+              clsValue += layoutShiftEntry.value;
               this.vitals.CLS = clsValue;
             }
           }
@@ -147,7 +174,8 @@ class PerformanceMonitor {
       try {
         const observer = new PerformanceObserver((list) => {
           for (const entry of list.getEntries()) {
-            this.vitals.FID = (entry as any).processingStart - entry.startTime;
+            const firstInputEntry = entry as FirstInputEntry;
+            this.vitals.FID = firstInputEntry.processingStart - entry.startTime;
           }
         });
         
@@ -205,11 +233,18 @@ class PerformanceMonitor {
   /**
    * Get performance summary for logging
    */
-  getPerformanceSummary(): any {
+  getPerformanceSummary(): PerformanceSummary {
     const navigation = this.metrics.navigationTiming;
     
     if (!navigation) {
-      return { error: 'Navigation timing not available' };
+      return { 
+        error: 'Navigation timing not available',
+        vitals: this.vitals,
+        paintMetrics: this.metrics.paintMetrics,
+        resourceCount: this.metrics.resourceTiming.length,
+        customMetrics: this.metrics.customMetrics,
+        userInteractions: Object.keys(this.metrics.userInteractionMetrics).length
+      };
     }
 
     return {
