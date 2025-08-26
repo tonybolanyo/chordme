@@ -51,8 +51,8 @@ describe('Firebase Integration Tests', () => {
 
     expect(dataSourceInfo).toEqual({
       source: 'firebase',
-      isFirebaseEnabled: true,  // This maps to isInitialized() in the implementation
-      isFirebaseConfigured: true,  // This maps to isEnabled() in the implementation
+      isFirebaseEnabled: true,  // This maps to isEnabled() in the implementation
+      isFirebaseConfigured: true,  // This maps to isInitialized() in the implementation
     });
   });
 
