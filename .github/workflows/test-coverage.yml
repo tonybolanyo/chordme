@@ -48,7 +48,7 @@ jobs:
           --cov-report=term-missing \
           --cov-report=xml:coverage.xml \
           --cov-report=html:htmlcov \
-          --cov-fail-under=75
+          --cov-fail-under=90
 
     - name: Run Frontend Tests with Coverage  
       run: |
