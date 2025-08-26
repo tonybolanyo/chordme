@@ -106,37 +106,50 @@ class ApiService {
       headers.Authorization = `Bearer ${token}`;
     }
 
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      ...options,
-      headers,
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        ...options,
+        headers,
+      });
 
-    if (!response.ok) {
-      // If we get a 401, it means the token is invalid
-      if (response.status === 401 && token) {
-        // Clear invalid token and redirect to login
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('authUser');
-        window.location.hash = 'login';
-        throw new Error('Authentication failed. Please log in again.');
-      }
-
-      const errorText = await response.text();
-      let errorMessage = `API Error: ${response.statusText}`;
-
-      try {
-        const errorData = JSON.parse(errorText);
-        if (errorData.error) {
-          errorMessage = errorData.error;
+      if (!response.ok) {
+        // If we get a 401, it means the token is invalid
+        if (response.status === 401 && token) {
+          // Clear invalid token and redirect to login
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('authUser');
+          window.location.hash = 'login';
+          throw new Error('Authentication failed. Please log in again.');
         }
-      } catch {
-        // If response is not JSON, use status text
+
+        const errorText = await response.text();
+        let errorMessage = `API Error: ${response.statusText}`;
+
+        try {
+          const errorData = JSON.parse(errorText);
+          // Handle new error format
+          if (errorData.status === 'error' && errorData.error && typeof errorData.error === 'object') {
+            errorMessage = errorData.error.message;
+          }
+          // Handle legacy error format
+          else if (errorData.error) {
+            errorMessage = errorData.error;
+          }
+        } catch {
+          // If response is not JSON, use status text
+        }
+
+        throw new Error(errorMessage);
       }
 
-      throw new Error(errorMessage);
+      return response.json();
+    } catch (error) {
+      // Handle network errors
+      if (error instanceof TypeError) {
+        throw new Error('Network error. Please check your connection and try again.');
+      }
+      throw error;
     }
-
-    return response.json();
   }
 
   // Song-related API calls (these now require authentication)
