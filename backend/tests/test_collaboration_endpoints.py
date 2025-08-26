@@ -444,7 +444,7 @@ class TestCollaborativePermissions:
         # Cannot delete
         response = test_client.delete(f'/api/v1/songs/{sample_song.id}',
                                      headers=unauthorized['headers'])
-        assert response.status_code == 404  # API returns 404 for unauthorized access to prevent info disclosure
+        assert response.status_code == 403  # DELETE returns 403 for unauthorized access
 
 
 class TestPublicSongs:

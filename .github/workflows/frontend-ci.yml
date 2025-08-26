@@ -57,6 +57,7 @@ jobs:
         name: frontend-coverage
         fail_ci_if_error: false
         token: ${{ secrets.CODECOV_TOKEN }}
+      continue-on-error: true
     
     - name: Build application
       run: npm run build
