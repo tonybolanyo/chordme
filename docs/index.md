@@ -10,13 +10,14 @@ This directory contains the comprehensive user manual for ChordMe, automatically
 
 ## Documentation Structure
 
-- **[User Manual](README.md)** - Main documentation hub
-- **[Getting Started](getting-started.md)** - Installation and setup guide
-- **[User Guide](user-guide.md)** - Complete feature documentation
-- **[ChordPro Format](chordpro-format.md)** - ChordPro format reference
-- **[API Reference](api-reference.md)** - Complete API documentation
-- **[Developer Guide](developer-guide.md)** - Contributing and development
-- **[Troubleshooting](troubleshooting.md)** - Common issues and solutions
+- **[User Manual](README.html)** - Main documentation hub
+- **[Getting Started](getting-started.html)** - Installation and setup guide
+- **[User Guide](user-guide.html)** - Complete feature documentation
+- **[ChordPro Format](chordpro-format.html)** - ChordPro format reference
+- **[API Reference](api-reference.html)** - Complete API documentation
+- **[Developer Guide](developer-guide.html)** - Contributing and development
+- **[Troubleshooting](troubleshooting.html)** - Common issues and solutions
+- **[Swagger API Documentation](swagger.html)** - Interactive API documentation
 
 ## GitHub Pages Configuration
 
