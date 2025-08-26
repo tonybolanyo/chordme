@@ -1,0 +1,4 @@
+Usage: safety check [OPTIONS]
+Try 'safety check --help' for help.
+
+Error: Invalid value for '--output' / '-o': 'security_reports/safety_report.json' is not one of 'screen', 'text', 'json', 'bare', 'html'.

@@ -1,0 +1,41 @@
+{
+  "timestamp": "2025-08-26T21:19:41.171471",
+  "bandit": {
+    "total_issues": 3,
+    "high_severity": 0,
+    "medium_severity": 0,
+    "low_severity": 3,
+    "report_path": "security_reports/bandit_report.json"
+  },
+  "safety": {
+    "vulnerabilities_found": 0,
+    "status": "VULNERABILITIES_FOUND",
+    "report_path": "security_reports/safety_report.json"
+  },
+  "owasp_tests": {
+    "total_tests": 24,
+    "passed": 4,
+    "failed": 3,
+    "skipped": 0,
+    "duration": 1.9693715572357178,
+    "report_path": "security_reports/owasp_test_results.json"
+  },
+  "summary": {
+    "security_score": 85,
+    "status": "GOOD",
+    "critical_issues": 0,
+    "recommendations": [
+      "Fix failing OWASP security tests",
+      "Implement rate limiting for authentication endpoints"
+    ]
+  },
+  "security_configuration": {
+    "https_enforcement": true,
+    "secure_headers": false,
+    "rate_limiting": false,
+    "csrf_protection": true,
+    "password_hashing": true,
+    "security_headers": true,
+    "rate_limiter": true
+  }
+}
