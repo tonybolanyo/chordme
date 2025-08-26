@@ -69,8 +69,8 @@ describe('Firebase Integration Tests', () => {
 
     expect(dataSourceInfo).toEqual({
       source: 'api',
-      isFirebaseEnabled: true,   // This maps to isInitialized() = true
-      isFirebaseConfigured: false, // This maps to isEnabled() = false
+      isFirebaseEnabled: true,   // This maps to isEnabled() = true
+      isFirebaseConfigured: false, // This maps to isInitialized() = false
     });
   });
 });
