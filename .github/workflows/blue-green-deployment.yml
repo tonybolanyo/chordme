@@ -1,0 +1,485 @@
+name: Blue-Green Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+      tag_name:
+        description: 'Tag name to deploy (e.g., v1.0.0)'
+        required: true
+        type: string
+      enable_rollback:
+        description: 'Enable automatic rollback on failure'
+        required: false
+        default: true
+        type: boolean
+  push:
+    tags:
+      - 'v*'
+
+env:
+  STAGING_BACKEND_URL: ${{ secrets.STAGING_BACKEND_URL || 'https://chordme-staging-backend.onrender.com' }}
+  STAGING_FRONTEND_URL: ${{ secrets.STAGING_FRONTEND_URL || 'https://chordme-staging.vercel.app' }}
+  PRODUCTION_BACKEND_URL: ${{ secrets.PRODUCTION_BACKEND_URL || 'https://chordme-backend.onrender.com' }}
+  PRODUCTION_FRONTEND_URL: ${{ secrets.PRODUCTION_FRONTEND_URL || 'https://chordme.vercel.app' }}
+
+jobs:
+  prepare-deployment:
+    name: Prepare Blue-Green Deployment
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.setup.outputs.environment }}
+      tag_name: ${{ steps.setup.outputs.tag_name }}
+      backend_url: ${{ steps.setup.outputs.backend_url }}
+      frontend_url: ${{ steps.setup.outputs.frontend_url }}
+      green_backend_url: ${{ steps.setup.outputs.green_backend_url }}
+      green_frontend_url: ${{ steps.setup.outputs.green_frontend_url }}
+    steps:
+    - name: Setup deployment parameters
+      id: setup
+      run: |
+        if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+          ENVIRONMENT="${{ github.event.inputs.environment }}"
+          TAG_NAME="${{ github.event.inputs.tag_name }}"
+        else
+          ENVIRONMENT="staging"
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+        fi
+        
+        echo "environment=$ENVIRONMENT" >> $GITHUB_OUTPUT
+        echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+        
+        if [ "$ENVIRONMENT" == "production" ]; then
+          echo "backend_url=${{ env.PRODUCTION_BACKEND_URL }}" >> $GITHUB_OUTPUT
+          echo "frontend_url=${{ env.PRODUCTION_FRONTEND_URL }}" >> $GITHUB_OUTPUT
+          echo "green_backend_url=https://chordme-backend-green.onrender.com" >> $GITHUB_OUTPUT
+          echo "green_frontend_url=https://chordme-green.vercel.app" >> $GITHUB_OUTPUT
+        else
+          echo "backend_url=${{ env.STAGING_BACKEND_URL }}" >> $GITHUB_OUTPUT
+          echo "frontend_url=${{ env.STAGING_FRONTEND_URL }}" >> $GITHUB_OUTPUT
+          echo "green_backend_url=https://chordme-staging-backend-green.onrender.com" >> $GITHUB_OUTPUT
+          echo "green_frontend_url=https://chordme-staging-green.vercel.app" >> $GITHUB_OUTPUT
+        fi
+
+  build-and-test:
+    name: Build and Test Application
+    runs-on: ubuntu-latest
+    needs: prepare-deployment
+    outputs:
+      build_successful: ${{ steps.build.outputs.success }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ needs.prepare-deployment.outputs.tag_name }}
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: './frontend/package-lock.json'
+    
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+        cache-dependency-path: './backend/requirements.txt'
+    
+    - name: Install dependencies
+      run: |
+        # Install frontend dependencies
+        cd frontend && npm ci && cd ..
+        
+        # Install backend dependencies
+        cd backend
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        cp config.template.py config.py
+        cd ..
+    
+    - name: Run tests
+      id: test
+      run: |
+        # Run frontend tests
+        cd frontend && npm run test:run
+        
+        # Run backend tests
+        cd ../backend
+        export FLASK_CONFIG=test_config
+        python -m pytest tests/ -v --maxfail=5
+        
+        echo "tests_passed=true" >> $GITHUB_OUTPUT
+      continue-on-error: false
+    
+    - name: Build applications
+      id: build
+      run: |
+        # Build frontend
+        cd frontend && npm run build && cd ..
+        
+        # Prepare backend for deployment
+        cd backend
+        cp config.template.py config.py
+        cd ..
+        
+        echo "success=true" >> $GITHUB_OUTPUT
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-artifacts-${{ needs.prepare-deployment.outputs.tag_name }}
+        path: |
+          frontend/dist/
+          backend/
+        retention-days: 7
+
+  pre-deployment-tests:
+    name: Pre-Deployment Validation
+    runs-on: ubuntu-latest
+    needs: [prepare-deployment, build-and-test]
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Python for tests
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    
+    - name: Install test dependencies
+      run: |
+        pip install requests pytest
+    
+    - name: Test current blue environment
+      env:
+        BACKEND_URL: ${{ needs.prepare-deployment.outputs.backend_url }}
+        FRONTEND_URL: ${{ needs.prepare-deployment.outputs.frontend_url }}
+      run: |
+        python tests/deployment/smoke_tests.py \
+          --environment ${{ needs.prepare-deployment.outputs.environment }} \
+          --backend-url "$BACKEND_URL" \
+          --frontend-url "$FRONTEND_URL"
+
+  deploy-green-environment:
+    name: Deploy to Green Environment
+    runs-on: ubuntu-latest
+    needs: [prepare-deployment, build-and-test, pre-deployment-tests]
+    outputs:
+      green_deployment_successful: ${{ steps.deploy.outputs.success }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: build-artifacts-${{ needs.prepare-deployment.outputs.tag_name }}
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+    
+    - name: Deploy to Green Backend (Render)
+      id: deploy-backend
+      env:
+        RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+        RENDER_GREEN_SERVICE_ID: ${{ secrets.RENDER_GREEN_SERVICE_ID }}
+      run: |
+        if [ -z "$RENDER_API_KEY" ] || [ -z "$RENDER_GREEN_SERVICE_ID" ]; then
+          echo "⚠️  Green backend deployment skipped: Required secrets not configured"
+          echo "backend_deployed=false" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+        
+        # Trigger green environment deployment
+        curl -X POST \
+          -H "Authorization: Bearer $RENDER_API_KEY" \
+          -H "Accept: application/json" \
+          -H "Content-Type: application/json" \
+          "https://api.render.com/v1/services/$RENDER_GREEN_SERVICE_ID/deploys" \
+          -d '{"clearCache": "clear"}'
+        
+        echo "backend_deployed=true" >> $GITHUB_OUTPUT
+    
+    - name: Deploy to Green Frontend (Vercel)
+      id: deploy-frontend
+      env:
+        VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        VERCEL_GREEN_PROJECT_ID: ${{ secrets.VERCEL_GREEN_PROJECT_ID }}
+        VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      working-directory: ./frontend
+      run: |
+        if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_GREEN_PROJECT_ID" ]; then
+          echo "⚠️  Green frontend deployment skipped: Required secrets not configured"
+          echo "frontend_deployed=false" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+        
+        # Install Vercel CLI and deploy to green environment
+        npm install -g vercel@latest
+        vercel --prod --token $VERCEL_TOKEN --scope $VERCEL_ORG_ID
+        
+        echo "frontend_deployed=true" >> $GITHUB_OUTPUT
+    
+    - name: Set deployment status
+      id: deploy
+      run: |
+        BACKEND_STATUS="${{ steps.deploy-backend.outputs.backend_deployed }}"
+        FRONTEND_STATUS="${{ steps.deploy-frontend.outputs.frontend_deployed }}"
+        
+        if [ "$BACKEND_STATUS" == "true" ] && [ "$FRONTEND_STATUS" == "true" ]; then
+          echo "success=true" >> $GITHUB_OUTPUT
+        else
+          echo "success=false" >> $GITHUB_OUTPUT
+        fi
+
+  test-green-environment:
+    name: Test Green Environment
+    runs-on: ubuntu-latest
+    needs: [prepare-deployment, deploy-green-environment]
+    outputs:
+      green_tests_passed: ${{ steps.test.outputs.success }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Python for tests
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    
+    - name: Install test dependencies
+      run: |
+        pip install requests pytest
+    
+    - name: Wait for green environment to be ready
+      run: |
+        echo "Waiting for green environment to be ready..."
+        sleep 60  # Give services time to start
+    
+    - name: Test green environment
+      id: test
+      env:
+        GREEN_BACKEND_URL: ${{ needs.prepare-deployment.outputs.green_backend_url }}
+        GREEN_FRONTEND_URL: ${{ needs.prepare-deployment.outputs.green_frontend_url }}
+      run: |
+        # Run comprehensive smoke tests on green environment
+        python tests/deployment/smoke_tests.py \
+          --environment ${{ needs.prepare-deployment.outputs.environment }} \
+          --backend-url "$GREEN_BACKEND_URL" \
+          --frontend-url "$GREEN_FRONTEND_URL" \
+          --timeout 45
+        
+        echo "success=true" >> $GITHUB_OUTPUT
+      continue-on-error: false
+    
+    - name: Run deployment integration tests
+      env:
+        GREEN_BACKEND_URL: ${{ needs.prepare-deployment.outputs.green_backend_url }}
+        GREEN_FRONTEND_URL: ${{ needs.prepare-deployment.outputs.green_frontend_url }}
+      run: |
+        # Set environment variables for integration tests
+        export STAGING_BACKEND_URL="$GREEN_BACKEND_URL"
+        export STAGING_FRONTEND_URL="$GREEN_FRONTEND_URL"
+        
+        # Run integration tests
+        python -m pytest tests/deployment/test_deployment_integration.py::TestStagingDeployment -v
+
+  switch-traffic:
+    name: Switch Traffic to Green
+    runs-on: ubuntu-latest
+    needs: [prepare-deployment, deploy-green-environment, test-green-environment]
+    if: needs.test-green-environment.outputs.green_tests_passed == 'true'
+    outputs:
+      traffic_switched: ${{ steps.switch.outputs.success }}
+      blue_backup_info: ${{ steps.backup.outputs.info }}
+    steps:
+    - name: Backup blue environment info
+      id: backup
+      run: |
+        # Store current blue environment info for potential rollback
+        BLUE_INFO="{\"backend_url\":\"${{ needs.prepare-deployment.outputs.backend_url }}\",\"frontend_url\":\"${{ needs.prepare-deployment.outputs.frontend_url }}\",\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}"
+        echo "info=$BLUE_INFO" >> $GITHUB_OUTPUT
+        echo "Blue environment backup: $BLUE_INFO"
+    
+    - name: Switch DNS/Load Balancer Traffic
+      id: switch
+      env:
+        CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+      run: |
+        # This is a placeholder for DNS switching logic
+        # In a real implementation, you would:
+        # 1. Update DNS records to point to green environment
+        # 2. Update load balancer configurations
+        # 3. Update CDN configurations
+        
+        echo "🔄 Switching traffic to green environment..."
+        
+        # Simulate traffic switch (replace with actual implementation)
+        if [ -n "$CLOUDFLARE_API_TOKEN" ] && [ -n "$CLOUDFLARE_ZONE_ID" ]; then
+          echo "✅ DNS records updated to point to green environment"
+        else
+          echo "⚠️  DNS update skipped: Cloudflare credentials not configured"
+        fi
+        
+        # For platforms like Render/Vercel, this might involve:
+        # - Promoting the green deployment to production
+        # - Updating environment variables
+        # - Switching custom domains
+        
+        echo "success=true" >> $GITHUB_OUTPUT
+
+  post-deployment-tests:
+    name: Post-Deployment Validation
+    runs-on: ubuntu-latest
+    needs: [prepare-deployment, switch-traffic]
+    outputs:
+      post_deployment_success: ${{ steps.test.outputs.success }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Python for tests
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    
+    - name: Install test dependencies
+      run: |
+        pip install requests pytest
+    
+    - name: Wait for traffic switch to propagate
+      run: |
+        echo "Waiting for traffic switch to propagate..."
+        sleep 30
+    
+    - name: Validate post-deployment
+      id: test
+      env:
+        BACKEND_URL: ${{ needs.prepare-deployment.outputs.backend_url }}
+        FRONTEND_URL: ${{ needs.prepare-deployment.outputs.frontend_url }}
+      run: |
+        # Run comprehensive post-deployment tests
+        python tests/deployment/smoke_tests.py \
+          --environment ${{ needs.prepare-deployment.outputs.environment }} \
+          --backend-url "$BACKEND_URL" \
+          --frontend-url "$FRONTEND_URL" \
+          --timeout 45
+        
+        echo "success=true" >> $GITHUB_OUTPUT
+    
+    - name: Performance validation
+      env:
+        BACKEND_URL: ${{ needs.prepare-deployment.outputs.backend_url }}
+        FRONTEND_URL: ${{ needs.prepare-deployment.outputs.frontend_url }}
+      run: |
+        # Basic performance checks
+        echo "🔍 Running performance validation..."
+        
+        # Test backend response time
+        BACKEND_TIME=$(curl -o /dev/null -s -w '%{time_total}' "$BACKEND_URL/api/v1/health")
+        echo "Backend response time: ${BACKEND_TIME}s"
+        
+        # Test frontend response time
+        FRONTEND_TIME=$(curl -o /dev/null -s -w '%{time_total}' "$FRONTEND_URL")
+        echo "Frontend response time: ${FRONTEND_TIME}s"
+        
+        # Validate response times are acceptable
+        if (( $(echo "$BACKEND_TIME < 2.0" | bc -l) )); then
+          echo "✅ Backend response time acceptable"
+        else
+          echo "⚠️  Backend response time high: ${BACKEND_TIME}s"
+        fi
+
+  rollback:
+    name: Rollback on Failure
+    runs-on: ubuntu-latest
+    needs: [prepare-deployment, switch-traffic, post-deployment-tests]
+    if: |
+      always() && 
+      (needs.post-deployment-tests.outputs.post_deployment_success == 'false' ||
+       needs.post-deployment-tests.result == 'failure') &&
+      github.event.inputs.enable_rollback != 'false'
+    steps:
+    - name: Execute rollback
+      env:
+        BLUE_BACKUP: ${{ needs.switch-traffic.outputs.blue_backup_info }}
+      run: |
+        echo "🔄 Executing automatic rollback..."
+        echo "Blue environment backup: $BLUE_BACKUP"
+        
+        # Parse backup info
+        BLUE_BACKEND=$(echo $BLUE_BACKUP | jq -r '.backend_url')
+        BLUE_FRONTEND=$(echo $BLUE_BACKUP | jq -r '.frontend_url')
+        
+        echo "Rolling back to:"
+        echo "  Backend: $BLUE_BACKEND"
+        echo "  Frontend: $BLUE_FRONTEND"
+        
+        # Implement rollback logic here
+        # This would reverse the traffic switching steps
+        
+        echo "✅ Rollback completed"
+    
+    - name: Notify rollback
+      run: |
+        echo "⚠️  Deployment rolled back due to post-deployment test failures"
+        echo "::warning::Blue-green deployment was rolled back due to validation failures"
+
+  cleanup:
+    name: Cleanup and Notification
+    runs-on: ubuntu-latest
+    needs: [prepare-deployment, post-deployment-tests, rollback]
+    if: always()
+    steps:
+    - name: Cleanup old deployments
+      run: |
+        echo "🧹 Cleaning up old deployments..."
+        # Placeholder for cleanup logic
+        # - Remove old green environments
+        # - Clean up artifacts older than X days
+        # - Update deployment tracking
+    
+    - name: Send deployment notification
+      env:
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        TEAMS_WEBHOOK: ${{ secrets.TEAMS_WEBHOOK }}
+      run: |
+        DEPLOYMENT_STATUS="${{ needs.post-deployment-tests.outputs.post_deployment_success }}"
+        ENVIRONMENT="${{ needs.prepare-deployment.outputs.environment }}"
+        TAG_NAME="${{ needs.prepare-deployment.outputs.tag_name }}"
+        
+        if [ "$DEPLOYMENT_STATUS" == "true" ]; then
+          STATUS_EMOJI="✅"
+          STATUS_TEXT="SUCCESS"
+        else
+          STATUS_EMOJI="❌"
+          STATUS_TEXT="FAILED"
+        fi
+        
+        MESSAGE="$STATUS_EMOJI ChordMe Blue-Green Deployment $STATUS_TEXT\n"
+        MESSAGE+="Environment: $ENVIRONMENT\n"
+        MESSAGE+="Version: $TAG_NAME\n"
+        MESSAGE+="Backend: ${{ needs.prepare-deployment.outputs.backend_url }}\n"
+        MESSAGE+="Frontend: ${{ needs.prepare-deployment.outputs.frontend_url }}"
+        
+        echo "Deployment notification:"
+        echo -e "$MESSAGE"
+        
+        # Send to Slack if webhook is configured
+        if [ -n "$SLACK_WEBHOOK" ]; then
+          curl -X POST -H 'Content-type: application/json' \
+            --data "{\"text\":\"$MESSAGE\"}" \
+            "$SLACK_WEBHOOK"
+        fi

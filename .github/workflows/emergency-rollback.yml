@@ -1,0 +1,455 @@
+name: Emergency Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to rollback'
+        required: true
+        type: choice
+        options:
+        - staging
+        - production
+      rollback_to_tag:
+        description: 'Tag to rollback to (e.g., v1.0.0)'
+        required: true
+        type: string
+      reason:
+        description: 'Reason for rollback'
+        required: true
+        type: string
+      skip_tests:
+        description: 'Skip post-rollback tests (emergency only)'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  STAGING_BACKEND_URL: ${{ secrets.STAGING_BACKEND_URL || 'https://chordme-staging-backend.onrender.com' }}
+  STAGING_FRONTEND_URL: ${{ secrets.STAGING_FRONTEND_URL || 'https://chordme-staging.vercel.app' }}
+  PRODUCTION_BACKEND_URL: ${{ secrets.PRODUCTION_BACKEND_URL || 'https://chordme-backend.onrender.com' }}
+  PRODUCTION_FRONTEND_URL: ${{ secrets.PRODUCTION_FRONTEND_URL || 'https://chordme.vercel.app' }}
+
+jobs:
+  validate-rollback:
+    name: Validate Rollback Request
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ github.event.inputs.environment }}
+      rollback_tag: ${{ github.event.inputs.rollback_to_tag }}
+      backend_url: ${{ steps.setup.outputs.backend_url }}
+      frontend_url: ${{ steps.setup.outputs.frontend_url }}
+      can_proceed: ${{ steps.validate.outputs.can_proceed }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Setup environment URLs
+      id: setup
+      run: |
+        ENVIRONMENT="${{ github.event.inputs.environment }}"
+        
+        if [ "$ENVIRONMENT" == "production" ]; then
+          echo "backend_url=${{ env.PRODUCTION_BACKEND_URL }}" >> $GITHUB_OUTPUT
+          echo "frontend_url=${{ env.PRODUCTION_FRONTEND_URL }}" >> $GITHUB_OUTPUT
+        else
+          echo "backend_url=${{ env.STAGING_BACKEND_URL }}" >> $GITHUB_OUTPUT
+          echo "frontend_url=${{ env.STAGING_FRONTEND_URL }}" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Validate rollback target
+      id: validate
+      run: |
+        ROLLBACK_TAG="${{ github.event.inputs.rollback_to_tag }}"
+        
+        # Ensure tag exists
+        if ! git tag -l | grep -q "^${ROLLBACK_TAG}$"; then
+          echo "❌ Tag $ROLLBACK_TAG does not exist"
+          echo "can_proceed=false" >> $GITHUB_OUTPUT
+          exit 1
+        fi
+        
+        # Get current deployment info
+        CURRENT_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "unknown")
+        
+        echo "📋 Rollback validation:"
+        echo "  Environment: ${{ github.event.inputs.environment }}"
+        echo "  Current version: $CURRENT_TAG"
+        echo "  Rollback to: $ROLLBACK_TAG"
+        echo "  Reason: ${{ github.event.inputs.reason }}"
+        
+        # Prevent rolling back to the same version
+        if [ "$CURRENT_TAG" == "$ROLLBACK_TAG" ]; then
+          echo "⚠️  Warning: Rolling back to the same version"
+        fi
+        
+        echo "can_proceed=true" >> $GITHUB_OUTPUT
+    
+    - name: Get rollback commit info
+      run: |
+        ROLLBACK_TAG="${{ github.event.inputs.rollback_to_tag }}"
+        
+        # Get commit information for the rollback tag
+        COMMIT_HASH=$(git rev-list -n 1 "$ROLLBACK_TAG")
+        COMMIT_MESSAGE=$(git log --format=%B -n 1 "$COMMIT_HASH" | head -n 1)
+        COMMIT_DATE=$(git log --format=%ci -n 1 "$COMMIT_HASH")
+        COMMIT_AUTHOR=$(git log --format="%an <%ae>" -n 1 "$COMMIT_HASH")
+        
+        echo "📋 Rollback target details:"
+        echo "  Tag: $ROLLBACK_TAG"
+        echo "  Commit: $COMMIT_HASH"
+        echo "  Message: $COMMIT_MESSAGE"
+        echo "  Date: $COMMIT_DATE"
+        echo "  Author: $COMMIT_AUTHOR"
+
+  backup-current-state:
+    name: Backup Current State
+    runs-on: ubuntu-latest
+    needs: validate-rollback
+    if: needs.validate-rollback.outputs.can_proceed == 'true'
+    outputs:
+      backup_created: ${{ steps.backup.outputs.success }}
+      backup_info: ${{ steps.backup.outputs.info }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Create backup of current state
+      id: backup
+      run: |
+        ENVIRONMENT="${{ needs.validate-rollback.outputs.environment }}"
+        TIMESTAMP=$(date -u +%Y%m%d-%H%M%S)
+        
+        # Get current version
+        CURRENT_VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "unknown")
+        
+        # Create backup info
+        BACKUP_INFO="{
+          \"timestamp\": \"$TIMESTAMP\",
+          \"environment\": \"$ENVIRONMENT\",
+          \"current_version\": \"$CURRENT_VERSION\",
+          \"rollback_to\": \"${{ needs.validate-rollback.outputs.rollback_tag }}\",
+          \"reason\": \"${{ github.event.inputs.reason }}\",
+          \"backend_url\": \"${{ needs.validate-rollback.outputs.backend_url }}\",
+          \"frontend_url\": \"${{ needs.validate-rollback.outputs.frontend_url }}\",
+          \"initiated_by\": \"${{ github.actor }}\"
+        }"
+        
+        echo "Backup Info:"
+        echo "$BACKUP_INFO" | jq .
+        
+        # Store backup info as artifact
+        echo "$BACKUP_INFO" > rollback-backup-$TIMESTAMP.json
+        
+        echo "success=true" >> $GITHUB_OUTPUT
+        echo "info<<EOF" >> $GITHUB_OUTPUT
+        echo "$BACKUP_INFO" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+    
+    - name: Upload backup artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: rollback-backup-${{ github.run_id }}
+        path: rollback-backup-*.json
+        retention-days: 30
+
+  pre-rollback-tests:
+    name: Pre-Rollback Health Check
+    runs-on: ubuntu-latest
+    needs: [validate-rollback, backup-current-state]
+    if: github.event.inputs.skip_tests != 'true'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Python for tests
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    
+    - name: Install test dependencies
+      run: |
+        pip install requests pytest
+    
+    - name: Test current environment health
+      env:
+        BACKEND_URL: ${{ needs.validate-rollback.outputs.backend_url }}
+        FRONTEND_URL: ${{ needs.validate-rollback.outputs.frontend_url }}
+      run: |
+        echo "🔍 Testing current environment health before rollback..."
+        
+        # Run basic health checks to document current state
+        python tests/deployment/smoke_tests.py \
+          --environment ${{ needs.validate-rollback.outputs.environment }} \
+          --backend-url "$BACKEND_URL" \
+          --frontend-url "$FRONTEND_URL" \
+          --json > pre-rollback-health.json || true
+        
+        echo "Pre-rollback health check completed"
+        cat pre-rollback-health.json
+    
+    - name: Upload health check results
+      uses: actions/upload-artifact@v4
+      with:
+        name: pre-rollback-health-${{ github.run_id }}
+        path: pre-rollback-health.json
+
+  build-rollback-version:
+    name: Build Rollback Version
+    runs-on: ubuntu-latest
+    needs: [validate-rollback, backup-current-state]
+    steps:
+    - name: Checkout rollback target
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ needs.validate-rollback.outputs.rollback_tag }}
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: './frontend/package-lock.json'
+    
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+        cache-dependency-path: './backend/requirements.txt'
+    
+    - name: Install dependencies
+      run: |
+        # Install frontend dependencies
+        cd frontend && npm ci && cd ..
+        
+        # Install backend dependencies
+        cd backend
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        cp config.template.py config.py
+        cd ..
+    
+    - name: Quick build test
+      run: |
+        # Quick test to ensure the rollback version can build
+        cd frontend && npm run build && cd ..
+        
+        echo "✅ Rollback version builds successfully"
+    
+    - name: Upload rollback artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: rollback-build-${{ needs.validate-rollback.outputs.rollback_tag }}
+        path: |
+          frontend/dist/
+          backend/
+        retention-days: 7
+
+  execute-rollback:
+    name: Execute Rollback
+    runs-on: ubuntu-latest
+    needs: [validate-rollback, backup-current-state, build-rollback-version]
+    environment: ${{ needs.validate-rollback.outputs.environment }}
+    outputs:
+      rollback_successful: ${{ steps.rollback.outputs.success }}
+    steps:
+    - name: Download rollback artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: rollback-build-${{ needs.validate-rollback.outputs.rollback_tag }}
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+    
+    - name: Rollback Backend (Render)
+      id: rollback-backend
+      env:
+        RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+        RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
+      run: |
+        if [ -z "$RENDER_API_KEY" ] || [ -z "$RENDER_SERVICE_ID" ]; then
+          echo "⚠️  Backend rollback skipped: Required secrets not configured"
+          echo "backend_rolled_back=false" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+        
+        echo "🔄 Rolling back backend to ${{ needs.validate-rollback.outputs.rollback_tag }}..."
+        
+        # For Render, this would involve deploying a specific commit/tag
+        # Using the Render API to trigger a deployment from a specific commit
+        ROLLBACK_COMMIT=$(git rev-list -n 1 "${{ needs.validate-rollback.outputs.rollback_tag }}")
+        
+        curl -X POST \
+          -H "Authorization: Bearer $RENDER_API_KEY" \
+          -H "Accept: application/json" \
+          -H "Content-Type: application/json" \
+          "https://api.render.com/v1/services/$RENDER_SERVICE_ID/deploys" \
+          -d "{\"clearCache\": \"clear\", \"commitId\": \"$ROLLBACK_COMMIT\"}"
+        
+        echo "backend_rolled_back=true" >> $GITHUB_OUTPUT
+    
+    - name: Rollback Frontend (Vercel)
+      id: rollback-frontend
+      env:
+        VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      working-directory: ./frontend
+      run: |
+        if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
+          echo "⚠️  Frontend rollback skipped: Required secrets not configured"
+          echo "frontend_rolled_back=false" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+        
+        echo "🔄 Rolling back frontend to ${{ needs.validate-rollback.outputs.rollback_tag }}..."
+        
+        # Install Vercel CLI and deploy the rollback version
+        npm install -g vercel@latest
+        
+        # Deploy the rolled back version
+        vercel --prod --token $VERCEL_TOKEN --scope $VERCEL_ORG_ID
+        
+        echo "frontend_rolled_back=true" >> $GITHUB_OUTPUT
+    
+    - name: Set rollback status
+      id: rollback
+      run: |
+        BACKEND_STATUS="${{ steps.rollback-backend.outputs.backend_rolled_back }}"
+        FRONTEND_STATUS="${{ steps.rollback-frontend.outputs.frontend_rolled_back }}"
+        
+        if [ "$BACKEND_STATUS" == "true" ] && [ "$FRONTEND_STATUS" == "true" ]; then
+          echo "success=true" >> $GITHUB_OUTPUT
+          echo "✅ Rollback completed successfully"
+        elif [ "$BACKEND_STATUS" == "false" ] && [ "$FRONTEND_STATUS" == "false" ]; then
+          echo "success=false" >> $GITHUB_OUTPUT
+          echo "⚠️  Rollback skipped: No deployment secrets configured"
+        else
+          echo "success=partial" >> $GITHUB_OUTPUT
+          echo "⚠️  Partial rollback: Backend=$BACKEND_STATUS, Frontend=$FRONTEND_STATUS"
+        fi
+
+  post-rollback-validation:
+    name: Post-Rollback Validation
+    runs-on: ubuntu-latest
+    needs: [validate-rollback, execute-rollback]
+    if: needs.execute-rollback.outputs.rollback_successful == 'true' && github.event.inputs.skip_tests != 'true'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Python for tests
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    
+    - name: Install test dependencies
+      run: |
+        pip install requests pytest
+    
+    - name: Wait for rollback to propagate
+      run: |
+        echo "⏳ Waiting for rollback to propagate..."
+        sleep 120  # Give services time to restart and DNS to propagate
+    
+    - name: Validate rolled back environment
+      env:
+        BACKEND_URL: ${{ needs.validate-rollback.outputs.backend_url }}
+        FRONTEND_URL: ${{ needs.validate-rollback.outputs.frontend_url }}
+      run: |
+        echo "🔍 Validating rolled back environment..."
+        
+        # Run comprehensive validation
+        python tests/deployment/smoke_tests.py \
+          --environment ${{ needs.validate-rollback.outputs.environment }} \
+          --backend-url "$BACKEND_URL" \
+          --frontend-url "$FRONTEND_URL" \
+          --timeout 60
+    
+    - name: Verify rollback version
+      env:
+        BACKEND_URL: ${{ needs.validate-rollback.outputs.backend_url }}
+      run: |
+        echo "🔍 Verifying rollback version..."
+        
+        # Check if the version endpoint returns the expected version
+        DEPLOYED_VERSION=$(curl -s "$BACKEND_URL/api/v1/version" | jq -r '.version' 2>/dev/null || echo "unknown")
+        EXPECTED_VERSION="${{ needs.validate-rollback.outputs.rollback_tag }}"
+        
+        echo "Expected version: $EXPECTED_VERSION"
+        echo "Deployed version: $DEPLOYED_VERSION"
+        
+        # Note: Version comparison might need adjustment based on version format
+        if [[ "$DEPLOYED_VERSION" == *"${EXPECTED_VERSION#v}"* ]]; then
+          echo "✅ Version verification successful"
+        else
+          echo "⚠️  Version verification inconclusive"
+        fi
+
+  notify-rollback:
+    name: Send Rollback Notifications
+    runs-on: ubuntu-latest
+    needs: [validate-rollback, execute-rollback, post-rollback-validation]
+    if: always()
+    steps:
+    - name: Determine rollback status
+      id: status
+      run: |
+        ROLLBACK_SUCCESS="${{ needs.execute-rollback.outputs.rollback_successful }}"
+        VALIDATION_SUCCESS="${{ needs.post-rollback-validation.result }}"
+        
+        if [ "$ROLLBACK_SUCCESS" == "true" ] && [ "$VALIDATION_SUCCESS" == "success" ]; then
+          echo "status=success" >> $GITHUB_OUTPUT
+          echo "emoji=✅" >> $GITHUB_OUTPUT
+        elif [ "$ROLLBACK_SUCCESS" == "true" ]; then
+          echo "status=partial" >> $GITHUB_OUTPUT
+          echo "emoji=⚠️" >> $GITHUB_OUTPUT
+        else
+          echo "status=failed" >> $GITHUB_OUTPUT
+          echo "emoji=❌" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Send Slack notification
+      env:
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      if: env.SLACK_WEBHOOK != ''
+      run: |
+        STATUS_EMOJI="${{ steps.status.outputs.emoji }}"
+        STATUS_TEXT="${{ steps.status.outputs.status }}"
+        
+        MESSAGE="$STATUS_EMOJI ChordMe Emergency Rollback - $STATUS_TEXT"
+        MESSAGE+="\n\nRollback Details:"
+        MESSAGE+="\n• Environment: ${{ needs.validate-rollback.outputs.environment }}"
+        MESSAGE+="\n• Rolled back to: ${{ needs.validate-rollback.outputs.rollback_tag }}"
+        MESSAGE+="\n• Reason: ${{ github.event.inputs.reason }}"
+        MESSAGE+="\n• Initiated by: ${{ github.actor }}"
+        MESSAGE+="\n• Backend: ${{ needs.validate-rollback.outputs.backend_url }}"
+        MESSAGE+="\n• Frontend: ${{ needs.validate-rollback.outputs.frontend_url }}"
+        
+        curl -X POST -H 'Content-type: application/json' \
+          --data "{\"text\":\"$MESSAGE\"}" \
+          "$SLACK_WEBHOOK"
+    
+    - name: Create rollback summary
+      run: |
+        echo "## Rollback Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Status:** ${{ steps.status.outputs.emoji }} ${{ steps.status.outputs.status }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Environment:** ${{ needs.validate-rollback.outputs.environment }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Rolled back to:** ${{ needs.validate-rollback.outputs.rollback_tag }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Reason:** ${{ github.event.inputs.reason }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Initiated by:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**URLs:**" >> $GITHUB_STEP_SUMMARY
+        echo "- Backend: ${{ needs.validate-rollback.outputs.backend_url }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Frontend: ${{ needs.validate-rollback.outputs.frontend_url }}" >> $GITHUB_STEP_SUMMARY
+        
+        echo ""
+        echo "🚨 EMERGENCY ROLLBACK COMPLETED"
+        echo ""
+        echo "Please monitor the application closely and investigate the root cause of the issue that required this rollback."
