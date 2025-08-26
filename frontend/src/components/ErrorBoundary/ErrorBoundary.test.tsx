@@ -131,7 +131,7 @@ describe('ErrorBoundary', () => {
   });
 
   it('allows retry functionality', () => {
-    const { rerender } = render(
+    render(
       <ErrorBoundary>
         <ConditionalError />
       </ErrorBoundary>
