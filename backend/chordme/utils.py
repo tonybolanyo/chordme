@@ -42,6 +42,9 @@ def validate_email(email):
     - Format validation with robust regex
     - Domain structure validation
     - Special character handling
+    
+    Returns:
+        tuple: (is_valid: bool, error_message: str or None)
     """
     if not email:
         return False, "Email is required"
@@ -129,7 +132,6 @@ def validate_email(email):
         return False, "Invalid email format"
     
     return True, None
-
 
 def validate_password(password):
     """
@@ -247,8 +249,44 @@ def sanitize_input(data, max_string_length=1000):
         return {}
 
 
-def create_error_response(message, status_code=400):
-    """Create a standardized error response."""
+def create_error_response(message, status_code=400, error_code=None, details=None):
+    """Create a standardized error response with enhanced format."""
+    from .error_codes import get_error_details, ERROR_CODES
+    
+    # If error_code is provided, use its details
+    if error_code:
+        error_details = get_error_details(error_code)
+        response = {
+            'status': 'error',
+            'error': {
+                'code': error_code,
+                'message': error_details['message'],
+                'category': error_details['category'],
+                'retryable': error_details['retryable']
+            }
+        }
+        # Use the HTTP status from error code if status_code is default
+        if status_code == 400 and error_details['http_status'] != 400:
+            status_code = error_details['http_status']
+    else:
+        # Fallback to legacy format for backward compatibility
+        response = {
+            'status': 'error',
+            'error': {
+                'message': message,
+                'retryable': False  # Default to non-retryable for legacy errors
+            }
+        }
+    
+    # Add additional details if provided (for debugging)
+    if details and current_app.debug:
+        response['error']['details'] = details
+    
+    return jsonify(response), status_code
+
+
+def create_legacy_error_response(message, status_code=400):
+    """Create a legacy error response for backward compatibility."""
     return jsonify({
         'error': message,
         'status': 'error'

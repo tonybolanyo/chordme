@@ -1410,11 +1410,267 @@ const handleAcceptExternalChanges = () => {
 
 ### Error Handling Patterns
 
-1. **Graceful Degradation**: Fall back when real-time features are unavailable
-2. **User-Friendly Messages**: Provide clear, actionable error messages
-3. **Automatic Retry**: Implement retry logic for transient failures
-4. **Logging**: Log errors with appropriate detail for debugging
-5. **Status codes**: Use proper HTTP status codes for different error types
+ChordMe implements a comprehensive error handling system with standardized error codes, global error boundaries, and retry mechanisms.
+
+#### Backend Error Handling
+
+1. **Standardized Error Responses**: Use structured error format with codes and categories
+   ```python
+   from chordme.utils import create_error_response
+   from chordme.error_codes import ERROR_CODES
+   
+   # Enhanced error response with error code
+   return create_error_response(
+       message="",  # Will be overridden by error code message
+       error_code="INVALID_EMAIL"
+   )
+   
+   # Legacy error response (backward compatible)
+   return create_error_response("Custom error message")
+   ```
+
+2. **Error Code Constants**: Use predefined error codes for consistency
+   ```python
+   from chordme.error_codes import get_error_details, is_retryable_error
+   
+   error_details = get_error_details('NETWORK_ERROR')
+   # Returns: {'code': 'NETWORK_ERROR', 'message': '...', 'retryable': True}
+   
+   if is_retryable_error('RATE_LIMIT_EXCEEDED'):
+       # Implement retry logic
+   ```
+
+3. **Security-Aware Error Handling**: Prevent information leakage
+   ```python
+   from chordme.security_headers import SecurityErrorHandler
+   
+   # Safe error handling that logs details but returns generic message
+   return SecurityErrorHandler.handle_authentication_error(
+       "Invalid credentials",
+       ip_address=request.remote_addr
+   )
+   ```
+
+4. **Validation with Error Codes**: Enhanced validation with structured responses
+   ```python
+   from chordme.utils import validate_email
+   
+   is_valid, error_message = validate_email(email)
+   if not is_valid:
+       return create_error_response("", error_code="INVALID_EMAIL")
+   ```
+
+#### Frontend Error Handling
+
+1. **Global Error Context**: Centralized error state management
+   ```typescript
+   import { useError } from '../contexts/ErrorContext';
+   
+   function MyComponent() {
+     const { addError, addNotification, isRetryableError } = useError();
+     
+     try {
+       await apiCall();
+     } catch (error) {
+       if (isRetryableError(error)) {
+         // Error will be retried automatically
+         addNotification({
+           message: 'Retrying operation...',
+           type: 'info'
+         });
+       } else {
+         addError({
+           message: error.message,
+           code: error.code,
+           category: error.category
+         });
+       }
+     }
+   }
+   ```
+
+2. **Error Boundary Implementation**: Catch React component errors
+   ```typescript
+   import ErrorBoundary from '../components/ErrorBoundary';
+   
+   function App() {
+     return (
+       <ErrorBoundary
+         onError={(error, errorInfo) => {
+           // Log error to monitoring service
+           console.error('Component error:', error, errorInfo);
+         }}
+       >
+         <YourAppContent />
+       </ErrorBoundary>
+     );
+   }
+   ```
+
+3. **Notification System**: User-friendly error display
+   ```typescript
+   import NotificationSystem from '../components/NotificationSystem';
+   import { ErrorProvider } from '../contexts/ErrorContext';
+   
+   function App() {
+     return (
+       <ErrorProvider>
+         <YourAppContent />
+         <NotificationSystem />
+       </ErrorProvider>
+     );
+   }
+   ```
+
+4. **Retry Mechanisms**: Automatic retry with exponential backoff
+   ```typescript
+   import { fetchWithRetry, createRetryFunction } from '../utils/apiUtils';
+   
+   // Automatic retry for API calls
+   const response = await fetchWithRetry('/api/v1/songs', {
+     method: 'POST',
+     body: JSON.stringify(songData)
+   }, {
+     maxAttempts: 3,
+     delay: 1000,
+     backoffMultiplier: 2
+   });
+   
+   // Create retryable functions
+   const retryableUpload = createRetryFunction(uploadFile, {
+     maxAttempts: 5,
+     retryCondition: (error) => error.retryable
+   });
+   ```
+
+5. **Network State Handling**: Graceful offline/online transitions
+   ```typescript
+   import { isOnline, waitForOnline } from '../utils/apiUtils';
+   
+   if (!isOnline()) {
+     addNotification({
+       message: 'You are offline. Changes will sync when connection is restored.',
+       type: 'warning'
+     });
+   }
+   
+   // Wait for connection before critical operations
+   await waitForOnline(30000); // 30 second timeout
+   ```
+
+#### Error Categories and Handling Strategy
+
+1. **Validation Errors** (`validation`)
+   - **Strategy**: Show immediate feedback, no retry
+   - **UX**: Highlight invalid fields, show correction hints
+   - **Example**: Invalid email format, missing required fields
+
+2. **Authentication Errors** (`authentication`)
+   - **Strategy**: Redirect to login, clear invalid tokens
+   - **UX**: Clear error message, easy re-authentication
+   - **Example**: Expired session, invalid credentials
+
+3. **Authorization Errors** (`authorization`)
+   - **Strategy**: Show access denied message, suggest alternatives
+   - **UX**: Explain why access was denied, offer escalation
+   - **Example**: Insufficient permissions, resource access denied
+
+4. **Network Errors** (`network`)
+   - **Strategy**: Automatic retry with exponential backoff
+   - **UX**: Show retry progress, allow manual retry
+   - **Example**: Connection timeout, DNS resolution failure
+
+5. **Server Errors** (`server_error`)
+   - **Strategy**: Automatic retry, graceful degradation
+   - **UX**: Reassure user, show retry countdown
+   - **Example**: Internal server error, database unavailable
+
+#### Testing Error Scenarios
+
+1. **Backend Error Testing**: Test error response formats
+   ```python
+   def test_registration_invalid_email_error_format(client):
+       response = client.post('/api/v1/auth/register', json={
+           'email': 'invalid-email',
+           'password': 'ValidPassword123!'
+       })
+       
+       assert response.status_code == 400
+       data = response.get_json()
+       assert data['status'] == 'error'
+       assert 'error' in data
+       
+       if isinstance(data['error'], dict):
+           assert 'retryable' in data['error']
+           assert data['error']['retryable'] is False
+   ```
+
+2. **Frontend Error Testing**: Test error handling components
+   ```typescript
+   import { render, screen, fireEvent } from '@testing-library/react';
+   import { ErrorProvider } from '../contexts/ErrorContext';
+   import NotificationSystem from '../components/NotificationSystem';
+   
+   test('displays error notification', async () => {
+     render(
+       <ErrorProvider>
+         <TestComponent />
+         <NotificationSystem />
+       </ErrorProvider>
+     );
+     
+     fireEvent.click(screen.getByTestId('trigger-error'));
+     
+     await waitFor(() => {
+       expect(screen.getByRole('alert')).toBeInTheDocument();
+       expect(screen.getByText(/error occurred/i)).toBeInTheDocument();
+     });
+   });
+   ```
+
+3. **Integration Testing**: Test end-to-end error flows
+   ```typescript
+   // E2E test with Playwright
+   test('handles network error with retry', async ({ page }) => {
+     await page.route('**/api/**', route => route.abort('failed'));
+     
+     await page.fill('input[name="email"]', 'test@example.com');
+     await page.click('button[type="submit"]');
+     
+     await expect(page.locator('[role="alert"]')).toBeVisible();
+     await expect(page.locator('button:has-text("Retry")')).toBeVisible();
+   });
+   ```
+
+#### Performance Considerations
+
+1. **Error Boundaries**: Place strategically to isolate failures
+2. **Retry Limits**: Prevent infinite retry loops with max attempts
+3. **Exponential Backoff**: Reduce server load during outages
+4. **Error Aggregation**: Batch similar errors to avoid spam
+5. **Memory Management**: Clean up error state to prevent leaks
+
+#### Monitoring and Observability
+
+1. **Error Reporting**: Send critical errors to monitoring services
+   ```typescript
+   // In production error boundary
+   if (process.env.NODE_ENV === 'production') {
+     reportError({
+       message: error.message,
+       stack: error.stack,
+       componentStack: errorInfo.componentStack,
+       url: window.location.href,
+       timestamp: new Date().toISOString()
+     });
+   }
+   ```
+
+2. **Error Metrics**: Track error rates and categories
+3. **User Impact**: Monitor error impact on user workflows
+4. **Recovery Rates**: Track how often retries succeed
+
+This comprehensive error handling system ensures robust application behavior and excellent user experience even when things go wrong.
 
 #### Version-Specific Considerations
 
