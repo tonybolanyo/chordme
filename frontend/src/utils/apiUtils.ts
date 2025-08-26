@@ -40,7 +40,7 @@ function sleep(ms: number): Promise<void> {
  * Parse error response from API
  */
 export function parseApiError(response: Response, responseText: string): ApiError {
-  let errorData: any = {};
+  let errorData: unknown = {};
   
   try {
     errorData = JSON.parse(responseText);
