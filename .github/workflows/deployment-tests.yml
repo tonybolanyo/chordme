@@ -1,0 +1,208 @@
+permissions:
+  contents: read
+name: Deployment Pipeline Integration Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to test'
+        required: true
+        type: choice
+        options:
+        - staging
+        - production
+  schedule:
+    # Run tests daily at 6 AM UTC
+    - cron: '0 6 * * *'
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/**'
+      - 'tests/deployment/**'
+      - 'infrastructure/**'
+
+env:
+  STAGING_BACKEND_URL: ${{ secrets.STAGING_BACKEND_URL || 'https://chordme-staging-backend.onrender.com' }}
+  STAGING_FRONTEND_URL: ${{ secrets.STAGING_FRONTEND_URL || 'https://chordme-staging.vercel.app' }}
+  PRODUCTION_BACKEND_URL: ${{ secrets.PRODUCTION_BACKEND_URL || 'https://chordme-backend.onrender.com' }}
+  PRODUCTION_FRONTEND_URL: ${{ secrets.PRODUCTION_FRONTEND_URL || 'https://chordme.vercel.app' }}
+
+jobs:
+  test-deployment-pipeline:
+    name: Test Deployment Pipeline
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        environment: [staging]  # Only test staging by default
+        include:
+          - environment: production
+            if: github.event.inputs.environment == 'production'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    
+    - name: Install test dependencies
+      run: |
+        pip install -r tests/deployment/requirements.txt
+    
+    - name: Create reports directory
+      run: mkdir -p reports
+    
+    - name: Run deployment integration tests
+      env:
+        ENVIRONMENT: ${{ matrix.environment }}
+        BACKEND_URL: ${{ matrix.environment == 'production' && env.PRODUCTION_BACKEND_URL || env.STAGING_BACKEND_URL }}
+        FRONTEND_URL: ${{ matrix.environment == 'production' && env.PRODUCTION_FRONTEND_URL || env.STAGING_FRONTEND_URL }}
+      run: |
+        # Set environment variables for tests
+        export STAGING_BACKEND_URL="${{ env.STAGING_BACKEND_URL }}"
+        export STAGING_FRONTEND_URL="${{ env.STAGING_FRONTEND_URL }}"
+        export PRODUCTION_BACKEND_URL="${{ env.PRODUCTION_BACKEND_URL }}"
+        export PRODUCTION_FRONTEND_URL="${{ env.PRODUCTION_FRONTEND_URL }}"
+        
+        # Run integration tests
+        python -m pytest tests/deployment/test_deployment_integration.py \
+          -v \
+          --junitxml=reports/deployment-integration-${{ matrix.environment }}.xml \
+          --html=reports/deployment-integration-${{ matrix.environment }}.html \
+          --self-contained-html
+    
+    - name: Run smoke tests
+      env:
+        ENVIRONMENT: ${{ matrix.environment }}
+        BACKEND_URL: ${{ matrix.environment == 'production' && env.PRODUCTION_BACKEND_URL || env.STAGING_BACKEND_URL }}
+        FRONTEND_URL: ${{ matrix.environment == 'production' && env.PRODUCTION_FRONTEND_URL || env.STAGING_FRONTEND_URL }}
+      run: |
+        # Run comprehensive smoke tests
+        python tests/deployment/smoke_tests.py \
+          --environment ${{ matrix.environment }} \
+          --backend-url "$BACKEND_URL" \
+          --frontend-url "$FRONTEND_URL" \
+          --json > reports/smoke-tests-${{ matrix.environment }}.json
+    
+    - name: Upload test reports
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: deployment-test-reports-${{ matrix.environment }}
+        path: reports/
+        retention-days: 30
+    
+    - name: Validate infrastructure templates
+      if: matrix.environment == 'staging'
+      run: |
+        # Validate Terraform templates
+        cd infrastructure/terraform/aws
+        terraform init -backend=false
+        terraform validate
+        
+        # Validate CloudFormation template
+        if command -v aws &> /dev/null; then
+          aws cloudformation validate-template \
+            --template-body file://../cloudformation/chordme-infrastructure.yaml \
+            --no-cli-pager || echo "AWS CLI not configured for validation"
+        else
+          echo "AWS CLI not available for CloudFormation validation"
+        fi
+
+  test-deployment-workflows:
+    name: Test Deployment Workflows
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Validate workflow syntax
+      run: |
+        # Check workflow YAML syntax
+        echo "Validating workflow files..."
+        
+        workflows=(
+          ".github/workflows/blue-green-deployment.yml"
+          ".github/workflows/emergency-rollback.yml"
+          ".github/workflows/release.yml"
+          ".github/workflows/ci.yml"
+        )
+        
+        for workflow in "${workflows[@]}"; do
+          if [ -f "$workflow" ]; then
+            echo "✅ $workflow exists"
+            # Basic YAML syntax check
+            python -c "import yaml; yaml.safe_load(open('$workflow'))" && echo "✅ $workflow has valid YAML syntax"
+          else
+            echo "❌ $workflow not found"
+            exit 1
+          fi
+        done
+
+  security-validation:
+    name: Security Validation
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Check for secrets in infrastructure
+      run: |
+        echo "Checking for hardcoded secrets in infrastructure..."
+        
+        # Check for potential secrets in infrastructure files
+        secret_patterns=(
+          "password.*=.*['\"].*['\"]"
+          "secret.*=.*['\"].*['\"]"
+          "key.*=.*['\"].*['\"]"
+          "token.*=.*['\"].*['\"]"
+        )
+        
+        found_secrets=false
+        
+        for pattern in "${secret_patterns[@]}"; do
+          if grep -ri "$pattern" infrastructure/ --exclude-dir=.terraform 2>/dev/null; then
+            echo "⚠️  Potential secret found matching pattern: $pattern"
+            found_secrets=true
+          fi
+        done
+        
+        if [ "$found_secrets" = true ]; then
+          echo "❌ Potential secrets found in infrastructure files"
+          echo "Please ensure all secrets are parameterized and not hardcoded"
+          exit 1
+        else
+          echo "✅ No hardcoded secrets found in infrastructure files"
+        fi
+
+  create-test-summary:
+    name: Create Test Summary
+    runs-on: ubuntu-latest
+    needs: [test-deployment-pipeline, test-deployment-workflows, security-validation]
+    if: always()
+    steps:
+    - name: Create deployment test summary
+      run: |
+        echo "## Deployment Pipeline Test Results" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        # Check job results
+        DEPLOYMENT_TESTS="${{ needs.test-deployment-pipeline.result }}"
+        WORKFLOW_TESTS="${{ needs.test-deployment-workflows.result }}"
+        SECURITY_TESTS="${{ needs.security-validation.result }}"
+        
+        echo "| Test Category | Status |" >> $GITHUB_STEP_SUMMARY
+        echo "|---------------|--------|" >> $GITHUB_STEP_SUMMARY
+        echo "| Deployment Integration | $([[ $DEPLOYMENT_TESTS == 'success' ]] && echo '✅ Pass' || echo '❌ Fail') |" >> $GITHUB_STEP_SUMMARY
+        echo "| Workflow Validation | $([[ $WORKFLOW_TESTS == 'success' ]] && echo '✅ Pass' || echo '❌ Fail') |" >> $GITHUB_STEP_SUMMARY
+        echo "| Security Validation | $([[ $SECURITY_TESTS == 'success' ]] && echo '✅ Pass' || echo '❌ Fail') |" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        # Overall status
+        if [[ "$DEPLOYMENT_TESTS" == "success" && "$WORKFLOW_TESTS" == "success" && "$SECURITY_TESTS" == "success" ]]; then
+          echo "🎉 **All deployment pipeline tests passed!**" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "⚠️ **Some deployment pipeline tests failed. Please review the results above.**" >> $GITHUB_STEP_SUMMARY
+        fi

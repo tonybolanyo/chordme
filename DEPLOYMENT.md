@@ -14,7 +14,57 @@ The deployment setup supports:
 - ✅ Render.com for backend hosting
 - ✅ Vercel for frontend hosting
 
-## Automated Deployment
+## Infrastructure as Code
+
+ChordMe includes comprehensive infrastructure templates for cloud deployment:
+
+### AWS Infrastructure (Terraform)
+
+Deploy to AWS using Terraform for full infrastructure automation:
+
+```bash
+cd infrastructure/terraform/aws
+
+# Initialize Terraform
+terraform init
+
+# Plan deployment
+terraform plan -var="environment=production" \
+               -var="db_password=YOUR_DB_PASSWORD" \
+               -var="jwt_secret_key=YOUR_JWT_SECRET" \
+               -var="flask_secret_key=YOUR_FLASK_SECRET" \
+               -var="frontend_bucket_name=your-unique-bucket-name"
+
+# Apply infrastructure
+terraform apply
+```
+
+**Features:**
+- **ECS Fargate**: Containerized backend with auto-scaling
+- **RDS PostgreSQL**: Managed database with backups
+- **S3 + CloudFront**: Static frontend hosting with CDN
+- **Application Load Balancer**: High availability and SSL termination
+- **VPC**: Secure network architecture with public/private subnets
+- **Monitoring**: CloudWatch dashboards and alarms
+- **Security**: IAM roles, security groups, and encryption
+
+### AWS Infrastructure (CloudFormation)
+
+Alternative CloudFormation template for AWS deployments:
+
+```bash
+cd infrastructure/cloudformation
+
+# Deploy the stack
+aws cloudformation create-stack \
+  --stack-name chordme-production \
+  --template-body file://chordme-infrastructure.yaml \
+  --parameters ParameterKey=Environment,ParameterValue=production \
+               ParameterKey=DbPassword,ParameterValue=YOUR_DB_PASSWORD \
+  --capabilities CAPABILITY_IAM
+```
+
+### Current Platform Configuration
 
 ### Prerequisites
 
@@ -190,16 +240,119 @@ Or update manually:
 
 ## Rollback Strategy
 
-1. **Automated**: Create a new tag pointing to a previous commit
-2. **Manual**: 
-   - Render: Deploy from a previous commit in the dashboard
-   - Vercel: Promote a previous deployment in the dashboard
+### Automated Rollback (Recommended)
+
+ChordMe now supports automated rollback procedures with multiple strategies:
+
+#### 1. Emergency Rollback Workflow
+For immediate rollback to a known good version:
+
+```bash
+# Trigger emergency rollback via GitHub Actions
+# Go to Actions → "Emergency Rollback" → "Run workflow"
+# Or use GitHub CLI:
+gh workflow run emergency-rollback.yml \
+  -f environment=production \
+  -f rollback_to_tag=v1.0.0 \
+  -f reason="Critical bug in payment processing"
+```
+
+#### 2. Blue-Green Deployment Rollback
+Automatic rollback during blue-green deployments when validation fails:
+
+- Deployment validation failure triggers automatic rollback
+- Traffic is switched back to the previous (blue) environment
+- Rollback is logged and stakeholders are notified
+
+### Manual Rollback Procedures
+
+#### 1. Platform-Specific Rollback
+
+**Render (Backend):**
+```bash
+# Via Render API
+curl -X POST \
+  -H "Authorization: Bearer $RENDER_API_KEY" \
+  "https://api.render.com/v1/services/$SERVICE_ID/deploys" \
+  -d '{"commitId": "PREVIOUS_COMMIT_SHA"}'
+
+# Via Dashboard
+# 1. Go to your service dashboard
+# 2. Click "Deploy" → "Deploy previous commit"
+# 3. Select the commit to rollback to
+```
+
+**Vercel (Frontend):**
+```bash
+# Via Vercel CLI
+vercel --prod --token $VERCEL_TOKEN
+
+# Via Dashboard
+# 1. Go to your project dashboard
+# 2. Find the previous deployment
+# 3. Click "Promote to Production"
+```
+
+#### 2. Git-Based Rollback
+```bash
+# Create a rollback tag
+git tag v1.0.1-rollback
+git push origin main --tags
+
+# This triggers the standard release workflow
+```
 
 ## Monitoring
 
-- **Backend**: Monitor via Render dashboard or application logs
-- **Frontend**: Monitor via Vercel analytics or browser dev tools
-- **Health checks**: Use the `/api/v1/health` endpoint for monitoring
+### Comprehensive Monitoring Stack
+
+ChordMe includes comprehensive monitoring and observability:
+
+#### Application Monitoring
+- **Backend Health**: `/api/v1/health` endpoint with detailed status
+- **Version Tracking**: `/api/v1/version` endpoint for deployment verification
+- **Performance Metrics**: Response time, throughput, and error rates
+- **Dependency Health**: Database connectivity and external service status
+
+#### Infrastructure Monitoring (AWS)
+- **ECS Metrics**: CPU, memory, task count, and service health
+- **RDS Monitoring**: Database performance, connections, and query metrics
+- **ALB Metrics**: Request count, response times, and error rates
+- **CloudFront**: CDN performance and cache hit rates
+
+#### Deployment Monitoring
+- **Deployment Tests**: Automated smoke tests post-deployment
+- **Integration Tests**: End-to-end validation of critical workflows
+- **Performance Validation**: Response time and resource utilization checks
+- **Security Scanning**: Automated security header and vulnerability checks
+
+### Alerting and Notifications
+
+#### Alert Channels
+- **Slack Integration**: Real-time deployment and system alerts
+- **Email Notifications**: Critical system failures and deployment results
+- **GitHub Issues**: Automatic issue creation for failed deployments
+
+#### Alert Triggers
+- **High Response Times**: > 2 seconds for API endpoints
+- **Error Rates**: > 5% error rate for 5 minutes
+- **Resource Utilization**: > 80% CPU or memory for 10 minutes
+- **Database Issues**: Connection failures or high latency
+- **Deployment Failures**: Failed builds, tests, or rollbacks
+
+### Platform-Specific Monitoring
+
+#### Render (Backend)
+- **Service Dashboard**: Monitor via Render dashboard or application logs
+- **Log Aggregation**: Centralized logging with structured log format
+- **Metrics API**: Custom metrics and monitoring integration
+
+#### Vercel (Frontend)
+- **Analytics Dashboard**: Monitor via Vercel analytics and performance metrics
+- **Function Logs**: Serverless function execution and error tracking
+- **Web Vitals**: Core Web Vitals and user experience metrics
+
+### Health Check Endpoints
 
 ---
 
