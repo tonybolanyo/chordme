@@ -16,6 +16,10 @@
     "test:e2e": "npx playwright test",
     "test:all": "npm run test:frontend:run && npm run test:backend && npm run test:integration",
     "test:coverage": "npm run test:frontend:coverage && npm run test:backend:coverage",
+    "test:security": "cd backend && FLASK_CONFIG=test_config python -m pytest tests/test_owasp_security_audit.py -v",
+    "test:security:full": "cd backend && FLASK_CONFIG=test_config python -m pytest tests/test_owasp_security_audit.py tests/test_security_enhancements.py tests/test_advanced_security_audit.py -v",
+    "security:audit": "python scripts/security_audit.py",
+    "security:scan": "cd backend && python -m bandit -r chordme/ && python -m safety check",
     "lint:frontend": "cd frontend && npm run lint",
     "format:frontend": "cd frontend && npm run format"
   },

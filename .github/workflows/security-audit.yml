@@ -1,0 +1,285 @@
+name: Security Audit and Penetration Testing
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run security audit daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      fail_on_issues:
+        description: 'Fail build on security issues'
+        required: false
+        default: 'true'
+        type: boolean
+
+env:
+  PYTHON_VERSION: '3.12'
+
+jobs:
+  security-audit:
+    name: Security Audit and OWASP Top 10 Testing
+    permissions:
+      contents: read
+      pull-requests: write
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-security-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-security-
+          ${{ runner.os }}-pip-
+    
+    - name: Install backend dependencies
+      run: |
+        cd backend
+        pip install --upgrade pip
+        pip install -r requirements.txt
+        # Install additional testing dependencies
+        pip install pytest-json-report
+    
+    - name: Setup backend configuration
+      run: |
+        cd backend
+        cp config.template.py config.py
+        # Configure for testing
+        echo "TESTING = True" >> config.py
+        echo "HTTPS_ENFORCED = False" >> config.py
+    
+    - name: Run Static Security Analysis (Bandit)
+      run: |
+        cd backend
+        python -m bandit -r chordme/ -f json -o ../security_reports/bandit_report.json || true
+        python -m bandit -r chordme/ -f txt || true
+      continue-on-error: true
+    
+    - name: Run Dependency Vulnerability Scan (Safety)
+      run: |
+        cd backend
+        mkdir -p ../security_reports
+        python -m safety check --json --output ../security_reports/safety_report.json || true
+        python -m safety check || true
+      continue-on-error: true
+    
+    - name: Run OWASP Top 10 Security Tests
+      run: |
+        cd backend
+        mkdir -p ../security_reports
+        python -m pytest tests/test_owasp_security_audit.py -v \
+          --tb=short \
+          --json-report \
+          --json-report-file=../security_reports/owasp_test_results.json || true
+      continue-on-error: true
+    
+    - name: Run Comprehensive Security Audit
+      run: |
+        python scripts/security_audit.py \
+          --output-dir security_reports \
+          ${{ github.event.inputs.fail_on_issues == 'true' && '--fail-on-issues' || '' }}
+      continue-on-error: ${{ github.event.inputs.fail_on_issues != 'true' }}
+    
+    - name: Upload Security Reports
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: security-audit-reports-${{ github.run_number }}
+        path: security_reports/
+        retention-days: 30
+    
+    - name: Post Security Summary to PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const path = 'security_reports/security_audit_summary.json';
+          
+          if (fs.existsSync(path)) {
+            const summary = JSON.parse(fs.readFileSync(path, 'utf8'));
+            
+            const comment = `## 🔒 Security Audit Results
+            
+            **Security Score:** ${summary.summary.security_score}/100
+            **Status:** ${summary.summary.status}
+            **Critical Issues:** ${summary.summary.critical_issues}
+            
+            ### Static Analysis (Bandit)
+            - Total Issues: ${summary.bandit.total_issues || 'N/A'}
+            - High Severity: ${summary.bandit.high_severity || 0}
+            - Medium Severity: ${summary.bandit.medium_severity || 0}
+            
+            ### Dependency Vulnerabilities (Safety)
+            - Vulnerabilities: ${summary.safety.vulnerabilities_found || 0}
+            
+            ### OWASP Top 10 Tests
+            - Passed: ${summary.owasp_tests.passed || 'N/A'}
+            - Failed: ${summary.owasp_tests.failed || 'N/A'}
+            
+            ### Recommendations
+            ${summary.summary.recommendations.map(r => `- ${r}`).join('\n')}
+            
+            📊 Full reports available in the workflow artifacts.`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+          }
+    
+    - name: Fail on Critical Security Issues
+      if: github.event.inputs.fail_on_issues == 'true' || github.event_name == 'push'
+      run: |
+        if [ -f security_reports/security_audit_summary.json ]; then
+          CRITICAL_ISSUES=$(cat security_reports/security_audit_summary.json | python -c "
+          import sys, json
+          data = json.load(sys.stdin)
+          print(data['summary']['critical_issues'])
+          ")
+          
+          if [ "$CRITICAL_ISSUES" -gt 0 ]; then
+            echo "❌ Critical security issues found: $CRITICAL_ISSUES"
+            echo "Please review and fix security issues before merging."
+            exit 1
+          fi
+        fi
+
+  penetration-testing:
+    name: Automated Penetration Testing
+    runs-on: ubuntu-latest
+    needs: security-audit
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Install dependencies
+      run: |
+        cd backend
+        pip install --upgrade pip
+        pip install -r requirements.txt
+        # Install penetration testing tools
+        pip install requests aiohttp
+    
+    - name: Setup test environment
+      run: |
+        cd backend
+        cp config.template.py config.py
+        echo "TESTING = True" >> config.py
+        echo "HTTPS_ENFORCED = False" >> config.py
+    
+    - name: Start application for testing
+      run: |
+        cd backend
+        python run.py &
+        sleep 10  # Wait for server to start
+        # Test that server is running
+        curl -f http://localhost:5000/api/v1/health || exit 1
+      timeout-minutes: 2
+    
+    - name: Run Advanced Security Tests
+      run: |
+        cd backend
+        python -m pytest tests/test_advanced_security_audit.py -v --tb=short
+    
+    - name: Run Collaboration Security Tests  
+      run: |
+        cd backend
+        python -m pytest tests/test_collaboration_security.py -v --tb=short
+    
+    - name: Generate Penetration Test Report
+      run: |
+        mkdir -p penetration_reports
+        echo "# Penetration Testing Report" > penetration_reports/PENETRATION_TEST_REPORT.md
+        echo "Generated: $(date)" >> penetration_reports/PENETRATION_TEST_REPORT.md
+        echo "" >> penetration_reports/PENETRATION_TEST_REPORT.md
+        echo "## Test Results" >> penetration_reports/PENETRATION_TEST_REPORT.md
+        echo "- Advanced Security Audit: Completed" >> penetration_reports/PENETRATION_TEST_REPORT.md
+        echo "- Collaboration Security: Completed" >> penetration_reports/PENETRATION_TEST_REPORT.md
+        echo "- Application Availability: Verified" >> penetration_reports/PENETRATION_TEST_REPORT.md
+    
+    - name: Upload Penetration Test Reports
+      uses: actions/upload-artifact@v4
+      with:
+        name: penetration-test-reports-${{ github.run_number }}
+        path: penetration_reports/
+        retention-days: 30
+
+  security-monitoring:
+    name: Security Monitoring and Alerting
+    runs-on: ubuntu-latest
+    needs: [security-audit, penetration-testing]
+    if: always() && (github.event_name == 'schedule' || github.event_name == 'push')
+    
+    steps:
+    - name: Download Security Reports
+      uses: actions/download-artifact@v4
+      with:
+        name: security-audit-reports-${{ github.run_number }}
+        path: security_reports/
+    
+    - name: Check Security Trends
+      run: |
+        if [ -f security_reports/security_audit_summary.json ]; then
+          SECURITY_SCORE=$(cat security_reports/security_audit_summary.json | python -c "
+          import sys, json
+          data = json.load(sys.stdin)
+          print(data['summary']['security_score'])
+          ")
+          
+          echo "Current security score: $SECURITY_SCORE"
+          
+          # Set baseline score for comparison (can be stored in repo or external system)
+          BASELINE_SCORE=${BASELINE_SECURITY_SCORE:-75}
+          
+          if [ "$SECURITY_SCORE" -lt "$BASELINE_SCORE" ]; then
+            echo "::warning::Security score ($SECURITY_SCORE) is below baseline ($BASELINE_SCORE)"
+          fi
+        fi
+    
+    - name: Create Security Issue on Failure
+      if: failure() && github.event_name == 'schedule'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const issue = await github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: '🔒 Automated Security Audit Failed',
+            body: `The automated security audit failed on ${new Date().toISOString()}.
+            
+            Please review the security reports and address any critical issues.
+            
+            **Workflow Run:** ${{ github.run_id }}
+            **Triggered by:** ${{ github.event_name }}
+            
+            Reports are available in the workflow artifacts.`,
+            labels: ['security', 'bug', 'high-priority']
+          });
+          
+          console.log('Created security issue:', issue.data.number);
