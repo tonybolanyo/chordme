@@ -124,7 +124,7 @@ swagger_template = {
                                 "retryable": {
                                     "type": "boolean",
                                     "description": "Whether the operation can be retried",
-                                    "example": false
+                                    "example": False
                                 },
                                 "details": {
                                     "type": "object",
@@ -148,7 +148,7 @@ swagger_template = {
                         "code": {"type": "string", "example": "INVALID_EMAIL"},
                         "message": {"type": "string", "example": "Please enter a valid email address"},
                         "category": {"type": "string", "example": "validation"},
-                        "retryable": {"type": "boolean", "example": false}
+                        "retryable": {"type": "boolean", "example": False}
                     }
                 }
             }
@@ -163,7 +163,7 @@ swagger_template = {
                         "code": {"type": "string", "example": "TOKEN_EXPIRED"},
                         "message": {"type": "string", "example": "Your session has expired. Please log in again"},
                         "category": {"type": "string", "example": "authentication"},
-                        "retryable": {"type": "boolean", "example": false}
+                        "retryable": {"type": "boolean", "example": False}
                     }
                 }
             }
@@ -178,7 +178,7 @@ swagger_template = {
                         "code": {"type": "string", "example": "INTERNAL_SERVER_ERROR"},
                         "message": {"type": "string", "example": "An unexpected error occurred. Please try again"},
                         "category": {"type": "string", "example": "server_error"},
-                        "retryable": {"type": "boolean", "example": true}
+                        "retryable": {"type": "boolean", "example": True}
                     }
                 }
             }
