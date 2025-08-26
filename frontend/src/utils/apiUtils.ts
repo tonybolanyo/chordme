@@ -13,7 +13,7 @@ export interface ApiError extends Error {
   category?: string;
   retryable?: boolean;
   status?: number;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
 }
 
 const DEFAULT_RETRY_OPTIONS: Required<RetryOptions> = {
