@@ -90,6 +90,45 @@ echo -e "   ${GREEN}Valid files: $valid_files${NC}"
 echo -e "   ${RED}Invalid files: $invalid_files${NC}"
 echo -e "   ${YELLOW}Warnings: $warnings${NC}"
 
+# Check for bilingual coverage (both English and Spanish versions)
+echo ""
+echo "🌐 Checking bilingual coverage..."
+missing_translations=0
+
+# Get list of English markdown files (excluding ones that should not have translations)
+exclude_pattern="^(swagger|Gemfile|_)"
+for file in *.md; do
+    if [ -f "$file" ]; then
+        filename=$(basename "$file" .md)
+        
+        # Skip files that shouldn't have translations
+        if echo "$filename" | grep -qE "$exclude_pattern"; then
+            continue
+        fi
+        
+        # Skip if it's already a Spanish file
+        if echo "$filename" | grep -q "\-es$"; then
+            continue
+        fi
+        
+        # Check if Spanish version exists
+        spanish_file="${filename}-es.md"
+        if [ -f "$spanish_file" ]; then
+            echo -e "${GREEN}✅ $file ↔ $spanish_file${NC}"
+        else
+            echo -e "${RED}❌ Missing Spanish version: $spanish_file${NC}"
+            missing_translations=$((missing_translations + 1))
+        fi
+    fi
+done
+
+if [ $missing_translations -gt 0 ]; then
+    echo -e "${RED}Missing $missing_translations Spanish translations${NC}"
+    invalid_files=$((invalid_files + missing_translations))
+else
+    echo -e "${GREEN}✅ All documentation files have both English and Spanish versions${NC}"
+fi
+
 # Check Jekyll configuration
 echo ""
 echo "⚙️  Checking Jekyll configuration..."
