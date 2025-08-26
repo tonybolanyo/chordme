@@ -195,7 +195,7 @@ class TestAPIInputValidation:
         
         assert response.status_code == 400
         data = json.loads(response.data)
-        assert 'too large' in data['error'].lower() or 'characters' in data['error'].lower()
+        assert 'too large' in data['error']['message'].lower() or 'characters' in data['error']['message'].lower()
     
     def test_file_upload_security_validation(self, client, auth_token):
         """Test security validation in file uploads."""
@@ -226,4 +226,4 @@ class TestAPIInputValidation:
         # Should reject due to dangerous content
         assert response.status_code == 400
         response_data = json.loads(response.data)
-        assert 'dangerous' in response_data['error'].lower()
+        assert 'dangerous' in response_data['error']['message'].lower()

@@ -29,8 +29,8 @@ class TestAPIErrorScenarios:
         
         # Check if it's using enhanced format
         if isinstance(data['error'], dict):
-            assert 'message' in data['error']
-            assert 'retryable' in data['error']
+            assert 'message' in data['error']['message']
+            assert 'retryable' in data['error']['message']
             assert data['error']['retryable'] is False
         else:
             # Legacy format is also acceptable

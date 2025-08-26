@@ -135,7 +135,7 @@ class TestSongDownload:
         assert response.status_code == 404
         data = json.loads(response.get_data())
         assert data['status'] == 'error'
-        assert 'Song not found' in data['error']
+        assert 'Song not found' in data['error']['message']
     
     def test_download_song_not_owned(self, client):
         """Test download of song owned by another user."""
@@ -162,7 +162,7 @@ class TestSongDownload:
         assert response.status_code == 404
         data = json.loads(response.get_data())
         assert data['status'] == 'error'
-        assert 'Song not found' in data['error']
+        assert 'Song not found' in data['error']['message']
     
     def test_download_filename_sanitization(self, client):
         """Test that special characters in song title are sanitized for filename."""

@@ -95,7 +95,7 @@ class TestUserRegistration:
         assert response.status_code == 400
         data = json.loads(response.data)
         assert data['status'] == 'error'
-        assert 'No data provided' in data['error']
+        assert 'No data provided' in data['error']['message']
     
     def test_registration_empty_json(self, client):
         """Test registration fails with empty JSON data."""
@@ -108,7 +108,7 @@ class TestUserRegistration:
         assert response.status_code == 400
         data = json.loads(response.data)
         assert data['status'] == 'error'
-        assert 'No data provided' in data['error']
+        assert 'No data provided' in data['error']['message']
     
     def test_registration_missing_email(self, client):
         """Test registration fails when email is missing."""
@@ -121,7 +121,7 @@ class TestUserRegistration:
         assert response.status_code == 400
         data = json.loads(response.data)
         assert data['status'] == 'error'
-        assert 'Email is required' in data['error']
+        assert 'Email is required' in data['error']['message']
     
     def test_registration_missing_password(self, client):
         """Test registration fails when password is missing."""
@@ -134,7 +134,7 @@ class TestUserRegistration:
         assert response.status_code == 400
         data = json.loads(response.data)
         assert data['status'] == 'error'
-        assert 'Password is required' in data['error']
+        assert 'Password is required' in data['error']['message']
     
     def test_registration_invalid_emails(self, client, invalid_emails):
         """Test registration fails with various invalid email formats."""
@@ -149,7 +149,7 @@ class TestUserRegistration:
             data = json.loads(response.data)
             assert data['status'] == 'error'
             # Check for email-related error messages
-            error_msg = data['error'].lower()
+            error_msg = data['error']['message'].lower()
             assert any(keyword in error_msg for keyword in ['email', 'invalid', 'required', 'format', 'long'])
     
     def test_registration_invalid_passwords(self, client, invalid_passwords):
@@ -164,7 +164,7 @@ class TestUserRegistration:
             assert response.status_code == 400
             data = json.loads(response.data)
             assert data['status'] == 'error'
-            assert 'Password' in data['error'] or 'password' in data['error']
+            assert 'Password' in data['error']['message'] or 'password' in data['error']['message']
     
     def test_registration_duplicate_email(self, client, sample_user_data):
         """Test registration fails when email already exists."""
@@ -186,7 +186,7 @@ class TestUserRegistration:
         assert response2.status_code == 409
         data = json.loads(response2.data)
         assert data['status'] == 'error'
-        assert 'already exists' in data['error']
+        assert 'already exists' in data['error']['message']
     
     def test_registration_duplicate_email_case_insensitive(self, client):
         """Test registration fails with duplicate email regardless of case."""
@@ -211,7 +211,7 @@ class TestUserRegistration:
         assert response2.status_code == 409
         data = json.loads(response2.data)
         assert data['status'] == 'error'
-        assert 'already exists' in data['error']
+        assert 'already exists' in data['error']['message']
 
 
 class TestUserLogin:
@@ -306,7 +306,7 @@ class TestUserLogin:
         assert response.status_code == 400
         data = json.loads(response.data)
         assert data['status'] == 'error'
-        assert 'No data provided' in data['error']
+        assert 'No data provided' in data['error']['message']
     
     def test_login_empty_json(self, client):
         """Test login fails with empty JSON data."""
@@ -319,7 +319,7 @@ class TestUserLogin:
         assert response.status_code == 400
         data = json.loads(response.data)
         assert data['status'] == 'error'
-        assert 'No data provided' in data['error']
+        assert 'No data provided' in data['error']['message']
     
     def test_login_missing_email(self, client):
         """Test login fails when email is missing."""
@@ -332,7 +332,7 @@ class TestUserLogin:
         assert response.status_code == 400
         data = json.loads(response.data)
         assert data['status'] == 'error'
-        assert 'Email is required' in data['error']
+        assert 'Email is required' in data['error']['message']
     
     def test_login_missing_password(self, client):
         """Test login fails when password is missing."""
@@ -345,7 +345,7 @@ class TestUserLogin:
         assert response.status_code == 400
         data = json.loads(response.data)
         assert data['status'] == 'error'
-        assert 'Password is required' in data['error']
+        assert 'Password is required' in data['error']['message']
     
     def test_login_invalid_email(self, client):
         """Test login fails with non-existent email."""
@@ -358,7 +358,7 @@ class TestUserLogin:
         assert response.status_code == 401
         data = json.loads(response.data)
         assert data['status'] == 'error'
-        assert 'Invalid email or password' in data['error']
+        assert 'Invalid email or password' in data['error']['message']
     
     def test_login_invalid_password(self, client, sample_user_data):
         """Test login fails with wrong password."""
@@ -383,7 +383,7 @@ class TestUserLogin:
         assert response.status_code == 401
         data = json.loads(response.data)
         assert data['status'] == 'error'
-        assert 'Invalid email or password' in data['error']
+        assert 'Invalid email or password' in data['error']['message']
     
     def test_login_empty_email(self, client):
         """Test login fails with empty email."""
@@ -396,7 +396,7 @@ class TestUserLogin:
         assert response.status_code == 400
         data = json.loads(response.data)
         assert data['status'] == 'error'
-        assert 'Email is required' in data['error']
+        assert 'Email is required' in data['error']['message']
     
     def test_login_empty_password(self, client):
         """Test login fails with empty password."""
@@ -409,7 +409,7 @@ class TestUserLogin:
         assert response.status_code == 400
         data = json.loads(response.data)
         assert data['status'] == 'error'
-        assert 'Password is required' in data['error']
+        assert 'Password is required' in data['error']['message']
 
 
 class TestIntegrationScenarios:

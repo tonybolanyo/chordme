@@ -29,7 +29,7 @@ class TestChordRoutes:
         assert response.status_code == 401
         data = response.get_json()
         assert data['status'] == 'error'
-        assert 'Authorization header is required' in data['error']
+        assert 'Authorization header is required' in data['error']['message']
     
     def test_create_chord_success(self, client, auth_token):
         """Test successful chord creation."""
@@ -114,7 +114,7 @@ class TestChordRoutes:
         assert response.status_code == 400
         data = response.get_json()
         assert data['status'] == 'error'
-        assert 'Name is required' in data['error']
+        assert 'Name is required' in data['error']['message']
     
     def test_create_chord_missing_definition(self, client, auth_token):
         """Test creating chord without definition fails."""
@@ -132,7 +132,7 @@ class TestChordRoutes:
         assert response.status_code == 400
         data = response.get_json()
         assert data['status'] == 'error'
-        assert 'Definition is required' in data['error']
+        assert 'Definition is required' in data['error']['message']
     
     def test_create_chord_name_too_long(self, client, auth_token):
         """Test creating chord with name too long fails."""
@@ -151,7 +151,7 @@ class TestChordRoutes:
         assert response.status_code == 400
         data = response.get_json()
         assert data['status'] == 'error'
-        assert 'Name must be 50 characters or less' in data['error']
+        assert 'Name must be 50 characters or less' in data['error']['message']
     
     def test_create_chord_definition_too_long(self, client, auth_token):
         """Test creating chord with definition too long fails."""
@@ -170,7 +170,7 @@ class TestChordRoutes:
         assert response.status_code == 400
         data = response.get_json()
         assert data['status'] == 'error'
-        assert 'Definition must be 1,000 characters or less' in data['error']
+        assert 'Definition must be 1,000 characters or less' in data['error']['message']
     
     def test_create_chord_description_too_long(self, client, auth_token):
         """Test creating chord with description too long fails."""
@@ -190,7 +190,7 @@ class TestChordRoutes:
         assert response.status_code == 400
         data = response.get_json()
         assert data['status'] == 'error'
-        assert 'Description must be 500 characters or less' in data['error']
+        assert 'Description must be 500 characters or less' in data['error']['message']
     
     def test_create_chord_duplicate_name(self, client, auth_token):
         """Test creating chord with duplicate name fails."""
@@ -311,7 +311,7 @@ class TestChordRoutes:
         assert response.status_code == 404
         data = response.get_json()
         assert data['status'] == 'error'
-        assert 'Chord not found' in data['error']
+        assert 'Chord not found' in data['error']['message']
     
     def test_get_chord_requires_auth(self, client):
         """Test that getting specific chord requires authentication."""
@@ -415,7 +415,7 @@ class TestChordRoutes:
         assert response.status_code == 404
         data = response.get_json()
         assert data['status'] == 'error'
-        assert 'Chord not found' in data['error']
+        assert 'Chord not found' in data['error']['message']
     
     def test_update_chord_duplicate_name(self, client, auth_token):
         """Test updating chord to duplicate name fails."""
@@ -506,7 +506,7 @@ class TestChordRoutes:
         assert response.status_code == 404
         data = response.get_json()
         assert data['status'] == 'error'
-        assert 'Chord not found' in data['error']
+        assert 'Chord not found' in data['error']['message']
     
     def test_delete_chord_requires_auth(self, client):
         """Test that deleting chord requires authentication."""
@@ -659,7 +659,7 @@ class TestChordInput:
         
         assert response.status_code == 400
         data = response.get_json()
-        assert 'Name is required' in data['error']
+        assert 'Name is required' in data['error']['message']
     
     def test_chord_whitespace_trimming(self, client, auth_token):
         """Test that whitespace is properly trimmed."""
