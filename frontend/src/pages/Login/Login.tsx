@@ -7,6 +7,7 @@ import {
   FirebaseAuthButtons,
   FirebaseEmailForm,
 } from '../../components/FirebaseAuth';
+import PasswordInput from '../../components/PasswordInput';
 import type { LoginRequest, GoogleUserInfo } from '../../types';
 import './Login.css';
 
@@ -178,8 +179,7 @@ const Login: React.FC = () => {
 
           <div className="form-group">
             <label htmlFor="password">Password</label>
-            <input
-              type="password"
+            <PasswordInput
               id="password"
               name="password"
               value={formData.password}

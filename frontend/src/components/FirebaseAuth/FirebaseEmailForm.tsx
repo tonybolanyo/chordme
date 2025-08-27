@@ -4,6 +4,7 @@ import {
   type FirebaseAuthUser,
 } from '../../services/firebaseAuth';
 import { validateEmail, validatePassword } from '../../utils';
+import PasswordInput from '../../components/PasswordInput';
 import './FirebaseAuth.css';
 
 interface FirebaseEmailFormProps {
@@ -184,8 +185,7 @@ const FirebaseEmailForm: React.FC<FirebaseEmailFormProps> = ({
 
         <div className="form-group">
           <label htmlFor="firebase-password">Password</label>
-          <input
-            type="password"
+          <PasswordInput
             id="firebase-password"
             name="password"
             value={formData.password}
@@ -209,8 +209,7 @@ const FirebaseEmailForm: React.FC<FirebaseEmailFormProps> = ({
         {mode === 'register' && (
           <div className="form-group">
             <label htmlFor="firebase-confirm-password">Confirm Password</label>
-            <input
-              type="password"
+            <PasswordInput
               id="firebase-confirm-password"
               name="confirmPassword"
               value={formData.confirmPassword}
