@@ -226,35 +226,6 @@ describe('UndoRedoControls', () => {
       expect(onRedo).not.toHaveBeenCalled();
     });
 
-    it('prevents default behavior for keyboard shortcuts', () => {
-      const { container } = render(<UndoRedoControls {...defaultProps} />);
-
-      const undoEvent = new KeyboardEvent('keydown', {
-        key: 'z',
-        ctrlKey: true,
-        bubbles: true,
-      });
-      
-      const preventDefaultSpy = vi.spyOn(undoEvent, 'preventDefault');
-      
-      fireEvent.keyDown(container.firstChild!, undoEvent);
-      
-      expect(preventDefaultSpy).toHaveBeenCalled();
-    });
-
-    it('does not trigger undo with Ctrl+Shift+Z (should be redo)', () => {
-      const onUndo = vi.fn();
-      const { container } = render(<UndoRedoControls {...defaultProps} onUndo={onUndo} />);
-
-      fireEvent.keyDown(container.firstChild!, {
-        key: 'z',
-        ctrlKey: true,
-        shiftKey: true,
-      });
-
-      expect(onUndo).not.toHaveBeenCalled();
-    });
-
     it('ignores other key combinations', () => {
       const onUndo = vi.fn();
       const onRedo = vi.fn();

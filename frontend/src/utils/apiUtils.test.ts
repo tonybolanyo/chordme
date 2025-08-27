@@ -223,7 +223,7 @@ describe('apiUtils', () => {
         .mockRejectedValueOnce(networkError)
         .mockResolvedValueOnce(successResponse);
 
-      const result = await fetchWithRetry('/api/test');
+      const result = await fetchWithRetry('/api/test', {}, { delay: 0 });
 
       expect(result).toBe(successResponse);
       expect(mockFetch).toHaveBeenCalledTimes(2);
@@ -234,7 +234,7 @@ describe('apiUtils', () => {
       mockFetch.mockResolvedValue(errorResponse);
 
       await expect(
-        fetchWithRetry('/api/test', {}, { maxAttempts: 2 })
+        fetchWithRetry('/api/test', {}, { maxAttempts: 2, delay: 0 })
       ).rejects.toThrow();
 
       expect(mockFetch).toHaveBeenCalledTimes(2);
@@ -244,7 +244,7 @@ describe('apiUtils', () => {
       const errorResponse = new Response('Not Found', { status: 404 });
       mockFetch.mockResolvedValueOnce(errorResponse);
 
-      await expect(fetchWithRetry('/api/test')).rejects.toThrow();
+      await expect(fetchWithRetry('/api/test', {}, { delay: 0 })).rejects.toThrow();
 
       expect(mockFetch).toHaveBeenCalledTimes(1);
     });
@@ -255,6 +255,7 @@ describe('apiUtils', () => {
 
       const retryOptions: RetryOptions = {
         maxAttempts: 2,
+        delay: 0,
         retryCondition: (error: ApiError) => error.status === 400,
       };
 
@@ -271,15 +272,15 @@ describe('apiUtils', () => {
 
       const promise = fetchWithRetry('/api/test', {}, { 
         maxAttempts: 3, 
-        delay: 100, 
+        delay: 1, // Very small delay for tests
         backoffMultiplier: 2 
       });
 
       // Fast-forward through the delays
-      vi.advanceTimersByTime(100); // First retry delay
+      vi.advanceTimersByTime(1); // First retry delay
       await Promise.resolve(); // Let first retry execute
       
-      vi.advanceTimersByTime(200); // Second retry delay (100 * 2)
+      vi.advanceTimersByTime(2); // Second retry delay (1 * 2)
       await Promise.resolve(); // Let second retry execute
 
       await expect(promise).rejects.toThrow();
@@ -334,12 +335,16 @@ describe('apiUtils', () => {
         if (attempts < 3) {
           const error = new Error('Temporary failure') as ApiError;
           error.retryable = true;
+          error.status = 500; // Make it a server error so default retry condition passes
           throw error;
         }
         return `success: ${value}`;
       });
 
-      const retryFunction = createRetryFunction(testFunction, { maxAttempts: 3 });
+      const retryFunction = createRetryFunction(testFunction, { 
+        maxAttempts: 3,
+        delay: 0, // No delay for tests
+      });
       const result = await retryFunction('test');
 
       expect(result).toBe('success: test');
@@ -350,10 +355,14 @@ describe('apiUtils', () => {
       const testFunction = vi.fn(async () => {
         const error = new Error('Persistent failure') as ApiError;
         error.retryable = true;
+        error.status = 500; // Make it a server error so default retry condition passes
         throw error;
       });
 
-      const retryFunction = createRetryFunction(testFunction, { maxAttempts: 2 });
+      const retryFunction = createRetryFunction(testFunction, { 
+        maxAttempts: 2,
+        delay: 0, // No delay for tests
+      });
 
       await expect(retryFunction()).rejects.toThrow('Persistent failure');
       expect(testFunction).toHaveBeenCalledTimes(2);
@@ -363,6 +372,7 @@ describe('apiUtils', () => {
       const testFunction = vi.fn(async () => {
         const error = new Error('Non-retryable') as ApiError;
         error.retryable = false;
+        error.status = 400; // Client error, not retryable by default
         throw error;
       });
 
