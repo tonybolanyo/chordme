@@ -30,7 +30,7 @@
 
 [healthcheck]
   path = "/api/v1/health"
-  port = { $default = "$PORT" }
+  port = "$PORT"
   
 [restartPolicy]
   policy = "on-failure"
