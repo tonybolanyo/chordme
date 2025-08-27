@@ -70,8 +70,14 @@ cp config.template.py config.py
 # Run tests
 echo -e "${YELLOW}🧪 Running tests...${NC}"
 export FLASK_CONFIG=test_config
-python -m pytest tests/ -v || echo -e "${YELLOW}⚠️  Some tests failed, continuing with deployment...${NC}"
-
+set +e
+python -m pytest tests/ -v
+TEST_EXIT_CODE=$?
+set -e
+if [ $TEST_EXIT_CODE -ne 0 ]; then
+    echo -e "${RED}❌ Tests failed. Aborting deployment.${NC}"
+    exit 1
+fi
 # Link to Railway project
 echo -e "${YELLOW}🔗 Linking to Railway project...${NC}"
 railway link --project "$PROJECT_ID"
