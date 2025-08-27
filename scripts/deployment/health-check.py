@@ -38,7 +38,7 @@ def test_endpoint(url, expected_status=200, timeout=30):
             'status_code': response.status_code,
             'response_time': response.elapsed.total_seconds(),
             'content_type': response.headers.get('content-type', ''),
-            'content': response.text[:200] if len(response.text) < 200 else response.text[:200] + '...'
+            'content': response.text[:200] + ('...' if len(response.text) > 200 else '')
         }
     except requests.exceptions.RequestException as e:
         return False, {'error': str(e)}
