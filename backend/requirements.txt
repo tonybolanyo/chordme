@@ -5,8 +5,11 @@ flask==3.1.1
 flask-cors==6.0.1
 flask-sqlalchemy==3.1.1
 bcrypt==4.1.2
-pyjwt==2.8.0
+pyjwt>=2.10.1
 flasgger==0.9.7.1
+
+# Database drivers
+psycopg2-binary==2.9.9  # PostgreSQL driver for Supabase
 
 # Development and testing dependencies
 pytest==8.4.1
@@ -26,9 +29,12 @@ google-auth-oauthlib==1.2.1
 # PDF generation
 reportlab==4.0.9
 
-# Security scanning tools
-safety==3.2.11
+# Security scanning tools (commented out due to dependency conflicts with supabase)
+# safety==3.2.11  # Dependency conflict with supabase package
 bandit==1.7.10
+
+# Supabase client (for Netlify + Railway + Supabase deployment stack)
+supabase==2.18.1
 
 # System monitoring (to be installed when needed)
 # psutil==6.1.1

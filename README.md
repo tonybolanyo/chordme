@@ -241,12 +241,47 @@ This project uses GitHub Actions for continuous integration and deployment. The 
 - Application startup verification
 - Configuration validation
 
+### Deployment Workflows
+
+ChordMe supports multiple deployment strategies:
+
+**🎯 Recommended: Netlify + Railway + Supabase**
+- **Frontend**: Automated deployment to Netlify with preview URLs
+- **Backend**: Containerized deployment to Railway with auto-scaling  
+- **Database**: Supabase PostgreSQL with automated migrations
+- **Workflow**: `deploy-full-stack.yml` for complete automation
+
+**🔄 Alternative: Vercel + Render + PostgreSQL**
+- **Frontend**: Vercel deployment (existing workflow)
+- **Backend**: Render.com deployment
+- **Database**: Hosted PostgreSQL
+
+**Deployment Commands:**
+```bash
+# Full stack deployment
+npm run deploy:production    # Deploy everything to production
+npm run deploy:staging       # Deploy everything to staging
+
+# Individual deployments
+npm run deploy:netlify       # Frontend only (Netlify)
+npm run deploy:railway       # Backend only (Railway)
+npm run migrate              # Database migrations only
+
+# Health checks
+npm run health-check --frontend-url=https://app.netlify.app --backend-url=https://api.railway.app
+```
+
 ### Workflows
 
 - **Main CI/CD Pipeline**: Comprehensive testing for both frontend and backend
+- **Full Stack Deployment**: `deploy-full-stack.yml` - Complete automation with health checks
+- **Netlify Deployment**: `deploy-netlify.yml` - Frontend deployment with PR previews
+- **Railway Deployment**: `deploy-railway.yml` - Backend deployment with database migrations
 - **Frontend CI**: Optimized workflow for frontend-only changes
 - **Backend CI**: Optimized workflow for backend-only changes  
 - **Dependency Updates**: Automated weekly dependency updates
+
+For detailed deployment instructions, see [DEPLOYMENT.md](DEPLOYMENT.md).
 
 For detailed CI/CD documentation, see [CI/CD Documentation](.github/CI_CD_DOCUMENTATION.md).
 

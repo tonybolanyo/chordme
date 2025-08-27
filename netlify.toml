@@ -1,0 +1,59 @@
+# Netlify configuration for ChordMe frontend
+[build]
+  # Build command - install and build frontend
+  command = "cd frontend && npm ci && npm run build"
+  # Output directory from build
+  publish = "frontend/dist"
+  # Base directory for build context
+  base = "."
+
+[build.environment]
+  # Node.js version
+  NODE_VERSION = "20"
+  # Build-time environment variables
+  VITE_API_URL = "https://chordme-backend-production.up.railway.app"
+
+# Production build settings
+[context.production]
+  [context.production.environment]
+    VITE_API_URL = "https://chordme-backend-production.up.railway.app"
+
+# Staging/branch deploy settings  
+[context.branch-deploy]
+  [context.branch-deploy.environment]
+    VITE_API_URL = "https://chordme-backend-staging.up.railway.app"
+
+# Deploy preview settings for PRs
+[context.deploy-preview]
+  [context.deploy-preview.environment]
+    VITE_API_URL = "https://chordme-backend-staging.up.railway.app"
+
+# Redirect rules for SPA routing
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Security headers
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://chordme-backend-production.up.railway.app https://chordme-backend-staging.up.railway.app https://api.supabase.co https://*.supabase.co;"
+
+# Cache static assets
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Functions directory (if needed for edge functions)
+[functions]
+  directory = "netlify/functions"
+
+# Form handling (if needed)
+[forms]
+  spam_filters = ["honeypot", "akismet"]
