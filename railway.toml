@@ -1,13 +1,14 @@
 # Railway deployment configuration for ChordMe backend
 [deploy]
-  startCommand = "cd backend && python3 run.py"
+  startCommand = "cd backend && python run.py"
 
 [environment]
   PYTHON_VERSION = "3.12"
   
 [build]
   builder = "nixpacks"
-  buildCommand = "cd backend && pip3 install -r requirements.txt"
+  buildCommand = "cd backend && pip
+  install -r requirements.txt"
   
 [variables]
   PORT = { default = "5000" }
