@@ -78,7 +78,7 @@ describe('Login', () => {
 
     expect(screen.getByText(/login to chordme/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Enter your password')).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: /^sign in$/i })
     ).toBeInTheDocument();
@@ -96,7 +96,7 @@ describe('Login', () => {
     render(<Login />);
 
     const emailInput = screen.getByLabelText(/email/i);
-    const passwordInput = screen.getByLabelText(/password/i);
+    const passwordInput = screen.getByPlaceholderText('Enter your password');
 
     await user.type(emailInput, 'test@example.com');
     await user.type(passwordInput, 'password123');
@@ -110,7 +110,7 @@ describe('Login', () => {
     render(<Login />);
 
     const emailInput = screen.getByLabelText(/email/i);
-    const passwordInput = screen.getByLabelText(/password/i);
+    const passwordInput = screen.getByPlaceholderText('Enter your password');
     const submitButton = screen.getByRole('button', { name: /^sign in$/i });
 
     await user.type(emailInput, 'test@example.com');

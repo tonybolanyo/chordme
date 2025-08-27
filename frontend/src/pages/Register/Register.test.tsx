@@ -441,10 +441,16 @@ describe('Register Component', () => {
       expect(screen.getByLabelText('Email')).toHaveFocus();
 
       await user.tab();
-      expect(screen.getByLabelText('Password')).toHaveFocus();
+      expect(screen.getByPlaceholderText('Create a strong password')).toHaveFocus();
 
       await user.tab();
-      expect(screen.getByLabelText('Confirm Password')).toHaveFocus();
+      expect(screen.getAllByRole('button', { name: 'Show password' })[0]).toHaveFocus();
+
+      await user.tab();
+      expect(screen.getByPlaceholderText('Confirm your password')).toHaveFocus();
+
+      await user.tab();
+      expect(screen.getAllByRole('button', { name: 'Show password' })[1]).toHaveFocus();
 
       await user.tab();
       expect(

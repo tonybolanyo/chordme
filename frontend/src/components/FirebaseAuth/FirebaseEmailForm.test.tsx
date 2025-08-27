@@ -28,8 +28,6 @@ describe('FirebaseEmailForm Component', () => {
   const user = userEvent.setup();
   
   // Get references to mocked functions
-  let mockSignInWithEmailAndPassword: ReturnType<typeof vi.fn>;
-  let mockSignUpWithEmailAndPassword: ReturnType<typeof vi.fn>;
   let mockSignInWithEmailAndPassword: ReturnType<typeof vi.fn> = vi.fn();
   let mockSignUpWithEmailAndPassword: ReturnType<typeof vi.fn> = vi.fn();
   let mockLoginWithFirebase: ReturnType<typeof vi.fn> = vi.fn();

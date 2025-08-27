@@ -5,6 +5,7 @@ import {
   FirebaseAuthButtons,
   FirebaseEmailForm,
 } from '../../components/FirebaseAuth';
+import PasswordInput from '../../components/PasswordInput';
 import type { RegisterRequest } from '../../types';
 import './Register.css';
 
@@ -149,8 +150,7 @@ const Register: React.FC = () => {
 
           <div className="form-group">
             <label htmlFor="password">Password</label>
-            <input
-              type="password"
+            <PasswordInput
               id="password"
               name="password"
               value={formData.password}
@@ -177,8 +177,7 @@ const Register: React.FC = () => {
 
           <div className="form-group">
             <label htmlFor="confirmPassword">Confirm Password</label>
-            <input
-              type="password"
+            <PasswordInput
               id="confirmPassword"
               name="confirmPassword"
               value={confirmPassword}
