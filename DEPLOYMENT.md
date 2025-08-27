@@ -8,13 +8,242 @@ ChordMe consists of two main components:
 - **Frontend**: React application built with Vite
 - **Backend**: Flask API server
 
-The deployment setup supports:
-- ✅ Automated deployment via GitHub Actions on tag creation
-- ✅ Manual deployment using release artifacts
-- ✅ Render.com for backend hosting
-- ✅ Vercel for frontend hosting
+## Deployment Options
 
-## Infrastructure as Code
+ChordMe supports multiple deployment configurations:
+
+### 🎯 Recommended Stack: Netlify + Railway + Supabase
+- ✅ **Frontend**: Netlify (preferred) with automatic deployments
+- ✅ **Backend**: Railway for scalable container hosting  
+- ✅ **Database**: Supabase (PostgreSQL) with built-in auth and real-time features
+- ✅ **Automated CI/CD**: GitHub Actions workflows for full-stack deployment
+
+### 🔄 Alternative Stack: Vercel + Render + PostgreSQL
+- ✅ **Frontend**: Vercel for frontend hosting
+- ✅ **Backend**: Render.com for backend hosting
+- ✅ **Database**: Hosted PostgreSQL (Render, Heroku, etc.)
+
+### ☁️ Enterprise Stack: AWS Infrastructure-as-Code
+- ✅ **Full AWS deployment** using Terraform
+- ✅ **ECS Fargate** for containerized backend
+- ✅ **S3 + CloudFront** for frontend
+- ✅ **RDS PostgreSQL** for database
+
+---
+
+## 🚀 Quick Start: Netlify + Railway + Supabase
+
+### Prerequisites
+
+1. **Accounts Required:**
+   - [GitHub](https://github.com) (for code repository)
+   - [Netlify](https://netlify.com) (for frontend hosting)
+   - [Railway](https://railway.app) (for backend hosting)
+   - [Supabase](https://supabase.com) (for database)
+
+2. **CLI Tools:**
+   ```bash
+   # Install Netlify CLI
+   npm install -g netlify-cli
+   
+   # Install Railway CLI
+   curl -fsSL https://railway.app/install.sh | sh
+   ```
+
+### Step 1: Database Setup (Supabase)
+
+1. **Create Supabase Project:**
+   - Go to [Supabase Dashboard](https://app.supabase.com)
+   - Create a new project
+   - Note down your project URL and API keys
+
+2. **Run Database Migrations:**
+   ```bash
+   # Set your database URL
+   export DATABASE_URL="postgresql://postgres:[YOUR-PASSWORD]@db.[YOUR-PROJECT].supabase.co:5432/postgres"
+   
+   # Run migrations
+   python database/migrate.py
+   ```
+
+### Step 2: Backend Deployment (Railway)
+
+1. **Create Railway Project:**
+   - Go to [Railway Dashboard](https://railway.app/dashboard)
+   - Create a new project
+   - Note down project and service IDs
+
+2. **Deploy Backend:**
+   ```bash
+   # Set Railway token
+   export RAILWAY_TOKEN="your-railway-token"
+   export RAILWAY_PRODUCTION_PROJECT_ID="your-project-id"
+   export RAILWAY_PRODUCTION_SERVICE_ID="your-service-id"
+   
+   # Deploy using script
+   ./scripts/deployment/deploy-railway.sh production
+   ```
+
+3. **Set Environment Variables on Railway:**
+   ```bash
+   DATABASE_URL=your-supabase-connection-string
+   SECRET_KEY=your-secret-key
+   JWT_SECRET_KEY=your-jwt-secret
+   SUPABASE_URL=https://your-project.supabase.co
+   SUPABASE_ANON_KEY=your-anon-key
+   ```
+
+### Step 3: Frontend Deployment (Netlify)
+
+1. **Create Netlify Site:**
+   - Go to [Netlify Dashboard](https://app.netlify.com)
+   - Create a new site from Git or manual deploy
+   - Note down site ID and name
+
+2. **Deploy Frontend:**
+   ```bash
+   # Set Netlify credentials
+   export NETLIFY_AUTH_TOKEN="your-netlify-token"
+   export NETLIFY_SITE_ID="your-site-id"
+   
+   # Deploy using script
+   ./scripts/deployment/deploy-netlify.sh production
+   ```
+
+### Step 4: Automated Deployments
+
+1. **Configure GitHub Secrets:**
+   Go to your repository settings → Secrets and add:
+   ```
+   RAILWAY_TOKEN
+   RAILWAY_PRODUCTION_PROJECT_ID
+   RAILWAY_PRODUCTION_SERVICE_ID
+   RAILWAY_STAGING_PROJECT_ID
+   RAILWAY_STAGING_SERVICE_ID
+   NETLIFY_AUTH_TOKEN
+   NETLIFY_SITE_ID
+   NETLIFY_SITE_NAME
+   SUPABASE_PRODUCTION_DATABASE_URL
+   SUPABASE_STAGING_DATABASE_URL
+   ```
+
+2. **Trigger Deployment:**
+   ```bash
+   # Automatic deployment on push to main
+   git push origin main
+   
+   # Manual deployment via GitHub Actions
+   gh workflow run deploy-full-stack.yml -f environment=production
+   ```
+
+---
+
+## 🛠️ Manual Deployment Scripts
+
+Use these scripts for local deployment:
+
+### Full Stack Deployment
+```bash
+# Deploy everything (database + backend + frontend)
+./scripts/deployment/deploy-full-stack.sh production
+
+# Deploy to staging
+./scripts/deployment/deploy-full-stack.sh staging
+```
+
+### Individual Component Deployment
+```bash
+# Deploy only backend
+./scripts/deployment/deploy-railway.sh production
+
+# Deploy only frontend  
+./scripts/deployment/deploy-netlify.sh production
+
+# Run database migrations
+python database/migrate.py
+```
+
+---
+
+---
+
+## 📋 Environment Variables
+
+### Backend Environment Variables
+
+| Variable | Description | Required | Default | Example |
+|----------|-------------|----------|---------|---------|
+| `SECRET_KEY` | Flask secret key for sessions | Yes | - | `your-super-secret-key` |
+| `JWT_SECRET_KEY` | JWT token signing key | Yes | - | `your-jwt-secret-key` |
+| `DATABASE_URL` | PostgreSQL connection string | Yes | `sqlite:///chordme.db` | `postgresql://user:pass@host:5432/db` |
+| `SUPABASE_URL` | Supabase project URL | No | - | `https://abc123.supabase.co` |
+| `SUPABASE_ANON_KEY` | Supabase anonymous key | No | - | `eyJ0eXAiOiJKV1Q...` |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key | No | - | `eyJ0eXAiOiJKV1Q...` |
+| `FLASK_ENV` | Flask environment | No | `production` | `production`, `development` |
+| `JWT_EXPIRATION_DELTA` | JWT token expiration (seconds) | No | `86400` | `86400` (24 hours) |
+
+### Frontend Environment Variables
+
+| Variable | Description | Required | Default | Example |
+|----------|-------------|----------|---------|---------|
+| `VITE_API_URL` | Backend API base URL | Yes | - | `https://api.example.com` |
+
+### Deployment Secrets (GitHub Actions)
+
+| Secret | Description | Example |
+|--------|-------------|---------|
+| `RAILWAY_TOKEN` | Railway authentication token | `abc123...` |
+| `RAILWAY_PRODUCTION_PROJECT_ID` | Railway production project ID | `12345678-1234-5678-9012-123456789012` |
+| `RAILWAY_PRODUCTION_SERVICE_ID` | Railway production service ID | `12345678-1234-5678-9012-123456789012` |
+| `NETLIFY_AUTH_TOKEN` | Netlify authentication token | `abc123...` |
+| `NETLIFY_SITE_ID` | Netlify site ID | `12345678-1234-5678-9012-123456789012` |
+| `SUPABASE_PRODUCTION_DATABASE_URL` | Production database URL | `postgresql://...` |
+| `SUPABASE_STAGING_DATABASE_URL` | Staging database URL | `postgresql://...` |
+
+---
+
+## 🔧 Configuration Files
+
+ChordMe includes several configuration files for different deployment platforms:
+
+### Netlify Configuration (`netlify.toml`)
+```toml
+[build]
+  command = "cd frontend && npm ci && npm run build"
+  publish = "frontend/dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+  VITE_API_URL = "https://chordme-backend-production.up.railway.app"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+```
+
+### Railway Configuration (`railway.toml`)
+```toml
+[deploy]
+  startCommand = "cd backend && python run.py"
+
+[variables]
+  PORT = { default = "5000" }
+  FLASK_ENV = { default = "production" }
+```
+
+### Vercel Configuration (`vercel.json`)
+```json
+{
+  "buildCommand": "cd frontend && npm ci && npm run build",
+  "outputDirectory": "frontend/dist",
+  "env": {
+    "VITE_API_URL": "https://chordme-backend-production.up.railway.app"
+  }
+}
+```
+
+---
 
 ChordMe includes comprehensive infrastructure templates for cloud deployment:
 

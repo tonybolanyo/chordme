@@ -1,0 +1,163 @@
+name: Deploy to Netlify
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+        - production
+        - staging
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  deploy-netlify:
+    name: Deploy Frontend to Netlify
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: './frontend/package-lock.json'
+    
+    - name: Install dependencies
+      working-directory: ./frontend
+      run: npm ci
+    
+    - name: Set environment variables
+      run: |
+        if [ "${{ github.event_name }}" == "pull_request" ] || [ "${{ github.event.inputs.environment }}" == "staging" ]; then
+          echo "VITE_API_URL=https://chordme-backend-staging.up.railway.app" >> $GITHUB_ENV
+          echo "DEPLOY_ENV=staging" >> $GITHUB_ENV
+        else
+          echo "VITE_API_URL=https://chordme-backend-production.up.railway.app" >> $GITHUB_ENV
+          echo "DEPLOY_ENV=production" >> $GITHUB_ENV
+        fi
+    
+    - name: Build frontend
+      working-directory: ./frontend
+      run: npm run build
+      env:
+        VITE_API_URL: ${{ env.VITE_API_URL }}
+    
+    - name: Run tests
+      working-directory: ./frontend
+      run: npm run test:run
+    
+    - name: Install Netlify CLI
+      run: npm install -g netlify-cli@latest
+    
+    - name: Deploy to Netlify (Preview)
+      if: github.event_name == 'pull_request'
+      run: |
+        netlify deploy \
+          --dir=frontend/dist \
+          --functions=netlify/functions \
+          --message="Deploy preview for PR #${{ github.event.number }}" \
+          --alias=pr-${{ github.event.number }}
+      env:
+        NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+    
+    - name: Deploy to Netlify (Production)
+      if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+      run: |
+        netlify deploy \
+          --dir=frontend/dist \
+          --functions=netlify/functions \
+          --prod \
+          --message="Production deploy from main branch"
+      env:
+        NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+    
+    - name: Deploy to Netlify (Staging)
+      if: github.event.inputs.environment == 'staging'
+      run: |
+        netlify deploy \
+          --dir=frontend/dist \
+          --functions=netlify/functions \
+          --message="Staging deploy via manual trigger" \
+          --alias=staging
+      env:
+        NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+    
+    - name: Get deploy URL
+      id: deploy-url
+      run: |
+        if [ "${{ github.event_name }}" == "pull_request" ]; then
+          echo "url=https://pr-${{ github.event.number }}--${{ secrets.NETLIFY_SITE_NAME }}.netlify.app" >> $GITHUB_OUTPUT
+        elif [ "${{ github.event.inputs.environment }}" == "staging" ]; then
+          echo "url=https://staging--${{ secrets.NETLIFY_SITE_NAME }}.netlify.app" >> $GITHUB_OUTPUT
+        else
+          echo "url=https://${{ secrets.NETLIFY_SITE_NAME }}.netlify.app" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Health check
+      run: |
+        sleep 30  # Wait for deployment to be ready
+        url="${{ steps.deploy-url.outputs.url }}"
+        echo "Testing deployment at: $url"
+        
+        # Test main page
+        response=$(curl -s -o /dev/null -w "%{http_code}" "$url" || echo "000")
+        if [ "$response" != "200" ]; then
+          echo "❌ Health check failed: Main page returned $response"
+          exit 1
+        fi
+        
+        echo "✅ Health check passed: Main page accessible"
+    
+    - name: Comment PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const deployUrl = '${{ steps.deploy-url.outputs.url }}';
+          const comment = `## 🚀 Netlify Deployment
+          
+          Frontend has been deployed successfully!
+          
+          **Preview URL:** ${deployUrl}
+          
+          ### Deployment Details
+          - **Environment:** Preview (PR #${{ github.event.number }})
+          - **Backend API:** ${{ env.VITE_API_URL }}
+          - **Commit:** ${{ github.sha }}
+          
+          ### Test the deployment:
+          - [ ] Login/Registration functionality
+          - [ ] ChordPro validation
+          - [ ] Application health check
+          `;
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment
+          });
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: netlify-deployment-${{ github.sha }}
+        path: |
+          frontend/dist/
+        retention-days: 7

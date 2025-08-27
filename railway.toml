@@ -1,0 +1,37 @@
+# Railway deployment configuration for ChordMe backend
+[deploy]
+  startCommand = "cd backend && python run.py"
+
+[environment]
+  PYTHON_VERSION = "3.12"
+  
+[build]
+  builder = "nixpacks"
+  buildCommand = "cd backend && pip install -r requirements.txt"
+  
+[variables]
+  PORT = { default = "5000" }
+  FLASK_ENV = { default = "production" }
+  FLASK_CONFIG = { default = "config" }
+  SECRET_KEY = { generate = true }
+  JWT_SECRET_KEY = { generate = true }
+  
+[variables.DATABASE_URL]
+  description = "PostgreSQL connection string from Supabase"
+  
+[variables.SUPABASE_URL]
+  description = "Supabase project URL"
+  
+[variables.SUPABASE_ANON_KEY]
+  description = "Supabase anonymous key"
+  
+[variables.SUPABASE_SERVICE_ROLE_KEY]
+  description = "Supabase service role key"
+
+[healthcheck]
+  path = "/api/v1/health"
+  port = { $default = "$PORT" }
+  
+[restartPolicy]
+  policy = "on-failure"
+  maxRetries = 3

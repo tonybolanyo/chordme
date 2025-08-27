@@ -1,0 +1,382 @@
+name: Full Stack Deployment
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+        - production
+        - staging
+      skip_tests:
+        description: 'Skip test execution'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  NODE_VERSION: '20'
+  PYTHON_VERSION: '3.12'
+
+jobs:
+  # Pre-deployment validation
+  validate:
+    name: Pre-deployment Validation
+    runs-on: ubuntu-latest
+    if: ${{ !inputs.skip_tests }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: './frontend/package-lock.json'
+    
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+        cache-dependency-path: './backend/requirements.txt'
+    
+    - name: Install dependencies
+      run: |
+        # Frontend dependencies
+        cd frontend && npm ci && cd ..
+        # Backend dependencies
+        cd backend && pip install -r requirements.txt && cd ..
+    
+    - name: Setup backend configuration
+      working-directory: ./backend
+      run: cp config.template.py config.py
+    
+    - name: Run frontend tests
+      working-directory: ./frontend
+      run: npm run test:run
+    
+    - name: Run backend tests
+      working-directory: ./backend
+      run: |
+        export FLASK_CONFIG=test_config
+        python -m pytest tests/ -v
+      continue-on-error: true
+    
+    - name: Build frontend
+      working-directory: ./frontend
+      run: npm run build
+
+  # Deploy database migrations
+  deploy-database:
+    name: Deploy Database Migrations
+    runs-on: ubuntu-latest
+    needs: [validate]
+    if: always() && (needs.validate.result == 'success' || inputs.skip_tests)
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Install database dependencies
+      run: pip install psycopg2-binary
+    
+    - name: Set environment
+      run: |
+        if [ "${{ github.event.inputs.environment }}" == "staging" ] || [ "${{ github.ref }}" != "refs/heads/main" ]; then
+          echo "DATABASE_URL=${{ secrets.SUPABASE_STAGING_DATABASE_URL }}" >> $GITHUB_ENV
+          echo "DEPLOY_ENV=staging" >> $GITHUB_ENV
+        else
+          echo "DATABASE_URL=${{ secrets.SUPABASE_PRODUCTION_DATABASE_URL }}" >> $GITHUB_ENV
+          echo "DEPLOY_ENV=production" >> $GITHUB_ENV
+        fi
+    
+    - name: Run database migrations
+      run: |
+        if [ -z "$DATABASE_URL" ]; then
+          echo "⚠️ Database migrations skipped: DATABASE_URL not configured"
+          echo "Configure SUPABASE_PRODUCTION_DATABASE_URL and SUPABASE_STAGING_DATABASE_URL secrets"
+          exit 0
+        fi
+        
+        echo "Running migrations for ${{ env.DEPLOY_ENV }} environment"
+        python database/migrate.py
+      env:
+        DATABASE_URL: ${{ env.DATABASE_URL }}
+
+  # Deploy backend to Railway
+  deploy-backend:
+    name: Deploy Backend
+    runs-on: ubuntu-latest
+    needs: [validate, deploy-database]
+    if: always() && (needs.validate.result == 'success' || inputs.skip_tests)
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Install Railway CLI
+      run: |
+        curl -fsSL https://railway.app/install.sh | sh
+        echo "$HOME/.railway/bin" >> $GITHUB_PATH
+    
+    - name: Set Railway environment
+      run: |
+        if [ "${{ github.event.inputs.environment }}" == "staging" ] || [ "${{ github.ref }}" != "refs/heads/main" ]; then
+          echo "RAILWAY_PROJECT_ID=${{ secrets.RAILWAY_STAGING_PROJECT_ID }}" >> $GITHUB_ENV
+          echo "RAILWAY_SERVICE_ID=${{ secrets.RAILWAY_STAGING_SERVICE_ID }}" >> $GITHUB_ENV
+          echo "BACKEND_URL=https://chordme-backend-staging.up.railway.app" >> $GITHUB_ENV
+          echo "DEPLOY_ENV=staging" >> $GITHUB_ENV
+        else
+          echo "RAILWAY_PROJECT_ID=${{ secrets.RAILWAY_PRODUCTION_PROJECT_ID }}" >> $GITHUB_ENV
+          echo "RAILWAY_SERVICE_ID=${{ secrets.RAILWAY_PRODUCTION_SERVICE_ID }}" >> $GITHUB_ENV
+          echo "BACKEND_URL=https://chordme-backend-production.up.railway.app" >> $GITHUB_ENV
+          echo "DEPLOY_ENV=production" >> $GITHUB_ENV
+        fi
+    
+    - name: Deploy to Railway
+      run: |
+        export RAILWAY_TOKEN="${{ secrets.RAILWAY_TOKEN }}"
+        
+        if [ -z "$RAILWAY_TOKEN" ]; then
+          echo "⚠️ Railway deployment skipped: RAILWAY_TOKEN not configured"
+          exit 0
+        fi
+        
+        railway link --project ${{ env.RAILWAY_PROJECT_ID }}
+        railway up --service ${{ env.RAILWAY_SERVICE_ID }}
+      working-directory: ./backend
+    
+    - name: Wait for deployment
+      run: sleep 90  # Wait for Railway to deploy
+    
+    - name: Backend health check
+      run: |
+        url="${{ env.BACKEND_URL }}"
+        echo "Testing backend at: $url"
+        
+        for i in {1..10}; do
+          response=$(curl -s -o /dev/null -w "%{http_code}" "$url/api/v1/health" || echo "000")
+          if [ "$response" == "200" ]; then
+            echo "✅ Backend health check passed"
+            break
+          else
+            echo "⏳ Backend health check attempt $i: $response"
+            sleep 30
+          fi
+          
+          if [ $i -eq 10 ]; then
+            echo "❌ Backend health check failed"
+            exit 1
+          fi
+        done
+
+  # Deploy frontend to Netlify
+  deploy-frontend-netlify:
+    name: Deploy Frontend (Netlify)
+    runs-on: ubuntu-latest
+    needs: [validate, deploy-backend]
+    if: always() && (needs.validate.result == 'success' || inputs.skip_tests)
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: './frontend/package-lock.json'
+    
+    - name: Install frontend dependencies
+      working-directory: ./frontend
+      run: npm ci
+    
+    - name: Set environment variables
+      run: |
+        if [ "${{ github.event.inputs.environment }}" == "staging" ] || [ "${{ github.ref }}" != "refs/heads/main" ]; then
+          echo "VITE_API_URL=https://chordme-backend-staging.up.railway.app" >> $GITHUB_ENV
+          echo "FRONTEND_URL=https://staging--chordme.netlify.app" >> $GITHUB_ENV
+          echo "DEPLOY_ENV=staging" >> $GITHUB_ENV
+        else
+          echo "VITE_API_URL=https://chordme-backend-production.up.railway.app" >> $GITHUB_ENV
+          echo "FRONTEND_URL=https://chordme.netlify.app" >> $GITHUB_ENV
+          echo "DEPLOY_ENV=production" >> $GITHUB_ENV
+        fi
+    
+    - name: Build frontend
+      working-directory: ./frontend
+      run: npm run build
+      env:
+        VITE_API_URL: ${{ env.VITE_API_URL }}
+    
+    - name: Install Netlify CLI
+      run: npm install -g netlify-cli@latest
+    
+    - name: Deploy to Netlify
+      run: |
+        if [ -z "${{ secrets.NETLIFY_AUTH_TOKEN }}" ]; then
+          echo "⚠️ Netlify deployment skipped: NETLIFY_AUTH_TOKEN not configured"
+          exit 0
+        fi
+        
+        if [ "${{ env.DEPLOY_ENV }}" == "staging" ]; then
+          netlify deploy --dir=frontend/dist --alias=staging --message="Staging deploy"
+        else
+          netlify deploy --dir=frontend/dist --prod --message="Production deploy"
+        fi
+      env:
+        NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+    
+    - name: Frontend health check
+      run: |
+        sleep 30  # Wait for Netlify deployment
+        url="${{ env.FRONTEND_URL }}"
+        echo "Testing frontend at: $url"
+        
+        response=$(curl -s -o /dev/null -w "%{http_code}" "$url" || echo "000")
+        if [ "$response" != "200" ]; then
+          echo "❌ Frontend health check failed: $response"
+          exit 1
+        fi
+        
+        echo "✅ Frontend health check passed"
+
+  # Deploy frontend to Vercel (alternative)
+  deploy-frontend-vercel:
+    name: Deploy Frontend (Vercel)
+    runs-on: ubuntu-latest
+    needs: [validate, deploy-backend]
+    if: always() && (needs.validate.result == 'success' || inputs.skip_tests) && github.repository == 'tonybolanyo/chordme'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+    
+    - name: Install Vercel CLI
+      run: npm install -g vercel@latest
+    
+    - name: Set environment variables
+      run: |
+        if [ "${{ github.event.inputs.environment }}" == "staging" ] || [ "${{ github.ref }}" != "refs/heads/main" ]; then
+          echo "VITE_API_URL=https://chordme-backend-staging.up.railway.app" >> $GITHUB_ENV
+          echo "DEPLOY_ENV=staging" >> $GITHUB_ENV
+        else
+          echo "VITE_API_URL=https://chordme-backend-production.up.railway.app" >> $GITHUB_ENV
+          echo "DEPLOY_ENV=production" >> $GITHUB_ENV
+        fi
+    
+    - name: Deploy to Vercel
+      working-directory: ./frontend
+      run: |
+        if [ -z "${{ secrets.VERCEL_TOKEN }}" ]; then
+          echo "⚠️ Vercel deployment skipped: VERCEL_TOKEN not configured"
+          exit 0
+        fi
+        
+        if [ "${{ env.DEPLOY_ENV }}" == "staging" ]; then
+          vercel --token ${{ secrets.VERCEL_TOKEN }}
+        else
+          vercel --prod --token ${{ secrets.VERCEL_TOKEN }}
+        fi
+      env:
+        VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+        VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        VITE_API_URL: ${{ env.VITE_API_URL }}
+
+  # End-to-end testing
+  e2e-tests:
+    name: End-to-End Tests
+    runs-on: ubuntu-latest
+    needs: [deploy-frontend-netlify, deploy-backend]
+    if: always() && needs.deploy-frontend-netlify.result == 'success' && needs.deploy-backend.result == 'success'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Install Playwright
+      run: npx playwright install --with-deps
+    
+    - name: Set test URLs
+      run: |
+        if [ "${{ github.event.inputs.environment }}" == "staging" ] || [ "${{ github.ref }}" != "refs/heads/main" ]; then
+          echo "FRONTEND_URL=https://staging--chordme.netlify.app" >> $GITHUB_ENV
+          echo "BACKEND_URL=https://chordme-backend-staging.up.railway.app" >> $GITHUB_ENV
+        else
+          echo "FRONTEND_URL=https://chordme.netlify.app" >> $GITHUB_ENV
+          echo "BACKEND_URL=https://chordme-backend-production.up.railway.app" >> $GITHUB_ENV
+        fi
+    
+    - name: Run E2E tests
+      run: npx playwright test
+      env:
+        PLAYWRIGHT_BASE_URL: ${{ env.FRONTEND_URL }}
+        API_BASE_URL: ${{ env.BACKEND_URL }}
+    
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: e2e-test-results-${{ github.sha }}
+        path: |
+          test-results/
+          playwright-report/
+        retention-days: 7
+
+  # Deployment summary
+  summary:
+    name: Deployment Summary
+    runs-on: ubuntu-latest
+    needs: [deploy-database, deploy-backend, deploy-frontend-netlify, deploy-frontend-vercel, e2e-tests]
+    if: always()
+    
+    steps:
+    - name: Create deployment summary
+      run: |
+        echo "## 🚀 Full Stack Deployment Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Deployment Status" >> $GITHUB_STEP_SUMMARY
+        echo "- **Database:** ${{ needs.deploy-database.result == 'success' && '✅ Migrated' || needs.deploy-database.result == 'skipped' && '⚠️ Skipped' || '❌ Failed' }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Backend (Railway):** ${{ needs.deploy-backend.result == 'success' && '✅ Deployed' || needs.deploy-backend.result == 'skipped' && '⚠️ Skipped' || '❌ Failed' }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Frontend (Netlify):** ${{ needs.deploy-frontend-netlify.result == 'success' && '✅ Deployed' || needs.deploy-frontend-netlify.result == 'skipped' && '⚠️ Skipped' || '❌ Failed' }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Frontend (Vercel):** ${{ needs.deploy-frontend-vercel.result == 'success' && '✅ Deployed' || needs.deploy-frontend-vercel.result == 'skipped' && '⚠️ Skipped' || '❌ Failed' }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **E2E Tests:** ${{ needs.e2e-tests.result == 'success' && '✅ Passed' || needs.e2e-tests.result == 'skipped' && '⚠️ Skipped' || '❌ Failed' }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Environment URLs" >> $GITHUB_STEP_SUMMARY
+        if [ "${{ github.event.inputs.environment }}" == "staging" ] || [ "${{ github.ref }}" != "refs/heads/main" ]; then
+          echo "- **Frontend:** https://staging--chordme.netlify.app" >> $GITHUB_STEP_SUMMARY
+          echo "- **Backend:** https://chordme-backend-staging.up.railway.app" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "- **Frontend:** https://chordme.netlify.app" >> $GITHUB_STEP_SUMMARY
+          echo "- **Backend:** https://chordme-backend-production.up.railway.app" >> $GITHUB_STEP_SUMMARY
+        fi

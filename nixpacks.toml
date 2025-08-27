@@ -1,0 +1,22 @@
+# Nixpacks configuration for Railway deployment
+[phases.setup]
+pkgs = ["python312", "python312Packages.pip"]
+
+[phases.install]
+cmds = [
+  "cd backend",
+  "pip install -r requirements.txt"
+]
+
+[phases.build]
+cmds = [
+  "cd backend",
+  "python -c 'import chordme; print(\"Backend validation successful\")'"
+]
+
+[start]
+cmd = "cd backend && python run.py"
+
+[variables]
+PORT = "5000"
+PYTHONPATH = "."
