@@ -1,6 +1,6 @@
 # Nixpacks configuration for Railway deployment
 [phases.setup]
-pkgs = ["python312", "python312Packages.pip"]
+pkgs = ["python312", "python312Packages.pip3"]
 
 [phases.install]
 cmds = [
