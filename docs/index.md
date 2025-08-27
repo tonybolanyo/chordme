@@ -16,6 +16,7 @@ This directory contains the comprehensive user manual for ChordMe, automatically
 - **[ChordPro Format](chordpro-format.html)** - ChordPro format reference
 - **[API Reference](api-reference.html)** - Complete API documentation
 - **[Developer Guide](developer-guide.html)** - Contributing and development
+- **[Changelog](changelog.html)** - Version history and release notes
 - **[Troubleshooting](troubleshooting.html)** - Common issues and solutions
 - **[Swagger API Documentation](swagger.html)** - Interactive API documentation
 

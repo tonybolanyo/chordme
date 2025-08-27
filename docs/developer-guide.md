@@ -6,48 +6,202 @@ title: ChordMe Developer Guide
 
 # ChordMe Developer Guide
 
-This guide is for developers who want to contribute to ChordMe or understand its technical architecture.
+This comprehensive guide covers the development environment, architecture, contributing guidelines, and best practices for ChordMe development.
+
+## Table of Contents
+
+- [Architecture Overview](#architecture-overview)
+- [Data Models](#data-models)
+- [Development Environment](#development-environment)
+- [Code Conventions](#code-conventions)
+- [Contributing Guidelines](#contributing-guidelines)
+- [Testing Strategy](#testing-strategy)
+- [Deployment Guide](#deployment-guide)
+- [Performance Guidelines](#performance-guidelines)
 
 ## Architecture Overview
 
-ChordMe is a full-stack web application with a clear separation between frontend and backend:
+ChordMe follows a modern full-stack architecture with clear separation of concerns:
+
+### System Architecture
 
 ```
-┌─────────────────┐    HTTP/REST API    ┌─────────────────┐
-│   React Frontend │ ◄─────────────────► │  Flask Backend  │
-│   (TypeScript)   │                     │    (Python)     │
-└─────────────────┘                     └─────────────────┘
-│                                                         │
-│ • React 19                                              │
-│ • TypeScript                             • Flask 3.1   │
-│ • Vite                                   • SQLAlchemy  │
-│ • ESLint/Prettier                        • JWT Auth    │
-│ • Vitest                                 • Pytest      │
-└─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                    User Interface Layer                     │
+├─────────────────────────────────────────────────────────────┤
+│  React Frontend (TypeScript)                               │
+│  • Components: Header, Editor, Preview, Auth               │
+│  • State Management: React Hooks + Context                 │
+│  • Routing: React Router                                   │
+│  • Styling: CSS Modules + Responsive Design                │
+│  • Build Tool: Vite                                        │
+└─────────────────────────────────────────────────────────────┘
+                                │
+                                │ HTTP/WebSocket
+                                ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    API Gateway Layer                        │
+├─────────────────────────────────────────────────────────────┤
+│  Flask Backend (Python)                                    │
+│  • API Routes: /api/v1/                                    │
+│  • Authentication: JWT + OAuth2                            │
+│  • Validation: Schema validation                           │
+│  • Documentation: Swagger/OpenAPI                          │
+│  • Real-time: WebSocket support                            │
+└─────────────────────────────────────────────────────────────┘
+                                │
+                                │ ORM
+                                ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Data Layer                               │
+├─────────────────────────────────────────────────────────────┤
+│  Database (SQLite/PostgreSQL)                              │
+│  • Users: Authentication and profiles                      │
+│  • Songs: Content and metadata                             │
+│  • Collaborations: Sharing and permissions                 │
+│  • Versions: Change history                                │
+└─────────────────────────────────────────────────────────────┘
+                                │
+                                │ External APIs
+                                ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  External Services                          │
+├─────────────────────────────────────────────────────────────┤
+│  • Google OAuth: Authentication                            │
+│  • Google Drive: Backup and sync                           │
+│  • Firebase: Real-time collaboration                       │
+│  • GitHub Pages: Documentation hosting                     │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-## Technology Stack
+### Component Architecture
 
-### Frontend
-- **React 19**: Modern React with latest features
-- **TypeScript**: Type safety and developer experience
-- **Vite**: Fast build tool and development server
-- **ESLint & Prettier**: Code quality and formatting
-- **Vitest**: Testing framework
-- **React Testing Library**: Component testing
+#### Frontend Architecture
+```
+src/
+├── components/           # Reusable UI components
+│   ├── Header/          # Navigation and user menu
+│   ├── Layout/          # Page layout wrapper
+│   ├── ChordProEditor/  # ChordPro editing interface
+│   ├── ChordProViewer/  # ChordPro rendering engine
+│   └── ...
+├── pages/               # Page-level components
+│   ├── Home/           # Dashboard page
+│   ├── Login/          # Authentication pages
+│   ├── Register/
+│   └── ...
+├── services/           # API communication layer
+│   ├── api.ts          # HTTP client configuration
+│   ├── authService.ts  # Authentication logic
+│   ├── songService.ts  # Song CRUD operations
+│   └── ...
+├── types/              # TypeScript type definitions
+├── utils/              # Utility functions
+├── hooks/              # Custom React hooks
+└── styles/             # Global styles and themes
+```
 
-### Backend
-- **Flask 3.1**: Python web framework
-- **SQLAlchemy**: Database ORM
-- **Flask-CORS**: Cross-origin resource sharing
-- **PyJWT**: JWT token handling
-- **bcrypt**: Password hashing
-- **Pytest**: Testing framework
+#### Backend Architecture
+```
+backend/
+├── chordme/
+│   ├── __init__.py     # Flask app factory
+│   ├── api/            # API route definitions
+│   │   ├── auth.py     # Authentication endpoints
+│   │   ├── songs.py    # Song management endpoints
+│   │   └── ...
+│   ├── models/         # Database models
+│   │   ├── user.py     # User model
+│   │   ├── song.py     # Song model
+│   │   └── ...
+│   ├── services/       # Business logic layer
+│   │   ├── auth_service.py
+│   │   ├── song_service.py
+│   │   └── ...
+│   ├── utils/          # Utility functions
+│   │   ├── chordpro.py # ChordPro parsing
+│   │   ├── validation.py
+│   │   └── ...
+│   └── tests/          # Test suite
+└── requirements.txt
+```
 
-### Development Tools
-- **GitHub Actions**: CI/CD pipeline
-- **Playwright**: End-to-end testing
-- **Codecov**: Test coverage reporting
+### Data Flow
+
+1. **User Interaction**: User interacts with React components
+2. **State Management**: React hooks manage local state and context
+3. **API Calls**: Services layer makes HTTP requests to backend
+4. **Authentication**: JWT tokens validate requests
+5. **Business Logic**: Backend services process requests
+6. **Database Operations**: SQLAlchemy ORM manages data persistence
+7. **Response**: Data flows back through the layers to update UI
+
+## Data Models
+
+### Core Entities
+
+#### User Model
+```python
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(128))
+    display_name = db.Column(db.String(100))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    songs = db.relationship('Song', backref='owner', lazy=True)
+    collaborations = db.relationship('Collaboration', backref='user', lazy=True)
+```
+
+#### Song Model
+```python
+class Song(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    artist = db.Column(db.String(200))
+    content = db.Column(db.Text, nullable=False)
+    key = db.Column(db.String(10))
+    tempo = db.Column(db.Integer)
+    tags = db.Column(db.JSON)
+    is_public = db.Column(db.Boolean, default=False)
+    owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    versions = db.relationship('SongVersion', backref='song', lazy=True)
+    collaborations = db.relationship('Collaboration', backref='song', lazy=True)
+```
+
+#### Collaboration Model
+```python
+class Collaboration(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    song_id = db.Column(db.Integer, db.ForeignKey('song.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    permission = db.Column(db.Enum(PermissionType), nullable=False)
+    granted_by = db.Column(db.Integer, db.ForeignKey('user.id'))
+    granted_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    __table_args__ = (db.UniqueConstraint('song_id', 'user_id'),)
+```
+
+### Entity Relationships
+
+```
+User (1) ──────── (*) Song
+ │                    │
+ │                    │
+ └── (*) Collaboration (*)
+```
+
+- **One-to-Many**: User → Songs (owner relationship)
+- **Many-to-Many**: User ↔ Song (through Collaboration)
+- **One-to-Many**: Song → SongVersions (version history)
+
+## Development Environment
 
 ## Repository Structure
 
