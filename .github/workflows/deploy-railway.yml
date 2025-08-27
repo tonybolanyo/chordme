@@ -16,6 +16,10 @@ on:
         - production
         - staging
 
+permissions:
+  contents: read
+  pull-requests: write
+
 env:
   PYTHON_VERSION: '3.12'
 
