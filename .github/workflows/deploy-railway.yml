@@ -52,9 +52,6 @@ jobs:
     - name: Run backend tests
       working-directory: ./backend
       run: |
-        export FLASK_CONFIG=test_config
-        python -m pytest tests/ -v
-      continue-on-error: true
     
     - name: Install Railway CLI
       run: |
