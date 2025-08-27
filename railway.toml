@@ -7,8 +7,7 @@
   
 [build]
   builder = "nixpacks"
-  buildCommand = "cd backend && pip
-  install -r requirements.txt"
+  buildCommand = "cd backend && pip install -r requirements.txt"
   
 [variables]
   PORT = { default = "5000" }
