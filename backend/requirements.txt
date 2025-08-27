@@ -29,11 +29,11 @@ google-auth-oauthlib==1.2.1
 # PDF generation
 reportlab==4.0.9
 
-# Security scanning tools
-safety==3.2.11
+# Security scanning tools (commented out due to dependency conflicts with supabase)
+# safety==3.2.11  # Dependency conflict with supabase package
 bandit==1.7.10
 
-# Supabase client (optional, for future direct integration)
+# Supabase client (for Netlify + Railway + Supabase deployment stack)
 supabase==2.18.1
 
 # System monitoring (to be installed when needed)
