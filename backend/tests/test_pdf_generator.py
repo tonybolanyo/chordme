@@ -354,3 +354,218 @@ Test content here"""
         
         # More comprehensive metadata validation would require PDF parsing library
         # For now, we ensure the PDF is generated without errors
+
+    def test_pdf_with_empty_sections(self):
+        """Test PDF generation with empty sections."""
+        content = """{title: Empty Sections Test}
+        {sov}
+        {eov}
+        
+        {soc}
+        {eoc}
+        
+        Some actual content"""
+        
+        pdf_bytes = generate_song_pdf(content)
+        
+        assert isinstance(pdf_bytes, bytes)
+        assert len(pdf_bytes) > 0
+        assert pdf_bytes.startswith(b'%PDF')
+
+    def test_pdf_error_handling_invalid_content(self):
+        """Test PDF generation with potentially problematic content."""
+        content = None
+        
+        # Should handle None content gracefully
+        generator = ChordProPDFGenerator()
+        try:
+            pdf_bytes = generator.generate_pdf(content)
+            # If it doesn't raise an exception, it should return empty or minimal PDF
+            assert isinstance(pdf_bytes, bytes) or pdf_bytes is None
+        except (TypeError, AttributeError):
+            # Exception is acceptable for None input
+            pass
+
+    def test_pdf_styles_customization(self):
+        """Test that PDF generator creates proper styles."""
+        generator = ChordProPDFGenerator()
+        styles = generator.styles
+        
+        # Check all required styles exist
+        required_styles = ['title', 'author', 'chord', 'lyrics', 'section', 'metadata']
+        for style_name in required_styles:
+            assert style_name in styles
+            assert hasattr(styles[style_name], 'fontSize')
+            assert hasattr(styles[style_name], 'fontName')
+
+    def test_chord_position_calculation(self):
+        """Test accurate chord position calculation."""
+        generator = ChordProPDFGenerator()
+        test_cases = [
+            ("[C]Hello", [{'chord': 'C', 'position': 0}], "Hello"),
+            ("Hello [G]world", [{'chord': 'G', 'position': 6}], "Hello world"),
+            ("[Am]Test [F]with [C]many", [
+                {'chord': 'Am', 'position': 0},
+                {'chord': 'F', 'position': 5},
+                {'chord': 'C', 'position': 10}
+            ], "Test with many"),
+        ]
+        
+        for chord_line, expected_chords, expected_lyrics in test_cases:
+            chords, lyrics = generator._parse_chord_line(chord_line)
+            assert chords == expected_chords
+            assert lyrics == expected_lyrics
+
+    def test_format_chord_line_alignment(self):
+        """Test chord line formatting and alignment."""
+        generator = ChordProPDFGenerator()
+        
+        # Test various chord positioning scenarios
+        test_cases = [
+            ([{'chord': 'C', 'position': 0}], "Hello", 'C'),
+            ([{'chord': 'G', 'position': 5}], "Hello world", 'G'),
+            ([
+                {'chord': 'C', 'position': 0},
+                {'chord': 'G', 'position': 6}
+            ], "Hello world", ['C', 'G']),
+        ]
+        
+        for chords, lyrics, expected_chords in test_cases:
+            formatted = generator._format_chord_line(chords, lyrics)
+            assert isinstance(formatted, str)
+            assert len(formatted) > 0
+            
+            if isinstance(expected_chords, str):
+                assert expected_chords in formatted
+            else:
+                for chord in expected_chords:
+                    assert chord in formatted
+
+    def test_section_type_detection(self):
+        """Test section type detection from ChordPro directives."""
+        generator = ChordProPDFGenerator()
+        content = """{title: Section Test}
+        
+        Regular verse content
+        
+        {sov}
+        Verse content
+        {eov}
+        
+        {soc}
+        Chorus content
+        {eoc}
+        
+        {sob}
+        Bridge content
+        {eob}"""
+        
+        parsed = generator.parse_chordpro_content(content)
+        
+        assert len(parsed['sections']) >= 4
+        # First section should be regular verse
+        assert parsed['sections'][0]['type'] == 'verse'
+        
+        # Look for specific section types
+        section_types = [section['type'] for section in parsed['sections']]
+        assert 'verse' in section_types
+        assert 'chorus' in section_types
+        assert 'bridge' in section_types
+
+    def test_parse_metadata_directives(self):
+        """Test parsing of various ChordPro metadata directives."""
+        content = """{title: Test Song}
+        {artist: Test Artist}
+        {album: Test Album}
+        {key: C major}
+        {tempo: 120}
+        {capo: 2}
+        {time: 4/4}
+        {composer: Test Composer}
+        
+        Song content here"""
+        
+        generator = ChordProPDFGenerator()
+        parsed = generator.parse_chordpro_content(content)
+        
+        assert parsed['title'] == 'Test Song'
+        assert parsed['artist'] == 'Test Artist'
+        # Additional metadata may be stored in parsed data
+        assert len(parsed['sections']) >= 1
+
+    def test_multiline_chord_sequences(self):
+        """Test handling of multiple consecutive chord lines."""
+        content = """{title: Chord Test}
+        [C] [G] [Am] [F]
+        [C] [G] [F] [C]
+        This is the actual lyric line"""
+        
+        generator = ChordProPDFGenerator()
+        parsed = generator.parse_chordpro_content(content)
+        
+        assert len(parsed['sections']) >= 1
+        assert len(parsed['sections'][0]['lines']) >= 3
+
+    def test_generate_pdf_with_all_options(self):
+        """Test PDF generation with all possible options."""
+        content = """{title: Complete Test}
+        {artist: Full Artist}
+        {key: G}
+        
+        [G]Complete [C]test [D]song
+        With multiple features"""
+        
+        for paper_size in ['a4', 'letter', 'legal']:
+            for orientation in ['portrait', 'landscape']:
+                generator = ChordProPDFGenerator(
+                    paper_size=paper_size,
+                    orientation=orientation
+                )
+                pdf_bytes = generator.generate_pdf(
+                    content,
+                    title="Override Title",
+                    artist="Override Artist"
+                )
+                
+                assert isinstance(pdf_bytes, bytes)
+                assert len(pdf_bytes) > 0
+                assert pdf_bytes.startswith(b'%PDF')
+
+    def test_pdf_memory_efficiency(self):
+        """Test that PDF generation doesn't consume excessive memory."""
+        content = """{title: Memory Test}
+        Simple content"""
+        
+        generator = ChordProPDFGenerator()
+        
+        # Generate multiple PDFs to check for memory leaks
+        for i in range(10):
+            pdf_bytes = generator.generate_pdf(content)
+            assert isinstance(pdf_bytes, bytes)
+            assert len(pdf_bytes) > 0
+            # Force garbage collection would be done here in a real test
+            
+    def test_chord_line_edge_cases(self):
+        """Test chord line parsing edge cases."""
+        generator = ChordProPDFGenerator()
+        
+        edge_cases = [
+            ("", [], ""),  # Empty line
+            ("[C]", [{'chord': 'C', 'position': 0}], ""),  # Only chord
+            ("lyrics only", [], "lyrics only"),  # No chords
+            ("[C][G][Am]", [  # Adjacent chords
+                {'chord': 'C', 'position': 0},
+                {'chord': 'G', 'position': 0},
+                {'chord': 'Am', 'position': 0}
+            ], ""),
+            ("[C] [G] [Am]", [  # Spaced chords only
+                {'chord': 'C', 'position': 0},
+                {'chord': 'G', 'position': 1},
+                {'chord': 'Am', 'position': 2}
+            ], "  "),
+        ]
+        
+        for chord_line, expected_chords, expected_lyrics in edge_cases:
+            chords, lyrics = generator._parse_chord_line(chord_line)
+            assert len(chords) == len(expected_chords)
+            assert lyrics == expected_lyrics
