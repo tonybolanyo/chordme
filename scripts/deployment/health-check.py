@@ -52,7 +52,7 @@ def test_post_endpoint(url, data=None, expected_status=422, timeout=30):
             'status_code': response.status_code,
             'response_time': response.elapsed.total_seconds(),
             'content_type': response.headers.get('content-type', ''),
-            'content': response.text[:200] if len(response.text) < 200 else response.text[:200] + '...'
+            'content': truncate_content(response.text, 200)
         }
     except requests.exceptions.RequestException as e:
         return False, {'error': str(e)}
