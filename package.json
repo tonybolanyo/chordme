@@ -21,7 +21,14 @@
     "security:audit": "python scripts/security_audit.py",
     "security:scan": "cd backend && python -m bandit -r chordme/ && python -m safety check",
     "lint:frontend": "cd frontend && npm run lint",
-    "format:frontend": "cd frontend && npm run format"
+    "format:frontend": "cd frontend && npm run format",
+    "deploy:netlify": "./scripts/deployment/deploy-netlify.sh",
+    "deploy:railway": "./scripts/deployment/deploy-railway.sh",
+    "deploy:full-stack": "./scripts/deployment/deploy-full-stack.sh",
+    "deploy:staging": "./scripts/deployment/deploy-full-stack.sh staging",
+    "deploy:production": "./scripts/deployment/deploy-full-stack.sh production",
+    "health-check": "python scripts/deployment/health-check.py",
+    "migrate": "python database/migrate.py"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.2",
