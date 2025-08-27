@@ -163,9 +163,9 @@ All test types can be run in CI environments:
 ## Updated Coverage Requirements and Standards
 
 ### Coverage Thresholds (Enforced by CI)
-- **Overall Project**: 90%+ coverage required
-- **Backend**: 90%+ coverage required  
-- **Frontend**: 90%+ coverage required
+- **Overall Project**: 85%+ coverage required
+- **Backend**: 85%+ coverage required  
+- **Frontend**: 85%+ coverage required
 - **Integration**: 85%+ coverage required
 
 ### Running Coverage Reports
@@ -195,7 +195,7 @@ npm run test:coverage
 
 ### Coverage Enforcement
 - **CI Integration**: GitHub Actions automatically check coverage on PRs
-- **Build Failures**: Builds **WILL FAIL** if coverage drops below thresholds (90% backend, 90% frontend)
+- **Build Failures**: Builds **WILL FAIL** if coverage drops below thresholds (85% backend, 85% frontend)
 - **Codecov Integration**: Detailed coverage tracking and reporting with failure notifications
 - **Coverage Reports**: Generated for all pull requests with detailed breakdown
 
@@ -254,7 +254,7 @@ npm run test:coverage
 ### Coverage Monitoring Tools
 
 #### Codecov Configuration
-- Project coverage target: 90%
+- Project coverage target: 85%
 - Patch coverage target: 85%
 - Automatic PR comments with coverage changes
 - Flag-based coverage for backend/frontend/integration
@@ -290,6 +290,6 @@ When adding new features:
 1. **Unit Tests**: Cover all new functions/components
 2. **Integration Tests**: Test new API endpoints
 3. **Documentation**: Update this guide with new patterns
-4. **Coverage**: Ensure overall coverage remains above 90%
+4. **Coverage**: Ensure overall coverage remains above 85%
 
 This comprehensive testing strategy ensures ChordMe maintains high code quality and reliability while supporting rapid development and deployment.

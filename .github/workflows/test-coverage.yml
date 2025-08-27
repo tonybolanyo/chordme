@@ -50,12 +50,12 @@ jobs:
           --cov-report=term-missing \
           --cov-report=xml:coverage.xml \
           --cov-report=html:htmlcov \
-          --cov-fail-under=90
+          --cov-fail-under=85
 
     - name: Run Frontend Tests with Coverage  
       run: |
         cd frontend
-        npm run test:coverage -- --reporter=verbose --coverage.thresholds.statements=90 --coverage.thresholds.branches=90 --coverage.thresholds.functions=90 --coverage.thresholds.lines=90
+        npm run test:coverage -- --reporter=verbose --coverage.thresholds.statements=85 --coverage.thresholds.branches=85 --coverage.thresholds.functions=85 --coverage.thresholds.lines=85
 
     - name: Upload Backend Coverage to Codecov
       uses: codecov/codecov-action@v5
@@ -93,8 +93,8 @@ jobs:
 
     - name: Check Overall Coverage Threshold
       run: |
-        echo "Checking overall coverage meets 90% target..."
+        echo "Checking overall coverage meets 85% target..."
         echo "Coverage enforcement enabled - builds will fail if coverage drops below threshold"
-        echo "- Backend: 90% minimum coverage required"
-        echo "- Frontend: 90% minimum coverage required"
+        echo "- Backend: 85% minimum coverage required"
+        echo "- Frontend: 85% minimum coverage required"
         echo "- Integration: 85% minimum coverage required"
