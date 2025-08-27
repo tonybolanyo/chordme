@@ -1438,4 +1438,98 @@ Version snapshots are automatically created in the following scenarios:
 
 ---
 
+## Advanced Features
+
+### Rate Limiting
+
+All API endpoints are subject to rate limiting:
+
+- **Authenticated users**: 1000 requests per hour
+- **Anonymous users**: 100 requests per hour
+- **Premium users**: 5000 requests per hour
+
+Rate limit headers are included in all responses:
+```
+X-RateLimit-Limit: 1000
+X-RateLimit-Remaining: 999
+X-RateLimit-Reset: 1642781400
+```
+
+### Pagination
+
+List endpoints support pagination with consistent parameters:
+
+**Parameters:**
+- `page`: Page number (starting from 1)
+- `per_page`: Items per page (max 100)
+
+**Response format:**
+```json
+{
+  "data": [...],
+  "pagination": {
+    "current_page": 1,
+    "per_page": 20,
+    "total": 100,
+    "total_pages": 5,
+    "has_next": true,
+    "has_prev": false
+  }
+}
+```
+
+### Error Codes
+
+| Code | Description |
+|------|-------------|
+| `VALIDATION_ERROR` | Request validation failed |
+| `AUTHENTICATION_FAILED` | Invalid credentials |
+| `AUTHORIZATION_FAILED` | Insufficient permissions |
+| `RESOURCE_NOT_FOUND` | Requested resource doesn't exist |
+| `RATE_LIMIT_EXCEEDED` | Too many requests |
+| `INTERNAL_ERROR` | Server error |
+| `SONG_NOT_FOUND` | Song doesn't exist or no access |
+| `INVALID_CHORDPRO` | ChordPro content validation failed |
+| `COLLABORATION_ERROR` | Collaboration operation failed |
+
+### Content Types
+
+Supported content types:
+- `application/json` (default)
+- `application/xml` (limited endpoints)
+- `text/plain` (ChordPro export)
+- `application/pdf` (PDF export)
+
+### Webhooks
+
+ChordMe supports webhooks for real-time notifications:
+
+**Events:**
+- `song.created`
+- `song.updated`
+- `song.deleted`
+- `collaboration.added`
+- `collaboration.removed`
+
+**Webhook payload example:**
+```json
+{
+  "event": "song.updated",
+  "timestamp": "2024-01-27T11:00:00Z",
+  "data": {
+    "song_id": 123,
+    "user_id": 1,
+    "changes": ["title", "content"]
+  }
+}
+```
+
+For more detailed technical information, see the [Developer Guide](developer-guide.md).
+
+---
+
+**Language:** **English** | [Español](api-reference-es.md)
+
+*For interactive API documentation with live testing, visit the [Swagger UI](swagger.html).*
+
 *For more information about using the ChordMe API, see the [User Guide](user-guide.md) and [Developer Guide](developer-guide.md).*

@@ -146,12 +146,195 @@ Versions are automatically created in these situations:
 - You need edit permissions to restore versions of shared songs
 - Version history is shared among all collaborators on a song
 
-#### Best Practices for Version Management
+### UI Workflows
 
-1. **Use Descriptive Titles**: Update song titles to reflect major changes
-2. **Save Frequently**: Regular saves create more granular version history
-3. **Preview Before Restoring**: Always preview a version before restoring
-4. **Coordinate with Collaborators**: Communicate major changes when working with others
+#### Creating a New Song
+
+**Step-by-Step Process:**
+
+1. **Start Creation**:
+   - Click "New Song" button on dashboard or main navigation
+   - Or use keyboard shortcut `Ctrl+N`
+   - Or select "Create" from the main menu
+
+2. **Song Information**:
+   - Enter song title (required)
+   - Add artist name (optional)
+   - Select key signature from dropdown
+   - Set tempo (BPM) if desired
+   - Add tags for organization
+
+3. **Choose Starting Point**:
+   - **Blank Song**: Start with empty editor
+   - **Template**: Select from predefined song structures
+   - **Import**: Upload existing ChordPro file
+   - **Quick Start**: Use guided setup wizard
+
+4. **Editor Setup**:
+   - Choose initial layout (split view recommended)
+   - Set preferred font size and spacing
+   - Enable or disable syntax highlighting
+
+5. **Content Creation**:
+   - Begin typing ChordPro content in the editor
+   - Use chord palette for inserting chords
+   - Preview updates automatically as you type
+
+#### Editing an Existing Song
+
+**Opening Songs for Editing:**
+
+1. **From Song List**:
+   - Click song title or edit icon
+   - Double-click song card in grid view
+   - Select song and click "Edit" button
+
+2. **From Search Results**:
+   - Search for song by title or content
+   - Click on search result to open editor
+   - Use filters to narrow down search results
+
+3. **From Recent Files**:
+   - Access recently edited songs from dashboard
+   - Click on recent file thumbnail
+   - Files stay in recent list for 30 days
+
+**Editing Process:**
+
+1. **Content Modification**:
+   - Edit text and chords in the editor pane
+   - Changes auto-save every 30 seconds
+   - Manual save with `Ctrl+S` or save button
+
+2. **Real-time Preview**:
+   - Preview updates automatically with changes
+   - Toggle preview on/off with preview button
+   - Adjust preview layout and styling as needed
+
+3. **Collaboration**:
+   - See other users' cursors in real-time
+   - Changes from collaborators appear immediately
+   - Conflict resolution handled automatically
+
+#### Song Management Workflows
+
+**Organizing Your Library:**
+
+1. **Using Tags**:
+   - Add tags during song creation or editing
+   - Use tags for genres, moods, instruments, or custom categories
+   - Filter song list by tags for quick organization
+   - Create tag hierarchies (e.g., "Rock > Classic Rock")
+
+2. **Folder Organization**:
+   - Create folders for different collections
+   - Drag and drop songs between folders
+   - Nested folders for hierarchical organization
+   - Share entire folders with collaborators
+
+3. **Search and Discovery**:
+   - Use global search to find songs by any content
+   - Advanced search with multiple criteria
+   - Saved searches for frequently used filters
+   - Smart playlists based on criteria
+
+**Sharing and Collaboration:**
+
+1. **Individual Song Sharing**:
+   - Click "Share" button in song editor or list
+   - Enter collaborator email addresses
+   - Set permission levels (view, edit, admin)
+   - Add optional message with sharing invitation
+
+2. **Bulk Sharing**:
+   - Select multiple songs in list view
+   - Use bulk actions menu to share all selected
+   - Apply same permissions to all shared songs
+   - Send single notification with all shared songs
+
+3. **Managing Collaborators**:
+   - View all collaborators in song settings
+   - Modify individual permissions as needed
+   - Remove collaborators when necessary
+   - Transfer ownership to another user
+
+**Export and Backup:**
+
+1. **Single Song Export**:
+   - Click "Export" button in song editor
+   - Choose format: PDF, ChordPro, plain text
+   - Customize PDF layout and styling
+   - Download or email exported file
+
+2. **Bulk Export**:
+   - Select multiple songs in list view
+   - Choose export format for all songs
+   - Create ZIP archive with all exported files
+   - Maintain folder structure in export
+
+3. **Backup Creation**:
+   - Schedule automatic backups to Google Drive
+   - Manual backup of entire song library
+   - Version history included in backup
+   - Import backup to restore songs
+
+#### Theme and Accessibility Workflows
+
+**Switching Themes:**
+
+1. **Theme Toggle**:
+   - Use theme toggle button in top navigation
+   - Switch between light and dark modes instantly
+   - System preference detection and auto-switching
+   - Theme preference saved in user profile
+
+2. **Theme Customization**:
+   - Access theme settings in user preferences
+   - Customize colors for syntax highlighting
+   - Adjust contrast and brightness levels
+   - Create and save custom themes
+
+**Accessibility Features:**
+
+1. **Keyboard Navigation**:
+   - Full keyboard navigation support
+   - Tab through all interactive elements
+   - Arrow keys for menu navigation
+   - Enter/Space for activation
+
+2. **Screen Reader Support**:
+   - ARIA labels on all interactive elements
+   - Semantic HTML structure throughout
+   - Status announcements for dynamic content
+   - Skip links for main content areas
+
+3. **Visual Accommodations**:
+   - High contrast mode for better visibility
+   - Adjustable font sizes throughout interface
+   - Reduced motion options for animations
+   - Focus indicators for keyboard navigation
+
+#### Mobile and Responsive Workflows
+
+**Mobile-Specific Features:**
+
+1. **Touch Gestures**:
+   - Swipe left/right to navigate between songs
+   - Pinch to zoom in editor and preview
+   - Long press for context menus
+   - Pull to refresh song lists
+
+2. **Mobile Editor**:
+   - Simplified toolbar for smaller screens
+   - One-pane editing with quick preview toggle
+   - Touch-optimized chord insertion
+   - Autocorrect disabled for ChordPro syntax
+
+3. **Offline Capabilities**:
+   - Recent songs cached for offline access
+   - Offline editing with sync when reconnected
+   - Download songs for offline use
+   - Offline mode indicator in interface
 
 ### Organizing Songs
 
@@ -208,6 +391,97 @@ Organize your songs with structural directives:
 - **Key changes**: Handle modulations and key changes
 
 ## Interface Features
+
+ChordMe provides a modern, intuitive interface designed for both novice and experienced users.
+
+### Navigation
+
+#### Main Navigation
+The top navigation bar provides access to key sections:
+- **Home**: Dashboard with song overview and quick actions
+- **Songs**: Complete song library with search and filtering
+- **Create**: Quick song creation wizard
+- **Profile**: User settings and account management
+
+#### Breadcrumb Navigation
+- Displays current location within the application
+- Allows quick navigation back to parent sections
+- Shows hierarchy: Home > Songs > Song Title > Edit
+
+### Dashboard Overview
+
+#### Song Statistics
+- **Total Songs**: Complete count of your song library
+- **Recent Activity**: Latest edits and newly created songs
+- **Collaboration**: Songs shared with you and sharing activity
+- **Quick Stats**: Chord usage, key signatures, and tempo analysis
+
+#### Quick Actions Panel
+- **New Song**: Create a new song from scratch
+- **Import**: Upload ChordPro files or plain text
+- **Recent Files**: Access recently edited songs
+- **Templates**: Start from predefined song structures
+
+### Song List Interface
+
+#### List View Options
+- **Grid View**: Visual thumbnail cards showing song previews
+- **List View**: Compact table with title, artist, key, and last modified
+- **Detail View**: Extended information with tags and collaboration status
+
+#### Sorting and Filtering
+- **Sort by**: Title, Artist, Date Created, Last Modified, Key, Tempo
+- **Filter by**: Key signature, Genre, Collaboration status, Tags
+- **Search**: Real-time search across titles, artists, and content
+- **Advanced Search**: Search within ChordPro content and metadata
+
+#### Bulk Operations
+- **Select Multiple**: Checkbox selection for bulk actions
+- **Bulk Edit**: Apply tags, change permissions, or move to folders
+- **Export Multiple**: Download multiple songs as PDF or ChordPro files
+- **Share Multiple**: Add collaborators to multiple songs at once
+
+### Editor Interface
+
+#### Split-Pane Layout
+- **Editor Pane**: ChordPro source editor with syntax highlighting
+- **Preview Pane**: Live rendered output showing formatted song
+- **Resizable Divider**: Adjust pane sizes based on preference
+- **Toggle Views**: Switch between edit-only, preview-only, or split view
+
+#### Editor Features
+- **Syntax Highlighting**: Color-coded ChordPro directives and chords
+- **Auto-completion**: Chord suggestions and directive completion
+- **Line Numbers**: Optional line numbering for reference
+- **Bracket Matching**: Highlight matching chord and directive brackets
+- **Search and Replace**: Find and replace text within the editor
+
+#### Toolbar Actions
+- **Save**: Save current changes (Ctrl+S)
+- **Undo/Redo**: Step through edit history (Ctrl+Z, Ctrl+Y)
+- **Format**: Auto-format ChordPro structure
+- **Preview**: Toggle preview pane visibility
+- **Fullscreen**: Expand editor to full window
+
+### Preview Features
+
+#### Chord Display
+- **Above Lyrics**: Traditional chord placement above corresponding words
+- **Chord Highlighting**: Visual emphasis on chord positions
+- **Transposition**: Real-time key changes without editing source
+- **Chord Simplification**: Option to show simplified chord names
+
+#### Layout Options
+- **Column Layout**: Single or multi-column text display
+- **Font Size**: Adjustable text size for readability
+- **Line Spacing**: Customize spacing between lines
+- **Page Breaks**: Control where page breaks occur for printing
+
+#### Interactive Elements
+- **Clickable Chords**: Click chords to see finger positions
+- **Section Navigation**: Jump to specific song sections (verse, chorus, bridge)
+- **Playback Cursor**: Visual indicator during audio playback
+- **Scroll Sync**: Synchronized scrolling between editor and preview
 
 ### ChordPro Editor
 

@@ -50,6 +50,13 @@ jobs:
           ./scripts/validate-docs.sh
           echo "::endgroup::"
 
+      - name: Validate documentation links
+        run: |
+          echo "::group::Documentation Link Validation"
+          chmod +x ./scripts/validate-links.sh
+          ./scripts/validate-links.sh
+          echo "::endgroup::"
+
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v5
