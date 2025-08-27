@@ -65,26 +65,26 @@ ALTER TABLE collections ENABLE ROW LEVEL SECURITY;
 ALTER TABLE collection_songs ENABLE ROW LEVEL SECURITY;
 
 -- Users can only access their own data
-CREATE POLICY "Users can view own profile" ON users FOR SELECT USING (id = auth.uid());
-CREATE POLICY "Users can update own profile" ON users FOR UPDATE USING (id = auth.uid());
+CREATE POLICY "Users can view own profile" ON users FOR SELECT USING (id = current_setting('jwt.claims.user_id', true)::uuid);
+CREATE POLICY "Users can update own profile" ON users FOR UPDATE USING (id = current_setting('jwt.claims.user_id', true)::uuid);
 
 -- Songs policies
-CREATE POLICY "Users can view own songs" ON songs FOR SELECT USING (user_id = auth.uid() OR is_public = true);
-CREATE POLICY "Users can insert own songs" ON songs FOR INSERT WITH CHECK (user_id = auth.uid());
-CREATE POLICY "Users can update own songs" ON songs FOR UPDATE USING (user_id = auth.uid());
-CREATE POLICY "Users can delete own songs" ON songs FOR DELETE USING (user_id = auth.uid());
+CREATE POLICY "Users can view own songs" ON songs FOR SELECT USING (user_id = current_setting('jwt.claims.user_id', true)::uuid OR is_public = true);
+CREATE POLICY "Users can insert own songs" ON songs FOR INSERT WITH CHECK (user_id = current_setting('jwt.claims.user_id', true)::uuid);
+CREATE POLICY "Users can update own songs" ON songs FOR UPDATE USING (user_id = current_setting('jwt.claims.user_id', true)::uuid);
+CREATE POLICY "Users can delete own songs" ON songs FOR DELETE USING (user_id = current_setting('jwt.claims.user_id', true)::uuid);
 
 -- Collections policies
-CREATE POLICY "Users can view own collections" ON collections FOR SELECT USING (user_id = auth.uid() OR is_public = true);
-CREATE POLICY "Users can insert own collections" ON collections FOR INSERT WITH CHECK (user_id = auth.uid());
-CREATE POLICY "Users can update own collections" ON collections FOR UPDATE USING (user_id = auth.uid());
-CREATE POLICY "Users can delete own collections" ON collections FOR DELETE USING (user_id = auth.uid());
+CREATE POLICY "Users can view own collections" ON collections FOR SELECT USING (user_id = current_setting('jwt.claims.user_id', true)::uuid OR is_public = true);
+CREATE POLICY "Users can insert own collections" ON collections FOR INSERT WITH CHECK (user_id = current_setting('jwt.claims.user_id', true)::uuid);
+CREATE POLICY "Users can update own collections" ON collections FOR UPDATE USING (user_id = current_setting('jwt.claims.user_id', true)::uuid);
+CREATE POLICY "Users can delete own collections" ON collections FOR DELETE USING (user_id = current_setting('jwt.claims.user_id', true)::uuid);
 
 -- Collection songs policies
 CREATE POLICY "Users can view collection songs if they own collection" ON collection_songs FOR SELECT 
-    USING (EXISTS (SELECT 1 FROM collections WHERE collections.id = collection_songs.collection_id AND (collections.user_id = auth.uid() OR collections.is_public = true)));
+    USING (EXISTS (SELECT 1 FROM collections WHERE collections.id = collection_songs.collection_id AND (collections.user_id = current_setting('jwt.claims.user_id', true)::uuid OR collections.is_public = true)));
 CREATE POLICY "Users can modify collection songs if they own collection" ON collection_songs FOR ALL 
-    USING (EXISTS (SELECT 1 FROM collections WHERE collections.id = collection_songs.collection_id AND collections.user_id = auth.uid()));
+    USING (EXISTS (SELECT 1 FROM collections WHERE collections.id = collection_songs.collection_id AND collections.user_id = current_setting('jwt.claims.user_id', true)::uuid));
 
 -- Create updated_at trigger function
 CREATE OR REPLACE FUNCTION update_updated_at_column()
