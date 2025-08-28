@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Firebase Integration
+---
+
 # Firebase Integration Setup Guide
 
 ChordMe now supports Firebase and Firestore as an alternative backend for scalable, real-time data storage. This guide explains how to set up and configure Firebase integration.

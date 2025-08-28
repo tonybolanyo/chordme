@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Security Checklist
+---
+
 # Security Checklist - ChordMe Application
 
 This checklist provides a comprehensive security validation framework for ongoing security assessments and reviews.

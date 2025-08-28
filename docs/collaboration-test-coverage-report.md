@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Collaboration Test Coverage Report
+---
+
 # Comprehensive Collaboration Test Coverage Report
 
 ## Summary

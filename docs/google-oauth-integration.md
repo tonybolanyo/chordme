@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Google OAuth Integration
+---
+
 # Google OAuth2 Integration for ChordMe
 
 This document describes the Google OAuth2 integration implemented in ChordMe for accessing Google Drive files.

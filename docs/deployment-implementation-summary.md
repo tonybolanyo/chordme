@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Deployment Implementation Summary
+---
+
 # Deployment Scripts and Infrastructure Automation - Implementation Summary
 
 ## Overview

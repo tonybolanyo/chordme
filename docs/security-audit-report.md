@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Security Audit Report
+---
+
 # Comprehensive Security Audit Report - ChordMe Collaboration Features
 
 ## Executive Summary

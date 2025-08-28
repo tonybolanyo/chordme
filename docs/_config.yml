@@ -35,26 +35,66 @@ include:
 languages: ["en", "es"]
 default_lang: "en"
 
+# Main navigation sections
 header_pages:
+  # User Documentation
   - getting-started.md
   - user-guide.md
   - chordpro-format.md
-  - api-reference.md
-  - developer-guide.md
-  - infrastructure.md
-  - changelog.md
-  - accessibility-guidelines.md
-  - responsive-design-guide.md
   - troubleshooting.md
+  # Developer Documentation  
+  - developer-guide.md
+  - api-reference.md
+  - api-documentation.md
+  - testing.md
+  # Infrastructure & Deployment
+  - infrastructure.md
+  - deployment.md
+  - deployment-netlify-railway-supabase.md
+  # Security & Compliance
+  - security-checklist.md
+  - threat-model.md
+  - final-security-audit-report.md
+  # Collaboration Features
+  - collaborative-editing-architecture.md
+  - firebase-integration.md
+  - google-oauth-integration.md
+  # Testing & Quality
+  - collaboration-test-coverage-report.md
+  - codecov.md
+  # Project Information
+  - changelog.md
+  - workflows-documentation.md
 
 header_pages_es:
+  # User Documentation
   - getting-started-es.md
   - user-guide-es.md
   - chordpro-format-es.md
-  - api-reference-es.md
-  - developer-guide-es.md
-  - changelog-es.md
   - troubleshooting-es.md
+  # Developer Documentation
+  - developer-guide-es.md
+  - api-reference-es.md
+  - api-documentation-es.md
+  - testing-es.md
+  # Infrastructure & Deployment
+  - infrastructure-es.md
+  - deployment-es.md
+  - deployment-netlify-railway-supabase-es.md
+  # Security & Compliance
+  - security-checklist-es.md
+  - threat-model-es.md
+  - final-security-audit-report-es.md
+  # Collaboration Features
+  - collaborative-editing-architecture-es.md
+  - firebase-integration-es.md
+  - google-oauth-integration-es.md
+  # Testing & Quality
+  - collaboration-test-coverage-report-es.md
+  - codecov-es.md
+  # Project Information
+  - changelog-es.md
+  - workflows-documentation-es.md
 
 defaults:
   - scope:
@@ -62,32 +102,9 @@ defaults:
       type: "pages"
     values:
       layout: "default"
+  # Spanish language defaults
   - scope:
-      path: "README-es.md"
-    values:
-      lang: "es"
-  - scope:
-      path: "getting-started-es.md"
-    values:
-      lang: "es"
-  - scope:
-      path: "user-guide-es.md"
-    values:
-      lang: "es"
-  - scope:
-      path: "chordpro-format-es.md"
-    values:
-      lang: "es"
-  - scope:
-      path: "api-reference-es.md"
-    values:
-      lang: "es"
-  - scope:
-      path: "developer-guide-es.md"
-    values:
-      lang: "es"
-  - scope:
-      path: "troubleshooting-es.md"
+      path: "*-es.md"
     values:
       lang: "es"
   - scope:

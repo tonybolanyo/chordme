@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Final Security Audit Report
+---
+
 # Security Audit and Penetration Testing Results
 
 ## Executive Summary

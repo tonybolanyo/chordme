@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Real-time Editing Implementation
+---
+
 # Real-time Song Editing Implementation
 
 This document describes the real-time collaborative editing functionality implemented for ChordMe song editing.
