@@ -24,33 +24,61 @@
       "passwordPlaceholder": "Ingresa tu contraseña"
     },
     "register": {
-      "title": "Registrarse",
+      "title": "Únete a ChordMe",
+      "subtitle": "Crea tu cuenta para comenzar a organizar acordes y canciones",
       "email": "Correo electrónico",
       "password": "Contraseña",
       "confirmPassword": "Confirmar contraseña",
       "submit": "Crear cuenta",
+      "success": "¡Registro exitoso! Ahora puedes iniciar sesión con tu cuenta.",
       "emailPlaceholder": "Ingresa tu correo electrónico",
-      "passwordPlaceholder": "Ingresa tu contraseña",
-      "confirmPasswordPlaceholder": "Confirma tu contraseña"
+      "passwordPlaceholder": "Crea una contraseña segura",
+      "confirmPasswordPlaceholder": "Confirma tu contraseña",
+      "accountFormTitle": "Crear una cuenta de ChordMe",
+      "passwordRequirements": {
+        "title": "La contraseña debe contener:",
+        "minLength": "Al menos 8 caracteres",
+        "uppercase": "Una letra mayúscula",
+        "lowercase": "Una letra minúscula",
+        "number": "Un número",
+        "special": "Un carácter especial"
+      },
+      "loadingText": "Creando cuenta...",
+      "footerText": "¿Ya tienes una cuenta?",
+      "footerLink": "Inicia sesión aquí"
     },
     "errors": {
       "loginFailed": "Error al iniciar sesión",
+      "registerFailed": "Error al registrarse",
       "networkError": "Ocurrió un error durante el inicio de sesión. Por favor, inténtalo de nuevo.",
+      "registrationNetworkError": "Ocurrió un error durante el registro. Por favor, inténtalo de nuevo.",
       "emailRequired": "El correo electrónico es obligatorio",
       "passwordRequired": "La contraseña es obligatoria",
+      "confirmPasswordRequired": "Por favor, confirma tu contraseña",
+      "passwordMismatch": "Las contraseñas no coinciden",
       "invalidEmail": "Por favor, ingresa una dirección de correo electrónico válida"
     }
   },
   "songs": {
     "title": "Título:",
     "titlePlaceholder": "Ingresa el título de la canción",
+    "contentPlaceholder": "Ingresa el contenido de la canción (formato ChordPro)",
+    "createSong": "Crear canción",
+    "updateSong": "Actualizar canción",
     "acceptExternalChanges": "Aceptar cambios externos",
     "keepMyChanges": "Mantener mis cambios",
     "delete": "Eliminar",
     "owner": "Propietario",
     "admin": "Administrador",
+    "edit": "Editar",
     "ownerTooltip": "Eres el propietario de esta canción",
-    "adminTooltip": "Tienes acceso de administrador a esta canción"
+    "adminTooltip": "Tienes acceso de administrador a esta canción",
+    "editTooltip": "Tienes acceso de edición a esta canción",
+    "saving": "Guardando...",
+    "saveToDrive": "Guardar en Drive",
+    "saveToDriveTooltip": "Guardar en Google Drive",
+    "createNewSong": "Crear nueva canción",
+    "editingSong": "Editando canción"
   },
   "common": {
     "loading": "Cargando...",

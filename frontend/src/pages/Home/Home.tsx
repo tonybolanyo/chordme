@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { apiService } from '../../services/api';
 import { googleOAuth2Service } from '../../services/googleOAuth';
@@ -22,6 +23,7 @@ import type { PDFExportOptions } from '../../components';
 import './Home.css';
 
 const Home: React.FC = () => {
+  const { t } = useTranslation('common');
   const { user } = useAuth();
 
   // Use real-time songs hook instead of manual state management
@@ -750,7 +752,7 @@ const Home: React.FC = () => {
               }
             }}
           >
-            {showCreateForm ? 'Cancel' : 'Create New Song'}
+            {showCreateForm ? t('common.cancel') : t('songs.createNewSong')}
           </button>
 
           {googleOAuth2Service.isAuthenticated() && (
@@ -831,7 +833,7 @@ const Home: React.FC = () => {
           >
             <h3>Create New Song</h3>
             <div style={{ marginBottom: '1rem' }}>
-              <label htmlFor="title">Title:</label>
+              <label htmlFor="title">{t('songs.title')}</label>
               <input
                 type="text"
                 id="title"
@@ -839,7 +841,7 @@ const Home: React.FC = () => {
                 onChange={(e) =>
                   setNewSong({ ...newSong, title: e.target.value })
                 }
-                placeholder="Enter song title"
+                placeholder={t('songs.titlePlaceholder')}
                 required
                 style={{ width: '100%', padding: '0.5rem', margin: '0.5rem 0' }}
               />
@@ -903,7 +905,7 @@ const Home: React.FC = () => {
             </div>
             <div>
               <button type="submit" className="btn btn-primary">
-                Create Song
+                {t('songs.createSong')}
               </button>
               {googleOAuth2Service.isAuthenticated() && (
                 <button
@@ -930,7 +932,7 @@ const Home: React.FC = () => {
                 onClick={() => setShowCreateForm(false)}
                 style={{ marginLeft: '1rem' }}
               >
-                Cancel
+                {t('common.cancel')}
               </button>
             </div>
           </form>

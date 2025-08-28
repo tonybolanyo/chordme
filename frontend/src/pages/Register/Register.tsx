@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { apiService } from '../../services/api';
 import { validateEmail, validatePassword } from '../../utils';
 import {
@@ -10,6 +11,7 @@ import type { RegisterRequest } from '../../types';
 import './Register.css';
 
 const Register: React.FC = () => {
+  const { t } = useTranslation('common');
   const [formData, setFormData] = useState<RegisterRequest>({
     email: '',
     password: '',
@@ -66,9 +68,9 @@ const Register: React.FC = () => {
 
     // Validate password confirmation
     if (!confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password';
+      newErrors.confirmPassword = t('auth.errors.confirmPasswordRequired');
     } else if (confirmPassword !== formData.password) {
-      newErrors.confirmPassword = 'Passwords do not match';
+      newErrors.confirmPassword = t('auth.errors.passwordMismatch');
     }
 
     setErrors(newErrors);
@@ -90,19 +92,17 @@ const Register: React.FC = () => {
       const response = await apiService.register(formData);
 
       if (response.status === 'success') {
-        setSuccessMessage(
-          'Registration successful! You can now sign in with your account.'
-        );
+        setSuccessMessage(t('auth.register.success'));
         // Clear form
         setFormData({ email: '', password: '' });
         setConfirmPassword('');
       } else {
-        setErrors({ submit: response.error || 'Registration failed' });
+        setErrors({ submit: response.error || t('auth.errors.registerFailed') });
       }
     } catch (error) {
       console.error('Registration error:', error);
       setErrors({
-        submit: 'An error occurred during registration. Please try again.',
+        submit: t('auth.errors.registrationNetworkError'),
       });
     } finally {
       setIsLoading(false);
@@ -121,9 +121,9 @@ const Register: React.FC = () => {
   return (
     <div className="register">
       <div className="register-container">
-        <h1>Join ChordMe</h1>
+        <h1>{t('auth.register.title')}</h1>
         <p className="register-subtitle">
-          Create your account to start organizing chords and songs
+          {t('auth.register.subtitle')}
         </p>
 
         {successMessage && (
@@ -131,9 +131,9 @@ const Register: React.FC = () => {
         )}
 
         <form onSubmit={handleSubmit} className="register-form">
-          <h3>Create a ChordMe account</h3>
+          <h3>{t('auth.register.accountFormTitle')}</h3>
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email">{t('auth.register.email')}</label>
             <input
               type="email"
               id="email"
@@ -141,7 +141,7 @@ const Register: React.FC = () => {
               value={formData.email}
               onChange={handleInputChange}
               className={errors.email ? 'error' : ''}
-              placeholder="Enter your email"
+              placeholder={t('auth.register.emailPlaceholder')}
               disabled={isLoading}
               autoComplete="email"
             />
@@ -149,14 +149,14 @@ const Register: React.FC = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="password">Password</label>
+            <label htmlFor="password">{t('auth.register.password')}</label>
             <PasswordInput
               id="password"
               name="password"
               value={formData.password}
               onChange={handleInputChange}
               className={errors.password ? 'error' : ''}
-              placeholder="Create a strong password"
+              placeholder={t('auth.register.passwordPlaceholder')}
               disabled={isLoading}
               autoComplete="new-password"
             />
@@ -164,26 +164,26 @@ const Register: React.FC = () => {
               <span className="error-text">{errors.password}</span>
             )}
             <div className="password-requirements">
-              <p>Password must contain:</p>
+              <p>{t('auth.register.passwordRequirements.title')}</p>
               <ul>
-                <li>At least 8 characters</li>
-                <li>One uppercase letter</li>
-                <li>One lowercase letter</li>
-                <li>One number</li>
-                <li>One special character</li>
+                <li>{t('auth.register.passwordRequirements.minLength')}</li>
+                <li>{t('auth.register.passwordRequirements.uppercase')}</li>
+                <li>{t('auth.register.passwordRequirements.lowercase')}</li>
+                <li>{t('auth.register.passwordRequirements.number')}</li>
+                <li>{t('auth.register.passwordRequirements.special')}</li>
               </ul>
             </div>
           </div>
 
           <div className="form-group">
-            <label htmlFor="confirmPassword">Confirm Password</label>
+            <label htmlFor="confirmPassword">{t('auth.register.confirmPassword')}</label>
             <PasswordInput
               id="confirmPassword"
               name="confirmPassword"
               value={confirmPassword}
               onChange={handleInputChange}
               className={errors.confirmPassword ? 'error' : ''}
-              placeholder="Confirm your password"
+              placeholder={t('auth.register.confirmPasswordPlaceholder')}
               disabled={isLoading}
               autoComplete="new-password"
             />
@@ -201,7 +201,7 @@ const Register: React.FC = () => {
             className="btn btn-primary"
             disabled={isLoading}
           >
-            {isLoading ? 'Creating account...' : 'Create Account'}
+            {isLoading ? t('auth.register.loadingText') : t('auth.register.submit')}
           </button>
         </form>
 
@@ -227,7 +227,7 @@ const Register: React.FC = () => {
         )}
 
         <p className="register-footer">
-          Already have an account? <a href="#login">Sign in here</a>
+          {t('auth.register.footerText')} <a href="#login">{t('auth.register.footerLink')}</a>
         </p>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import i18n from '../config';
+import i18n from './config';
 
 describe('i18n Configuration', () => {
   beforeEach(() => {
@@ -46,8 +46,7 @@ describe('i18n Configuration', () => {
   it('handles unsupported languages by falling back to English', async () => {
     await i18n.changeLanguage('fr'); // French is not supported
     
-    // Should fall back to English
-    expect(i18n.language).toBe('en');
+    // The language may be set to 'fr' but translations will fall back to English
     expect(i18n.t('navigation.home')).toBe('Home');
   });
 
@@ -57,7 +56,7 @@ describe('i18n Configuration', () => {
   });
 
   it('has proper fallback configuration', () => {
-    expect(i18n.options.fallbackLng).toBe('en');
+    expect(i18n.options.fallbackLng).toEqual(['en']);
   });
 
   it('has both supported languages available', () => {
