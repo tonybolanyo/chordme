@@ -165,8 +165,17 @@ const Profile: React.FC = () => {
         new_password: '',
         confirm_password: '',
       });
-    } catch (error: any) {
-      setErrors({ password: error.message || t('profile.passwordUpdateError') });
+    } catch (error: unknown) {
+      let errorMsg = t('profile.passwordUpdateError');
+      if (
+        typeof error === 'object' &&
+        error !== null &&
+        'message' in error &&
+        typeof (error as { message?: unknown }).message === 'string'
+      ) {
+        errorMsg = (error as { message: string }).message;
+      }
+      setErrors({ password: errorMsg });
     } finally {
       setIsLoading(false);
     }
