@@ -123,6 +123,7 @@ class TestCSRFDecorator:
                 mock_request.method = 'POST'
                 mock_request.headers = {}
                 mock_request.form = {}
+                mock_request.is_json = False
                 mock_request.get_json.return_value = {}
                 
                 # Should handle POST request
