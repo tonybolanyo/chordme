@@ -186,7 +186,8 @@ const Profile: React.FC = () => {
       return profileData.profile_image_url;
     }
     // Default avatar - neutral, non-gendered
-    return '/default-avatar.svg';
+    // Simple SVG data URI for a generic avatar
+    return 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><circle cx="32" cy="32" r="32" fill="#e0e0e0"/><circle cx="32" cy="24" r="12" fill="#bdbdbd"/><ellipse cx="32" cy="48" rx="16" ry="8" fill="#bdbdbd"/></svg>';
   };
 
   return (
