@@ -26,6 +26,7 @@ Lyrics and chords in a simple way
 - **[ChordPro Format](docs/chordpro-format.md)** - ChordPro format reference
 - **[API Reference](docs/api-reference.md)** - Complete API documentation
 - **[Developer Guide](docs/developer-guide.md)** - Contributing and development
+- **[Workflows Documentation](WORKFLOWS_DOCUMENTATION.md)** - Complete guide to all GitHub Actions workflows
 - **[Troubleshooting](docs/troubleshooting.md)** - Common issues and solutions
 
 *The documentation is automatically updated with each release and available at [tonybolanyo.github.io/chordme](https://tonybolanyo.github.io/chordme/).*
