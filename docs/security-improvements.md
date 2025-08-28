@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Security Improvements Documentation
+---
+
 # Enhanced Login and Registration Security Improvements
 
 ## Overview

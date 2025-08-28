@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Password Security Implementation
+---
+
 # Secure Password Storage Implementation
 
 ## Overview

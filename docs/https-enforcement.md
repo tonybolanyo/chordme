@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: HTTPS Enforcement Documentation
+---
+
 # HTTPS Enforcement Documentation
 
 This document describes the HTTPS enforcement functionality implemented in the ChordMe backend application.

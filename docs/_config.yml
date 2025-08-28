@@ -47,6 +47,8 @@ header_pages:
   - api-reference.md
   - api-documentation.md
   - testing.md
+  - backend-testing.md
+  - chordpro-support.md
   # Infrastructure & Deployment
   - infrastructure.md
   - deployment.md
@@ -55,6 +57,11 @@ header_pages:
   - security-checklist.md
   - threat-model.md
   - final-security-audit-report.md
+  - backend-security-summary.md
+  - password-security.md
+  - security-improvements.md
+  - https-enforcement.md
+  - backend-security-audit.md
   # Collaboration Features
   - collaborative-editing-architecture.md
   - firebase-integration.md
@@ -77,6 +84,8 @@ header_pages_es:
   - api-reference-es.md
   - api-documentation-es.md
   - testing-es.md
+  - backend-testing-es.md
+  - chordpro-support-es.md
   # Infrastructure & Deployment
   - infrastructure-es.md
   - deployment-es.md
@@ -85,6 +94,11 @@ header_pages_es:
   - security-checklist-es.md
   - threat-model-es.md
   - final-security-audit-report-es.md
+  - backend-security-summary-es.md
+  - password-security-es.md
+  - security-improvements-es.md
+  - https-enforcement-es.md
+  - backend-security-audit-es.md
   # Collaboration Features
   - collaborative-editing-architecture-es.md
   - firebase-integration-es.md

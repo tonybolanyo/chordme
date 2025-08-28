@@ -1,4 +1,10 @@
-# Security Audit Report
+---
+layout: default
+lang: en
+title: Backend Security Audit Report
+---
+
+# Backend Security Audit Report
 Generated: 2025-08-26T21:19:41.171471
 
 ## Executive Summary

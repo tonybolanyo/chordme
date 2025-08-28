@@ -21,6 +21,8 @@ This directory contains the comprehensive user manual for ChordMe, automatically
 - **[API Reference](api-reference.html)** - Complete API documentation
 - **[API Documentation](api-documentation.html)** - Implementation details
 - **[Testing Guide](testing.html)** - Testing setup and guidelines
+- **[Backend Testing](backend-testing.html)** - Backend automated testing documentation
+- **[ChordPro Support](chordpro-support.html)** - ChordPro format implementation details
 
 ### Infrastructure & Deployment
 - **[Infrastructure Guide](infrastructure.html)** - Cloud deployment with Terraform/CloudFormation
@@ -31,6 +33,11 @@ This directory contains the comprehensive user manual for ChordMe, automatically
 - **[Security Checklist](security-checklist.html)** - Security guidelines and best practices
 - **[Threat Model](threat-model.html)** - Security threat analysis
 - **[Final Security Audit](final-security-audit-report.html)** - Security audit results
+- **[Backend Security Summary](backend-security-summary.html)** - Backend security enhancements overview
+- **[Password Security](password-security.html)** - Secure password storage implementation
+- **[Security Improvements](security-improvements.html)** - Login and registration security improvements
+- **[HTTPS Enforcement](https-enforcement.html)** - HTTPS enforcement documentation
+- **[Backend Security Audit](backend-security-audit.html)** - Backend security audit report
 
 ### Collaboration Features
 - **[Collaborative Editing Architecture](collaborative-editing-architecture.html)** - Real-time collaboration technical details

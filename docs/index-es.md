@@ -21,6 +21,8 @@ Este directorio contiene el manual de usuario completo para ChordMe, generado au
 - **[Referencia de la API](api-reference-es.html)** - Documentación completa de la API
 - **[Documentación de la API](api-documentation-es.html)** - Detalles de implementación
 - **[Guía de pruebas](testing-es.html)** - Configuración y pautas de pruebas
+- **[Pruebas del backend](backend-testing-es.html)** - Documentación de pruebas automatizadas del backend
+- **[Soporte ChordPro](chordpro-support-es.html)** - Detalles de implementación del formato ChordPro
 
 ### Infraestructura y despliegue
 - **[Guía de infraestructura](infrastructure-es.html)** - Despliegue en la nube con Terraform/CloudFormation
@@ -31,6 +33,11 @@ Este directorio contiene el manual de usuario completo para ChordMe, generado au
 - **[Lista de verificación de seguridad](security-checklist-es.html)** - Pautas y mejores prácticas de seguridad
 - **[Modelo de amenazas](threat-model-es.html)** - Análisis de amenazas de seguridad
 - **[Auditoría final de seguridad](final-security-audit-report-es.html)** - Resultados de auditoría de seguridad
+- **[Resumen de seguridad del backend](backend-security-summary-es.html)** - Resumen de mejoras de seguridad del backend
+- **[Seguridad de contraseñas](password-security-es.html)** - Implementación de almacenamiento seguro de contraseñas
+- **[Mejoras de seguridad](security-improvements-es.html)** - Mejoras de seguridad de inicio de sesión y registro
+- **[Aplicación HTTPS](https-enforcement-es.html)** - Documentación de aplicación HTTPS
+- **[Auditoría de seguridad del backend](backend-security-audit-es.html)** - Reporte de auditoría de seguridad del backend
 
 ### Características de colaboración
 - **[Arquitectura de edición colaborativa](collaborative-editing-architecture-es.html)** - Detalles técnicos de colaboración en tiempo real
