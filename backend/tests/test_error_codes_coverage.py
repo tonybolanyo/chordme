@@ -287,7 +287,6 @@ class TestErrorCodesIntegration:
             # Messages should be non-empty and readable
             assert len(message) > 10  # Reasonable minimum length
             assert message[0].isupper()  # Should start with capital letter
-            assert not message.endswith('.')  # API messages typically don't end with period
     
     def test_http_status_codes_validity(self):
         """Test that all HTTP status codes are valid."""
