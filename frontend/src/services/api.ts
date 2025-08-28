@@ -536,7 +536,7 @@ class ApiService {
 
   async updateUserEmail(emailData: {
     new_email: string;
-  }): Promise<{ success: boolean; data?: any; message?: string }> {
+  }): Promise<{ success: boolean; data?: null; message?: string }> {
     return this.fetchApiWithAuth('/api/v1/user/email', {
       method: 'PUT',
       body: JSON.stringify(emailData),
@@ -546,7 +546,7 @@ class ApiService {
   async updateUserPassword(passwordData: {
     current_password: string;
     new_password: string;
-  }): Promise<{ success: boolean; data?: any; message?: string }> {
+  }): Promise<{ success: boolean; data?: null; message?: string }> {
     return this.fetchApiWithAuth('/api/v1/user/password', {
       method: 'PUT',
       body: JSON.stringify(passwordData),
