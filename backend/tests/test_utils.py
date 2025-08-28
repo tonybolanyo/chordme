@@ -341,4 +341,3 @@ class TestAdditionalUtilityFunctions:
         # Test with status code
         response = utils.create_success_response("Created successfully", status_code=201)
         # Should handle status code appropriately
-        assert hasattr(utils, '__name__')
