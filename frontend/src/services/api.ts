@@ -22,6 +22,15 @@ import type { Unsubscribe } from 'firebase/firestore';
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
+
+// Defined from `updateUserProfile` params and likely API response structure
+export interface UserProfile {
+  display_name?: string;
+  bio?: string;
+  profile_image_url?: string;
+  // Add other fields as returned by the backend if known, such as `id`, `email`, etc.
+}
+
 class ApiService {
   /**
    * Get the current storage backend preference
@@ -508,7 +517,7 @@ class ApiService {
   }
 
   // User profile management API calls (require authentication)
-  async getUserProfile(): Promise<{ success: boolean; data?: any; message?: string }> {
+  async getUserProfile(): Promise<{ success: boolean; data?: UserProfile; message?: string }> {
     return this.fetchApiWithAuth('/api/v1/user/profile', {
       method: 'GET',
     });
@@ -518,7 +527,7 @@ class ApiService {
     display_name?: string;
     bio?: string;
     profile_image_url?: string;
-  }): Promise<{ success: boolean; data?: any; message?: string }> {
+  }): Promise<{ success: boolean; data?: UserProfile; message?: string }> {
     return this.fetchApiWithAuth('/api/v1/user/profile', {
       method: 'PUT',
       body: JSON.stringify(profileData),
