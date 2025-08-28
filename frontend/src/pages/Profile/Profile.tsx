@@ -87,8 +87,14 @@ const Profile: React.FC = () => {
         updateUserProfile(response.data);
         setSuccessMessage(t('profile.profileUpdated'));
       }
-    } catch (error: any) {
-      setErrors({ profile: error.message || t('profile.updateError') });
+    } catch (error: unknown) {
+      let message = t('profile.updateError');
+      if (error instanceof Error && error.message) {
+        message = error.message;
+      } else if (typeof error === 'object' && error && 'message' in error && typeof (error as any).message === 'string') {
+        message = (error as { message: string }).message;
+      }
+      setErrors({ profile: message });
     } finally {
       setIsLoading(false);
     }
@@ -112,8 +118,14 @@ const Profile: React.FC = () => {
         updateUserProfile(response.data);
         setSuccessMessage(t('profile.emailUpdated'));
       }
-    } catch (error: any) {
-      setErrors({ email: error.message || t('profile.emailUpdateError') });
+    } catch (error: unknown) {
+      let message = t('profile.emailUpdateError');
+      if (error instanceof Error && error.message) {
+        message = error.message;
+      } else if (typeof error === 'object' && error && 'message' in error && typeof (error as any).message === 'string') {
+        message = (error as { message: string }).message;
+      }
+      setErrors({ email: message });
     } finally {
       setIsLoading(false);
     }
