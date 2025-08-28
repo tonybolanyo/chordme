@@ -1,10 +1,15 @@
 from . import db
-from datetime import datetime
+from datetime import datetime, UTC
 from flask import current_app
 import bcrypt
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+def utc_now():
+    """Helper function to get current UTC time."""
+    return datetime.now(UTC)
 
 
 class User(db.Model):
@@ -13,8 +18,8 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(128), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
     
     # Relationship to songs
     songs = db.relationship('Song', backref='author', lazy=True, cascade='all, delete-orphan')
@@ -123,8 +128,8 @@ class Song(db.Model):
     title = db.Column(db.String(200), nullable=False)
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     content = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
     
     # Sharing model fields
     shared_with = db.Column(db.JSON, default=list)  # Array of user IDs or email addresses
@@ -294,7 +299,7 @@ class SongVersion(db.Model):
     title = db.Column(db.String(200), nullable=False)
     content = db.Column(db.Text, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
     
     # Relationships
     song = db.relationship('Song', backref=db.backref('versions', lazy=True, order_by='SongVersion.created_at.desc()'))
@@ -341,8 +346,8 @@ class SongSection(db.Model):
     section_number = db.Column(db.String(10))  # For numbered sections like "verse 1", "chorus 2"
     content = db.Column(db.Text, nullable=False)  # Raw ChordPro content for this section
     order_index = db.Column(db.Integer, nullable=False)  # Order in the song
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
     
     def __init__(self, song_id, section_type, content, order_index, section_number=None):
         self.song_id = song_id
@@ -379,8 +384,8 @@ class Chord(db.Model):
     definition = db.Column(db.Text, nullable=False)
     description = db.Column(db.Text)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
     
     def __init__(self, name, definition, user_id, description=None):
         self.name = name
