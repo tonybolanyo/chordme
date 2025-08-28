@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { apiService } from '../../services/api';
 import { validateEmail, validateRequired } from '../../utils';
@@ -12,6 +13,7 @@ import type { LoginRequest, GoogleUserInfo } from '../../types';
 import './Login.css';
 
 const Login: React.FC = () => {
+  const { t } = useTranslation('common');
   const { login } = useAuth();
   const [formData, setFormData] = useState<LoginRequest>({
     email: '',
@@ -83,18 +85,18 @@ const Login: React.FC = () => {
         response.data?.token &&
         response.data?.user
       ) {
-        setSuccessMessage('Login successful!');
+        setSuccessMessage(t('auth.login.success'));
         // Use the auth context to log in
         login(response.data.token, response.data.user);
         // Redirect to home page
         window.location.hash = '';
       } else {
-        setErrors({ submit: response.error || 'Login failed' });
+        setErrors({ submit: response.error || t('auth.errors.loginFailed') });
       }
     } catch (error) {
       console.error('Login error:', error);
       setErrors({
-        submit: 'An error occurred during login. Please try again.',
+        submit: t('auth.errors.networkError'),
       });
     } finally {
       setIsLoading(false);
@@ -126,7 +128,7 @@ const Login: React.FC = () => {
   return (
     <div className="login">
       <div className="login-container">
-        <h1>Login to ChordMe</h1>
+        <h1>{t('auth.login.title')} to ChordMe</h1>
         <p className="login-subtitle">
           Sign in to access your chords and songs
         </p>
@@ -150,7 +152,7 @@ const Login: React.FC = () => {
         >
           <h3>Sign in with your ChordMe account</h3>
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email">{t('auth.login.email')}</label>
             <input
               type="email"
               id="email"
@@ -158,7 +160,7 @@ const Login: React.FC = () => {
               value={formData.email}
               onChange={handleInputChange}
               className={errors.email ? 'error' : ''}
-              placeholder="Enter your email"
+              placeholder={t('auth.login.emailPlaceholder')}
               disabled={isLoading}
               autoComplete="email"
               aria-invalid={errors.email ? 'true' : 'false'}
@@ -178,14 +180,14 @@ const Login: React.FC = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="password">Password</label>
+            <label htmlFor="password">{t('auth.login.password')}</label>
             <PasswordInput
               id="password"
               name="password"
               value={formData.password}
               onChange={handleInputChange}
               className={errors.password ? 'error' : ''}
-              placeholder="Enter your password"
+              placeholder={t('auth.login.passwordPlaceholder')}
               disabled={isLoading}
               autoComplete="current-password"
               aria-invalid={errors.password ? 'true' : 'false'}
@@ -221,7 +223,7 @@ const Login: React.FC = () => {
             disabled={isLoading}
             aria-describedby={isLoading ? 'loading-status' : undefined}
           >
-            {isLoading ? 'Signing in...' : 'Sign In'}
+            {isLoading ? 'Signing in...' : t('auth.login.submit')}
           </button>
 
           {isLoading && (
@@ -275,7 +277,7 @@ const Login: React.FC = () => {
         </div>
 
         <p className="login-footer">
-          Don't have an account? <a href="#register">Sign up here</a>
+          Don't have an account? <a href="#register">{t('navigation.register')}</a>
         </p>
       </div>
     </div>

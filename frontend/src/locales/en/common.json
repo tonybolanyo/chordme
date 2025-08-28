@@ -1,0 +1,108 @@
+{
+  "app": {
+    "title": "ChordMe",
+    "subtitle": "Lyrics and chords in a simple way."
+  },
+  "navigation": {
+    "home": "Home",
+    "songs": "Songs",
+    "demo": "Demo",
+    "login": "Login",
+    "register": "Sign Up",
+    "logout": "Logout",
+    "welcome": "Welcome, {{email}}",
+    "skipToContent": "Skip to main content"
+  },
+  "auth": {
+    "login": {
+      "title": "Login",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Login",
+      "success": "Login successful!",
+      "emailPlaceholder": "Enter your email",
+      "passwordPlaceholder": "Enter your password"
+    },
+    "register": {
+      "title": "Join ChordMe",
+      "subtitle": "Create your account to start organizing chords and songs",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "submit": "Create Account",
+      "success": "Registration successful! You can now sign in with your account.",
+      "emailPlaceholder": "Enter your email",
+      "passwordPlaceholder": "Create a strong password",
+      "confirmPasswordPlaceholder": "Confirm your password",
+      "accountFormTitle": "Create a ChordMe account",
+      "passwordRequirements": {
+        "title": "Password must contain:",
+        "minLength": "At least 8 characters",
+        "uppercase": "One uppercase letter",
+        "lowercase": "One lowercase letter",
+        "number": "One number",
+        "special": "One special character"
+      },
+      "loadingText": "Creating account...",
+      "footerText": "Already have an account?",
+      "footerLink": "Sign in here"
+    },
+    "errors": {
+      "loginFailed": "Login failed",
+      "registerFailed": "Registration failed",
+      "networkError": "An error occurred during login. Please try again.",
+      "registrationNetworkError": "An error occurred during registration. Please try again.",
+      "emailRequired": "Email is required",
+      "passwordRequired": "Password is required",
+      "confirmPasswordRequired": "Please confirm your password",
+      "passwordMismatch": "Passwords do not match",
+      "invalidEmail": "Please enter a valid email address"
+    }
+  },
+  "songs": {
+    "title": "Title:",
+    "titlePlaceholder": "Enter song title",
+    "contentPlaceholder": "Enter song content (ChordPro format)",
+    "createSong": "Create Song",
+    "updateSong": "Update Song",
+    "acceptExternalChanges": "Accept external changes",
+    "keepMyChanges": "Keep my changes",
+    "delete": "Delete",
+    "owner": "Owner",
+    "admin": "Admin",
+    "edit": "Edit",
+    "ownerTooltip": "You own this song",
+    "adminTooltip": "You have admin access to this song",
+    "editTooltip": "You have edit access to this song",
+    "saving": "Saving...",
+    "saveToDrive": "Save to Drive",
+    "saveToDriveTooltip": "Save to Google Drive",
+    "createNewSong": "Create New Song",
+    "editingSong": "Editing Song"
+  },
+  "common": {
+    "loading": "Loading...",
+    "close": "Close",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "update": "Update"
+  },
+  "footer": {
+    "copyright": "© 2024 ChordMe. Lyrics and chords in a simple way."
+  },
+  "language": {
+    "label": "Language:",
+    "english": "English",
+    "spanish": "Español",
+    "switchTo": "Switch to {{language}}"
+  },
+  "accessibility": {
+    "mainContent": "Main content",
+    "siteFooter": "Site footer",
+    "openNavigation": "Open navigation menu",
+    "closeNavigation": "Close navigation menu"
+  }
+}

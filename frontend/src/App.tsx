@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Layout from './components/Layout';
 import Home from './pages/Home';
@@ -10,6 +11,7 @@ import './App.css';
 
 // Main app content that uses auth context
 function AppContent() {
+  const { t } = useTranslation('common');
   const [currentPage, setCurrentPage] = useState('home');
   const { isAuthenticated, isLoading } = useAuth();
 
@@ -44,7 +46,7 @@ function AppContent() {
     return (
       <Layout>
         <div style={{ textAlign: 'center', padding: '2rem' }}>
-          <h2>Loading...</h2>
+          <h2>{t('common.loading')}</h2>
         </div>
       </Layout>
     );
