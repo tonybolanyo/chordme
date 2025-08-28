@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Internationalization (i18n) Guide
+---
+
 # Internationalization (i18n) Guide
 
 ChordMe now supports multiple languages with English as the default and Spanish as the first additional language.
