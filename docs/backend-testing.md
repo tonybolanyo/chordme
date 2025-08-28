@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Backend Testing Documentation
+---
+
 # ChordMe Backend - Automated Testing Documentation
 
 This document provides comprehensive documentation for the automated tests implemented for the ChordMe backend authentication system.

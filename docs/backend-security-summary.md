@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Backend Security Summary
+---
+
 # Security Enhancements Implementation Summary
 
 ## Overview

@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: ChordPro Format Support
+---
+
 # ChordPro Format Support
 
 ChordMe fully supports the ChordPro format for storing and displaying songs with chords and lyrics. The backend preserves all ChordPro formatting exactly as entered, without any modifications.
