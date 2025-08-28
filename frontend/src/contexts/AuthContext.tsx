@@ -19,6 +19,7 @@ interface AuthContextType {
   login: (token: string, user: User) => void;
   loginWithFirebase: (firebaseUser: FirebaseAuthUser) => void;
   logout: () => void;
+  updateUserProfile: (updatedUser: User) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -140,6 +141,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     window.location.hash = '';
   };
 
+  const updateUserProfile = (updatedUser: User) => {
+    setUser(updatedUser);
+    if (authProvider === 'jwt') {
+      localStorage.setItem('authUser', JSON.stringify(updatedUser));
+    }
+  };
+
   const isAuthenticated =
     (!!token && !!user && authProvider === 'jwt') ||
     (!!firebaseUser && authProvider === 'firebase');
@@ -154,6 +162,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     login,
     loginWithFirebase,
     logout,
+    updateUserProfile,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

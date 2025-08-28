@@ -60,6 +60,9 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
           <a href="#songs" className="nav-link" onClick={closeMobileMenu}>
             {t('navigation.songs')}
           </a>
+          <a href="#profile" className="nav-link" onClick={closeMobileMenu}>
+            {t('navigation.profile')}
+          </a>
           <div className="auth-links">
             <StorageIndicator onClick={handleStorageSettingsOpen} />
             <span className="user-info">{t('navigation.welcome', { email: user?.email })}</span>

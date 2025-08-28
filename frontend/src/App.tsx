@@ -5,6 +5,7 @@ import Layout from './components/Layout';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Profile from './pages/Profile';
 import ChordProDemo from './pages/ChordProDemo';
 import AuthCallback from './pages/AuthCallback';
 import './App.css';
@@ -58,6 +59,12 @@ function AppContent() {
         return <Login />;
       case 'register':
         return <Register />;
+      case 'profile':
+        // Protect profile page - redirect to login if not authenticated
+        if (!isAuthenticated) {
+          return <Login />;
+        }
+        return <Profile />;
       case 'demo':
         return <ChordProDemo />;
       case 'auth/google/callback':

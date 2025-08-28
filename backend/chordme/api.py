@@ -389,6 +389,628 @@ def login():
         )
 
 
+# User profile management endpoints - all require authentication
+
+@app.route('/api/v1/user/profile', methods=['GET'])
+@auth_required
+@security_headers
+def get_user_profile_info():
+    """
+    Get current user profile
+    ---
+    tags:
+      - User Profile
+    summary: Get user profile information
+    description: Retrieve profile information for the authenticated user
+    security:
+      - Bearer: []
+    responses:
+      200:
+        description: User profile retrieved successfully
+        schema:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 1
+            email:
+              type: string
+              example: "user@example.com"
+            display_name:
+              type: string
+              example: "John Doe"
+            bio:
+              type: string
+              example: "Music enthusiast and songwriter"
+            profile_image_url:
+              type: string
+              example: "https://example.com/avatar.jpg"
+            created_at:
+              type: string
+              format: date-time
+            updated_at:
+              type: string
+              format: date-time
+      401:
+        description: Authentication required
+    """
+    try:
+        user = User.query.get(g.current_user_id)
+        if not user:
+            return create_error_response(
+                "User not found",
+                status_code=404
+            )
+        
+        return create_success_response(
+            data=user.to_dict(),
+            message="Profile retrieved successfully"
+        )
+        
+    except Exception as e:
+        app.logger.error(f"Error retrieving user profile for user {g.current_user_id}: {str(e)}")
+        return create_error_response(
+            "Failed to retrieve profile",
+            status_code=500
+        )
+
+
+# @app.route('/api/v1/user/profile', methods=['PUT'])
+# @auth_required
+# @rate_limit(max_requests=20, window_seconds=300)  # 20 updates per 5 minutes
+# @csrf_protect
+# @security_headers
+# def update_user_profile_info():
+
+@app.route('/api/v1/user/profile', methods=['PUT'])  
+@auth_required
+@security_headers
+def update_user_profile_info():
+    """Update user profile information"""
+    try:
+        # Get and validate request data
+        data = request.get_json()
+        if not data:
+            return create_error_response(
+                "No data provided",
+                status_code=400
+            )
+        
+        # Sanitize input data
+        data = sanitize_input(data)
+        
+        user = User.query.get(g.current_user_id)
+        if not user:
+            return create_error_response(
+                "User not found",
+                status_code=404
+            )
+        
+        # Update profile fields if provided
+        if 'display_name' in data:
+            display_name = data['display_name']
+            if display_name is not None:
+                if len(display_name) > 100:
+                    return create_error_response(
+                        "Display name must be 100 characters or less",
+                        status_code=400
+                    )
+                user.display_name = display_name.strip() if display_name else None
+        
+        if 'bio' in data:
+            bio = data['bio']
+            if bio is not None:
+                if len(bio) > 500:
+                    return create_error_response(
+                        "Bio must be 500 characters or less",
+                        status_code=400
+                    )
+                user.bio = bio.strip() if bio else None
+        
+        if 'profile_image_url' in data:
+            profile_image_url = data['profile_image_url']
+            if profile_image_url is not None:
+                if len(profile_image_url) > 500:
+                    return create_error_response(
+                        "Profile image URL must be 500 characters or less",
+                        status_code=400
+                    )
+                user.profile_image_url = profile_image_url.strip() if profile_image_url else None
+        
+        # Save changes
+        db.session.commit()
+        
+        app.logger.info(f"User profile updated successfully for user {user.id}")
+        
+        return create_success_response(
+            data=user.to_dict(),
+            message="Profile updated successfully"
+        )
+        
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Error updating user profile for user {g.current_user_id}: {str(e)}")
+        return create_error_response(
+            "Failed to update profile",
+            status_code=500
+        )
+#     """
+#     Update user profile information
+#     ---
+#     tags:
+#       - User Profile
+#     summary: Update user profile
+#     description: Update display name, bio, and profile image for the authenticated user
+#     security:
+#       - Bearer: []
+#     parameters:
+#       - in: body
+#         name: profile
+#         description: Profile information to update
+#         required: true
+#         schema:
+#           type: object
+#           properties:
+#             display_name:
+#               type: string
+#               maxLength: 100
+#               example: "John Doe"
+#             bio:
+#               type: string
+#               maxLength: 500
+#               example: "Music enthusiast and songwriter"
+#             profile_image_url:
+#               type: string
+#               maxLength: 500
+#               example: "https://example.com/avatar.jpg"
+#     responses:
+#       200:
+#         description: Profile updated successfully
+#       400:
+#         description: Invalid input data
+#       401:
+#         description: Authentication required
+#     """
+#     try:
+#         # Get and validate request data
+#         data = request.get_json()
+#         if not data:
+#             return create_error_response(
+#                 "No data provided",
+#                 status_code=400
+#             )
+#         
+#         # Sanitize input data
+#         data = sanitize_input(data)
+#         
+#         user = User.query.get(g.current_user_id)
+#         if not user:
+#             return create_error_response(
+#                 "User not found",
+#                 status_code=404
+#             )
+#         
+#         # Update profile fields if provided
+#         if 'display_name' in data:
+#             display_name = data['display_name']
+#             if display_name is not None:
+#                 if len(display_name) > 100:
+#                     return create_error_response(
+#                         "Display name must be 100 characters or less",
+#                         status_code=400
+#                     )
+#                 user.display_name = display_name.strip() if display_name else None
+#         
+#         if 'bio' in data:
+#             bio = data['bio']
+#             if bio is not None:
+#                 if len(bio) > 500:
+#                     return create_error_response(
+#                         "Bio must be 500 characters or less",
+#                         status_code=400
+#                     )
+#                 user.bio = bio.strip() if bio else None
+#         
+#         if 'profile_image_url' in data:
+#             profile_image_url = data['profile_image_url']
+#             if profile_image_url is not None:
+#                 if len(profile_image_url) > 500:
+#                     return create_error_response(
+#                         "Profile image URL must be 500 characters or less",
+#                         status_code=400
+#                     )
+#                 user.profile_image_url = profile_image_url.strip() if profile_image_url else None
+#         
+#         # Save changes
+#         db.session.commit()
+#         
+#         app.logger.info(f"User profile updated successfully for user {user.id}")
+#         
+#         return create_success_response(
+#             data=user.to_dict(),
+#             message="Profile updated successfully"
+#         )
+#         
+#     except Exception as e:
+#         db.session.rollback()
+#         app.logger.error(f"Error updating user profile for user {g.current_user_id}: {str(e)}")
+#         return create_error_response(
+#             "Failed to update profile",
+#             status_code=500
+#         )
+
+
+# @app.route('/api/v1/user/email', methods=['PUT'])
+# @auth_required
+# @rate_limit(max_requests=5, window_seconds=300)  # 5 email changes per 5 minutes
+# @csrf_protect
+# @security_headers
+# def update_user_email_address():
+#     """
+#     Update user email address
+#     ---
+#     tags:
+#       - User Profile
+#     summary: Update user email
+#     description: Update email address for the authenticated user with validation
+#     security:
+#       - Bearer: []
+#     parameters:
+#       - in: body
+#         name: email_data
+#         description: New email address
+#         required: true
+#         schema:
+#           type: object
+#           required:
+#             - new_email
+#           properties:
+#             new_email:
+#               type: string
+#               format: email
+#               example: "newemail@example.com"
+#     responses:
+#       200:
+#         description: Email updated successfully
+#       400:
+#         description: Invalid email or email already exists
+#       401:
+#         description: Authentication required
+#     """
+#     try:
+#         # Get and validate request data
+#         data = request.get_json()
+#         if not data:
+#             return create_error_response(
+#                 "No data provided",
+#                 status_code=400
+#             )
+#         
+#         # Sanitize input data
+#         data = sanitize_input(data)
+#         
+#         new_email = data.get('new_email', '').strip().lower()
+#         
+#         # Validate required fields
+#         if not new_email:
+#             return create_error_response(
+#                 "New email is required",
+#                 status_code=400
+#             )
+#         
+#         # Validate email format
+#         if not validate_email(new_email):
+#             return create_error_response(
+#                 "Invalid email format",
+#                 status_code=400
+#             )
+#         
+#         user = User.query.get(g.current_user_id)
+#         if not user:
+#             return create_error_response(
+#                 "User not found",
+#                 status_code=404
+#             )
+#         
+#         # Check if email is already taken by another user
+#         existing_user = User.query.filter(
+#             User.email == new_email,
+#             User.id != g.current_user_id
+#         ).first()
+#         
+#         if existing_user:
+#             return create_error_response(
+#                 "Email address is already in use",
+#                 status_code=400
+#             )
+#         
+#         # Update email
+#         user.email = new_email
+#         db.session.commit()
+#         
+#         app.logger.info(f"User email updated successfully for user {user.id} to {new_email}")
+#         
+#         return create_success_response(
+#             data=user.to_dict(),
+#             message="Email updated successfully"
+#         )
+#         
+#     except IntegrityError:
+#         db.session.rollback()
+#         return create_error_response(
+#             "Email address is already in use",
+#             status_code=400
+#         )
+#     except Exception as e:
+#         db.session.rollback()
+#         app.logger.error(f"Error updating user email for user {g.current_user_id}: {str(e)}")
+#         return create_error_response(
+#             "Failed to update email",
+#             status_code=500
+#         )
+
+
+# @app.route('/api/v1/user/password', methods=['PUT'])
+# @auth_required
+# @rate_limit(max_requests=5, window_seconds=300)  # 5 password changes per 5 minutes
+# @csrf_protect
+# @security_headers
+# def update_user_password_change():
+#     """
+#     Update user password
+#     ---
+#     tags:
+#       - User Profile
+#     summary: Update user password
+#     description: Update password for the authenticated user with validation
+#     security:
+#       - Bearer: []
+#     parameters:
+#       - in: body
+#         name: password_data
+#         description: Current and new password
+#         required: true
+#         schema:
+#           type: object
+#           required:
+#             - current_password
+#             - new_password
+#           properties:
+#             current_password:
+#               type: string
+#               example: "currentpassword123"
+#             new_password:
+#               type: string
+#               example: "NewSecurePass123!"
+#     responses:
+#       200:
+#         description: Password updated successfully
+#       400:
+#         description: Invalid current password or new password doesn't meet requirements
+#       401:
+#         description: Authentication required
+#     """
+#     try:
+#         # Get and validate request data
+#         data = request.get_json()
+#         if not data:
+#             return create_error_response(
+#                 "No data provided",
+#                 status_code=400
+#             )
+#         
+#         # Sanitize input data
+#         data = sanitize_input(data)
+#         
+#         current_password = data.get('current_password', '')
+#         new_password = data.get('new_password', '')
+#         
+#         # Validate required fields
+#         if not current_password:
+#             return create_error_response(
+#                 "Current password is required",
+#                 status_code=400
+#             )
+#         
+#         if not new_password:
+#             return create_error_response(
+#                 "New password is required",
+#                 status_code=400
+#             )
+#         
+#         user = User.query.get(g.current_user_id)
+#         if not user:
+#             return create_error_response(
+#                 "User not found",
+#                 status_code=404
+#             )
+#         
+#         # Verify current password
+#         if not user.check_password(current_password):
+#             app.logger.warning(f"Invalid current password attempt for user {user.id}")
+#             return create_error_response(
+#                 "Current password is incorrect",
+#                 status_code=400
+#             )
+#         
+#         # Validate new password
+#         if not validate_password(new_password):
+#             return create_error_response(
+#                 "New password does not meet security requirements",
+#                 status_code=400
+#             )
+#         
+#         # Update password
+#         user.set_password(new_password)
+#         db.session.commit()
+#         
+#         app.logger.info(f"User password updated successfully for user {user.id}")
+#         
+#         return create_success_response(
+#             message="Password updated successfully"
+#         )
+#         
+#     except Exception as e:
+#         db.session.rollback()
+#         app.logger.error(f"Error updating user password for user {g.current_user_id}: {str(e)}")
+#         return create_error_response(
+#             "Failed to update password",
+#             status_code=500
+#         )
+
+
+@app.route('/api/v1/user/email', methods=['PUT'])
+@auth_required
+@security_headers  
+def update_user_email_address():
+    """Update user email address"""
+    try:
+        # Get and validate request data
+        data = request.get_json()
+        if not data:
+            return create_error_response(
+                "No data provided",
+                status_code=400
+            )
+        
+        # Sanitize input data
+        data = sanitize_input(data)
+        
+        new_email = data.get('new_email', '').strip().lower()
+        
+        # Validate required fields
+        if not new_email:
+            return create_error_response(
+                "New email is required",
+                status_code=400
+            )
+        
+        # Validate email format
+        if not validate_email(new_email):
+            return create_error_response(
+                "Invalid email format",
+                status_code=400
+            )
+        
+        user = User.query.get(g.current_user_id)
+        if not user:
+            return create_error_response(
+                "User not found",
+                status_code=404
+            )
+        
+        # Check if email is already taken by another user
+        existing_user = User.query.filter(
+            User.email == new_email,
+            User.id != g.current_user_id
+        ).first()
+        
+        if existing_user:
+            return create_error_response(
+                "Email address is already in use",
+                status_code=400
+            )
+        
+        # Update email
+        user.email = new_email
+        db.session.commit()
+        
+        app.logger.info(f"User email updated successfully for user {user.id} to {new_email}")
+        
+        return create_success_response(
+            data=user.to_dict(),
+            message="Email updated successfully"
+        )
+        
+    except IntegrityError:
+        db.session.rollback()
+        return create_error_response(
+            "Email address is already in use",
+            status_code=400
+        )
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Error updating user email for user {g.current_user_id}: {str(e)}")
+        return create_error_response(
+            "Failed to update email",
+            status_code=500
+        )
+
+
+@app.route('/api/v1/user/password', methods=['PUT'])
+@auth_required
+@security_headers
+def update_user_password_change():
+    """Update user password"""
+    try:
+        # Get and validate request data
+        data = request.get_json()
+        if not data:
+            return create_error_response(
+                "No data provided",
+                status_code=400
+            )
+        
+        # Sanitize input data
+        data = sanitize_input(data)
+        
+        current_password = data.get('current_password', '')
+        new_password = data.get('new_password', '')
+        
+        # Validate required fields
+        if not current_password:
+            return create_error_response(
+                "Current password is required",
+                status_code=400
+            )
+        
+        if not new_password:
+            return create_error_response(
+                "New password is required",
+                status_code=400
+            )
+        
+        user = User.query.get(g.current_user_id)
+        if not user:
+            return create_error_response(
+                "User not found",
+                status_code=404
+            )
+        
+        # Verify current password
+        if not user.check_password(current_password):
+            app.logger.warning(f"Invalid current password attempt for user {user.id}")
+            return create_error_response(
+                "Current password is incorrect",
+                status_code=400
+            )
+        
+        # Validate new password
+        if not validate_password(new_password):
+            return create_error_response(
+                "New password does not meet security requirements",
+                status_code=400
+            )
+        
+        # Update password
+        user.set_password(new_password)
+        db.session.commit()
+        
+        app.logger.info(f"User password updated successfully for user {user.id}")
+        
+        return create_success_response(
+            message="Password updated successfully"
+        )
+        
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Error updating user password for user {g.current_user_id}: {str(e)}")
+        return create_error_response(
+            "Failed to update password",
+            status_code=500
+        )
+
+
 # Song management endpoints - all require authentication
 
 @app.route('/api/v1/songs', methods=['GET'])
