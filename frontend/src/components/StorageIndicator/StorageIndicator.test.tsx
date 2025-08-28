@@ -151,7 +151,7 @@ describe('StorageIndicator', () => {
       { backend: 'localstorage', available: false, expectedName: 'Local', expectedIcon: '💾' },
     ];
 
-    testCases.forEach(({ backend, available, expectedName, expectedIcon }, index) => {
+    testCases.forEach(({ backend, available, expectedName, expectedIcon }) => {
       vi.mocked(apiService.getCurrentBackend).mockReturnValue(backend as any);
       vi.mocked(apiService.isBackendAvailable).mockReturnValue(available);
 
