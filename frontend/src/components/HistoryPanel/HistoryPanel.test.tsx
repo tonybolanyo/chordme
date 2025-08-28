@@ -360,10 +360,10 @@ describe('HistoryPanel', () => {
   });
 
   it('handles numeric songId', async () => {
-    render(<HistoryPanel {...defaultProps} songId={123} />);
+    render(<HistoryPanel {...defaultProps} songId={'123'} />);
     
     await waitFor(() => {
-      expect(versionHistoryService.getVersions).toHaveBeenCalledWith(123);
+      expect(versionHistoryService.getVersions).toHaveBeenCalledWith('123');
     });
   });
 
