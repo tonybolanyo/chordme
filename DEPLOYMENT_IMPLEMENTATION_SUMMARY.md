@@ -38,7 +38,7 @@ This implementation addresses the requirements for automated deployment scripts 
 
 ### ✅ Documentation Updates
 - **Enhanced DEPLOYMENT.md**: Comprehensive guide with new procedures
-- **Infrastructure README**: Detailed setup and troubleshooting guides
+- **Infrastructure Documentation**: Detailed setup and troubleshooting guides (see docs/infrastructure.md)
 - **Workflow Documentation**: Usage examples and configuration guides
 
 ## Implementation Architecture
@@ -234,7 +234,7 @@ The solution follows industry best practices for security, cost optimization, an
 ### Infrastructure Code
 - `infrastructure/terraform/aws/` - Complete Terraform configuration (7 files)
 - `infrastructure/cloudformation/chordme-infrastructure.yaml` - CloudFormation template
-- `infrastructure/README.md` - Infrastructure documentation
+- `docs/infrastructure.md` - Infrastructure documentation
 
 ### Testing Framework
 - `tests/deployment/test_deployment_integration.py` - Integration tests
