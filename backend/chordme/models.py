@@ -18,6 +18,9 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(128), nullable=False)
+    display_name = db.Column(db.String(100), nullable=True)
+    bio = db.Column(db.Text, nullable=True)
+    profile_image_url = db.Column(db.String(500), nullable=True)
     created_at = db.Column(db.DateTime, default=utc_now)
     updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
     
@@ -113,6 +116,9 @@ class User(db.Model):
         return {
             'id': self.id,
             'email': self.email,
+            'display_name': self.display_name,
+            'bio': self.bio,
+            'profile_image_url': self.profile_image_url,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }

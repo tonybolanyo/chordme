@@ -6,6 +6,7 @@
   "navigation": {
     "home": "Inicio",
     "songs": "Canciones",
+    "profile": "Perfil",
     "demo": "Demo",
     "login": "Iniciar sesión",
     "register": "Registrarse",
@@ -98,6 +99,39 @@
     "english": "English",
     "spanish": "Español",
     "switchTo": "Cambiar a {{language}}"
+  },
+  "profile": {
+    "title": "Perfil de Usuario",
+    "profileTab": "Perfil",
+    "accountTab": "Cuenta",
+    "profileInformation": "Información del Perfil",
+    "accountSettings": "Configuración de Cuenta",
+    "displayName": "Nombre a Mostrar",
+    "displayNamePlaceholder": "Introduce tu nombre a mostrar",
+    "bio": "Acerca de Mí",
+    "bioPlaceholder": "Cuéntanos sobre ti...",
+    "profilePicture": "Foto de Perfil",
+    "profileImageUrl": "URL de Imagen de Perfil",
+    "profileImageUrlPlaceholder": "Introduce la URL de la imagen",
+    "updateProfile": "Actualizar Perfil",
+    "updateEmail": "Actualizar Email",
+    "newEmail": "Nueva Dirección de Email",
+    "changePassword": "Cambiar Contraseña",
+    "currentPassword": "Contraseña Actual",
+    "newPassword": "Nueva Contraseña",
+    "confirmPassword": "Confirmar Nueva Contraseña",
+    "profileUpdated": "¡Perfil actualizado correctamente!",
+    "emailUpdated": "¡Email actualizado correctamente!",
+    "passwordUpdated": "¡Contraseña actualizada correctamente!",
+    "updateError": "Error al actualizar el perfil. Inténtalo de nuevo.",
+    "emailUpdateError": "Error al actualizar el email. Inténtalo de nuevo.",
+    "passwordUpdateError": "Error al actualizar la contraseña. Inténtalo de nuevo."
+  },
+  "validation": {
+    "invalidEmail": "Por favor introduce una dirección de email válida",
+    "currentPasswordRequired": "La contraseña actual es obligatoria",
+    "newPasswordRequired": "La nueva contraseña es obligatoria",
+    "passwordMismatch": "Las contraseñas no coinciden"
   },
   "accessibility": {
     "mainContent": "Contenido principal",

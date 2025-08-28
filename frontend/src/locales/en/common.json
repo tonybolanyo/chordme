@@ -6,6 +6,7 @@
   "navigation": {
     "home": "Home",
     "songs": "Songs",
+    "profile": "Profile",
     "demo": "Demo",
     "login": "Login",
     "register": "Sign Up",
@@ -98,6 +99,39 @@
     "english": "English",
     "spanish": "Español",
     "switchTo": "Switch to {{language}}"
+  },
+  "profile": {
+    "title": "User Profile",
+    "profileTab": "Profile",
+    "accountTab": "Account",
+    "profileInformation": "Profile Information",
+    "accountSettings": "Account Settings",
+    "displayName": "Display Name",
+    "displayNamePlaceholder": "Enter your display name",
+    "bio": "About Me",
+    "bioPlaceholder": "Tell us about yourself...",
+    "profilePicture": "Profile Picture",
+    "profileImageUrl": "Profile Image URL",
+    "profileImageUrlPlaceholder": "Enter image URL",
+    "updateProfile": "Update Profile",
+    "updateEmail": "Update Email",
+    "newEmail": "New Email Address",
+    "changePassword": "Change Password",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm New Password",
+    "profileUpdated": "Profile updated successfully!",
+    "emailUpdated": "Email updated successfully!",
+    "passwordUpdated": "Password updated successfully!",
+    "updateError": "Failed to update profile. Please try again.",
+    "emailUpdateError": "Failed to update email. Please try again.",
+    "passwordUpdateError": "Failed to update password. Please try again."
+  },
+  "validation": {
+    "invalidEmail": "Please enter a valid email address",
+    "currentPasswordRequired": "Current password is required",
+    "newPasswordRequired": "New password is required",
+    "passwordMismatch": "Passwords do not match"
   },
   "accessibility": {
     "mainContent": "Main content",

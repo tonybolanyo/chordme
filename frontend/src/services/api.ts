@@ -507,6 +507,43 @@ class ApiService {
     });
   }
 
+  // User profile management API calls (require authentication)
+  async getUserProfile(): Promise<{ success: boolean; data?: any; message?: string }> {
+    return this.fetchApiWithAuth('/api/v1/user/profile', {
+      method: 'GET',
+    });
+  }
+
+  async updateUserProfile(profileData: {
+    display_name?: string;
+    bio?: string;
+    profile_image_url?: string;
+  }): Promise<{ success: boolean; data?: any; message?: string }> {
+    return this.fetchApiWithAuth('/api/v1/user/profile', {
+      method: 'PUT',
+      body: JSON.stringify(profileData),
+    });
+  }
+
+  async updateUserEmail(emailData: {
+    new_email: string;
+  }): Promise<{ success: boolean; data?: any; message?: string }> {
+    return this.fetchApiWithAuth('/api/v1/user/email', {
+      method: 'PUT',
+      body: JSON.stringify(emailData),
+    });
+  }
+
+  async updateUserPassword(passwordData: {
+    current_password: string;
+    new_password: string;
+  }): Promise<{ success: boolean; data?: any; message?: string }> {
+    return this.fetchApiWithAuth('/api/v1/user/password', {
+      method: 'PUT',
+      body: JSON.stringify(passwordData),
+    });
+  }
+
   // Utility methods
 
   /**
