@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Collaborative Editing Architecture
+---
+
 # Real-time Collaborative Editing - Technical Documentation
 
 ## Architecture Overview

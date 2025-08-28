@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Real-time Implementation
+---
+
 # Real-time Firestore Updates Implementation
 
 This document outlines the real-time Firestore updates feature implementation for ChordMe.

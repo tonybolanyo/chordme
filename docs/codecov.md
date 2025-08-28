@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: CodeCov Integration
+---
+
 # Codecov Configuration
 
 This repository is configured with Codecov to track code coverage across three main components:

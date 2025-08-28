@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: API Documentation Implementation
+---
+
 # API Documentation Implementation
 
 This document describes the API documentation implementation for ChordMe using Swagger/OpenAPI.

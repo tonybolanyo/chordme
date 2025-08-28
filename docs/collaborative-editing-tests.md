@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Collaborative Editing Tests
+---
+
 # Collaborative Editing Integration Tests
 
 This document outlines the comprehensive integration tests for the sophisticated real-time collaborative editing system.

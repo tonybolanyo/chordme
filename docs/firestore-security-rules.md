@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Firestore Security Rules
+---
+
 # Firestore Security Rules - Implementation Guide
 
 This document describes the comprehensive Firestore security rules implemented for ChordMe and provides instructions for deployment and testing.

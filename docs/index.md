@@ -10,14 +10,40 @@ This directory contains the comprehensive user manual for ChordMe, automatically
 
 ## Documentation Structure
 
-- **[User Manual](README.html)** - Main documentation hub
+### User Documentation
 - **[Getting Started](getting-started.html)** - Installation and setup guide
 - **[User Guide](user-guide.html)** - Complete feature documentation
 - **[ChordPro Format](chordpro-format.html)** - ChordPro format reference
-- **[API Reference](api-reference.html)** - Complete API documentation
-- **[Developer Guide](developer-guide.html)** - Contributing and development
-- **[Changelog](changelog.html)** - Version history and release notes
 - **[Troubleshooting](troubleshooting.html)** - Common issues and solutions
+
+### Developer Documentation
+- **[Developer Guide](developer-guide.html)** - Contributing and development
+- **[API Reference](api-reference.html)** - Complete API documentation
+- **[API Documentation](api-documentation.html)** - Implementation details
+- **[Testing Guide](testing.html)** - Testing setup and guidelines
+
+### Infrastructure & Deployment
+- **[Infrastructure Guide](infrastructure.html)** - Cloud deployment with Terraform/CloudFormation
+- **[Deployment Guide](deployment.html)** - Deployment strategies and automation
+- **[Netlify Railway Supabase](deployment-netlify-railway-supabase.html)** - Recommended deployment stack
+
+### Security & Compliance
+- **[Security Checklist](security-checklist.html)** - Security guidelines and best practices
+- **[Threat Model](threat-model.html)** - Security threat analysis
+- **[Final Security Audit](final-security-audit-report.html)** - Security audit results
+
+### Collaboration Features
+- **[Collaborative Editing Architecture](collaborative-editing-architecture.html)** - Real-time collaboration technical details
+- **[Firebase Integration](firebase-integration.html)** - Firebase setup and configuration
+- **[Google OAuth Integration](google-oauth-integration.html)** - Authentication setup
+
+### Testing & Quality Assurance
+- **[Test Coverage Report](collaboration-test-coverage-report.html)** - Collaboration testing metrics
+- **[CodeCov Integration](codecov.html)** - Code coverage analysis
+
+### Project Information
+- **[Changelog](changelog.html)** - Version history and release notes
+- **[Workflows Documentation](workflows-documentation.html)** - CI/CD pipeline documentation
 - **[Swagger API Documentation](swagger.html)** - Interactive API documentation
 
 ## GitHub Pages Configuration

@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Testing Guide
+---
+
 # ChordMe Testing Guide
 
 This document describes the testing setup for the ChordMe application.

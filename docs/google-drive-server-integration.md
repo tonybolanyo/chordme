@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Google Drive Server Integration
+---
+
 # Server-Side Google Drive Integration
 
 This document describes the server-side Google Drive integration implemented in ChordMe's backend API.

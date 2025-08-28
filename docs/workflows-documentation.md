@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Workflows Documentation
+---
+
 # ChordMe Workflows & Actions - Comprehensive Guide
 
 A complete guide to all GitHub Actions workflows and automation in the ChordMe project.

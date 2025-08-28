@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Netlify Railway Supabase Deployment
+---
+
 # ChordMe Deployment Automation - Implementation Summary
 
 ## Overview

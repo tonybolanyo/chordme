@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Deployment Guide
+---
+
 # ChordMe Deployment Guide
 
 This document provides comprehensive instructions for deploying the ChordMe application using automated and manual deployment methods.

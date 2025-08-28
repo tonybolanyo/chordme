@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Threat Model
+---
+
 # Threat Model - ChordMe Application (Updated 2025-08-26)
 
 ## Executive Summary
