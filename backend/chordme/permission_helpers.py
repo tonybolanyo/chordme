@@ -8,7 +8,7 @@ from .models import Song
 from .utils import create_error_response
 import logging
 import json
-from datetime import datetime
+from datetime import datetime, UTC
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ class SecurityAuditLogger:
             severity (str): Event severity (INFO, WARNING, ERROR, CRITICAL)
         """
         log_entry = {
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(UTC).isoformat(),
             'event_type': event_type,
             'user_id': user_id or getattr(g, 'current_user_id', None),
             'ip_address': ip_address or getattr(request, 'remote_addr', None),

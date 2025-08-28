@@ -185,7 +185,7 @@ class TestCollaborativeWorkflows:
         
         # Step 2: Producer upgrades drummer to editor
         update_data = {
-            'user_id': drummer['user'].id,
+            'user_email': drummer['user'].email,
             'permission_level': 'edit'
         }
         response = test_client.put(f'/api/v1/songs/{band_song.id}/permissions',
@@ -206,7 +206,7 @@ class TestCollaborativeWorkflows:
         
         # Step 4: Later, producer revokes edit access
         update_data = {
-            'user_id': drummer['user'].id,
+            'user_email': drummer['user'].email,
             'permission_level': 'read'
         }
         response = test_client.put(f'/api/v1/songs/{band_song.id}/permissions',

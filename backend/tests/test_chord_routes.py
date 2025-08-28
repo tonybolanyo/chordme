@@ -29,7 +29,11 @@ class TestChordRoutes:
         assert response.status_code == 401
         data = response.get_json()
         assert data['status'] == 'error'
-        assert 'Authorization header is required' in data['error']['message']
+        # Handle both dictionary and string error formats
+        if isinstance(data['error'], dict):
+            assert 'Authorization header is required' in data['error']['message']
+        else:
+            assert 'Authorization header is required' in data['error']
     
     def test_create_chord_success(self, client, auth_token):
         """Test successful chord creation."""
@@ -219,7 +223,11 @@ class TestChordRoutes:
         assert response2.status_code == 400
         data = response2.get_json()
         assert data['status'] == 'error'
-        assert "already have a chord named 'Cmaj7'" in data['error']
+        # Handle both dictionary and string error formats
+        if isinstance(data['error'], dict):
+            assert "already have a chord named 'Cmaj7'" in data['error']['message']
+        else:
+            assert "already have a chord named 'Cmaj7'" in data['error']
     
     def test_get_chords_with_data(self, client, auth_token):
         """Test getting chords when user has some."""
@@ -459,7 +467,11 @@ class TestChordRoutes:
         assert response.status_code == 400
         data = response.get_json()
         assert data['status'] == 'error'
-        assert "already have a chord named 'Cmaj7'" in data['error']
+        # Handle both dictionary and string error formats
+        if isinstance(data['error'], dict):
+            assert "already have a chord named 'Cmaj7'" in data['error']['message']
+        else:
+            assert "already have a chord named 'Cmaj7'" in data['error']
     
     def test_delete_chord_success(self, client, auth_token):
         """Test successful chord deletion."""

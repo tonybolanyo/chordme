@@ -299,9 +299,9 @@ class TestOWASPA07AuthenticationFailures:
         # Test token expiration
         with patch('chordme.utils.datetime') as mock_datetime:
             # Mock time to simulate token expiration
-            from datetime import datetime, timedelta
-            future_time = datetime.utcnow() + timedelta(hours=25)  # Beyond token expiry
-            mock_datetime.utcnow.return_value = future_time
+            from datetime import datetime, timedelta, UTC
+            future_time = datetime.now(UTC) + timedelta(hours=25)  # Beyond token expiry
+            mock_datetime.now.return_value = future_time
             
             response = test_client.get('/api/v1/songs', headers=auth_headers)
             # Should require re-authentication for expired tokens

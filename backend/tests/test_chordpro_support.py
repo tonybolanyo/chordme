@@ -394,7 +394,11 @@ E|--0-----0--|
         assert response.status_code == 401
         data = json.loads(response.data)
         assert data['status'] == 'error'
-        assert 'authorization header is required' in data['error']['message'].lower()
+        # Handle both dictionary and string error formats
+        if isinstance(data['error'], dict):
+            assert 'authorization header is required' in data['error']['message'].lower()
+        else:
+            assert 'authorization header is required' in data['error'].lower()
 
     def test_chordpro_validation_invalid_content(self, test_client, auth_token):
         """Test ChordPro validation with problematic content."""

@@ -5,7 +5,7 @@ Provides health checks, metrics collection, and monitoring endpoints.
 
 import time
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from flask import Blueprint, jsonify, current_app, g
 from functools import wraps
 from typing import Dict, Any, List
@@ -81,7 +81,7 @@ class MetricsCollector:
             'requests': {'total': 0, 'errors': 0, 'success': 0},
             'response_times': [],
             'user_activities': {},
-            'last_reset': datetime.utcnow()
+            'last_reset': datetime.now(UTC)
         }
     
     def record_request(self, endpoint: str, method: str, status_code: int, duration: float):
@@ -98,7 +98,7 @@ class MetricsCollector:
             'endpoint': endpoint,
             'method': method,
             'duration': duration,
-            'timestamp': datetime.utcnow().isoformat()
+            'timestamp': datetime.now(UTC).isoformat()
         })
         
         if len(self.metrics['response_times']) > 100:
@@ -116,7 +116,7 @@ class MetricsCollector:
     
     def get_metrics_summary(self) -> Dict[str, Any]:
         """Get summarized metrics for monitoring dashboard."""
-        uptime = datetime.utcnow() - self.metrics['last_reset']
+        uptime = datetime.now(UTC) - self.metrics['last_reset']
         
         # Calculate average response time
         if self.metrics['response_times']:
@@ -145,7 +145,7 @@ class MetricsCollector:
             'requests': {'total': 0, 'errors': 0, 'success': 0},
             'response_times': [],
             'user_activities': {},
-            'last_reset': datetime.utcnow()
+            'last_reset': datetime.now(UTC)
         }
 
 
@@ -213,7 +213,7 @@ def health_check_detailed():
     """Comprehensive health check endpoint with detailed information."""
     health_results = {
         'status': 'healthy',
-        'timestamp': datetime.utcnow().isoformat(),
+        'timestamp': datetime.now(UTC).isoformat(),
         'service': 'chordme-backend',
         'version': getattr(current_app, 'version', 'unknown'),
         'checks': {}
@@ -256,7 +256,7 @@ def get_metrics():
         
         response = {
             'status': 'success',
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(UTC).isoformat(),
             'metrics': metrics_summary
         }
         
@@ -287,7 +287,7 @@ def reset_metrics():
         return jsonify({
             'status': 'success',
             'message': 'Metrics reset successfully',
-            'timestamp': datetime.utcnow().isoformat()
+            'timestamp': datetime.now(UTC).isoformat()
         }), 200
         
     except Exception as e:
