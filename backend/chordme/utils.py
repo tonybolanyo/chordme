@@ -2,7 +2,7 @@ import re
 import unicodedata
 from flask import jsonify, current_app
 import jwt
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 import html
 
 
@@ -313,8 +313,8 @@ def generate_jwt_token(user_id):
     try:
         payload = {
             'user_id': user_id,
-            'exp': datetime.utcnow() + timedelta(seconds=current_app.config['JWT_EXPIRATION_DELTA']),
-            'iat': datetime.utcnow()
+            'exp': datetime.now(UTC) + timedelta(seconds=current_app.config['JWT_EXPIRATION_DELTA']),
+            'iat': datetime.now(UTC)
         }
         token = jwt.encode(payload, current_app.config['JWT_SECRET_KEY'], algorithm='HS256')
         return token

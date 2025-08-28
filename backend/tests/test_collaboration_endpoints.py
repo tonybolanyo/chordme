@@ -468,7 +468,7 @@ class TestPublicSongs:
         song_id = response.get_json()['data']['id']
         
         # Make song public
-        song = Song.query.get(song_id)
+        song = db.session.get(Song, song_id)
         song.share_settings = 'public'
         db.session.commit()
         

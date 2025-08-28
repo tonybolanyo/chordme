@@ -6,7 +6,7 @@ Provides structured logging, performance monitoring, and audit capabilities.
 import logging
 import json
 import time
-from datetime import datetime
+from datetime import datetime, UTC
 from functools import wraps
 from flask import request, g, current_app
 from typing import Dict, Any, Optional
@@ -23,7 +23,7 @@ class StructuredLogger:
     def _create_log_entry(self, level: str, message: str, **kwargs) -> Dict[str, Any]:
         """Create a structured log entry with context information."""
         entry = {
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(UTC).isoformat(),
             'level': level,
             'message': message,
             'service': 'chordme-backend',

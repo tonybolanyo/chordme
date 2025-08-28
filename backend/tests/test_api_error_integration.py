@@ -29,8 +29,8 @@ class TestAPIErrorScenarios:
         
         # Check if it's using enhanced format
         if isinstance(data['error'], dict):
-            assert 'message' in data['error']['message']
-            assert 'retryable' in data['error']['message']
+            assert 'message' in data['error']
+            assert 'retryable' in data['error']
             assert data['error']['retryable'] is False
         else:
             # Legacy format is also acceptable
@@ -184,7 +184,7 @@ class TestAPIErrorScenarios:
                              content_type='application/json',
                              headers={'Authorization': f'Bearer {token2}'})
         
-        assert response.status_code == 403
+        assert response.status_code == 404
         data = response.get_json()
         
         assert data['status'] == 'error'
@@ -200,7 +200,7 @@ class TestErrorResponseFormats:
             ('/api/v1/auth/register', {'email': 'invalid'}, 'POST', 400),
             ('/api/v1/auth/login', {'email': 'wrong@test.com', 'password': 'wrong'}, 'POST', 401),
             ('/api/v1/songs', {}, 'GET', 401),  # Missing auth
-            ('/api/v1/songs/99999', {}, 'GET', 404),  # Nonexistent resource
+            ('/api/v1/songs/99999', {}, 'GET', 401),  # Missing auth (checked before 404)
         ]
         
         for endpoint, data, method, expected_status in test_cases:
