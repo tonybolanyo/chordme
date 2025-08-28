@@ -254,7 +254,7 @@ describe('UndoRedoControls', () => {
     });
 
     it('renders redo icon SVG', () => {
-      const { container } = render(<UndoRedoControls {...defaultProps} />);
+      render(<UndoRedoControls {...defaultProps} />);
       
       const redoButton = screen.getByRole('button', { name: 'Redo last action' });
       const svg = redoButton.querySelector('svg');

@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import StorageIndicator from './StorageIndicator';
 import { apiService } from '../../services/api';
+import type { StorageBackendType } from '../../services/storagePreference';
 
 // Mock the CSS import
 vi.mock('./StorageIndicator.css', () => ({}));
@@ -68,7 +69,7 @@ describe('StorageIndicator', () => {
   });
 
   it('renders unknown backend correctly', () => {
-    vi.mocked(apiService.getCurrentBackend).mockReturnValue('unknown' as any);
+    vi.mocked(apiService.getCurrentBackend).mockReturnValue('unknown' as StorageBackendType);
     vi.mocked(apiService.isBackendAvailable).mockReturnValue(true);
 
     render(<StorageIndicator />);
@@ -152,7 +153,7 @@ describe('StorageIndicator', () => {
     ];
 
     testCases.forEach(({ backend, available, expectedName, expectedIcon }) => {
-      vi.mocked(apiService.getCurrentBackend).mockReturnValue(backend as any);
+      vi.mocked(apiService.getCurrentBackend).mockReturnValue(backend as StorageBackendType);
       vi.mocked(apiService.isBackendAvailable).mockReturnValue(available);
 
       const { unmount } = render(<StorageIndicator />);
@@ -169,7 +170,7 @@ describe('StorageIndicator', () => {
   });
 
   it('handles edge case with null backend response', () => {
-    vi.mocked(apiService.getCurrentBackend).mockReturnValue(null as any);
+    vi.mocked(apiService.getCurrentBackend).mockReturnValue(null as unknown as StorageBackendType);
     vi.mocked(apiService.isBackendAvailable).mockReturnValue(false);
 
     render(<StorageIndicator />);
