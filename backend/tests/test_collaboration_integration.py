@@ -282,7 +282,7 @@ class TestCollaborativeWorkflows:
         assert 'ups and' in final_song['content'] and 'downs' in final_song['content']  # Lyricist addition
         assert 'solo' in final_song['content']           # Guitarist addition
         assert 'Bass line' in final_song['content']      # Bassist addition
-        assert 'Magic' in final_song['content'] and 'gun' in final_song['content'] # Songwriter bridge
+        assert '[F]Magic [C]has be[G]gun' in final_song['content']  # Songwriter bridge
 
 
 class TestConcurrentCollaboration:
