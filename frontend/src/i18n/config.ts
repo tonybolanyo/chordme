@@ -8,7 +8,7 @@ import esCommon from '../locales/es/common.json';
 
 // Define supported languages
 export const supportedLanguages = ['en', 'es'] as const;
-export type SupportedLanguage = typeof supportedLanguages[number];
+export type SupportedLanguage = (typeof supportedLanguages)[number];
 
 // Translation resources
 const resources = {
@@ -24,10 +24,10 @@ const resources = {
 const detectionOptions = {
   // Detection order
   order: ['localStorage', 'navigator', 'htmlTag'],
-  
+
   // Cache user language selection
   caches: ['localStorage'],
-  
+
   // Only detect languages we support
   checkWhitelist: true,
 };
@@ -43,24 +43,24 @@ i18n
     fallbackLng: 'en', // Default fallback language
     whitelist: supportedLanguages, // Only allow supported languages
     detection: detectionOptions,
-    
+
     // Namespace configuration
     defaultNS: 'common',
     ns: ['common'],
-    
+
     // React-specific options
     react: {
       useSuspense: false, // Avoid suspense to prevent loading issues
     },
-    
+
     // Debug in development
     debug: process.env.NODE_ENV === 'development',
-    
+
     // Interpolation options
     interpolation: {
       escapeValue: false, // React already escapes values
     },
-    
+
     // Load path for additional resources (if needed in future)
     // backend: {
     //   loadPath: '/locales/{{lng}}/{{ns}}.json',

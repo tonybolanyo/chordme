@@ -376,7 +376,10 @@ describe('Collaborative Editing Integration', () => {
       // Verify both operations can be applied
       let content = 'Initial content';
       content = OperationalTransform.applyOperation(content, user2Operation); // User 2's op first
-      content = OperationalTransform.applyOperation(content, transformedUser1Op); // Then user 1's transformed op
+      content = OperationalTransform.applyOperation(
+        content,
+        transformedUser1Op
+      ); // Then user 1's transformed op
 
       expect(content).toBe('Prefix Initial updated content');
     });
@@ -547,7 +550,7 @@ describe('Collaborative UI Components', () => {
       );
 
       expect(screen.getByText('Live Collaboration')).toBeInTheDocument();
-      
+
       // Check for participant avatars instead of text about "other users online"
       expect(screen.getByTitle('Alice - Active')).toBeInTheDocument();
       expect(screen.getByTitle('Bob - Active')).toBeInTheDocument();

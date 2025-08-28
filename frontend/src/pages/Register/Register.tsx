@@ -97,7 +97,9 @@ const Register: React.FC = () => {
         setFormData({ email: '', password: '' });
         setConfirmPassword('');
       } else {
-        setErrors({ submit: response.error || t('auth.errors.registerFailed') });
+        setErrors({
+          submit: response.error || t('auth.errors.registerFailed'),
+        });
       }
     } catch (error) {
       console.error('Registration error:', error);
@@ -122,9 +124,7 @@ const Register: React.FC = () => {
     <div className="register">
       <div className="register-container">
         <h1>{t('auth.register.title')}</h1>
-        <p className="register-subtitle">
-          {t('auth.register.subtitle')}
-        </p>
+        <p className="register-subtitle">{t('auth.register.subtitle')}</p>
 
         {successMessage && (
           <div className="success-message">{successMessage}</div>
@@ -176,7 +176,9 @@ const Register: React.FC = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="confirmPassword">{t('auth.register.confirmPassword')}</label>
+            <label htmlFor="confirmPassword">
+              {t('auth.register.confirmPassword')}
+            </label>
             <PasswordInput
               id="confirmPassword"
               name="confirmPassword"
@@ -201,7 +203,9 @@ const Register: React.FC = () => {
             className="btn btn-primary"
             disabled={isLoading}
           >
-            {isLoading ? t('auth.register.loadingText') : t('auth.register.submit')}
+            {isLoading
+              ? t('auth.register.loadingText')
+              : t('auth.register.submit')}
           </button>
         </form>
 
@@ -227,7 +231,8 @@ const Register: React.FC = () => {
         )}
 
         <p className="register-footer">
-          {t('auth.register.footerText')} <a href="#login">{t('auth.register.footerLink')}</a>
+          {t('auth.register.footerText')}{' '}
+          <a href="#login">{t('auth.register.footerLink')}</a>
         </p>
       </div>
     </div>

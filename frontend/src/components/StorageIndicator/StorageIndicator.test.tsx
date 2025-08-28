@@ -69,7 +69,9 @@ describe('StorageIndicator', () => {
   });
 
   it('renders unknown backend correctly', () => {
-    vi.mocked(apiService.getCurrentBackend).mockReturnValue('unknown' as StorageBackendType);
+    vi.mocked(apiService.getCurrentBackend).mockReturnValue(
+      'unknown' as StorageBackendType
+    );
     vi.mocked(apiService.isBackendAvailable).mockReturnValue(true);
 
     render(<StorageIndicator />);
@@ -95,7 +97,7 @@ describe('StorageIndicator', () => {
 
     const { container } = render(<StorageIndicator />);
     const indicator = container.querySelector('.storage-indicator');
-    
+
     expect(indicator).toHaveClass('unavailable');
   });
 
@@ -106,9 +108,9 @@ describe('StorageIndicator', () => {
 
     const { container } = render(<StorageIndicator onClick={mockOnClick} />);
     const indicator = container.querySelector('.storage-indicator');
-    
+
     expect(indicator).toHaveClass('clickable');
-    
+
     fireEvent.click(indicator!);
     expect(mockOnClick).toHaveBeenCalledTimes(1);
   });
@@ -119,7 +121,7 @@ describe('StorageIndicator', () => {
 
     const { container } = render(<StorageIndicator />);
     const indicator = container.querySelector('.storage-indicator');
-    
+
     expect(indicator).not.toHaveClass('clickable');
   });
 
@@ -129,7 +131,7 @@ describe('StorageIndicator', () => {
 
     const { container } = render(<StorageIndicator />);
     const icon = container.querySelector('.storage-icon');
-    
+
     expect(icon).toHaveStyle({ color: '#ff9500' });
   });
 
@@ -146,21 +148,43 @@ describe('StorageIndicator', () => {
   it('handles multiple backend states correctly', () => {
     // Test different combinations of backend and availability
     const testCases = [
-      { backend: 'api', available: true, expectedName: 'API', expectedIcon: '🔗' },
-      { backend: 'firebase', available: false, expectedName: 'Firebase', expectedIcon: '🔥' },
-      { backend: 'googledrive', available: true, expectedName: 'Drive', expectedIcon: '📱' },
-      { backend: 'localstorage', available: false, expectedName: 'Local', expectedIcon: '💾' },
+      {
+        backend: 'api',
+        available: true,
+        expectedName: 'API',
+        expectedIcon: '🔗',
+      },
+      {
+        backend: 'firebase',
+        available: false,
+        expectedName: 'Firebase',
+        expectedIcon: '🔥',
+      },
+      {
+        backend: 'googledrive',
+        available: true,
+        expectedName: 'Drive',
+        expectedIcon: '📱',
+      },
+      {
+        backend: 'localstorage',
+        available: false,
+        expectedName: 'Local',
+        expectedIcon: '💾',
+      },
     ];
 
     testCases.forEach(({ backend, available, expectedName, expectedIcon }) => {
-      vi.mocked(apiService.getCurrentBackend).mockReturnValue(backend as StorageBackendType);
+      vi.mocked(apiService.getCurrentBackend).mockReturnValue(
+        backend as StorageBackendType
+      );
       vi.mocked(apiService.isBackendAvailable).mockReturnValue(available);
 
       const { unmount } = render(<StorageIndicator />);
 
       expect(screen.getByText(expectedName)).toBeInTheDocument();
       expect(screen.getByText(expectedIcon)).toBeInTheDocument();
-      
+
       if (!available) {
         expect(screen.getByText('⚠️')).toBeInTheDocument();
       }
@@ -170,7 +194,9 @@ describe('StorageIndicator', () => {
   });
 
   it('handles edge case with null backend response', () => {
-    vi.mocked(apiService.getCurrentBackend).mockReturnValue(null as unknown as StorageBackendType);
+    vi.mocked(apiService.getCurrentBackend).mockReturnValue(
+      null as unknown as StorageBackendType
+    );
     vi.mocked(apiService.isBackendAvailable).mockReturnValue(false);
 
     render(<StorageIndicator />);
@@ -185,7 +211,7 @@ describe('StorageIndicator', () => {
 
     const { container } = render(<StorageIndicator />);
     const indicator = container.querySelector('.storage-indicator');
-    
+
     expect(indicator).toHaveAttribute('title', 'Storage: API');
   });
 
@@ -195,7 +221,10 @@ describe('StorageIndicator', () => {
 
     const { container } = render(<StorageIndicator />);
     const indicator = container.querySelector('.storage-indicator');
-    
-    expect(indicator).toHaveAttribute('title', 'Storage: Firebase (Unavailable)');
+
+    expect(indicator).toHaveAttribute(
+      'title',
+      'Storage: Firebase (Unavailable)'
+    );
   });
 });

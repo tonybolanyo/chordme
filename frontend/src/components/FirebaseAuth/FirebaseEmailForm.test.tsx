@@ -26,7 +26,7 @@ vi.mock('./FirebaseAuth.css', () => ({}));
 
 describe('FirebaseEmailForm Component', () => {
   const user = userEvent.setup();
-  
+
   // Get references to mocked functions
   let mockSignInWithEmailAndPassword: ReturnType<typeof vi.fn>;
   let mockSignUpWithEmailAndPassword: ReturnType<typeof vi.fn>;
@@ -41,11 +41,15 @@ describe('FirebaseEmailForm Component', () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
-    
+
     // Get references to the mocked functions
     const { firebaseAuthService } = await import('../../services/firebaseAuth');
-    mockSignInWithEmailAndPassword = vi.mocked(firebaseAuthService.signInWithEmailAndPassword);
-    mockSignUpWithEmailAndPassword = vi.mocked(firebaseAuthService.signUpWithEmailAndPassword);
+    mockSignInWithEmailAndPassword = vi.mocked(
+      firebaseAuthService.signInWithEmailAndPassword
+    );
+    mockSignUpWithEmailAndPassword = vi.mocked(
+      firebaseAuthService.signUpWithEmailAndPassword
+    );
     vi.mocked(firebaseAuthService.isAvailable).mockReturnValue(true);
 
     const { useAuth } = await import('../../contexts/AuthContext');
@@ -75,7 +79,9 @@ describe('FirebaseEmailForm Component', () => {
     });
 
     it('should not render anything when Firebase is not available', async () => {
-      const { firebaseAuthService } = await import('../../services/firebaseAuth');
+      const { firebaseAuthService } = await import(
+        '../../services/firebaseAuth'
+      );
       vi.mocked(firebaseAuthService.isAvailable).mockReturnValue(false);
 
       const { container } = render(<FirebaseEmailForm {...defaultProps} />);

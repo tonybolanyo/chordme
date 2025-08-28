@@ -32,11 +32,11 @@ describe('StorageSettings Component', () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
-    
+
     // Import mocked services after mocks are cleared
     const { firebaseService } = await import('../../services/firebase');
     const { googleOAuth2Service } = await import('../../services/googleOAuth');
-    
+
     vi.mocked(firebaseService.isInitialized).mockReturnValue(true);
     vi.mocked(googleOAuth2Service.isConfigured).mockReturnValue(true);
 
@@ -126,7 +126,9 @@ describe('StorageSettings Component', () => {
     });
 
     it('should mark Google Drive as unavailable when not configured', async () => {
-      const { googleOAuth2Service } = await import('../../services/googleOAuth');
+      const { googleOAuth2Service } = await import(
+        '../../services/googleOAuth'
+      );
       vi.mocked(googleOAuth2Service.isConfigured).mockReturnValue(false);
 
       render(<StorageSettings {...defaultProps} />);
@@ -160,8 +162,10 @@ describe('StorageSettings Component', () => {
 
     it('should always show REST API as available', async () => {
       const { firebaseService } = await import('../../services/firebase');
-      const { googleOAuth2Service } = await import('../../services/googleOAuth');
-      
+      const { googleOAuth2Service } = await import(
+        '../../services/googleOAuth'
+      );
+
       vi.mocked(firebaseService.isInitialized).mockReturnValue(false);
       vi.mocked(googleOAuth2Service.isConfigured).mockReturnValue(false);
       Object.defineProperty(global, 'localStorage', { value: undefined });
@@ -269,8 +273,10 @@ describe('StorageSettings Component', () => {
   describe('Backend Configuration Messages', () => {
     it('should show configuration requirements for unavailable backends', async () => {
       const { firebaseService } = await import('../../services/firebase');
-      const { googleOAuth2Service } = await import('../../services/googleOAuth');
-      
+      const { googleOAuth2Service } = await import(
+        '../../services/googleOAuth'
+      );
+
       vi.mocked(firebaseService.isInitialized).mockReturnValue(false);
       vi.mocked(googleOAuth2Service.isConfigured).mockReturnValue(false);
 
@@ -297,14 +303,14 @@ describe('StorageSettings Component', () => {
 
   describe('Component State Management', () => {
     it('should maintain selection state when backend availability changes', async () => {
-      // Start with firebase selected and available  
+      // Start with firebase selected and available
       const { rerender } = render(
         <StorageSettings {...defaultProps} currentBackend="firebase" />
       );
 
       expect(screen.getByDisplayValue('firebase')).toBeChecked();
 
-      // Even if Firebase becomes unavailable after render, 
+      // Even if Firebase becomes unavailable after render,
       // the selected state should be maintained in the UI
       expect(screen.getByDisplayValue('firebase')).toBeChecked();
     });
@@ -320,7 +326,7 @@ describe('StorageSettings Component', () => {
       // Or fall back to api - let's check what actually happens
       const firebaseRadio = screen.getByDisplayValue('firebase');
       const apiRadio = screen.getByDisplayValue('api');
-      
+
       // The component validates and should reset invalid backends to 'api'
       expect(apiRadio).toBeChecked();
       expect(firebaseRadio).not.toBeChecked();
@@ -398,8 +404,10 @@ describe('StorageSettings Component', () => {
     it('should handle multiple service availability changes', async () => {
       // Start with some services unavailable
       const { firebaseService } = await import('../../services/firebase');
-      const { googleOAuth2Service } = await import('../../services/googleOAuth');
-      
+      const { googleOAuth2Service } = await import(
+        '../../services/googleOAuth'
+      );
+
       vi.mocked(firebaseService.isInitialized).mockReturnValue(false);
       vi.mocked(googleOAuth2Service.isConfigured).mockReturnValue(false);
 
@@ -407,7 +415,7 @@ describe('StorageSettings Component', () => {
 
       expect(screen.getAllByText('Unavailable')).toHaveLength(2);
 
-      // Note: The component would need additional props or state management 
+      // Note: The component would need additional props or state management
       // to reactively update when service availability changes
     });
   });

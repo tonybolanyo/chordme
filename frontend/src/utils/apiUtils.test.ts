@@ -35,7 +35,10 @@ describe('apiUtils', () => {
 
   describe('parseApiError', () => {
     it('parses new error format correctly', () => {
-      const response = new Response('', { status: 400, statusText: 'Bad Request' });
+      const response = new Response('', {
+        status: 400,
+        statusText: 'Bad Request',
+      });
       const responseText = JSON.stringify({
         status: 'error',
         error: {
@@ -59,7 +62,10 @@ describe('apiUtils', () => {
     });
 
     it('parses legacy error format correctly', () => {
-      const response = new Response('', { status: 404, statusText: 'Not Found' });
+      const response = new Response('', {
+        status: 404,
+        statusText: 'Not Found',
+      });
       const responseText = JSON.stringify({
         status: 'error',
         error: 'Resource not found',
@@ -74,7 +80,10 @@ describe('apiUtils', () => {
     });
 
     it('handles invalid JSON response', () => {
-      const response = new Response('', { status: 500, statusText: 'Internal Server Error' });
+      const response = new Response('', {
+        status: 500,
+        statusText: 'Internal Server Error',
+      });
       const responseText = 'Invalid JSON';
 
       const error = parseApiError(response, responseText);
@@ -85,7 +94,10 @@ describe('apiUtils', () => {
     });
 
     it('handles unknown response format', () => {
-      const response = new Response('', { status: 403, statusText: 'Forbidden' });
+      const response = new Response('', {
+        status: 403,
+        statusText: 'Forbidden',
+      });
       const responseText = JSON.stringify({ message: 'Access denied' });
 
       const error = parseApiError(response, responseText);
@@ -96,7 +108,10 @@ describe('apiUtils', () => {
     });
 
     it('marks server errors as retryable by default', () => {
-      const response = new Response('', { status: 502, statusText: 'Bad Gateway' });
+      const response = new Response('', {
+        status: 502,
+        statusText: 'Bad Gateway',
+      });
       const responseText = JSON.stringify({ unknown: 'format' });
 
       const error = parseApiError(response, responseText);
@@ -105,7 +120,10 @@ describe('apiUtils', () => {
     });
 
     it('marks client errors as non-retryable by default', () => {
-      const response = new Response('', { status: 400, statusText: 'Bad Request' });
+      const response = new Response('', {
+        status: 400,
+        statusText: 'Bad Request',
+      });
       const responseText = JSON.stringify({ unknown: 'format' });
 
       const error = parseApiError(response, responseText);
@@ -133,7 +151,9 @@ describe('apiUtils', () => {
 
       const error = parseNetworkError(originalError);
 
-      expect(error.message).toBe('Request timed out. Please check your connection and try again');
+      expect(error.message).toBe(
+        'Request timed out. Please check your connection and try again'
+      );
       expect(error.code).toBe('TIMEOUT_ERROR');
       expect(error.category).toBe('network');
       expect(error.retryable).toBe(true);
@@ -144,7 +164,9 @@ describe('apiUtils', () => {
 
       const error = parseNetworkError(originalError);
 
-      expect(error.message).toBe('Network error. Please check your connection and try again');
+      expect(error.message).toBe(
+        'Network error. Please check your connection and try again'
+      );
       expect(error.code).toBe('NETWORK_ERROR');
       expect(error.category).toBe('network');
       expect(error.retryable).toBe(true);
@@ -203,8 +225,10 @@ describe('apiUtils', () => {
 
     it('retries on server error', async () => {
       const errorResponse = new Response('Server Error', { status: 500 });
-      const successResponse = new Response('{"success": true}', { status: 200 });
-      
+      const successResponse = new Response('{"success": true}', {
+        status: 200,
+      });
+
       mockFetch
         .mockResolvedValueOnce(errorResponse)
         .mockResolvedValueOnce(successResponse);
@@ -217,8 +241,10 @@ describe('apiUtils', () => {
 
     it('retries on network error', async () => {
       const networkError = new TypeError('Failed to fetch');
-      const successResponse = new Response('{"success": true}', { status: 200 });
-      
+      const successResponse = new Response('{"success": true}', {
+        status: 200,
+      });
+
       mockFetch
         .mockRejectedValueOnce(networkError)
         .mockResolvedValueOnce(successResponse);
@@ -244,7 +270,9 @@ describe('apiUtils', () => {
       const errorResponse = new Response('Not Found', { status: 404 });
       mockFetch.mockResolvedValueOnce(errorResponse);
 
-      await expect(fetchWithRetry('/api/test', {}, { delay: 0 })).rejects.toThrow();
+      await expect(
+        fetchWithRetry('/api/test', {}, { delay: 0 })
+      ).rejects.toThrow();
 
       expect(mockFetch).toHaveBeenCalledTimes(1);
     });
@@ -270,16 +298,20 @@ describe('apiUtils', () => {
       const errorResponse = new Response('Server Error', { status: 500 });
       mockFetch.mockResolvedValue(errorResponse);
 
-      const promise = fetchWithRetry('/api/test', {}, { 
-        maxAttempts: 3, 
-        delay: 1, // Very small delay for tests
-        backoffMultiplier: 2 
-      });
+      const promise = fetchWithRetry(
+        '/api/test',
+        {},
+        {
+          maxAttempts: 3,
+          delay: 1, // Very small delay for tests
+          backoffMultiplier: 2,
+        }
+      );
 
       // Fast-forward through the delays
       vi.advanceTimersByTime(1); // First retry delay
       await Promise.resolve(); // Let first retry execute
-      
+
       vi.advanceTimersByTime(2); // Second retry delay (1 * 2)
       await Promise.resolve(); // Let second retry execute
 
@@ -341,7 +373,7 @@ describe('apiUtils', () => {
         return `success: ${value}`;
       });
 
-      const retryFunction = createRetryFunction(testFunction, { 
+      const retryFunction = createRetryFunction(testFunction, {
         maxAttempts: 3,
         delay: 0, // No delay for tests
       });
@@ -359,7 +391,7 @@ describe('apiUtils', () => {
         throw error;
       });
 
-      const retryFunction = createRetryFunction(testFunction, { 
+      const retryFunction = createRetryFunction(testFunction, {
         maxAttempts: 2,
         delay: 0, // No delay for tests
       });
@@ -428,7 +460,7 @@ describe('apiUtils', () => {
         writable: true,
         value: true,
       });
-      
+
       window.dispatchEvent(new Event('online'));
 
       await expect(promise).resolves.toBeUndefined();
@@ -439,7 +471,9 @@ describe('apiUtils', () => {
 
       vi.advanceTimersByTime(1000);
 
-      await expect(promise).rejects.toThrow('Timeout waiting for network connection');
+      await expect(promise).rejects.toThrow(
+        'Timeout waiting for network connection'
+      );
     });
 
     it('uses custom timeout', async () => {
@@ -447,7 +481,9 @@ describe('apiUtils', () => {
 
       vi.advanceTimersByTime(500);
 
-      await expect(promise).rejects.toThrow('Timeout waiting for network connection');
+      await expect(promise).rejects.toThrow(
+        'Timeout waiting for network connection'
+      );
     });
 
     it('cleans up event listener on timeout', async () => {
@@ -458,7 +494,10 @@ describe('apiUtils', () => {
 
       await expect(promise).rejects.toThrow();
 
-      expect(removeEventListenerSpy).toHaveBeenCalledWith('online', expect.any(Function));
+      expect(removeEventListenerSpy).toHaveBeenCalledWith(
+        'online',
+        expect.any(Function)
+      );
     });
 
     it('cleans up event listener on success', async () => {
@@ -471,18 +510,24 @@ describe('apiUtils', () => {
         writable: true,
         value: true,
       });
-      
+
       window.dispatchEvent(new Event('online'));
 
       await promise;
 
-      expect(removeEventListenerSpy).toHaveBeenCalledWith('online', expect.any(Function));
+      expect(removeEventListenerSpy).toHaveBeenCalledWith(
+        'online',
+        expect.any(Function)
+      );
     });
   });
 
   describe('Error handling edge cases', () => {
     it('handles empty response text in parseApiError', () => {
-      const response = new Response('', { status: 500, statusText: 'Internal Server Error' });
+      const response = new Response('', {
+        status: 500,
+        statusText: 'Internal Server Error',
+      });
       const responseText = '';
 
       const error = parseApiError(response, responseText);
@@ -492,7 +537,10 @@ describe('apiUtils', () => {
     });
 
     it('handles null error data in parseApiError', () => {
-      const response = new Response('', { status: 500, statusText: 'Internal Server Error' });
+      const response = new Response('', {
+        status: 500,
+        statusText: 'Internal Server Error',
+      });
       const responseText = 'null';
 
       const error = parseApiError(response, responseText);
@@ -502,7 +550,10 @@ describe('apiUtils', () => {
     });
 
     it('handles malformed error structure', () => {
-      const response = new Response('', { status: 400, statusText: 'Bad Request' });
+      const response = new Response('', {
+        status: 400,
+        statusText: 'Bad Request',
+      });
       const responseText = JSON.stringify({
         status: 'error',
         error: null,

@@ -65,7 +65,9 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
           </a>
           <div className="auth-links">
             <StorageIndicator onClick={handleStorageSettingsOpen} />
-            <span className="user-info">{t('navigation.welcome', { email: user?.email })}</span>
+            <span className="user-info">
+              {t('navigation.welcome', { email: user?.email })}
+            </span>
             <button
               onClick={handleLogout}
               className="nav-link auth-link btn-logout touch-target"
@@ -150,7 +152,7 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
             aria-hidden={isMobile && !mobileMenuOpen}
           >
             {renderNavLinks()}
-            
+
             {/* Language Switcher - visible in mobile menu */}
             {isMobile && <LanguageSwitcher />}
           </nav>

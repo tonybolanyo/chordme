@@ -20,7 +20,7 @@ describe('i18n Configuration', () => {
 
   it('changes language to Spanish', async () => {
     await i18n.changeLanguage('es');
-    
+
     expect(i18n.language).toBe('es');
     expect(i18n.t('app.title')).toBe('ChordMe');
     expect(i18n.t('navigation.home')).toBe('Inicio');
@@ -30,22 +30,26 @@ describe('i18n Configuration', () => {
 
   it('falls back to English for missing Spanish translations', async () => {
     await i18n.changeLanguage('es');
-    
+
     // Test a key that exists in English but not in Spanish
     // Since we have complete translations, let's test with a non-existent key
     expect(i18n.t('nonexistent.key')).toBe('nonexistent.key');
   });
 
   it('supports interpolation', async () => {
-    expect(i18n.t('navigation.welcome', { email: 'test@example.com' })).toBe('Welcome, test@example.com');
-    
+    expect(i18n.t('navigation.welcome', { email: 'test@example.com' })).toBe(
+      'Welcome, test@example.com'
+    );
+
     await i18n.changeLanguage('es');
-    expect(i18n.t('navigation.welcome', { email: 'test@example.com' })).toBe('Bienvenido, test@example.com');
+    expect(i18n.t('navigation.welcome', { email: 'test@example.com' })).toBe(
+      'Bienvenido, test@example.com'
+    );
   });
 
   it('handles unsupported languages by falling back to English', async () => {
     await i18n.changeLanguage('fr'); // French is not supported
-    
+
     // The language may be set to 'fr' but translations will fall back to English
     expect(i18n.t('navigation.home')).toBe('Home');
   });
@@ -95,8 +99,8 @@ describe('Translation Coverage', () => {
 
   it('has all required translations in English', () => {
     i18n.changeLanguage('en');
-    
-    testKeys.forEach(key => {
+
+    testKeys.forEach((key) => {
       const translation = i18n.t(key);
       expect(translation).not.toBe(key); // Should not return the key itself
       expect(translation).toBeTruthy(); // Should have a value
@@ -105,8 +109,8 @@ describe('Translation Coverage', () => {
 
   it('has all required translations in Spanish', async () => {
     await i18n.changeLanguage('es');
-    
-    testKeys.forEach(key => {
+
+    testKeys.forEach((key) => {
       const translation = i18n.t(key);
       expect(translation).not.toBe(key); // Should not return the key itself
       expect(translation).toBeTruthy(); // Should have a value
@@ -116,24 +120,24 @@ describe('Translation Coverage', () => {
   it('has different translations for most keys between languages', async () => {
     const englishTranslations: Record<string, string> = {};
     const spanishTranslations: Record<string, string> = {};
-    
+
     // Get English translations
     i18n.changeLanguage('en');
-    testKeys.forEach(key => {
+    testKeys.forEach((key) => {
       englishTranslations[key] = i18n.t(key);
     });
-    
+
     // Get Spanish translations
     await i18n.changeLanguage('es');
-    testKeys.forEach(key => {
+    testKeys.forEach((key) => {
       spanishTranslations[key] = i18n.t(key);
     });
-    
+
     // Most keys should have different translations (except brand names like "ChordMe")
-    const differentTranslations = testKeys.filter(key => 
-      englishTranslations[key] !== spanishTranslations[key]
+    const differentTranslations = testKeys.filter(
+      (key) => englishTranslations[key] !== spanishTranslations[key]
     );
-    
+
     // At least 80% of translations should be different
     expect(differentTranslations.length).toBeGreaterThan(testKeys.length * 0.8);
   });

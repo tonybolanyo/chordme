@@ -99,9 +99,10 @@ class ErrorBoundary extends Component<Props, State> {
             <div className="error-boundary__icon">⚠️</div>
             <h2 className="error-boundary__title">Something went wrong</h2>
             <p className="error-boundary__message">
-              We're sorry, but something unexpected happened. Please try refreshing the page.
+              We're sorry, but something unexpected happened. Please try
+              refreshing the page.
             </p>
-            
+
             {this.state.errorId && (
               <div className="error-boundary__error-id">
                 Error ID: <code>{this.state.errorId}</code>
@@ -131,14 +132,14 @@ class ErrorBoundary extends Component<Props, State> {
                 <div className="error-boundary__error-details">
                   <h4>Error:</h4>
                   <pre>{this.state.error.toString()}</pre>
-                  
+
                   {this.state.error.stack && (
                     <>
                       <h4>Stack Trace:</h4>
                       <pre>{this.state.error.stack}</pre>
                     </>
                   )}
-                  
+
                   {this.state.errorInfo?.componentStack && (
                     <>
                       <h4>Component Stack:</h4>

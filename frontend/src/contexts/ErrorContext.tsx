@@ -1,4 +1,9 @@
-import React, { createContext, useContext, useReducer, useCallback } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useReducer,
+  useCallback,
+} from 'react';
 
 // Error types and interfaces
 export interface AppError {
@@ -51,37 +56,39 @@ function errorReducer(state: ErrorState, action: ErrorAction): ErrorState {
         ...state,
         errors: [...state.errors, action.payload],
       };
-    
+
     case 'REMOVE_ERROR':
       return {
         ...state,
-        errors: state.errors.filter(error => error.id !== action.payload),
+        errors: state.errors.filter((error) => error.id !== action.payload),
       };
-    
+
     case 'CLEAR_ERRORS':
       return {
         ...state,
         errors: [],
       };
-    
+
     case 'ADD_NOTIFICATION':
       return {
         ...state,
         notifications: [...state.notifications, action.payload],
       };
-    
+
     case 'REMOVE_NOTIFICATION':
       return {
         ...state,
-        notifications: state.notifications.filter(notif => notif.id !== action.payload),
+        notifications: state.notifications.filter(
+          (notif) => notif.id !== action.payload
+        ),
       };
-    
+
     case 'SET_ONLINE_STATUS':
       return {
         ...state,
         isOnline: action.payload,
       };
-    
+
     case 'INCREMENT_RETRY_ATTEMPTS':
       return {
         ...state,
@@ -90,7 +97,7 @@ function errorReducer(state: ErrorState, action: ErrorAction): ErrorState {
           [action.payload]: (state.retryAttempts[action.payload] || 0) + 1,
         },
       };
-    
+
     case 'RESET_RETRY_ATTEMPTS': {
       const remaining = { ...state.retryAttempts };
       delete remaining[action.payload];
@@ -109,7 +116,9 @@ interface ErrorContextValue {
   addError: (error: Omit<AppError, 'id' | 'timestamp'>) => void;
   removeError: (errorId: string) => void;
   clearErrors: () => void;
-  addNotification: (notification: Omit<NotificationError, 'id' | 'timestamp'>) => void;
+  addNotification: (
+    notification: Omit<NotificationError, 'id' | 'timestamp'>
+  ) => void;
   removeNotification: (notificationId: string) => void;
   canRetry: (operationId: string) => boolean;
   incrementRetryAttempts: (operationId: string) => void;
@@ -124,8 +133,10 @@ export function ErrorProvider({ children }: { children: React.ReactNode }) {
 
   // Monitor online status
   React.useEffect(() => {
-    const handleOnline = () => dispatch({ type: 'SET_ONLINE_STATUS', payload: true });
-    const handleOffline = () => dispatch({ type: 'SET_ONLINE_STATUS', payload: false });
+    const handleOnline = () =>
+      dispatch({ type: 'SET_ONLINE_STATUS', payload: true });
+    const handleOffline = () =>
+      dispatch({ type: 'SET_ONLINE_STATUS', payload: false });
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
@@ -153,25 +164,31 @@ export function ErrorProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'CLEAR_ERRORS' });
   }, []);
 
-  const addNotification = useCallback((notification: Omit<NotificationError, 'id' | 'timestamp'>) => {
-    const fullNotification: NotificationError = {
-      ...notification,
-      id: `notif-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      timestamp: Date.now(),
-      type: notification.type || 'error',
-      autoClose: notification.autoClose !== false,
-      duration: notification.duration || 5000,
-    };
-    dispatch({ type: 'ADD_NOTIFICATION', payload: fullNotification });
-  }, []);
+  const addNotification = useCallback(
+    (notification: Omit<NotificationError, 'id' | 'timestamp'>) => {
+      const fullNotification: NotificationError = {
+        ...notification,
+        id: `notif-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        timestamp: Date.now(),
+        type: notification.type || 'error',
+        autoClose: notification.autoClose !== false,
+        duration: notification.duration || 5000,
+      };
+      dispatch({ type: 'ADD_NOTIFICATION', payload: fullNotification });
+    },
+    []
+  );
 
   const removeNotification = useCallback((notificationId: string) => {
     dispatch({ type: 'REMOVE_NOTIFICATION', payload: notificationId });
   }, []);
 
-  const canRetry = useCallback((operationId: string) => {
-    return (state.retryAttempts[operationId] || 0) < MAX_RETRY_ATTEMPTS;
-  }, [state.retryAttempts]);
+  const canRetry = useCallback(
+    (operationId: string) => {
+      return (state.retryAttempts[operationId] || 0) < MAX_RETRY_ATTEMPTS;
+    },
+    [state.retryAttempts]
+  );
 
   const incrementRetryAttempts = useCallback((operationId: string) => {
     dispatch({ type: 'INCREMENT_RETRY_ATTEMPTS', payload: operationId });
@@ -187,11 +204,19 @@ export function ErrorProvider({ children }: { children: React.ReactNode }) {
     if (error.retryable === false) return false;
 
     // Check by category
-    if (error.category === 'network' || error.category === 'server_error') return true;
-    if (error.category === 'validation' || error.category === 'authentication') return false;
+    if (error.category === 'network' || error.category === 'server_error')
+      return true;
+    if (error.category === 'validation' || error.category === 'authentication')
+      return false;
 
     // Check by error code
-    const retryableCodes = ['NETWORK_ERROR', 'TIMEOUT_ERROR', 'RATE_LIMIT_EXCEEDED', 'INTERNAL_SERVER_ERROR', 'SERVICE_UNAVAILABLE'];
+    const retryableCodes = [
+      'NETWORK_ERROR',
+      'TIMEOUT_ERROR',
+      'RATE_LIMIT_EXCEEDED',
+      'INTERNAL_SERVER_ERROR',
+      'SERVICE_UNAVAILABLE',
+    ];
     if (error.code && retryableCodes.includes(error.code)) return true;
 
     // Check by source
@@ -231,7 +256,12 @@ export function useError() {
 
 // Utility functions for common error operations
 // eslint-disable-next-line react-refresh/only-export-components
-export function createApiError(message: string, code?: string, category?: string, retryable?: boolean): Omit<AppError, 'id' | 'timestamp'> {
+export function createApiError(
+  message: string,
+  code?: string,
+  category?: string,
+  retryable?: boolean
+): Omit<AppError, 'id' | 'timestamp'> {
   return {
     message,
     code,
@@ -242,7 +272,9 @@ export function createApiError(message: string, code?: string, category?: string
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
-export function createNetworkError(message: string = 'Network error occurred'): Omit<AppError, 'id' | 'timestamp'> {
+export function createNetworkError(
+  message: string = 'Network error occurred'
+): Omit<AppError, 'id' | 'timestamp'> {
   return {
     message,
     code: 'NETWORK_ERROR',
@@ -253,7 +285,10 @@ export function createNetworkError(message: string = 'Network error occurred'): 
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
-export function createValidationError(message: string, field?: string): Omit<AppError, 'id' | 'timestamp'> {
+export function createValidationError(
+  message: string,
+  field?: string
+): Omit<AppError, 'id' | 'timestamp'> {
   return {
     message,
     code: 'VALIDATION_ERROR',

@@ -9,7 +9,7 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { t } = useTranslation('common');
-  
+
   return (
     <div className="layout">
       {/* Skip navigation link for screen readers */}
@@ -28,7 +28,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         {children}
       </main>
 
-      <footer className="footer" role="contentinfo" aria-label={t('accessibility.siteFooter')}>
+      <footer
+        className="footer"
+        role="contentinfo"
+        aria-label={t('accessibility.siteFooter')}
+      >
         <p>{t('footer.copyright')}</p>
       </footer>
     </div>

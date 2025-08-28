@@ -46,7 +46,9 @@ describe('LanguageSwitcher', () => {
   it('renders language switcher with default structure', () => {
     render(<LanguageSwitcher />);
 
-    expect(screen.getByRole('group', { name: 'Language:' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('group', { name: 'Language:' })
+    ).toBeInTheDocument();
     expect(screen.getByText('Language:')).toBeInTheDocument();
     expect(screen.getByRole('radiogroup')).toBeInTheDocument();
   });
@@ -54,15 +56,23 @@ describe('LanguageSwitcher', () => {
   it('renders both language options', () => {
     render(<LanguageSwitcher />);
 
-    expect(screen.getByRole('button', { name: /switch to english/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /switch to español/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /switch to english/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /switch to español/i })
+    ).toBeInTheDocument();
   });
 
   it('marks current language as active', () => {
     render(<LanguageSwitcher />);
 
-    const englishButton = screen.getByRole('button', { name: /switch to english/i });
-    const spanishButton = screen.getByRole('button', { name: /switch to español/i });
+    const englishButton = screen.getByRole('button', {
+      name: /switch to english/i,
+    });
+    const spanishButton = screen.getByRole('button', {
+      name: /switch to español/i,
+    });
 
     expect(englishButton).toHaveAttribute('aria-pressed', 'true');
     expect(spanishButton).toHaveAttribute('aria-pressed', 'false');
@@ -74,7 +84,9 @@ describe('LanguageSwitcher', () => {
     const user = userEvent.setup();
     render(<LanguageSwitcher />);
 
-    const spanishButton = screen.getByRole('button', { name: /switch to español/i });
+    const spanishButton = screen.getByRole('button', {
+      name: /switch to español/i,
+    });
     await user.click(spanishButton);
 
     expect(mockChangeLanguage).toHaveBeenCalledWith('es');
@@ -84,8 +96,10 @@ describe('LanguageSwitcher', () => {
     const user = userEvent.setup();
     render(<LanguageSwitcher />);
 
-    const spanishButton = screen.getByRole('button', { name: /switch to español/i });
-    
+    const spanishButton = screen.getByRole('button', {
+      name: /switch to español/i,
+    });
+
     // Focus the button and press Enter
     spanishButton.focus();
     await user.keyboard('{Enter}');
@@ -105,12 +119,14 @@ describe('LanguageSwitcher', () => {
 
     const radiogroup = screen.getByRole('radiogroup');
     const languageLabel = screen.getByText('Language:');
-    
+
     expect(radiogroup).toHaveAttribute('aria-labelledby', 'language-label');
     expect(languageLabel).toHaveAttribute('id', 'language-label');
 
     // Check that buttons have proper accessibility attributes
-    const englishButton = screen.getByRole('button', { name: /switch to english/i });
+    const englishButton = screen.getByRole('button', {
+      name: /switch to english/i,
+    });
     expect(englishButton).toHaveAttribute('aria-pressed');
     expect(englishButton).toHaveAttribute('aria-label');
     expect(englishButton).toHaveAttribute('title');
@@ -120,8 +136,12 @@ describe('LanguageSwitcher', () => {
     const user = userEvent.setup();
     render(<LanguageSwitcher />);
 
-    const englishButton = screen.getByRole('button', { name: /switch to english/i });
-    const spanishButton = screen.getByRole('button', { name: /switch to español/i });
+    const englishButton = screen.getByRole('button', {
+      name: /switch to english/i,
+    });
+    const spanishButton = screen.getByRole('button', {
+      name: /switch to español/i,
+    });
 
     // Tab to first button
     await user.tab();
@@ -137,10 +157,14 @@ describe('LanguageSwitcher Integration', () => {
   it('renders correctly with different language states', () => {
     // Test is sufficient without complex rerendering for now
     render(<LanguageSwitcher />);
-    
-    const englishButton = screen.getByRole('button', { name: /switch to english/i });
-    const spanishButton = screen.getByRole('button', { name: /switch to español/i });
-    
+
+    const englishButton = screen.getByRole('button', {
+      name: /switch to english/i,
+    });
+    const spanishButton = screen.getByRole('button', {
+      name: /switch to español/i,
+    });
+
     expect(englishButton).toHaveClass('active');
     expect(spanishButton).not.toHaveClass('active');
     expect(englishButton).toBeInTheDocument();

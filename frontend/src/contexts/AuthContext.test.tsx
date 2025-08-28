@@ -410,7 +410,9 @@ describe('AuthContext', () => {
     });
 
     it('logs parsing error when user data is invalid', async () => {
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
 
       localStorage.setItem('authToken', 'valid-token');
       localStorage.setItem('authUser', 'invalid-json');

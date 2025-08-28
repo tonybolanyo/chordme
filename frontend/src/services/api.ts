@@ -22,7 +22,6 @@ import type { Unsubscribe } from 'firebase/firestore';
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
-
 // Defined from `updateUserProfile` params and likely API response structure
 export interface UserProfile {
   display_name?: string;
@@ -137,7 +136,11 @@ class ApiService {
         try {
           const errorData = JSON.parse(errorText);
           // Handle new error format
-          if (errorData.status === 'error' && errorData.error && typeof errorData.error === 'object') {
+          if (
+            errorData.status === 'error' &&
+            errorData.error &&
+            typeof errorData.error === 'object'
+          ) {
             errorMessage = errorData.error.message;
           }
           // Handle legacy error format
@@ -155,7 +158,9 @@ class ApiService {
     } catch (error) {
       // Handle network errors
       if (error instanceof TypeError) {
-        throw new Error('Network error. Please check your connection and try again.');
+        throw new Error(
+          'Network error. Please check your connection and try again.'
+        );
       }
       throw error;
     }
@@ -517,7 +522,11 @@ class ApiService {
   }
 
   // User profile management API calls (require authentication)
-  async getUserProfile(): Promise<{ success: boolean; data?: UserProfile; message?: string }> {
+  async getUserProfile(): Promise<{
+    success: boolean;
+    data?: UserProfile;
+    message?: string;
+  }> {
     return this.fetchApiWithAuth('/api/v1/user/profile', {
       method: 'GET',
     });

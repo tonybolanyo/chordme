@@ -24,8 +24,10 @@ describe('Firebase Integration Tests', () => {
 
   it('should report API data source when Firebase is disabled', async () => {
     const { firebaseService } = await import('../services/firebase');
-    const { storagePreferenceService } = await import('../services/storagePreference');
-    
+    const { storagePreferenceService } = await import(
+      '../services/storagePreference'
+    );
+
     vi.mocked(firebaseService.isEnabled).mockReturnValue(false);
     vi.mocked(firebaseService.isInitialized).mockReturnValue(false);
     vi.mocked(storagePreferenceService.getPreference).mockReturnValue('api');
@@ -41,25 +43,31 @@ describe('Firebase Integration Tests', () => {
 
   it('should report Firebase data source when Firebase is enabled', async () => {
     const { firebaseService } = await import('../services/firebase');
-    const { storagePreferenceService } = await import('../services/storagePreference');
-    
+    const { storagePreferenceService } = await import(
+      '../services/storagePreference'
+    );
+
     vi.mocked(firebaseService.isEnabled).mockReturnValue(true);
     vi.mocked(firebaseService.isInitialized).mockReturnValue(true);
-    vi.mocked(storagePreferenceService.getPreference).mockReturnValue('firebase');
+    vi.mocked(storagePreferenceService.getPreference).mockReturnValue(
+      'firebase'
+    );
 
     const dataSourceInfo = apiService.getDataSourceInfo();
 
     expect(dataSourceInfo).toEqual({
       source: 'firebase',
-      isFirebaseEnabled: true,  // This maps to isEnabled() in the implementation
-      isFirebaseConfigured: true,  // This maps to isInitialized() in the implementation
+      isFirebaseEnabled: true, // This maps to isEnabled() in the implementation
+      isFirebaseConfigured: true, // This maps to isInitialized() in the implementation
     });
   });
 
   it('should handle mixed Firebase states correctly', async () => {
     const { firebaseService } = await import('../services/firebase');
-    const { storagePreferenceService } = await import('../services/storagePreference');
-    
+    const { storagePreferenceService } = await import(
+      '../services/storagePreference'
+    );
+
     // Firebase initialized but not enabled (wrong VITE_DATA_SOURCE)
     vi.mocked(firebaseService.isEnabled).mockReturnValue(false);
     vi.mocked(firebaseService.isInitialized).mockReturnValue(true);
@@ -69,7 +77,7 @@ describe('Firebase Integration Tests', () => {
 
     expect(dataSourceInfo).toEqual({
       source: 'api',
-      isFirebaseEnabled: true,   // This maps to isEnabled() = true
+      isFirebaseEnabled: true, // This maps to isEnabled() = true
       isFirebaseConfigured: false, // This maps to isInitialized() = false
     });
   });

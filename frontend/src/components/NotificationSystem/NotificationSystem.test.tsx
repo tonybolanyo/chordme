@@ -15,53 +15,63 @@ function TestTrigger() {
     <div>
       <button
         data-testid="add-error-notification"
-        onClick={() => addNotification({
-          message: 'Error notification',
-          type: 'error',
-          code: 'TEST_ERROR'
-        })}
+        onClick={() =>
+          addNotification({
+            message: 'Error notification',
+            type: 'error',
+            code: 'TEST_ERROR',
+          })
+        }
       >
         Add Error
       </button>
-      
+
       <button
         data-testid="add-warning-notification"
-        onClick={() => addNotification({
-          message: 'Warning notification',
-          type: 'warning'
-        })}
+        onClick={() =>
+          addNotification({
+            message: 'Warning notification',
+            type: 'warning',
+          })
+        }
       >
         Add Warning
       </button>
-      
+
       <button
         data-testid="add-info-notification"
-        onClick={() => addNotification({
-          message: 'Info notification',
-          type: 'info'
-        })}
+        onClick={() =>
+          addNotification({
+            message: 'Info notification',
+            type: 'info',
+          })
+        }
       >
         Add Info
       </button>
-      
+
       <button
         data-testid="add-persistent-notification"
-        onClick={() => addNotification({
-          message: 'Persistent notification',
-          type: 'error',
-          autoClose: false
-        })}
+        onClick={() =>
+          addNotification({
+            message: 'Persistent notification',
+            type: 'error',
+            autoClose: false,
+          })
+        }
       >
         Add Persistent
       </button>
-      
+
       <button
         data-testid="add-quick-notification"
-        onClick={() => addNotification({
-          message: 'Quick notification',
-          type: 'info',
-          duration: 100
-        })}
+        onClick={() =>
+          addNotification({
+            message: 'Quick notification',
+            type: 'info',
+            duration: 100,
+          })
+        }
       >
         Add Quick
       </button>
@@ -98,11 +108,14 @@ describe('NotificationSystem', () => {
 
     fireEvent.click(screen.getByTestId('add-error-notification'));
 
-    await waitFor(() => {
-      expect(screen.getByText('Error notification')).toBeInTheDocument();
-      expect(screen.getByText('Error Code: TEST_ERROR')).toBeInTheDocument();
-      expect(screen.getByText('❌')).toBeInTheDocument();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText('Error notification')).toBeInTheDocument();
+        expect(screen.getByText('Error Code: TEST_ERROR')).toBeInTheDocument();
+        expect(screen.getByText('❌')).toBeInTheDocument();
+      },
+      { timeout: 10000 }
+    );
 
     const notification = screen.getByRole('alert');
     expect(notification).toHaveClass('notification--error');
@@ -118,10 +131,13 @@ describe('NotificationSystem', () => {
 
     fireEvent.click(screen.getByTestId('add-warning-notification'));
 
-    await waitFor(() => {
-      expect(screen.getByText('Warning notification')).toBeInTheDocument();
-      expect(screen.getByText('⚠️')).toBeInTheDocument();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText('Warning notification')).toBeInTheDocument();
+        expect(screen.getByText('⚠️')).toBeInTheDocument();
+      },
+      { timeout: 10000 }
+    );
 
     const notification = screen.getByRole('alert');
     expect(notification).toHaveClass('notification--warning');
@@ -137,10 +153,13 @@ describe('NotificationSystem', () => {
 
     fireEvent.click(screen.getByTestId('add-info-notification'));
 
-    await waitFor(() => {
-      expect(screen.getByText('Info notification')).toBeInTheDocument();
-      expect(screen.getByText('ℹ️')).toBeInTheDocument();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText('Info notification')).toBeInTheDocument();
+        expect(screen.getByText('ℹ️')).toBeInTheDocument();
+      },
+      { timeout: 10000 }
+    );
 
     const notification = screen.getByRole('alert');
     expect(notification).toHaveClass('notification--info');
@@ -156,16 +175,24 @@ describe('NotificationSystem', () => {
 
     fireEvent.click(screen.getByTestId('add-error-notification'));
 
-    await waitFor(() => {
-      expect(screen.getByText('Error notification')).toBeInTheDocument();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText('Error notification')).toBeInTheDocument();
+      },
+      { timeout: 10000 }
+    );
 
     const closeButton = screen.getByLabelText('Close notification');
     fireEvent.click(closeButton);
 
-    await waitFor(() => {
-      expect(screen.queryByText('Error notification')).not.toBeInTheDocument();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(
+          screen.queryByText('Error notification')
+        ).not.toBeInTheDocument();
+      },
+      { timeout: 10000 }
+    );
   });
 
   it('auto-closes notifications with default duration', async () => {
@@ -178,16 +205,24 @@ describe('NotificationSystem', () => {
 
     fireEvent.click(screen.getByTestId('add-error-notification'));
 
-    await waitFor(() => {
-      expect(screen.getByText('Error notification')).toBeInTheDocument();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText('Error notification')).toBeInTheDocument();
+      },
+      { timeout: 10000 }
+    );
 
     // Fast forward time by default duration (5000ms)
     vi.advanceTimersByTime(5000);
 
-    await waitFor(() => {
-      expect(screen.queryByText('Error notification')).not.toBeInTheDocument();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(
+          screen.queryByText('Error notification')
+        ).not.toBeInTheDocument();
+      },
+      { timeout: 10000 }
+    );
   });
 
   it('does not auto-close persistent notifications', async () => {
@@ -200,9 +235,12 @@ describe('NotificationSystem', () => {
 
     fireEvent.click(screen.getByTestId('add-persistent-notification'));
 
-    await waitFor(() => {
-      expect(screen.getByText('Persistent notification')).toBeInTheDocument();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText('Persistent notification')).toBeInTheDocument();
+      },
+      { timeout: 10000 }
+    );
 
     // Fast forward time well beyond default duration
     vi.advanceTimersByTime(10000);
@@ -221,16 +259,24 @@ describe('NotificationSystem', () => {
 
     fireEvent.click(screen.getByTestId('add-quick-notification'));
 
-    await waitFor(() => {
-      expect(screen.getByText('Quick notification')).toBeInTheDocument();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText('Quick notification')).toBeInTheDocument();
+      },
+      { timeout: 10000 }
+    );
 
     // Fast forward by custom duration (100ms)
     vi.advanceTimersByTime(100);
 
-    await waitFor(() => {
-      expect(screen.queryByText('Quick notification')).not.toBeInTheDocument();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(
+          screen.queryByText('Quick notification')
+        ).not.toBeInTheDocument();
+      },
+      { timeout: 10000 }
+    );
   });
 
   it('displays multiple notifications', async () => {
@@ -245,11 +291,14 @@ describe('NotificationSystem', () => {
     fireEvent.click(screen.getByTestId('add-warning-notification'));
     fireEvent.click(screen.getByTestId('add-info-notification'));
 
-    await waitFor(() => {
-      expect(screen.getByText('Error notification')).toBeInTheDocument();
-      expect(screen.getByText('Warning notification')).toBeInTheDocument();
-      expect(screen.getByText('Info notification')).toBeInTheDocument();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText('Error notification')).toBeInTheDocument();
+        expect(screen.getByText('Warning notification')).toBeInTheDocument();
+        expect(screen.getByText('Info notification')).toBeInTheDocument();
+      },
+      { timeout: 10000 }
+    );
 
     // Should have multiple notification elements
     const notifications = screen.getAllByRole('alert');
@@ -266,10 +315,13 @@ describe('NotificationSystem', () => {
 
     fireEvent.click(screen.getByTestId('add-warning-notification'));
 
-    await waitFor(() => {
-      expect(screen.getByText('Warning notification')).toBeInTheDocument();
-      expect(screen.queryByText(/Error Code:/)).not.toBeInTheDocument();
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText('Warning notification')).toBeInTheDocument();
+        expect(screen.queryByText(/Error Code:/)).not.toBeInTheDocument();
+      },
+      { timeout: 10000 }
+    );
   });
 
   it('has proper accessibility attributes', async () => {
@@ -282,15 +334,18 @@ describe('NotificationSystem', () => {
 
     fireEvent.click(screen.getByTestId('add-error-notification'));
 
-    await waitFor(() => {
-      const notificationSystem = screen.getByLabelText('Notifications');
-      expect(notificationSystem).toBeInTheDocument();
+    await waitFor(
+      () => {
+        const notificationSystem = screen.getByLabelText('Notifications');
+        expect(notificationSystem).toBeInTheDocument();
 
-      const notification = screen.getByRole('alert');
-      expect(notification).toHaveAttribute('aria-live', 'polite');
+        const notification = screen.getByRole('alert');
+        expect(notification).toHaveAttribute('aria-live', 'polite');
 
-      const closeButton = screen.getByLabelText('Close notification');
-      expect(closeButton).toBeInTheDocument();
-    }, { timeout: 10000 });
+        const closeButton = screen.getByLabelText('Close notification');
+        expect(closeButton).toBeInTheDocument();
+      },
+      { timeout: 10000 }
+    );
   });
 });

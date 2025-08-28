@@ -41,7 +41,7 @@ describe('FirebaseAuthButtons Component', () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
-    
+
     // Get references to the mocked functions
     const { firebaseAuthService } = await import('../../services/firebaseAuth');
     mockSignInWithGoogle = vi.mocked(firebaseAuthService.signInWithGoogle);
@@ -74,7 +74,9 @@ describe('FirebaseAuthButtons Component', () => {
     });
 
     it('should not render anything when Firebase is not available', async () => {
-      const { firebaseAuthService } = await import('../../services/firebaseAuth');
+      const { firebaseAuthService } = await import(
+        '../../services/firebaseAuth'
+      );
       vi.mocked(firebaseAuthService.isAvailable).mockReturnValue(false);
 
       const { container } = render(<FirebaseAuthButtons {...defaultProps} />);

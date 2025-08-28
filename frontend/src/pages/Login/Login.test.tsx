@@ -78,7 +78,9 @@ describe('Login', () => {
 
     expect(screen.getByText(/login to chordme/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('Enter your password')).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText('Enter your password')
+    ).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: /^sign in$/i })
     ).toBeInTheDocument();
