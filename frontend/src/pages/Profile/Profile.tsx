@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { apiService } from '../../services/api';
 import { validateEmail, validateRequired } from '../../utils';
 import PasswordInput from '../../components/PasswordInput';
-import type { User } from '../../types';
+
 import './Profile.css';
 
 interface ProfileFormData {
