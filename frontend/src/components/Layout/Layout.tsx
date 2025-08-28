@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import Header from '../Header';
 import './Layout.css';
 
@@ -7,11 +8,13 @@ interface LayoutProps {
 }
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
+  const { t } = useTranslation('common');
+  
   return (
     <div className="layout">
       {/* Skip navigation link for screen readers */}
       <a href="#main-content" className="skip-nav">
-        Skip to main content
+        {t('navigation.skipToContent')}
       </a>
 
       <Header />
@@ -20,13 +23,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         id="main-content"
         className="main-content"
         role="main"
-        aria-label="Main content"
+        aria-label={t('accessibility.mainContent')}
       >
         {children}
       </main>
 
-      <footer className="footer" role="contentinfo" aria-label="Site footer">
-        <p>&copy; 2024 ChordMe. Lyrics and chords in a simple way.</p>
+      <footer className="footer" role="contentinfo" aria-label={t('accessibility.siteFooter')}>
+        <p>{t('footer.copyright')}</p>
       </footer>
     </div>
   );

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
-import { StorageIndicator, StorageSettings } from '../';
+import { StorageIndicator, StorageSettings, LanguageSwitcher } from '../';
 import { apiService } from '../../services/api';
 import { useViewport } from '../../utils/responsive';
 import './Header.css';
@@ -9,11 +10,15 @@ interface HeaderProps {
   title?: string;
 }
 
-const Header: React.FC<HeaderProps> = ({ title = 'ChordMe' }) => {
+const Header: React.FC<HeaderProps> = ({ title }) => {
+  const { t } = useTranslation('common');
   const { isAuthenticated, user, logout } = useAuth();
   const [showStorageSettings, setShowStorageSettings] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { isMobile } = useViewport();
+
+  // Use translated title if no title prop provided
+  const headerTitle = title || t('app.title');
 
   const handleLogout = () => {
     logout();
@@ -50,19 +55,19 @@ const Header: React.FC<HeaderProps> = ({ title = 'ChordMe' }) => {
       return (
         <>
           <a href="#home" className="nav-link" onClick={closeMobileMenu}>
-            Home
+            {t('navigation.home')}
           </a>
           <a href="#songs" className="nav-link" onClick={closeMobileMenu}>
-            Songs
+            {t('navigation.songs')}
           </a>
           <div className="auth-links">
             <StorageIndicator onClick={handleStorageSettingsOpen} />
-            <span className="user-info">Welcome, {user?.email}</span>
+            <span className="user-info">{t('navigation.welcome', { email: user?.email })}</span>
             <button
               onClick={handleLogout}
               className="nav-link auth-link btn-logout touch-target"
             >
-              Logout
+              {t('navigation.logout')}
             </button>
           </div>
         </>
@@ -71,7 +76,7 @@ const Header: React.FC<HeaderProps> = ({ title = 'ChordMe' }) => {
       return (
         <>
           <a href="#demo" className="nav-link" onClick={closeMobileMenu}>
-            Demo
+            {t('navigation.demo')}
           </a>
           <div className="auth-links">
             <StorageIndicator onClick={handleStorageSettingsOpen} />
@@ -80,14 +85,14 @@ const Header: React.FC<HeaderProps> = ({ title = 'ChordMe' }) => {
               className="nav-link auth-link"
               onClick={closeMobileMenu}
             >
-              Login
+              {t('navigation.login')}
             </a>
             <a
               href="#register"
               className="nav-link auth-link btn-register"
               onClick={closeMobileMenu}
             >
-              Sign Up
+              {t('navigation.register')}
             </a>
           </div>
         </>
@@ -104,11 +109,14 @@ const Header: React.FC<HeaderProps> = ({ title = 'ChordMe' }) => {
               <a
                 href="#home"
                 style={{ textDecoration: 'none', color: 'white' }}
-                aria-label="ChordMe homepage"
+                aria-label={`${headerTitle} homepage`}
               >
-                {title}
+                {headerTitle}
               </a>
             </h1>
+
+            {/* Language Switcher - visible on desktop */}
+            {!isMobile && <LanguageSwitcher />}
 
             {isMobile && (
               <button
@@ -116,8 +124,8 @@ const Header: React.FC<HeaderProps> = ({ title = 'ChordMe' }) => {
                 onClick={toggleMobileMenu}
                 aria-label={
                   mobileMenuOpen
-                    ? 'Close navigation menu'
-                    : 'Open navigation menu'
+                    ? t('accessibility.closeNavigation')
+                    : t('accessibility.openNavigation')
                 }
                 aria-expanded={mobileMenuOpen}
                 aria-controls="main-navigation"
@@ -139,6 +147,9 @@ const Header: React.FC<HeaderProps> = ({ title = 'ChordMe' }) => {
             aria-hidden={isMobile && !mobileMenuOpen}
           >
             {renderNavLinks()}
+            
+            {/* Language Switcher - visible in mobile menu */}
+            {isMobile && <LanguageSwitcher />}
           </nav>
         </div>
 
@@ -147,7 +158,7 @@ const Header: React.FC<HeaderProps> = ({ title = 'ChordMe' }) => {
           <div
             className="nav-overlay open"
             onClick={closeMobileMenu}
-            aria-label="Close navigation menu"
+            aria-label={t('accessibility.closeNavigation')}
             role="button"
             tabIndex={0}
             onKeyDown={(e) => {

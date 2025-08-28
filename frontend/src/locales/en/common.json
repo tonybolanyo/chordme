@@ -1,0 +1,80 @@
+{
+  "app": {
+    "title": "ChordMe",
+    "subtitle": "Lyrics and chords in a simple way."
+  },
+  "navigation": {
+    "home": "Home",
+    "songs": "Songs",
+    "demo": "Demo",
+    "login": "Login",
+    "register": "Sign Up",
+    "logout": "Logout",
+    "welcome": "Welcome, {{email}}",
+    "skipToContent": "Skip to main content"
+  },
+  "auth": {
+    "login": {
+      "title": "Login",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Login",
+      "success": "Login successful!",
+      "emailPlaceholder": "Enter your email",
+      "passwordPlaceholder": "Enter your password"
+    },
+    "register": {
+      "title": "Register",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "submit": "Create Account",
+      "emailPlaceholder": "Enter your email",
+      "passwordPlaceholder": "Enter your password",
+      "confirmPasswordPlaceholder": "Confirm your password"
+    },
+    "errors": {
+      "loginFailed": "Login failed",
+      "networkError": "An error occurred during login. Please try again.",
+      "emailRequired": "Email is required",
+      "passwordRequired": "Password is required",
+      "invalidEmail": "Please enter a valid email address"
+    }
+  },
+  "songs": {
+    "title": "Title:",
+    "titlePlaceholder": "Enter song title",
+    "acceptExternalChanges": "Accept external changes",
+    "keepMyChanges": "Keep my changes",
+    "delete": "Delete",
+    "owner": "Owner",
+    "admin": "Admin",
+    "ownerTooltip": "You own this song",
+    "adminTooltip": "You have admin access to this song"
+  },
+  "common": {
+    "loading": "Loading...",
+    "close": "Close",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "update": "Update"
+  },
+  "footer": {
+    "copyright": "© 2024 ChordMe. Lyrics and chords in a simple way."
+  },
+  "language": {
+    "label": "Language:",
+    "english": "English",
+    "spanish": "Español",
+    "switchTo": "Switch to {{language}}"
+  },
+  "accessibility": {
+    "mainContent": "Main content",
+    "siteFooter": "Site footer",
+    "openNavigation": "Open navigation menu",
+    "closeNavigation": "Close navigation menu"
+  }
+}

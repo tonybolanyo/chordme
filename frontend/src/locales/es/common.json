@@ -1,0 +1,80 @@
+{
+  "app": {
+    "title": "ChordMe",
+    "subtitle": "Letras y acordes de manera sencilla."
+  },
+  "navigation": {
+    "home": "Inicio",
+    "songs": "Canciones",
+    "demo": "Demo",
+    "login": "Iniciar sesión",
+    "register": "Registrarse",
+    "logout": "Cerrar sesión",
+    "welcome": "Bienvenido, {{email}}",
+    "skipToContent": "Ir al contenido principal"
+  },
+  "auth": {
+    "login": {
+      "title": "Iniciar sesión",
+      "email": "Correo electrónico",
+      "password": "Contraseña",
+      "submit": "Iniciar sesión",
+      "success": "¡Inicio de sesión exitoso!",
+      "emailPlaceholder": "Ingresa tu correo electrónico",
+      "passwordPlaceholder": "Ingresa tu contraseña"
+    },
+    "register": {
+      "title": "Registrarse",
+      "email": "Correo electrónico",
+      "password": "Contraseña",
+      "confirmPassword": "Confirmar contraseña",
+      "submit": "Crear cuenta",
+      "emailPlaceholder": "Ingresa tu correo electrónico",
+      "passwordPlaceholder": "Ingresa tu contraseña",
+      "confirmPasswordPlaceholder": "Confirma tu contraseña"
+    },
+    "errors": {
+      "loginFailed": "Error al iniciar sesión",
+      "networkError": "Ocurrió un error durante el inicio de sesión. Por favor, inténtalo de nuevo.",
+      "emailRequired": "El correo electrónico es obligatorio",
+      "passwordRequired": "La contraseña es obligatoria",
+      "invalidEmail": "Por favor, ingresa una dirección de correo electrónico válida"
+    }
+  },
+  "songs": {
+    "title": "Título:",
+    "titlePlaceholder": "Ingresa el título de la canción",
+    "acceptExternalChanges": "Aceptar cambios externos",
+    "keepMyChanges": "Mantener mis cambios",
+    "delete": "Eliminar",
+    "owner": "Propietario",
+    "admin": "Administrador",
+    "ownerTooltip": "Eres el propietario de esta canción",
+    "adminTooltip": "Tienes acceso de administrador a esta canción"
+  },
+  "common": {
+    "loading": "Cargando...",
+    "close": "Cerrar",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "create": "Crear",
+    "update": "Actualizar"
+  },
+  "footer": {
+    "copyright": "© 2024 ChordMe. Letras y acordes de manera sencilla."
+  },
+  "language": {
+    "label": "Idioma:",
+    "english": "English",
+    "spanish": "Español",
+    "switchTo": "Cambiar a {{language}}"
+  },
+  "accessibility": {
+    "mainContent": "Contenido principal",
+    "siteFooter": "Pie de página del sitio",
+    "openNavigation": "Abrir menú de navegación",
+    "closeNavigation": "Cerrar menú de navegación"
+  }
+}
