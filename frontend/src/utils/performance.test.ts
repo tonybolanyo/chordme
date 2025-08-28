@@ -1,6 +1,16 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { performanceUtils, performanceMonitor } from './performance';
 
+// Mock observer interface for testing
+interface MockObserver {
+  disconnect: () => void;
+}
+
+// Type for accessing private members in tests
+interface TestablePerformanceMonitor {
+  observers: MockObserver[];
+}
+
 // Mock performance.now
 const mockPerformanceNow = vi.fn();
 Object.defineProperty(window, 'performance', {
@@ -333,7 +343,7 @@ describe('performanceMonitor', () => {
       const mockObserver2 = { disconnect: vi.fn() };
 
       // Access private observers array via type assertion
-      (performanceMonitor as any).observers = [mockObserver1, mockObserver2];
+      (performanceMonitor as unknown as TestablePerformanceMonitor).observers = [mockObserver1, mockObserver2];
 
       performanceMonitor.cleanup();
 
@@ -343,15 +353,15 @@ describe('performanceMonitor', () => {
 
     it('clears observers array after cleanup', () => {
       const mockObserver = { disconnect: vi.fn() };
-      (performanceMonitor as any).observers = [mockObserver];
+      (performanceMonitor as unknown as TestablePerformanceMonitor).observers = [mockObserver];
 
       performanceMonitor.cleanup();
 
-      expect((performanceMonitor as any).observers).toHaveLength(0);
+      expect((performanceMonitor as unknown as TestablePerformanceMonitor).observers).toHaveLength(0);
     });
 
     it('handles empty observers array', () => {
-      (performanceMonitor as any).observers = [];
+      (performanceMonitor as unknown as TestablePerformanceMonitor).observers = [];
 
       expect(() => performanceMonitor.cleanup()).not.toThrow();
     });
@@ -360,7 +370,7 @@ describe('performanceMonitor', () => {
   describe('Edge cases and error handling', () => {
     it('handles missing performance API gracefully', () => {
       const originalPerformance = window.performance;
-      delete (window as any).performance;
+      delete (window as Record<string, unknown>).performance;
 
       expect(() => {
         performanceUtils.measureFunction(() => 'test', 'no-performance');

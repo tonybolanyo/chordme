@@ -122,7 +122,7 @@ const Profile: React.FC = () => {
       let message = t('profile.emailUpdateError');
       if (error instanceof Error && error.message) {
         message = error.message;
-      } else if (typeof error === 'object' && error && 'message' in error && typeof (error as any).message === 'string') {
+      } else if (typeof error === 'object' && error && 'message' in error && typeof (error as Record<string, unknown>).message === 'string') {
         message = (error as { message: string }).message;
       }
       setErrors({ email: message });
