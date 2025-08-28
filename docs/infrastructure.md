@@ -1,6 +1,13 @@
+---
+layout: default
+lang: en
+title: Infrastructure Deployment Guide
+description: Complete guide for deploying ChordMe infrastructure to various cloud platforms including AWS with Terraform and CloudFormation
+---
+
 # ChordMe Infrastructure as Code
 
-This directory contains infrastructure-as-code templates for deploying ChordMe to various cloud platforms.
+This documentation contains infrastructure-as-code templates for deploying ChordMe to various cloud platforms.
 
 ## AWS Deployment
 
