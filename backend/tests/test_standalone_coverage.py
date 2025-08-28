@@ -194,7 +194,7 @@ class TestStandaloneValidations:
             if not content:
                 return content
             # Remove script tags and their content
-            script_pattern = r'<script[^>]*>.*?</script>'
+            script_pattern = r'<script[^>]*>.*?</script\b[^>]*>'
             return re.sub(script_pattern, '', content, flags=re.DOTALL | re.IGNORECASE)
         
         # Test with malicious content
