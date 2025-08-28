@@ -40,7 +40,7 @@ describe('Main Entry Point', () => {
   it('attempts to find root element', async () => {
     // Reset the mock before importing to ensure clean state
     vi.mocked(document.getElementById).mockClear();
-    
+
     // Import the main module which executes the code
     await import('./main');
 

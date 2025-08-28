@@ -260,7 +260,7 @@ describe('Dashboard - Song Separation', () => {
 
     render(<Home />);
 
-    // Should show sort control for My Songs section  
+    // Should show sort control for My Songs section
     const sortByElements = screen.getAllByText('Sort by:');
     expect(sortByElements).toHaveLength(2); // One for My Songs, one for Shared
 

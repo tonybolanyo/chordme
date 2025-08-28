@@ -86,7 +86,7 @@ describe('SongSharingModal', () => {
     await waitFor(() => {
       expect(screen.getByText('Current Collaborators')).toBeInTheDocument();
     });
-    
+
     // The component attempts to load sharing info when opened
     // In a real scenario this would be called, but the mock timing can be tricky
   });
@@ -188,7 +188,7 @@ describe('SongSharingModal', () => {
       status: 'success',
       message: 'Permission updated',
     });
-    
+
     const songWithShares = {
       ...mockSong,
       shared_with: mockSharedUsers,
@@ -223,7 +223,7 @@ describe('SongSharingModal', () => {
       status: 'success',
       message: 'Access revoked',
     });
-    
+
     const songWithShares = {
       ...mockSong,
       shared_with: mockSharedUsers,

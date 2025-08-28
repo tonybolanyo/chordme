@@ -277,7 +277,8 @@ const Login: React.FC = () => {
         </div>
 
         <p className="login-footer">
-          Don't have an account? <a href="#register">{t('navigation.register')}</a>
+          Don't have an account?{' '}
+          <a href="#register">{t('navigation.register')}</a>
         </p>
       </div>
     </div>

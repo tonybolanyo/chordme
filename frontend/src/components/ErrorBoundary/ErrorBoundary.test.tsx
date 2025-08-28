@@ -23,10 +23,7 @@ function ConditionalError() {
 
   return (
     <div>
-      <button 
-        data-testid="trigger-error"
-        onClick={() => setShouldThrow(true)}
-      >
+      <button data-testid="trigger-error" onClick={() => setShouldThrow(true)}>
         Trigger Error
       </button>
       <ThrowError shouldThrow={shouldThrow} />
@@ -62,13 +59,21 @@ describe('ErrorBoundary', () => {
     );
 
     expect(screen.getByText('Something went wrong')).toBeInTheDocument();
-    expect(screen.getByText(/We're sorry, but something unexpected happened/)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Try Again' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Reload Page' })).toBeInTheDocument();
+    expect(
+      screen.getByText(/We're sorry, but something unexpected happened/)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Try Again' })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Reload Page' })
+    ).toBeInTheDocument();
   });
 
   it('renders custom fallback when provided', () => {
-    const CustomFallback = <div data-testid="custom-fallback">Custom error UI</div>;
+    const CustomFallback = (
+      <div data-testid="custom-fallback">Custom error UI</div>
+    );
 
     render(
       <ErrorBoundary fallback={CustomFallback}>
@@ -92,10 +97,10 @@ describe('ErrorBoundary', () => {
 
     expect(onError).toHaveBeenCalledWith(
       expect.objectContaining({
-        message: 'Test error'
+        message: 'Test error',
       }),
       expect.objectContaining({
-        componentStack: expect.any(String)
+        componentStack: expect.any(String),
       })
     );
   });
@@ -110,10 +115,10 @@ describe('ErrorBoundary', () => {
     expect(console.error).toHaveBeenCalledWith(
       'ErrorBoundary caught an error:',
       expect.objectContaining({
-        message: 'Test error'
+        message: 'Test error',
       }),
       expect.objectContaining({
-        componentStack: expect.any(String)
+        componentStack: expect.any(String),
       })
     );
   });
@@ -156,7 +161,7 @@ describe('ErrorBoundary', () => {
     const mockReload = vi.fn();
     Object.defineProperty(window, 'location', {
       value: { reload: mockReload },
-      writable: true
+      writable: true,
     });
 
     render(
@@ -201,7 +206,9 @@ describe('ErrorBoundary', () => {
     );
 
     // Should not have error details
-    expect(screen.queryByText('Error Details (Development Only)')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('Error Details (Development Only)')
+    ).not.toBeInTheDocument();
 
     // Restore environment
     process.env.NODE_ENV = originalEnv;
@@ -228,7 +235,7 @@ describe('ErrorBoundary', () => {
         timestamp: expect.any(String),
         url: expect.any(String),
         userAgent: expect.any(String),
-        errorId: expect.stringMatching(/err-\d+-[a-z0-9]+/)
+        errorId: expect.stringMatching(/err-\d+-[a-z0-9]+/),
       })
     );
 
@@ -270,11 +277,11 @@ describe('ErrorBoundary', () => {
 
     // Error boundary should have accessible content
     expect(screen.getByText('Something went wrong')).toBeInTheDocument();
-    
+
     // Buttons should be focusable and have proper labels
     const tryAgainButton = screen.getByRole('button', { name: 'Try Again' });
     const reloadButton = screen.getByRole('button', { name: 'Reload Page' });
-    
+
     expect(tryAgainButton).toBeInTheDocument();
     expect(reloadButton).toBeInTheDocument();
   });

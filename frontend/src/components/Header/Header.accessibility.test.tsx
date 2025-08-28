@@ -40,7 +40,7 @@ vi.mock('../StorageSettings', () => ({
 describe('Header Accessibility', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     // Set up default mock implementations
     mockUseAuth.mockReturnValue({
       isAuthenticated: false,
@@ -53,7 +53,7 @@ describe('Header Accessibility', () => {
       loginWithFirebase: vi.fn(),
       logout: vi.fn(),
     });
-    
+
     mockUseViewport.mockReturnValue({
       isMobile: false,
     });

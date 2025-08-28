@@ -48,9 +48,15 @@ describe('performanceUtils', () => {
       });
 
       const testFunction = vi.fn(() => 'result');
-      const recordMetricSpy = vi.spyOn(performanceMonitor, 'recordCustomMetric');
+      const recordMetricSpy = vi.spyOn(
+        performanceMonitor,
+        'recordCustomMetric'
+      );
 
-      const result = performanceUtils.measureFunction(testFunction, 'test-function');
+      const result = performanceUtils.measureFunction(
+        testFunction,
+        'test-function'
+      );
 
       expect(result).toBe('result');
       expect(testFunction).toHaveBeenCalledTimes(1);
@@ -67,9 +73,12 @@ describe('performanceUtils', () => {
       const testFunction = vi.fn(() => {
         throw new Error('Test error');
       });
-      const recordMetricSpy = vi.spyOn(performanceMonitor, 'recordCustomMetric');
+      const recordMetricSpy = vi.spyOn(
+        performanceMonitor,
+        'recordCustomMetric'
+      );
 
-      expect(() => 
+      expect(() =>
         performanceUtils.measureFunction(testFunction, 'error-function')
       ).toThrow('Test error');
 
@@ -80,9 +89,15 @@ describe('performanceUtils', () => {
       mockPerformanceNow.mockReturnValue(100); // Same start and end time
 
       const testFunction = vi.fn(() => 'instant');
-      const recordMetricSpy = vi.spyOn(performanceMonitor, 'recordCustomMetric');
+      const recordMetricSpy = vi.spyOn(
+        performanceMonitor,
+        'recordCustomMetric'
+      );
 
-      const result = performanceUtils.measureFunction(testFunction, 'instant-function');
+      const result = performanceUtils.measureFunction(
+        testFunction,
+        'instant-function'
+      );
 
       expect(result).toBe('instant');
       expect(recordMetricSpy).toHaveBeenCalledWith('instant-function', 0);
@@ -98,12 +113,18 @@ describe('performanceUtils', () => {
       });
 
       const testFunction = vi.fn(async () => {
-        await new Promise(resolve => setTimeout(resolve, 10));
+        await new Promise((resolve) => setTimeout(resolve, 10));
         return 'async-result';
       });
-      const recordMetricSpy = vi.spyOn(performanceMonitor, 'recordCustomMetric');
+      const recordMetricSpy = vi.spyOn(
+        performanceMonitor,
+        'recordCustomMetric'
+      );
 
-      const result = await performanceUtils.measureAsyncFunction(testFunction, 'async-function');
+      const result = await performanceUtils.measureAsyncFunction(
+        testFunction,
+        'async-function'
+      );
 
       expect(result).toBe('async-result');
       expect(testFunction).toHaveBeenCalledTimes(1);
@@ -120,10 +141,16 @@ describe('performanceUtils', () => {
       const testFunction = vi.fn(async () => {
         throw new Error('Async error');
       });
-      const recordMetricSpy = vi.spyOn(performanceMonitor, 'recordCustomMetric');
+      const recordMetricSpy = vi.spyOn(
+        performanceMonitor,
+        'recordCustomMetric'
+      );
 
       await expect(
-        performanceUtils.measureAsyncFunction(testFunction, 'error-async-function')
+        performanceUtils.measureAsyncFunction(
+          testFunction,
+          'error-async-function'
+        )
       ).rejects.toThrow('Async error');
 
       expect(recordMetricSpy).toHaveBeenCalledWith('error-async-function', 25);
@@ -133,9 +160,15 @@ describe('performanceUtils', () => {
       mockPerformanceNow.mockReturnValueOnce(1000).mockReturnValueOnce(1050);
 
       const testFunction = vi.fn(async () => Promise.resolve('resolved'));
-      const recordMetricSpy = vi.spyOn(performanceMonitor, 'recordCustomMetric');
+      const recordMetricSpy = vi.spyOn(
+        performanceMonitor,
+        'recordCustomMetric'
+      );
 
-      const result = await performanceUtils.measureAsyncFunction(testFunction, 'resolved-function');
+      const result = await performanceUtils.measureAsyncFunction(
+        testFunction,
+        'resolved-function'
+      );
 
       expect(result).toBe('resolved');
       expect(recordMetricSpy).toHaveBeenCalledWith('resolved-function', 50);
@@ -150,10 +183,14 @@ describe('performanceUtils', () => {
         return timeIndex === 1 ? 500 : 750; // 250ms interaction time
       });
 
-      const recordInteractionSpy = vi.spyOn(performanceMonitor, 'recordUserInteraction');
+      const recordInteractionSpy = vi.spyOn(
+        performanceMonitor,
+        'recordUserInteraction'
+      );
 
-      const endInteraction = performanceUtils.markInteractionStart('button-click');
-      
+      const endInteraction =
+        performanceUtils.markInteractionStart('button-click');
+
       // Simulate some time passing and ending the interaction
       endInteraction();
 
@@ -165,11 +202,14 @@ describe('performanceUtils', () => {
       let timeIndex = 0;
       mockPerformanceNow.mockImplementation(() => times[timeIndex++]);
 
-      const recordInteractionSpy = vi.spyOn(performanceMonitor, 'recordUserInteraction');
+      const recordInteractionSpy = vi.spyOn(
+        performanceMonitor,
+        'recordUserInteraction'
+      );
 
       const endInteraction1 = performanceUtils.markInteractionStart('action1');
       const endInteraction2 = performanceUtils.markInteractionStart('action2');
-      
+
       endInteraction1(); // Duration: 150 - 100 = 50ms
       endInteraction2(); // Duration: 300 - 200 = 100ms
 
@@ -180,9 +220,13 @@ describe('performanceUtils', () => {
     it('handles immediate interaction end', () => {
       mockPerformanceNow.mockReturnValue(1000); // Same time for start and end
 
-      const recordInteractionSpy = vi.spyOn(performanceMonitor, 'recordUserInteraction');
+      const recordInteractionSpy = vi.spyOn(
+        performanceMonitor,
+        'recordUserInteraction'
+      );
 
-      const endInteraction = performanceUtils.markInteractionStart('instant-click');
+      const endInteraction =
+        performanceUtils.markInteractionStart('instant-click');
       endInteraction();
 
       expect(recordInteractionSpy).toHaveBeenCalledWith('instant-click', 0);
@@ -322,7 +366,10 @@ describe('performanceMonitor', () => {
 
       await performanceMonitor.sendMetrics();
 
-      expect(consoleSpy).toHaveBeenCalledWith('Failed to send performance metrics:', expect.any(Error));
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Failed to send performance metrics:',
+        expect.any(Error)
+      );
       consoleSpy.mockRestore();
     });
 
@@ -332,7 +379,9 @@ describe('performanceMonitor', () => {
 
       await performanceMonitor.sendMetrics();
 
-      expect(consoleSpy).toHaveBeenCalledWith('Performance metrics sent to monitoring endpoint');
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Performance metrics sent to monitoring endpoint'
+      );
       consoleSpy.mockRestore();
     });
   });
@@ -343,7 +392,8 @@ describe('performanceMonitor', () => {
       const mockObserver2 = { disconnect: vi.fn() };
 
       // Access private observers array via type assertion
-      (performanceMonitor as unknown as TestablePerformanceMonitor).observers = [mockObserver1, mockObserver2];
+      (performanceMonitor as unknown as TestablePerformanceMonitor).observers =
+        [mockObserver1, mockObserver2];
 
       performanceMonitor.cleanup();
 
@@ -353,15 +403,19 @@ describe('performanceMonitor', () => {
 
     it('clears observers array after cleanup', () => {
       const mockObserver = { disconnect: vi.fn() };
-      (performanceMonitor as unknown as TestablePerformanceMonitor).observers = [mockObserver];
+      (performanceMonitor as unknown as TestablePerformanceMonitor).observers =
+        [mockObserver];
 
       performanceMonitor.cleanup();
 
-      expect((performanceMonitor as unknown as TestablePerformanceMonitor).observers).toHaveLength(0);
+      expect(
+        (performanceMonitor as unknown as TestablePerformanceMonitor).observers
+      ).toHaveLength(0);
     });
 
     it('handles empty observers array', () => {
-      (performanceMonitor as unknown as TestablePerformanceMonitor).observers = [];
+      (performanceMonitor as unknown as TestablePerformanceMonitor).observers =
+        [];
 
       expect(() => performanceMonitor.cleanup()).not.toThrow();
     });

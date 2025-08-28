@@ -90,9 +90,9 @@ const StorageSettings: React.FC<StorageSettingsProps> = ({
 
     // Validate currentBackend and default to 'api' if invalid or unavailable
     const availableBackendIds = availableBackends
-      .filter(backend => backend.available)
-      .map(backend => backend.id);
-    
+      .filter((backend) => backend.available)
+      .map((backend) => backend.id);
+
     if (!availableBackendIds.includes(currentBackend)) {
       setSelectedBackend('api');
     }

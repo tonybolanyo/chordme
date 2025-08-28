@@ -22,10 +22,12 @@ const DEFAULT_RETRY_OPTIONS: Required<RetryOptions> = {
   backoffMultiplier: 2,
   retryCondition: (error: ApiError) => {
     // Default retry condition: retry on network errors and 5xx server errors
-    return error.retryable === true || 
-           (error.status !== undefined && error.status >= 500) ||
-           error.code === 'NETWORK_ERROR' ||
-           error.code === 'TIMEOUT_ERROR';
+    return (
+      error.retryable === true ||
+      (error.status !== undefined && error.status >= 500) ||
+      error.code === 'NETWORK_ERROR' ||
+      error.code === 'TIMEOUT_ERROR'
+    );
   },
 };
 
@@ -33,15 +35,18 @@ const DEFAULT_RETRY_OPTIONS: Required<RetryOptions> = {
  * Sleep for a specified number of milliseconds
  */
 function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**
  * Parse error response from API
  */
-export function parseApiError(response: Response, responseText: string): ApiError {
+export function parseApiError(
+  response: Response,
+  responseText: string
+): ApiError {
   let errorData: unknown = {};
-  
+
   try {
     errorData = JSON.parse(responseText);
   } catch {
@@ -49,13 +54,22 @@ export function parseApiError(response: Response, responseText: string): ApiErro
   }
 
   const error = new Error() as ApiError;
-  
+
   // Helper function to check if errorData has the expected structure
-  const isErrorDataWithStatus = (data: unknown): data is { status: string; error: unknown } => {
-    return typeof data === 'object' && data !== null && 'status' in data && 'error' in data;
+  const isErrorDataWithStatus = (
+    data: unknown
+  ): data is { status: string; error: unknown } => {
+    return (
+      typeof data === 'object' &&
+      data !== null &&
+      'status' in data &&
+      'error' in data
+    );
   };
-  
-  const isErrorObject = (error: unknown): error is {
+
+  const isErrorObject = (
+    error: unknown
+  ): error is {
     message?: string;
     code?: string;
     category?: string;
@@ -64,17 +78,26 @@ export function parseApiError(response: Response, responseText: string): ApiErro
   } => {
     return typeof error === 'object' && error !== null;
   };
-  
+
   // Handle new error format
-  if (isErrorDataWithStatus(errorData) && errorData.status === 'error' && isErrorObject(errorData.error)) {
-    error.message = errorData.error.message || `HTTP ${response.status}: ${response.statusText}`;
+  if (
+    isErrorDataWithStatus(errorData) &&
+    errorData.status === 'error' &&
+    isErrorObject(errorData.error)
+  ) {
+    error.message =
+      errorData.error.message ||
+      `HTTP ${response.status}: ${response.statusText}`;
     error.code = errorData.error.code;
     error.category = errorData.error.category;
     error.retryable = errorData.error.retryable;
     error.details = errorData.error.details;
   }
   // Handle legacy error format
-  else if (isErrorDataWithStatus(errorData) && typeof errorData.error === 'string') {
+  else if (
+    isErrorDataWithStatus(errorData) &&
+    typeof errorData.error === 'string'
+  ) {
     error.message = errorData.error;
     error.retryable = false; // Legacy errors are non-retryable by default
   }
@@ -95,7 +118,7 @@ export function parseApiError(response: Response, responseText: string): ApiErro
  */
 export function parseNetworkError(originalError: Error): ApiError {
   const error = new Error() as ApiError;
-  
+
   // Check for specific network error types
   if (originalError.name === 'AbortError') {
     error.message = 'Request was cancelled';
@@ -103,7 +126,8 @@ export function parseNetworkError(originalError: Error): ApiError {
     error.category = 'network';
     error.retryable = false;
   } else if (originalError.message.includes('timeout')) {
-    error.message = 'Request timed out. Please check your connection and try again';
+    error.message =
+      'Request timed out. Please check your connection and try again';
     error.code = 'TIMEOUT_ERROR';
     error.category = 'network';
     error.retryable = true;
@@ -121,7 +145,9 @@ export function parseNetworkError(originalError: Error): ApiError {
 /**
  * Convert ApiError to AppError format
  */
-export function apiErrorToAppError(apiError: ApiError): Omit<AppError, 'id' | 'timestamp'> {
+export function apiErrorToAppError(
+  apiError: ApiError
+): Omit<AppError, 'id' | 'timestamp'> {
   return {
     message: apiError.message,
     code: apiError.code,
@@ -136,8 +162,8 @@ export function apiErrorToAppError(apiError: ApiError): Omit<AppError, 'id' | 't
  * Fetch with automatic retry logic
  */
 export async function fetchWithRetry(
-  url: string, 
-  options: RequestInit = {}, 
+  url: string,
+  options: RequestInit = {},
   retryOptions: RetryOptions = {}
 ): Promise<Response> {
   const config = { ...DEFAULT_RETRY_OPTIONS, ...retryOptions };
@@ -158,21 +184,26 @@ export async function fetchWithRetry(
       // Parse error from response
       const responseText = await response.text();
       const apiError = parseApiError(response, responseText);
-      
+
       // If this is the last attempt or error is not retryable, throw
       if (attempt === config.maxAttempts || !config.retryCondition(apiError)) {
         throw apiError;
       }
 
       lastError = apiError;
-      
     } catch (error: unknown) {
       // Handle network errors (fetch failures)
-      if (error instanceof TypeError || (error instanceof Error && error.name === 'AbortError')) {
+      if (
+        error instanceof TypeError ||
+        (error instanceof Error && error.name === 'AbortError')
+      ) {
         const networkError = parseNetworkError(error as Error);
-        
+
         // If this is the last attempt or error is not retryable, throw
-        if (attempt === config.maxAttempts || !config.retryCondition(networkError)) {
+        if (
+          attempt === config.maxAttempts ||
+          !config.retryCondition(networkError)
+        ) {
           throw networkError;
         }
 
@@ -185,7 +216,8 @@ export async function fetchWithRetry(
 
     // Wait before retrying (exponential backoff)
     if (attempt < config.maxAttempts) {
-      const delay = config.delay * Math.pow(config.backoffMultiplier, attempt - 1);
+      const delay =
+        config.delay * Math.pow(config.backoffMultiplier, attempt - 1);
       await sleep(delay);
     }
   }
@@ -210,9 +242,12 @@ export function createRetryFunction<T extends unknown[], R>(
         return await fn(...args);
       } catch (error) {
         const apiError = error as ApiError;
-        
+
         // If this is the last attempt or error is not retryable, throw
-        if (attempt === config.maxAttempts || !config.retryCondition(apiError)) {
+        if (
+          attempt === config.maxAttempts ||
+          !config.retryCondition(apiError)
+        ) {
           throw error;
         }
 
@@ -220,7 +255,8 @@ export function createRetryFunction<T extends unknown[], R>(
 
         // Wait before retrying
         if (attempt < config.maxAttempts) {
-          const delay = config.delay * Math.pow(config.backoffMultiplier, attempt - 1);
+          const delay =
+            config.delay * Math.pow(config.backoffMultiplier, attempt - 1);
           await sleep(delay);
         }
       }

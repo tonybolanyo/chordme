@@ -26,30 +26,30 @@ interface PasswordFormData {
 const Profile: React.FC = () => {
   const { t } = useTranslation('common');
   const { user, updateUserProfile } = useAuth();
-  
+
   const [activeTab, setActiveTab] = useState<'profile' | 'account'>('profile');
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
-  
+
   // Profile form state
   const [profileData, setProfileData] = useState<ProfileFormData>({
     display_name: '',
     bio: '',
     profile_image_url: '',
   });
-  
+
   // Email form state
   const [emailData, setEmailData] = useState<EmailFormData>({
     new_email: '',
   });
-  
+
   // Password form state
   const [passwordData, setPasswordData] = useState<PasswordFormData>({
     current_password: '',
     new_password: '',
     confirm_password: '',
   });
-  
+
   const [errors, setErrors] = useState<{
     profile?: string;
     email?: string;
@@ -91,7 +91,12 @@ const Profile: React.FC = () => {
       let message = t('profile.updateError');
       if (error instanceof Error && error.message) {
         message = error.message;
-      } else if (typeof error === 'object' && error && 'message' in error && typeof (error as { message: unknown }).message === 'string') {
+      } else if (
+        typeof error === 'object' &&
+        error &&
+        'message' in error &&
+        typeof (error as { message: unknown }).message === 'string'
+      ) {
         message = (error as { message: string }).message;
       }
       setErrors({ profile: message });
@@ -103,7 +108,7 @@ const Profile: React.FC = () => {
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     clearMessages();
-    
+
     // Validate email
     if (!validateEmail(emailData.new_email)) {
       setErrors({ email: t('validation.invalidEmail') });
@@ -122,7 +127,12 @@ const Profile: React.FC = () => {
       let message = t('profile.emailUpdateError');
       if (error instanceof Error && error.message) {
         message = error.message;
-      } else if (typeof error === 'object' && error && 'message' in error && typeof (error as Record<string, unknown>).message === 'string') {
+      } else if (
+        typeof error === 'object' &&
+        error &&
+        'message' in error &&
+        typeof (error as Record<string, unknown>).message === 'string'
+      ) {
         message = (error as { message: string }).message;
       }
       setErrors({ email: message });
@@ -134,18 +144,18 @@ const Profile: React.FC = () => {
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     clearMessages();
-    
+
     // Validate passwords
     if (!validateRequired(passwordData.current_password)) {
       setErrors({ password: t('validation.currentPasswordRequired') });
       return;
     }
-    
+
     if (!validateRequired(passwordData.new_password)) {
       setErrors({ password: t('validation.newPasswordRequired') });
       return;
     }
-    
+
     if (passwordData.new_password !== passwordData.confirm_password) {
       setErrors({ password: t('validation.passwordMismatch') });
       return;
@@ -158,7 +168,7 @@ const Profile: React.FC = () => {
         current_password: passwordData.current_password,
         new_password: passwordData.new_password,
       });
-      
+
       setSuccessMessage(t('profile.passwordUpdated'));
       setPasswordData({
         current_password: '',
@@ -194,13 +204,13 @@ const Profile: React.FC = () => {
     <div className="profile-page">
       <div className="profile-container">
         <h1 className="profile-title">{t('profile.title')}</h1>
-        
+
         {successMessage && (
           <div className="alert alert-success" role="alert">
             {successMessage}
           </div>
         )}
-        
+
         {errors.general && (
           <div className="alert alert-error" role="alert">
             {errors.general}
@@ -225,7 +235,7 @@ const Profile: React.FC = () => {
         {activeTab === 'profile' && (
           <div className="tab-content">
             <h2>{t('profile.profileInformation')}</h2>
-            
+
             <div className="profile-avatar-section">
               <div className="avatar-container">
                 <img
@@ -250,7 +260,10 @@ const Profile: React.FC = () => {
                   className="form-input"
                   value={profileData.display_name}
                   onChange={(e) =>
-                    setProfileData({ ...profileData, display_name: e.target.value })
+                    setProfileData({
+                      ...profileData,
+                      display_name: e.target.value,
+                    })
                   }
                   maxLength={100}
                   placeholder={t('profile.displayNamePlaceholder')}
@@ -287,7 +300,10 @@ const Profile: React.FC = () => {
                   className="form-input"
                   value={profileData.profile_image_url}
                   onChange={(e) =>
-                    setProfileData({ ...profileData, profile_image_url: e.target.value })
+                    setProfileData({
+                      ...profileData,
+                      profile_image_url: e.target.value,
+                    })
                   }
                   maxLength={500}
                   placeholder={t('profile.profileImageUrlPlaceholder')}
@@ -314,7 +330,7 @@ const Profile: React.FC = () => {
         {activeTab === 'account' && (
           <div className="tab-content">
             <h2>{t('profile.accountSettings')}</h2>
-            
+
             {/* Email Update Section */}
             <div className="account-section">
               <h3>{t('profile.updateEmail')}</h3>
@@ -363,7 +379,10 @@ const Profile: React.FC = () => {
                     id="current_password"
                     value={passwordData.current_password}
                     onChange={(e) =>
-                      setPasswordData({ ...passwordData, current_password: e.target.value })
+                      setPasswordData({
+                        ...passwordData,
+                        current_password: e.target.value,
+                      })
                     }
                     required
                   />
@@ -377,7 +396,10 @@ const Profile: React.FC = () => {
                     id="new_password"
                     value={passwordData.new_password}
                     onChange={(e) =>
-                      setPasswordData({ ...passwordData, new_password: e.target.value })
+                      setPasswordData({
+                        ...passwordData,
+                        new_password: e.target.value,
+                      })
                     }
                     required
                   />
@@ -391,7 +413,10 @@ const Profile: React.FC = () => {
                     id="confirm_password"
                     value={passwordData.confirm_password}
                     onChange={(e) =>
-                      setPasswordData({ ...passwordData, confirm_password: e.target.value })
+                      setPasswordData({
+                        ...passwordData,
+                        confirm_password: e.target.value,
+                      })
                     }
                     required
                   />

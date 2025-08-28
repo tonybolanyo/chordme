@@ -48,7 +48,9 @@ function NotificationItem({ notification, onRemove }: NotificationItemProps) {
         <div className="notification__message">
           <div className="notification__text">{notification.message}</div>
           {notification.code && (
-            <div className="notification__code">Error Code: {notification.code}</div>
+            <div className="notification__code">
+              Error Code: {notification.code}
+            </div>
           )}
         </div>
       </div>

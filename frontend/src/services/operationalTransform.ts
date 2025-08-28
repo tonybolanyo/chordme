@@ -283,19 +283,25 @@ export class OperationalTransform {
   /**
    * Check if insert operation conflicts with delete operation at boundary
    */
-  static isInsertDeleteBoundaryConflict(op1: TextOperation, op2: TextOperation): boolean {
+  static isInsertDeleteBoundaryConflict(
+    op1: TextOperation,
+    op2: TextOperation
+  ): boolean {
     // Only check if one is insert and other is delete
-    if (!(op1.type === 'insert' && op2.type === 'delete') && !(op1.type === 'delete' && op2.type === 'insert')) {
+    if (
+      !(op1.type === 'insert' && op2.type === 'delete') &&
+      !(op1.type === 'delete' && op2.type === 'insert')
+    ) {
       return false;
     }
-    
+
     const insertOp = op1.type === 'insert' ? op1 : op2;
     const deleteOp = op1.type === 'delete' ? op1 : op2;
-    
+
     const insertPos = insertOp.position || 0;
     const deleteStart = deleteOp.position || 0;
     const deleteEnd = deleteStart + (deleteOp.length || 0);
-    
+
     // Insert conflicts if it's at the exact boundary of the delete operation
     return insertPos === deleteStart || insertPos === deleteEnd;
   }
