@@ -178,36 +178,41 @@ def csrf_protect(require_token=True):
         @wraps(f)
         def decorated_function(*args, **kwargs):
             if require_token:
-                # Get CSRF token from various sources
-                csrf_token = None
+                # CSRF protection only applies to unsafe HTTP methods
+                # Safe methods (GET, HEAD, OPTIONS, TRACE) are exempt
+                safe_methods = {'GET', 'HEAD', 'OPTIONS', 'TRACE'}
                 
-                # Check headers first
-                csrf_token = request.headers.get('X-CSRF-Token')
-                
-                # Check form data if not in headers
-                if not csrf_token and request.is_json:
-                    data = request.get_json() or {}
-                    csrf_token = data.get('csrf_token')
-                elif not csrf_token:
-                    csrf_token = request.form.get('csrf_token')
-                
-                # Get session ID if available
-                session_id = session.get('id') if 'session' in globals() else None
-                
-                # Validate token
-                if not csrf_protection.validate_token(csrf_token, session_id):
-                    try:
-                        current_app.logger.warning(
-                            f"CSRF protection triggered for {f.__name__} from IP {request.remote_addr}"
-                        )
-                    except RuntimeError:
-                        pass
+                if request.method not in safe_methods:
+                    # Get CSRF token from various sources
+                    csrf_token = None
                     
-                    from .utils import create_error_response
-                    return create_error_response(
-                        "CSRF token validation failed. Please refresh and try again.", 
-                        403
-                    )
+                    # Check headers first
+                    csrf_token = request.headers.get('X-CSRF-Token')
+                    
+                    # Check form data if not in headers
+                    if not csrf_token and request.is_json:
+                        data = request.get_json() or {}
+                        csrf_token = data.get('csrf_token')
+                    elif not csrf_token:
+                        csrf_token = request.form.get('csrf_token')
+                    
+                    # Get session ID if available
+                    session_id = session.get('id') if 'session' in globals() else None
+                    
+                    # Validate token
+                    if not csrf_protection.validate_token(csrf_token, session_id):
+                        try:
+                            current_app.logger.warning(
+                                f"CSRF protection triggered for {f.__name__} from IP {request.remote_addr}"
+                            )
+                        except RuntimeError:
+                            pass
+                        
+                        from .utils import create_error_response
+                        return create_error_response(
+                            "CSRF token validation failed. Please refresh and try again.", 
+                            403
+                        )
             
             # Execute the original function
             return f(*args, **kwargs)
