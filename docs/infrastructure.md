@@ -191,7 +191,7 @@ terraform destroy
 aws cloudformation delete-stack --stack-name chordme-production
 ```
 
-**⚠️ Warning**: This will permanently delete all resources and data. Ensure you have backups before proceeding.
+**[WARNING] Warning**: This will permanently delete all resources and data. Ensure you have backups before proceeding.
 
 ## Next Steps
 

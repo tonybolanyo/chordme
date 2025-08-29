@@ -29,22 +29,22 @@ ChordMe es una aplicación web full-stack que permite a músicos, compositores y
 
 ## Características principales
 
-### 🎵 Soporte del formato ChordPro
+### [Music] Soporte del formato ChordPro
 Soporte completo para el formato ChordPro estándar de la industria, preservando todo el formato, directivas y notaciones de acordes exactamente como se ingresaron.
 
-### 🔐 Autenticación de usuario
+### [Auth] Autenticación de usuario
 Sistema seguro de registro e inicio de sesión de usuarios con autenticación basada en tokens JWT.
 
-### 🎨 Interfaz web moderna
+### [SYMBOL] Interfaz web moderna
 Frontend basado en React con TypeScript para una experiencia de usuario fluida y responsiva.
 
-### 🚀 API RESTful
+### [Quick Start] API RESTful
 API REST completa para acceso programático a todas las características.
 
-### 🧪 Pruebas exhaustivas
+### [SYMBOL] Pruebas exhaustivas
 Cobertura completa de pruebas para componentes tanto del frontend como del backend.
 
-### ⚡ Pipeline CI/CD
+### [SYMBOL] Pipeline CI/CD
 Pruebas, construcción y despliegue automatizados usando GitHub Actions.
 
 ## Arquitectura

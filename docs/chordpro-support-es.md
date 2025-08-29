@@ -18,7 +18,7 @@ ChordPro es un formato de texto simple para canciones que incluye:
 
 ## Características soportadas
 
-### ✅ Directivas
+### [PASSED] Directivas
 Todas las directivas ChordPro son completamente soportadas y preservadas:
 
 ```
@@ -30,7 +30,7 @@ Todas las directivas ChordPro son completamente soportadas y preservadas:
 {comment: Himno tradicional}
 ```
 
-### ✅ Notaciones de acordes
+### [PASSED] Notaciones de acordes
 Las notaciones de acordes en corchetes se preservan exactamente:
 
 ```
@@ -38,7 +38,7 @@ Las notaciones de acordes en corchetes se preservan exactamente:
 [C]Que salvó a [G]quien perdido [C]estaba
 ```
 
-### ✅ Estructura de canciones
+### [PASSED] Estructura de canciones
 Directivas estructurales para organizar secciones de canciones:
 
 ```
@@ -51,7 +51,7 @@ Directivas estructurales para organizar secciones de canciones:
 {end_of_chorus}
 ```
 
-### ✅ Caracteres especiales y Unicode
+### [PASSED] Caracteres especiales y Unicode
 Soporte completo para caracteres acentuados, símbolos y texto internacional:
 
 ```
@@ -60,7 +60,7 @@ Soporte completo para caracteres acentuados, símbolos y texto internacional:
 [Em]Música [Am]española
 ```
 
-### ✅ Notación de tablatura
+### [PASSED] Notación de tablatura
 La tablatura de guitarra y formato especial se preserva:
 
 ```
@@ -70,7 +70,7 @@ B|--0--1--0--|
 G|--0--2--0--|
 ```
 
-### ✅ Preservación de espacios en blanco
+### [PASSED] Preservación de espacios en blanco
 Los saltos de línea, espaciado y formato se mantienen exactamente:
 
 ```

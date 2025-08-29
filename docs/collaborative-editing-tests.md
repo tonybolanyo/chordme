@@ -298,7 +298,7 @@ Some lyrics without chords
 [G]Chorus [Am]lyrics here
 [F]More chorus [C]content`,
   large: '...'.repeat(10000), // 10k character document
-  unicode: '🎵 Music with émojis and áccents 🎶'
+  unicode: '[Music] Music with émojis and áccents [Song]'
 };
 ```
 

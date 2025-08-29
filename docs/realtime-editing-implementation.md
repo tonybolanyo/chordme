@@ -118,7 +118,7 @@ useEffect(() => {
 1. Open ChordMe in browser
 2. Create or select a song to edit
 3. Click "Edit" button
-4. **Expected**: See "🔄 Real-time editing enabled" indicator at top of edit form
+4. **Expected**: See "[READY] Real-time editing enabled" indicator at top of edit form
 
 #### Scenario 2: Conflict Detection (Single Browser)
 

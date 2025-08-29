@@ -95,7 +95,7 @@ All interactive elements have proper ARIA attributes:
   aria-label="Transpose up"
   aria-describedby="help-text"
   type="button"
->♯</button>
+>[SYMBOL]</button>
 
 <!-- Expandable content -->
 <button 

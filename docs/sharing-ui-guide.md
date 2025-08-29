@@ -38,11 +38,11 @@ The sharing system allows song owners and administrators to collaborate with oth
 ### 2. Home Page Integration
 - **Share Button**: Visible only for songs where user has owner or admin permissions
 - **Permission Badges**: Visual indicators showing user's access level
-  - 🔵 **Owner**: Full control (blue badge)
-  - 🔴 **Admin**: Can manage sharing (red badge)
-  - 🟣 **Editor**: Can edit content (purple badge)
-  - 🔵 **Reader**: View-only access (light blue badge)
-- **Collaboration Indicators**: Shows number of collaborators (👥 N)
+  - [SYMBOL] **Owner**: Full control (blue badge)
+  - [SYMBOL] **Admin**: Can manage sharing (red badge)
+  - [SYMBOL] **Editor**: Can edit content (purple badge)
+  - [SYMBOL] **Reader**: View-only access (light blue badge)
+- **Collaboration Indicators**: Shows number of collaborators ([SYMBOL] N)
 
 #### Screenshot:
 - [Home page with sharing features](https://github.com/user-attachments/assets/351eea74-d828-4866-8357-7ebd18da546d)
@@ -50,9 +50,9 @@ The sharing system allows song owners and administrators to collaborate with oth
 ### 3. Real-time Notifications
 - **Toast Notifications**: Appear for sharing events
 - **Notification Types**:
-  - 🎵 Song shared with you
-  - 🚫 Access removed
-  - 🔧 Permission changed
+  - [Music] Song shared with you
+  - [BLOCKED] Access removed
+  - [Config] Permission changed
 - **Auto-dismiss**: Configurable timeout (default 5 seconds)
 - **Manual dismiss**: Click to close immediately
 
@@ -145,13 +145,13 @@ The frontend integrates with existing backend endpoints:
 - **NotificationContainer**: 10+ test scenarios
 
 ### Test Categories
-- ✅ Component rendering
-- ✅ User interactions
-- ✅ Form validation
-- ✅ API integration
-- ✅ Error handling
-- ✅ Accessibility
-- ✅ Keyboard navigation
+- [PASSED] Component rendering
+- [PASSED] User interactions
+- [PASSED] Form validation
+- [PASSED] API integration
+- [PASSED] Error handling
+- [PASSED] Accessibility
+- [PASSED] Keyboard navigation
 
 ### End-to-End Tests
 - Complete sharing workflow

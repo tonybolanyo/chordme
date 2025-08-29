@@ -34,13 +34,13 @@ Generated: 2025-08-26T21:19:41.171471
 
 ## Security Configuration
 
-- Https Enforcement: ✅
-- Secure Headers: ❌
-- Rate Limiting: ❌
-- Csrf Protection: ✅
-- Password Hashing: ✅
-- Security Headers: ✅
-- Rate Limiter: ✅
+- Https Enforcement: [PASSED]
+- Secure Headers: [FAILED]
+- Rate Limiting: [FAILED]
+- Csrf Protection: [PASSED]
+- Password Hashing: [PASSED]
+- Security Headers: [PASSED]
+- Rate Limiter: [PASSED]
 
 ## Recommendations
 

@@ -18,12 +18,12 @@ A comprehensive end-to-end test suite has been created for the ChordMe applicati
 
 | Test Category | Test File | Test Cases | Status | Coverage |
 |---------------|-----------|------------|--------|-----------|
-| **Basic Navigation** | `basic-navigation.spec.ts` | 4 | ✅ Passing | Core navigation, page loading |
-| **Authentication** | `authentication.spec.ts` | 15 | 🔄 Ready | Registration, login, validation |
-| **ChordPro Demo** | `chordpro-demo.spec.ts` | 13 | ⚠️ 8/13 Passing | Editor, syntax, rendering |
-| **Song Management** | `song-management.spec.ts` | 12 | 🔄 Ready | CRUD operations, file handling |
-| **Error Handling** | `error-handling.spec.ts` | 18 | ✅ Ready | Edge cases, network errors |
-| **UI/Accessibility** | `ui-accessibility.spec.ts` | 15 | ✅ Ready | a11y, responsive design |
+| **Basic Navigation** | `basic-navigation.spec.ts` | 4 | [PASSED] Passing | Core navigation, page loading |
+| **Authentication** | `authentication.spec.ts` | 15 | [READY] Ready | Registration, login, validation |
+| **ChordPro Demo** | `chordpro-demo.spec.ts` | 13 | [WARNING] 8/13 Passing | Editor, syntax, rendering |
+| **Song Management** | `song-management.spec.ts` | 12 | [READY] Ready | CRUD operations, file handling |
+| **Error Handling** | `error-handling.spec.ts` | 18 | [PASSED] Ready | Edge cases, network errors |
+| **UI/Accessibility** | `ui-accessibility.spec.ts` | 15 | [PASSED] Ready | a11y, responsive design |
 
 **Total Test Cases**: 77  
 **Currently Passing**: 12/17 (70%)  
@@ -94,21 +94,21 @@ A comprehensive end-to-end test suite has been created for the ChordMe applicati
 
 ## Current Status
 
-### ✅ Working Tests (12/17)
+### [PASSED] Working Tests (12/17)
 - **Basic Navigation**: All 4 tests passing
 - **ChordPro Demo**: 8 out of 13 tests passing
-  - Interactive editor functionality ✅
-  - Content editing and validation ✅
-  - Special character handling ✅
-  - Large content processing ✅
+  - Interactive editor functionality [PASSED]
+  - Content editing and validation [PASSED]
+  - Special character handling [PASSED]
+  - Large content processing [PASSED]
 
-### ⚠️ Tests Needing Refinement (5/17)
+### [WARNING] Tests Needing Refinement (5/17)
 - **ChordPro Demo**: 5 tests with selector specificity issues
   - Need more specific selectors for rendered output elements
   - Raw content display locators need adjustment
   - Multiple element matches causing strict mode violations
 
-### 🔄 Tests Ready for Integration (60)
+### [READY] Tests Ready for Integration (60)
 - **Authentication workflows**: Complete test coverage ready
 - **Song management**: Full CRUD operation testing ready
 - **Error handling**: Comprehensive edge case coverage ready
@@ -117,25 +117,25 @@ A comprehensive end-to-end test suite has been created for the ChordMe applicati
 ## Quality Assurance Coverage
 
 ### Functional Testing
-- ✅ All core user workflows
-- ✅ Form validation and submission
-- ✅ Navigation and routing
-- ✅ Data persistence and retrieval
-- ✅ File operations (upload/download)
+- [PASSED] All core user workflows
+- [PASSED] Form validation and submission
+- [PASSED] Navigation and routing
+- [PASSED] Data persistence and retrieval
+- [PASSED] File operations (upload/download)
 
 ### Non-Functional Testing
-- ✅ Performance under various conditions
-- ✅ Accessibility compliance
-- ✅ Responsive design validation
-- ✅ Error handling and recovery
-- ✅ Browser compatibility
+- [PASSED] Performance under various conditions
+- [PASSED] Accessibility compliance
+- [PASSED] Responsive design validation
+- [PASSED] Error handling and recovery
+- [PASSED] Browser compatibility
 
 ### Security Testing
-- ✅ Input validation and sanitization
-- ✅ Authentication and authorization
-- ✅ Session management
-- ✅ Cross-site scripting prevention
-- ✅ SQL injection prevention (form inputs)
+- [PASSED] Input validation and sanitization
+- [PASSED] Authentication and authorization
+- [PASSED] Session management
+- [PASSED] Cross-site scripting prevention
+- [PASSED] SQL injection prevention (form inputs)
 
 ## Risk Mitigation
 

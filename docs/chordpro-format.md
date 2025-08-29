@@ -464,7 +464,7 @@ Contemplative bridge
 #### Chords Not Displaying
 
 - Check for proper square bracket syntax `[C]`
-- Ensure no spaces inside brackets `[C ]` ❌ `[C]` ✅
+- Ensure no spaces inside brackets `[C ]` [FAILED] `[C]` [PASSED]
 - Verify chord names are valid
 
 #### Directives Not Working

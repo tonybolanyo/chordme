@@ -669,7 +669,7 @@ curl -I http://localhost:5173
 **Solutions**:
 1. **Check permissions**: Only owners and admin users can share songs
 2. **Verify song ownership**: Ensure you're viewing your own songs, not shared songs
-3. **Check user interface**: Share button appears as 📤 icon next to song title
+3. **Check user interface**: Share button appears as [SYMBOL] icon next to song title
 4. **Refresh the page**: Sometimes UI state needs to be refreshed
 
 ```bash
@@ -709,10 +709,10 @@ console.log('User permissions:', userPermissions);
 
 **Solutions**:
 1. **Check permission level**: Verify your permission badge next to the song title
-   - 🔵 **Reader**: View-only access
-   - 🟣 **Editor**: Can edit content
-   - 🔴 **Admin**: Can manage sharing
-   - 🔵 **Owner**: Full control
+   - [SYMBOL] **Reader**: View-only access
+   - [SYMBOL] **Editor**: Can edit content
+   - [SYMBOL] **Admin**: Can manage sharing
+   - [SYMBOL] **Owner**: Full control
 2. **Contact the owner**: Request higher permissions if needed
 3. **Refresh permissions**: Log out and log back in to refresh permissions
 
@@ -730,7 +730,7 @@ console.log('User permissions:', userPermissions);
 
 **Solutions**:
 1. **Verify edit permissions**: Ensure you have Editor, Admin, or Owner permissions
-2. **Check real-time status**: Look for 🔄 indicator showing real-time editing is active
+2. **Check real-time status**: Look for [READY] indicator showing real-time editing is active
 3. **Try refreshing**: Reload the page and try editing again
 4. **Check for conflicts**: Another user might be editing the same section
 
@@ -762,7 +762,7 @@ console.log('User permissions:', userPermissions);
 **Problem**: Can't see where other users are editing.
 
 **Solutions**:
-1. **Check real-time indicators**: Ensure 🔄 symbol is visible
+1. **Check real-time indicators**: Ensure [READY] symbol is visible
 2. **Verify collaborator presence**: Confirm other users are actively editing
 3. **Browser compatibility**: Try a different browser (Chrome, Firefox, Safari)
 4. **Clear browser cache**: Clear cache and cookies, then try again
@@ -914,7 +914,7 @@ curl -X PUT http://localhost:5000/api/v1/songs/1/permissions \
 Before reporting collaboration issues:
 
 - [ ] Verify you have appropriate permissions for the action
-- [ ] Check that real-time indicators are showing (🔄 symbol)
+- [ ] Check that real-time indicators are showing ([READY] symbol)
 - [ ] Confirm other users are actively collaborating
 - [ ] Test with a simple example song and collaborator
 - [ ] Check browser console for error messages

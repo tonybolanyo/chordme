@@ -37,8 +37,8 @@ This document describes the enhanced dashboard layout that separates songs into 
 - **Reader** (Light Blue): View-only access
 
 ### Collaboration Indicators
-- **Collaborator Count**: Shows number of users with access (👥 N)
-- **Real-time Status**: Green indicator when real-time sync is active (🔄 Real-time)
+- **Collaborator Count**: Shows number of users with access ([SYMBOL] N)
+- **Real-time Status**: Green indicator when real-time sync is active ([READY] Real-time)
 
 ### Activity Information
 - **Last Modified**: Shows relative time since last update

@@ -34,11 +34,11 @@ El sistema de compartir permite a los propietarios de canciones y administradore
 ### 2. Integración de página de inicio
 - **Botón Compartir**: Visible solo para canciones donde el usuario tiene permisos de propietario o administrador
 - **Insignias de permisos**: Indicadores visuales mostrando el nivel de acceso del usuario
-  - 🔵 **Propietario**: Control total (insignia azul)
-  - 🔴 **Administrador**: Puede gestionar compartir (insignia roja)
-  - 🟣 **Editor**: Puede editar contenido (insignia morada)
-  - 🔵 **Lector**: Acceso solo de lectura (insignia azul claro)
-- **Indicadores de colaboración**: Muestra el número de colaboradores (👥 N)
+  - [SYMBOL] **Propietario**: Control total (insignia azul)
+  - [SYMBOL] **Administrador**: Puede gestionar compartir (insignia roja)
+  - [SYMBOL] **Editor**: Puede editar contenido (insignia morada)
+  - [SYMBOL] **Lector**: Acceso solo de lectura (insignia azul claro)
+- **Indicadores de colaboración**: Muestra el número de colaboradores ([SYMBOL] N)
 
 ### 3. Notificaciones en tiempo real
 - **Invitaciones de compartir**: Notificaciones instantáneas cuando se otorga acceso

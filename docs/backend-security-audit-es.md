@@ -34,13 +34,13 @@ Generado: 2025-08-26T21:19:41.171471
 
 ## Configuración de seguridad
 
-- Aplicación Https: ✅
-- Cabeceras seguras: ❌
-- Limitación de velocidad: ❌
-- Protección Csrf: ✅
-- Hash de contraseñas: ✅
-- Cabeceras de seguridad: ✅
-- Limitador de velocidad: ✅
+- Aplicación Https: [PASSED]
+- Cabeceras seguras: [FAILED]
+- Limitación de velocidad: [FAILED]
+- Protección Csrf: [PASSED]
+- Hash de contraseñas: [PASSED]
+- Cabeceras de seguridad: [PASSED]
+- Limitador de velocidad: [PASSED]
 
 ## Recomendaciones
 

@@ -28,27 +28,27 @@ ChordMe uses **17 GitHub Actions workflows** to automate testing, building, depl
 
 ```
 ChordMe Workflows
-├── 🔍 CI/CD & Testing (6 workflows)
+├── [Search] CI/CD & Testing (6 workflows)
 │   ├── Main CI/CD Pipeline
 │   ├── Frontend-specific CI
 │   ├── Backend-specific CI
 │   ├── Test Coverage Check
 │   ├── ESLint Security Scanning
 │   └── Integration Tests
-├── 🚀 Deployment (6 workflows)
+├── [Quick Start] Deployment (6 workflows)
 │   ├── Blue-Green Deployment (Advanced)
 │   ├── Full Stack Deployment
 │   ├── Netlify Frontend Deployment
 │   ├── Railway Backend Deployment
 │   ├── Release & Deploy
 │   └── Emergency Rollback
-├── 🔒 Security & Auditing (2 workflows)
+├── [Security] Security & Auditing (2 workflows)
 │   ├── Security Audit & Penetration Testing
 │   └── OWASP Top 10 Testing
-├── 📖 Documentation (2 workflows)
+├── [Documentation] Documentation (2 workflows)
 │   ├── Deploy Documentation (GitHub Pages)
 │   └── API Documentation Generation
-└── 🛠️ Maintenance (1 workflow)
+└── [Tools] Maintenance (1 workflow)
     └── Dependency Updates
 ```
 
@@ -68,7 +68,7 @@ ChordMe Workflows
 
 ## Workflow Categories
 
-### 🔍 CI/CD & Testing Workflows
+### [Search] CI/CD & Testing Workflows
 
 These workflows ensure code quality and run automated tests.
 
@@ -92,7 +92,7 @@ These workflows ensure code quality and run automated tests.
 - **Purpose**: Static code analysis for JavaScript security issues
 - **Simple Summary**: "Scan frontend code for security problems"
 
-### 🚀 Deployment Workflows
+### [Quick Start] Deployment Workflows
 
 These workflows deploy the application to various environments.
 
@@ -120,7 +120,7 @@ These workflows deploy the application to various environments.
 - **Purpose**: Quick rollback to previous working version
 - **Simple Summary**: "Emergency button to undo deployment if broken"
 
-### 🔒 Security & Auditing Workflows
+### [Security] Security & Auditing Workflows
 
 These workflows ensure application security.
 
@@ -128,7 +128,7 @@ These workflows ensure application security.
 - **Purpose**: Comprehensive security testing including OWASP Top 10
 - **Simple Summary**: "Daily security health check"
 
-### 📖 Documentation Workflows
+### [Documentation] Documentation Workflows
 
 These workflows maintain project documentation.
 
@@ -144,7 +144,7 @@ These workflows maintain project documentation.
 - **Purpose**: Deploy API docs to GitHub Pages
 - **Simple Summary**: "Publish API documentation online"
 
-### 🛠️ Maintenance Workflows
+### [Tools] Maintenance Workflows
 
 These workflows keep the project updated and healthy.
 
@@ -182,9 +182,9 @@ CODECOV_TOKEN: (optional) For test coverage reporting
 **Environment Variables**: None required
 
 **Use Cases**:
-- ✅ **Primary**: Validate all code changes before merge
-- ✅ **Quality Gate**: Prevent broken code from entering main branch
-- ✅ **Comprehensive Testing**: Catch issues across all application layers
+- [PASSED] **Primary**: Validate all code changes before merge
+- [PASSED] **Quality Gate**: Prevent broken code from entering main branch
+- [PASSED] **Comprehensive Testing**: Catch issues across all application layers
 
 **Alternatives**:
 - Use `frontend-ci.yml` for frontend-only changes (faster)
@@ -237,10 +237,10 @@ PRODUCTION_FRONTEND_URL: Frontend URL for production
 ```
 
 **Use Cases**:
-- ✅ **Production Deployments**: Safe deployment to live environment
-- ✅ **Zero Downtime**: Users experience no service interruption
-- ✅ **Risk Mitigation**: Automatic rollback if issues detected
-- ✅ **Large Releases**: Deploy major version updates safely
+- [PASSED] **Production Deployments**: Safe deployment to live environment
+- [PASSED] **Zero Downtime**: Users experience no service interruption
+- [PASSED] **Risk Mitigation**: Automatic rollback if issues detected
+- [PASSED] **Large Releases**: Deploy major version updates safely
 
 **Alternatives**:
 - `deploy-full-stack.yml` for simpler deployments
@@ -282,10 +282,10 @@ HTTPS_ENFORCED: false (disabled for testing)
 ```
 
 **Use Cases**:
-- ✅ **Daily Security Health Check**: Automated security monitoring
-- ✅ **Pre-deployment Validation**: Ensure secure code before release
-- ✅ **Compliance**: Meet security standards and best practices
-- ✅ **Vulnerability Detection**: Early detection of security issues
+- [PASSED] **Daily Security Health Check**: Automated security monitoring
+- [PASSED] **Pre-deployment Validation**: Ensure secure code before release
+- [PASSED] **Compliance**: Meet security standards and best practices
+- [PASSED] **Vulnerability Detection**: Early detection of security issues
 
 **Alternatives**:
 - Manual security testing
@@ -328,10 +328,10 @@ SLACK_WEBHOOK: (optional) Emergency notifications
 ```
 
 **Use Cases**:
-- 🚨 **Emergency Response**: Critical production issues
-- 🚨 **Failed Deployment Recovery**: When deployment breaks production
-- 🚨 **Security Incident Response**: Rollback to secure version
-- 🚨 **Data Integrity Issues**: Prevent further data corruption
+- [ALERT] **Emergency Response**: Critical production issues
+- [ALERT] **Failed Deployment Recovery**: When deployment breaks production
+- [ALERT] **Security Incident Response**: Rollback to secure version
+- [ALERT] **Data Integrity Issues**: Prevent further data corruption
 
 **Alternatives**:
 - Manual rollback via hosting platform dashboards
@@ -359,10 +359,10 @@ SLACK_WEBHOOK: (optional) Emergency notifications
 **Configuration Required**: None (uses default GitHub token)
 
 **Use Cases**:
-- 🔄 **Maintenance**: Keep dependencies current
-- 🔄 **Security**: Apply security patches automatically
-- 🔄 **Compatibility**: Prevent dependency conflicts
-- 🔄 **Technical Debt**: Reduce maintenance overhead
+- [READY] **Maintenance**: Keep dependencies current
+- [READY] **Security**: Apply security patches automatically
+- [READY] **Compatibility**: Prevent dependency conflicts
+- [READY] **Technical Debt**: Reduce maintenance overhead
 
 **Alternatives**:
 - Manual dependency updates
@@ -660,11 +660,11 @@ Think of workflows as **robots that help maintain the website**. Each robot has 
 
 ### Key Benefits
 
-- 🛡️ **Security**: Continuous protection against vulnerabilities
-- ⚡ **Speed**: Automated processes are faster than manual work
-- 🔄 **Reliability**: Consistent procedures reduce errors
-- 📊 **Transparency**: All activities are logged and visible
-- 🚨 **Quick Response**: Emergency procedures minimize impact
+- [SYMBOL] **Security**: Continuous protection against vulnerabilities
+- [SYMBOL] **Speed**: Automated processes are faster than manual work
+- [READY] **Reliability**: Consistent procedures reduce errors
+- [Stats] **Transparency**: All activities are logged and visible
+- [ALERT] **Quick Response**: Emergency procedures minimize impact
 
 ## Improvements & Future Enhancements
 

@@ -37,8 +37,8 @@ Este documento describe el diseño mejorado del panel que separa las canciones e
 - **Lector** (Azul claro): Acceso solo de lectura
 
 ### Indicadores de colaboración
-- **Conteo de colaboradores**: Muestra el número de usuarios con acceso (👥 N)
-- **Estado en tiempo real**: Indicador verde cuando la sincronización en tiempo real está activa (🔄 Tiempo real)
+- **Conteo de colaboradores**: Muestra el número de usuarios con acceso ([SYMBOL] N)
+- **Estado en tiempo real**: Indicador verde cuando la sincronización en tiempo real está activa ([READY] Tiempo real)
 
 ### Información de actividad
 - **Última modificación**: Muestra el tiempo relativo desde la última actualización

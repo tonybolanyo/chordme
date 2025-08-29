@@ -97,7 +97,7 @@ const { song, loading, error, isRealTime, refetch } = useRealtimeSong(songId);
 - Combined error handling for both local and real-time errors
 
 **UI Enhancements:**
-- Real-time status badge: "🔄 Real-time" indicator
+- Real-time status badge: "[READY] Real-time" indicator
 - Automatic updates without manual refresh buttons
 - Seamless fallback experience for Flask backend users
 
@@ -154,11 +154,11 @@ VITE_DATA_SOURCE=api
 
 ### Test Coverage
 
-- ✅ Real-time subscription setup and teardown
-- ✅ Fallback to regular API calls
-- ✅ Error handling in both modes
-- ✅ Component unmount cleanup
-- ✅ Edge cases (null songId, missing data)
+- [PASSED] Real-time subscription setup and teardown
+- [PASSED] Fallback to regular API calls
+- [PASSED] Error handling in both modes
+- [PASSED] Component unmount cleanup
+- [PASSED] Edge cases (null songId, missing data)
 
 ## Browser Compatibility
 

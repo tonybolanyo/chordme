@@ -18,12 +18,12 @@ Se ha creado una suite integral de pruebas end-to-end para la aplicación ChordM
 
 | Categoría de prueba | Archivo de prueba | Casos de prueba | Estado | Cobertura |
 |---------------------|-------------------|-----------------|--------|-----------|
-| **Navegación básica** | `basic-navigation.spec.ts` | 4 | ✅ Aprobado | Navegación core, carga de páginas |
-| **Autenticación** | `authentication.spec.ts` | 15 | 🔄 Listo | Registro, login, validación |
-| **Demo ChordPro** | `chordpro-demo.spec.ts` | 13 | ⚠️ 8/13 Aprobado | Editor, sintaxis, renderizado |
-| **Gestión de canciones** | `song-management.spec.ts` | 12 | 🔄 Listo | Operaciones CRUD, manejo de archivos |
-| **Manejo de errores** | `error-handling.spec.ts` | 18 | ✅ Listo | Casos extremos, errores de red |
-| **UI/Accesibilidad** | `ui-accessibility.spec.ts` | 15 | ✅ Listo | a11y, diseño responsivo |
+| **Navegación básica** | `basic-navigation.spec.ts` | 4 | [PASSED] Aprobado | Navegación core, carga de páginas |
+| **Autenticación** | `authentication.spec.ts` | 15 | [READY] Listo | Registro, login, validación |
+| **Demo ChordPro** | `chordpro-demo.spec.ts` | 13 | [WARNING] 8/13 Aprobado | Editor, sintaxis, renderizado |
+| **Gestión de canciones** | `song-management.spec.ts` | 12 | [READY] Listo | Operaciones CRUD, manejo de archivos |
+| **Manejo de errores** | `error-handling.spec.ts` | 18 | [PASSED] Listo | Casos extremos, errores de red |
+| **UI/Accesibilidad** | `ui-accessibility.spec.ts` | 15 | [PASSED] Listo | a11y, diseño responsivo |
 
 **Total casos de prueba**: 77  
 **Actualmente aprobados**: 12/17 (70%)  
@@ -31,13 +31,13 @@ Se ha creado una suite integral de pruebas end-to-end para la aplicación ChordM
 
 ## Casos de prueba detallados
 
-### 1. Navegación básica ✅
+### 1. Navegación básica [PASSED]
 - **Carga de página principal**: Verificar que la aplicación se cargue correctamente
 - **Navegación del encabezado**: Probar enlaces de navegación principal
 - **Diseño responsivo**: Verificar la funcionalidad en diferentes tamaños de pantalla
 - **Pie de página**: Verificar enlaces y información del pie de página
 
-### 2. Autenticación 🔄
+### 2. Autenticación [READY]
 #### Registro de usuario
 - Registro exitoso con datos válidos
 - Validación de campos requeridos
@@ -59,28 +59,28 @@ Se ha creado una suite integral de pruebas end-to-end para la aplicación ChordM
 - Validación de tokens
 - Protección de rutas
 
-### 3. Demo ChordPro ⚠️ (8/13 aprobados)
+### 3. Demo ChordPro [WARNING] (8/13 aprobados)
 #### Editor de texto
-- ✅ Entrada de texto básica
-- ✅ Funciones de editar/deshacer
-- ✅ Resaltado de sintaxis
-- ⚠️ Autocompletado de acordes
-- ⚠️ Validación de sintaxis en tiempo real
+- [PASSED] Entrada de texto básica
+- [PASSED] Funciones de editar/deshacer
+- [PASSED] Resaltado de sintaxis
+- [WARNING] Autocompletado de acordes
+- [WARNING] Validación de sintaxis en tiempo real
 
 #### Renderizado
-- ✅ Renderizado básico de ChordPro
-- ✅ Visualización de acordes
-- ⚠️ Transposición de acordes
-- ⚠️ Diferentes temas de visualización
-- ⚠️ Exportación a PDF
+- [PASSED] Renderizado básico de ChordPro
+- [PASSED] Visualización de acordes
+- [WARNING] Transposición de acordes
+- [WARNING] Diferentes temas de visualización
+- [WARNING] Exportación a PDF
 
 #### Paleta de acordes
-- ✅ Selección de acordes
-- ✅ Inserción en editor
-- ⚠️ Diagramas de acordes
-- ✅ Búsqueda de acordes
+- [PASSED] Selección de acordes
+- [PASSED] Inserción en editor
+- [WARNING] Diagramas de acordes
+- [PASSED] Búsqueda de acordes
 
-### 4. Gestión de canciones 🔄
+### 4. Gestión de canciones [READY]
 #### Operaciones CRUD
 - Crear nueva canción
 - Leer/visualizar canciones existentes
@@ -99,7 +99,7 @@ Se ha creado una suite integral de pruebas end-to-end para la aplicación ChordM
 - Exportación en lote
 - Validación de formatos de archivo
 
-### 5. Manejo de errores ✅
+### 5. Manejo de errores [PASSED]
 #### Errores de red
 - Conexión perdida durante operaciones
 - Timeouts de API
@@ -118,7 +118,7 @@ Se ha creado una suite integral de pruebas end-to-end para la aplicación ChordM
 - Operaciones concurrentes
 - Límites de almacenamiento
 
-### 6. UI y accesibilidad ✅
+### 6. UI y accesibilidad [PASSED]
 #### Accesibilidad
 - Navegación por teclado
 - Compatibilidad con lectores de pantalla

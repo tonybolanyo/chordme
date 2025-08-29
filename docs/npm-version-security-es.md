@@ -14,10 +14,10 @@ El comando `npm version` puede ser vulnerable a inyección de shell y comportami
 ### Solución
 Todos los comandos `npm version` deben entrecomillar la variable VERSION:
 ```bash
-# ✅ CORRECTO - Correctamente entrecomillado
+# [PASSED] CORRECTO - Correctamente entrecomillado
 npm version "$VERSION" --no-git-tag-version
 
-# ❌ INCORRECTO - Sin comillas (potencialmente peligroso)
+# [FAILED] INCORRECTO - Sin comillas (potencialmente peligroso)
 npm version $VERSION --no-git-tag-version
 ```
 
@@ -39,7 +39,7 @@ npm version "$VERSION" --no-git-tag-version
 
 ### Estado actual de implementación
 
-✅ **Todos los comandos npm version están correctamente entrecomillados en ChordMe:**
+[PASSED] **Todos los comandos npm version están correctamente entrecomillados en ChordMe:**
 
 1. **scripts/sync-version.sh** (líneas 21, 26):
    ```bash

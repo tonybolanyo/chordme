@@ -193,7 +193,7 @@ Todos los elementos interactivos cumplen con el tamaño mínimo de 44px × 44px:
 <button aria-expanded="false" 
         aria-controls="mobile-menu"
         aria-label="Abrir menú de navegación">
-  <span aria-hidden="true">☰</span>
+  <span aria-hidden="true">[SYMBOL]</span>
 </button>
 ```
 

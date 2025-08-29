@@ -20,43 +20,43 @@ npx playwright test --ui
 
 ## Test Files Overview
 
-### 🚀 `basic-navigation.spec.ts` 
-**Status**: ✅ All tests passing (4/4)
+### [Quick Start] `basic-navigation.spec.ts` 
+**Status**: [PASSED] All tests passing (4/4)
 - Page loading and navigation
 - Route handling and redirects  
 - Basic UI element visibility
 
-### 🔐 `authentication.spec.ts`
-**Status**: 🔄 Ready for integration (15 tests)
+### [Auth] `authentication.spec.ts`
+**Status**: [READY] Ready for integration (15 tests)
 - User registration with validation
 - Login process and error handling
 - Password requirements and security
 - Navigation between auth pages
 
-### 🎵 `chordpro-demo.spec.ts`
-**Status**: ⚠️ Partially working (8/13 passing)
+### [Music] `chordpro-demo.spec.ts`
+**Status**: [WARNING] Partially working (8/13 passing)
 - Interactive ChordPro editor functionality
 - Real-time content rendering  
 - Syntax highlighting and validation
 - Large content and special character handling
 - *Note: Some selector issues need fixing*
 
-### 📝 `song-management.spec.ts`
-**Status**: 🔄 Ready for integration (12 tests)
+### [Tests] `song-management.spec.ts`
+**Status**: [READY] Ready for integration (12 tests)
 - Song CRUD operations (Create, Read, Update, Delete)
 - File upload and download functionality
 - Search and filtering capabilities
 - Authenticated user workflows
 
-### ⚠️ `error-handling.spec.ts`
-**Status**: ✅ Ready (18 tests)
+### [WARNING] `error-handling.spec.ts`
+**Status**: [PASSED] Ready (18 tests)
 - Network error simulation and handling
 - Form validation edge cases
 - Browser compatibility testing
 - Performance under load scenarios
 
-### ♿ `ui-accessibility.spec.ts`  
-**Status**: ✅ Ready (15 tests)
+### [SYMBOL] `ui-accessibility.spec.ts`  
+**Status**: [PASSED] Ready (15 tests)
 - Accessibility compliance (WCAG)
 - Keyboard navigation support
 - Responsive design validation
@@ -133,19 +133,19 @@ Tests are configured via `playwright.config.ts`:
 
 ## Test Quality Features
 
-### 🛡️ Robust Testing
+### [SYMBOL] Robust Testing
 - **Network mocking** for API testing
 - **Error simulation** for edge cases  
 - **Performance testing** with large datasets
 - **Cross-device validation** (mobile/tablet/desktop)
 
-### ♿ Accessibility Focus
+### [SYMBOL] Accessibility Focus
 - **Keyboard navigation** testing
 - **Screen reader** compatibility
 - **ARIA labels** validation
 - **Color contrast** verification
 
-### 🔧 Developer Experience
+### [Config] Developer Experience
 - **Descriptive test names** for clarity
 - **Helper functions** for common operations
 - **Page object patterns** for maintainability  
@@ -203,8 +203,8 @@ console.log(await page.locator('selector').textContent()); // Element content
 
 ## Current Status
 
-✅ **Ready for Production**: 37 tests ready  
-⚠️ **Needs Refinement**: 5 tests (selector issues)  
-🔄 **Integration Needed**: 35 tests (require backend)
+[PASSED] **Ready for Production**: 37 tests ready  
+[WARNING] **Needs Refinement**: 5 tests (selector issues)  
+[READY] **Integration Needed**: 35 tests (require backend)
 
 **Total Test Coverage**: 77 test cases across all critical user workflows

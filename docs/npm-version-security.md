@@ -14,10 +14,10 @@ The `npm version` command can be vulnerable to shell injection and unexpected be
 ### Solution
 All `npm version` commands must quote the VERSION variable:
 ```bash
-# ✅ CORRECT - Properly quoted
+# [PASSED] CORRECT - Properly quoted
 npm version "$VERSION" --no-git-tag-version
 
-# ❌ INCORRECT - Unquoted (potentially dangerous)
+# [FAILED] INCORRECT - Unquoted (potentially dangerous)
 npm version $VERSION --no-git-tag-version
 ```
 
@@ -39,7 +39,7 @@ npm version "$VERSION" --no-git-tag-version
 
 ### Current Implementation Status
 
-✅ **All npm version commands are properly quoted in ChordMe:**
+[PASSED] **All npm version commands are properly quoted in ChordMe:**
 
 1. **scripts/sync-version.sh** (lines 21, 26):
    ```bash

@@ -281,7 +281,7 @@ if (optimisticUpdate.status === 'failed') {
 #### Conflicts Not Detected
 1. **Verify real-time subscriptions are active**
    - Look for WebSocket connections in Network tab
-   - Check for "🔄 Real-time editing enabled" indicator
+   - Check for "[READY] Real-time editing enabled" indicator
 
 2. **Check operation timestamps**
    - Operations must have different timestamps to detect conflicts

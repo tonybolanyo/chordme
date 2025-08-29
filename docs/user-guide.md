@@ -598,22 +598,22 @@ ChordMe provides comprehensive collaboration tools that allow you to work togeth
 
 Before sharing songs, it's important to understand the different permission levels:
 
-#### **Owner** (Blue Badge 🔵)
+#### **Owner** (Blue Badge [SYMBOL])
 - **Full control** over the song and all sharing settings
 - Can edit content, manage collaborators, and delete the song
 - Cannot be removed from their own songs
 
-#### **Admin** (Red Badge 🔴) 
+#### **Admin** (Red Badge [SYMBOL]) 
 - **Management access** including sharing and permission control
 - Can edit song content and invite/remove other collaborators
 - Can change permissions for other users (except owner)
 
-#### **Editor** (Purple Badge 🟣)
+#### **Editor** (Purple Badge [SYMBOL])
 - **Edit access** to modify song content and structure
 - Can make changes to lyrics, chords, and song metadata
 - Cannot manage sharing or permissions
 
-#### **Reader** (Light Blue Badge 🔵)
+#### **Reader** (Light Blue Badge [SYMBOL])
 - **View-only access** to song content
 - Can view and download songs but cannot make changes
 - Perfect for students, fans, or casual collaborators
@@ -624,7 +624,7 @@ Before sharing songs, it's important to understand the different permission leve
 
 1. **Navigate to your songs** on the dashboard
 2. **Locate the song** you want to share
-3. **Click the "Share" button** (📤) next to the song title
+3. **Click the "Share" button** ([SYMBOL]) next to the song title
    - *Note: Share button only appears for songs you own or have admin access to*
 
 #### Step 2: Invite Collaborators
@@ -641,7 +641,7 @@ Before sharing songs, it's important to understand the different permission leve
 1. **View current collaborators** in the bottom section of the sharing modal
 2. **Change permissions** using the dropdown next to each user's name
 3. **Remove access** by clicking the "Remove" button (with confirmation)
-4. **Monitor collaboration count** (👥 N) showing total number of collaborators
+4. **Monitor collaboration count** ([SYMBOL] N) showing total number of collaborators
 
 ### Working with Shared Songs
 
@@ -658,8 +658,8 @@ Before sharing songs, it's important to understand the different permission leve
 #### Understanding Visual Indicators
 
 - **Permission badges**: Color-coded indicators showing your access level
-- **Collaboration count**: 👥 N shows how many people have access
-- **Real-time indicator**: 🔄 appears when live collaboration is active
+- **Collaboration count**: [SYMBOL] N shows how many people have access
+- **Real-time indicator**: [READY] appears when live collaboration is active
 - **Last modified**: Shows when the song was last updated
 
 ### Real-Time Collaborative Editing
@@ -670,7 +670,7 @@ When Firebase integration is enabled, ChordMe supports sophisticated real-time c
 
 1. **Open a shared song** with edit or admin permissions
 2. **Click the "Edit" button** to enter editing mode
-3. **Look for the real-time indicator** (🔄 Real-time editing enabled)
+3. **Look for the real-time indicator** ([READY] Real-time editing enabled)
 4. **See other collaborators** who are currently editing
 
 #### Live Collaboration Features
