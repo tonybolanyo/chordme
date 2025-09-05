@@ -1,0 +1,351 @@
+/**
+ * Chord Diagram Renderer Styles
+ * 
+ * Provides responsive design, accessibility, theming, and print-friendly styles
+ * for the interactive chord diagram component.
+ */
+
+/* CSS Custom Properties for Theming */
+:root {
+  --chord-diagram-bg: #ffffff;
+  --chord-diagram-border: #e5e5e5;
+  --chord-diagram-text: #333333;
+  --chord-diagram-grid: #666666;
+  --chord-diagram-nut: #000000;
+  --chord-diagram-muted: #666666;
+  --chord-diagram-open: #666666;
+  
+  /* Finger colors */
+  --chord-finger-1: #ff6b6b; /* Index - red */
+  --chord-finger-2: #4ecdc4; /* Middle - teal */
+  --chord-finger-3: #45b7d1; /* Ring - blue */
+  --chord-finger-4: #96ceb4; /* Pinky - green */
+  --chord-finger-open: #808080; /* Open - gray */
+  --chord-finger-muted: #666666; /* Muted - dark gray */
+  
+  /* Tooltip styles */
+  --chord-tooltip-bg: #333333;
+  --chord-tooltip-text: #ffffff;
+  --chord-tooltip-border: #666666;
+}
+
+/* Dark theme support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --chord-diagram-bg: #1f2937;
+    --chord-diagram-border: #4b5563;
+    --chord-diagram-text: #f9fafb;
+    --chord-diagram-grid: #9ca3af;
+    --chord-diagram-nut: #ffffff;
+    --chord-diagram-muted: #9ca3af;
+    --chord-diagram-open: #9ca3af;
+    
+    --chord-tooltip-bg: #f9fafb;
+    --chord-tooltip-text: #1f2937;
+    --chord-tooltip-border: #e5e7eb;
+  }
+}
+
+/* Container styles */
+.chord-diagram-container {
+  display: inline-block;
+  position: relative;
+  background-color: var(--chord-diagram-bg);
+  border: 1px solid var(--chord-diagram-border);
+  border-radius: 8px;
+  padding: 8px;
+  margin: 4px;
+  box-sizing: border-box;
+  user-select: none;
+  
+  /* Responsive scaling */
+  max-width: 100%;
+  height: auto;
+}
+
+/* SVG container */
+.chord-diagram-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Fretboard elements */
+.fret-line {
+  stroke: var(--chord-diagram-grid);
+  transition: stroke 0.2s ease;
+}
+
+.fret-line.nut {
+  stroke: var(--chord-diagram-nut);
+  stroke-width: 3;
+}
+
+.string-line {
+  stroke: var(--chord-diagram-grid);
+  transition: stroke 0.2s ease;
+}
+
+/* Finger positions */
+.finger-position {
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.finger-position:hover {
+  transform: scale(1.1);
+  filter: brightness(1.1);
+}
+
+.finger-position:focus {
+  outline: 2px solid #007acc;
+  outline-offset: 2px;
+}
+
+.finger-number {
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Open and muted indicators */
+.open-indicator {
+  stroke: var(--chord-diagram-open);
+  transition: stroke 0.2s ease;
+}
+
+.muted-indicator {
+  fill: var(--chord-diagram-muted);
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+  user-select: none;
+  transition: fill 0.2s ease;
+}
+
+/* Barre chord styling */
+.barre-line {
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+}
+
+/* Chord name and labels */
+.chord-name {
+  fill: var(--chord-diagram-text);
+  font-family: Arial, sans-serif;
+  user-select: none;
+  transition: fill 0.2s ease;
+}
+
+.fret-label {
+  fill: var(--chord-diagram-grid);
+  font-family: Arial, sans-serif;
+  font-size: 10px;
+  user-select: none;
+  transition: fill 0.2s ease;
+}
+
+/* Tooltip styles */
+.chord-tooltip {
+  background: var(--chord-tooltip-bg);
+  color: var(--chord-tooltip-text);
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: Arial, sans-serif;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--chord-tooltip-border);
+  z-index: 1000;
+  transition: opacity 0.2s ease;
+}
+
+/* High contrast mode */
+.chord-diagram-container.high-contrast {
+  --chord-diagram-bg: #ffffff;
+  --chord-diagram-border: #000000;
+  --chord-diagram-text: #000000;
+  --chord-diagram-grid: #000000;
+  --chord-diagram-nut: #000000;
+  --chord-diagram-muted: #000000;
+  --chord-diagram-open: #000000;
+  
+  --chord-finger-1: #000000;
+  --chord-finger-2: #000000;
+  --chord-finger-3: #000000;
+  --chord-finger-4: #000000;
+  --chord-finger-open: #000000;
+  --chord-finger-muted: #000000;
+  
+  border-width: 2px;
+}
+
+.chord-diagram-container.high-contrast .finger-position {
+  fill: #000000;
+  stroke: #000000;
+  stroke-width: 3;
+}
+
+.chord-diagram-container.high-contrast .finger-number {
+  fill: #ffffff;
+}
+
+/* Print mode styles */
+.chord-diagram-container.print-mode {
+  --chord-diagram-bg: #ffffff;
+  --chord-diagram-border: #000000;
+  --chord-diagram-text: #000000;
+  --chord-diagram-grid: #000000;
+  --chord-diagram-nut: #000000;
+  --chord-diagram-muted: #000000;
+  --chord-diagram-open: #000000;
+  
+  --chord-finger-1: #000000;
+  --chord-finger-2: #000000;
+  --chord-finger-3: #000000;
+  --chord-finger-4: #000000;
+  --chord-finger-open: #000000;
+  --chord-finger-muted: #000000;
+  
+  background: white;
+  border: 1px solid black;
+  box-shadow: none;
+}
+
+.chord-diagram-container.print-mode .chord-tooltip {
+  display: none;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .chord-diagram-container {
+    /* Ensure minimum touch target size */
+    min-width: 120px;
+    min-height: 168px;
+  }
+  
+  .finger-position {
+    /* Larger touch targets on mobile */
+    r: 16;
+  }
+  
+  .chord-tooltip {
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .chord-diagram-container {
+    margin: 2px;
+    padding: 4px;
+  }
+  
+  .chord-name {
+    font-size: 14px;
+  }
+  
+  .fret-label {
+    font-size: 8px;
+  }
+}
+
+/* Tablet and larger screens */
+@media (min-width: 768px) {
+  .chord-diagram-container {
+    /* Better spacing on larger screens */
+    margin: 8px;
+    padding: 12px;
+  }
+  
+  .finger-position:hover {
+    transform: scale(1.15);
+  }
+}
+
+/* Desktop hover effects */
+@media (hover: hover) and (pointer: fine) {
+  .finger-position:hover {
+    transform: scale(1.1);
+    filter: brightness(1.15);
+  }
+  
+  .barre-line:hover {
+    opacity: 1;
+  }
+}
+
+/* Accessibility enhancements */
+@media (prefers-reduced-motion: reduce) {
+  .chord-diagram-container *,
+  .chord-diagram-container *::before,
+  .chord-diagram-container *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Focus indicators for keyboard navigation */
+.chord-diagram-container:focus-within {
+  outline: 2px solid #007acc;
+  outline-offset: 2px;
+}
+
+/* Screen reader only text */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Print styles */
+@media print {
+  .chord-diagram-container {
+    background: white !important;
+    border: 1px solid black !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  
+  .chord-tooltip {
+    display: none !important;
+  }
+  
+  .chord-diagram-svg {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  
+  /* Force black and white for print */
+  .finger-position {
+    fill: black !important;
+    stroke: black !important;
+  }
+  
+  .finger-number {
+    fill: white !important;
+  }
+  
+  .fret-line,
+  .string-line,
+  .open-indicator,
+  .muted-indicator,
+  .chord-name,
+  .fret-label {
+    stroke: black !important;
+    fill: black !important;
+  }
+  
+  .barre-line {
+    stroke: black !important;
+  }
+}

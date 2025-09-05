@@ -1,0 +1,361 @@
+/**
+ * Chord Diagram Demo Page Styles
+ */
+
+.chord-diagram-demo {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.6;
+}
+
+/* Header */
+.demo-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.demo-header h1 {
+  font-size: 2.5rem;
+  color: #1f2937;
+  margin-bottom: 1rem;
+}
+
+.demo-header p {
+  font-size: 1.1rem;
+  color: #6b7280;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Controls */
+.demo-controls {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.control-group label {
+  font-weight: 500;
+  color: #374151;
+  font-size: 0.9rem;
+}
+
+.control-group select,
+.control-group input[type="range"] {
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  background: white;
+  font-size: 0.9rem;
+}
+
+.control-group select {
+  min-width: 120px;
+}
+
+.control-group input[type="range"] {
+  min-width: 150px;
+}
+
+.checkbox-group {
+  flex-direction: row;
+  gap: 1rem;
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: normal;
+  cursor: pointer;
+}
+
+.checkbox-group input[type="checkbox"] {
+  margin: 0;
+}
+
+/* Chord Gallery */
+.chord-gallery {
+  margin-bottom: 3rem;
+}
+
+.chord-gallery h2 {
+  font-size: 1.8rem;
+  color: #1f2937;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.chord-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.chord-item {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  text-align: center;
+}
+
+.chord-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.demo-chord-diagram {
+  margin: 0 auto 1rem auto;
+}
+
+.chord-info h3 {
+  font-size: 1.5rem;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+}
+
+.chord-description {
+  color: #6b7280;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.chord-details {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.difficulty-badge,
+.barre-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.difficulty-beginner {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.difficulty-intermediate {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.difficulty-advanced {
+  background: #fecaca;
+  color: #991b1b;
+}
+
+.difficulty-expert {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+.barre-badge {
+  background: #f3e8ff;
+  color: #6b21a8;
+}
+
+/* Feature Showcase */
+.feature-showcase,
+.technical-info {
+  margin-bottom: 3rem;
+}
+
+.feature-showcase h2,
+.technical-info h2 {
+  font-size: 1.8rem;
+  color: #1f2937;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.feature-list,
+.tech-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.feature-item,
+.tech-item {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.feature-item h3,
+.tech-item h3 {
+  font-size: 1.2rem;
+  color: #1f2937;
+  margin-bottom: 0.75rem;
+}
+
+.feature-item p,
+.tech-item p {
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .chord-diagram-demo {
+    padding: 1rem;
+  }
+
+  .demo-header h1 {
+    font-size: 2rem;
+  }
+
+  .demo-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .control-group {
+    align-items: stretch;
+  }
+
+  .checkbox-group {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .chord-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .feature-list,
+  .tech-details {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .chord-diagram-demo {
+    padding: 0.5rem;
+  }
+
+  .demo-header h1 {
+    font-size: 1.75rem;
+  }
+
+  .chord-item {
+    padding: 1rem;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .chord-diagram-demo {
+    background: #111827;
+    color: #f9fafb;
+  }
+
+  .demo-header {
+    border-bottom-color: #374151;
+  }
+
+  .demo-header h1 {
+    color: #f9fafb;
+  }
+
+  .demo-header p {
+    color: #d1d5db;
+  }
+
+  .demo-controls {
+    background: #1f2937;
+    border-color: #374151;
+  }
+
+  .control-group label {
+    color: #e5e7eb;
+  }
+
+  .control-group select,
+  .control-group input[type="range"] {
+    background: #374151;
+    border-color: #4b5563;
+    color: #f9fafb;
+  }
+
+  .chord-gallery h2,
+  .feature-showcase h2,
+  .technical-info h2 {
+    color: #f9fafb;
+  }
+
+  .chord-item,
+  .feature-item,
+  .tech-item {
+    background: #1f2937;
+    border-color: #374151;
+  }
+
+  .chord-info h3,
+  .feature-item h3,
+  .tech-item h3 {
+    color: #f9fafb;
+  }
+
+  .chord-description,
+  .feature-item p,
+  .tech-item p {
+    color: #d1d5db;
+  }
+}
+
+/* Print styles */
+@media print {
+  .demo-controls,
+  .feature-showcase,
+  .technical-info {
+    display: none;
+  }
+
+  .chord-diagram-demo {
+    padding: 1rem;
+  }
+
+  .chord-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+
+  .chord-item {
+    box-shadow: none;
+    border: 1px solid #000;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}
