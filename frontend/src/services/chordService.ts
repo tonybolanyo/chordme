@@ -671,7 +671,7 @@ function extractKeySignature(content: string): string | undefined {
 }
 
 /**
- * Chromatic scale for chord transposition
+ * Chromatic scale for chord transposition (sharp preference)
  */
 const CHROMATIC_SCALE = [
   'C',
@@ -689,6 +689,24 @@ const CHROMATIC_SCALE = [
 ];
 
 /**
+ * Chromatic scale with flat preference
+ */
+const CHROMATIC_SCALE_FLATS = [
+  'C',
+  'Db',
+  'D',
+  'Eb',
+  'E',
+  'F',
+  'Gb',
+  'G',
+  'Ab',
+  'A',
+  'Bb',
+  'B',
+];
+
+/**
  * Enharmonic equivalents mapping (flats to sharps)
  */
 const ENHARMONIC_MAP: Record<string, string> = {
@@ -697,6 +715,63 @@ const ENHARMONIC_MAP: Record<string, string> = {
   Gb: 'F#',
   Ab: 'G#',
   Bb: 'A#',
+};
+
+/**
+ * Enharmonic equivalents mapping (sharps to flats)
+ */
+const ENHARMONIC_MAP_REVERSE: Record<string, string> = {
+  'C#': 'Db',
+  'D#': 'Eb',
+  'F#': 'Gb',
+  'G#': 'Ab',
+  'A#': 'Bb',
+};
+
+/**
+ * Circle of fifths for determining key signature preferences
+ * Positive numbers = sharp keys, negative = flat keys
+ */
+const CIRCLE_OF_FIFTHS: Record<string, number> = {
+  'C': 0, 'Am': 0,
+  'G': 1, 'Em': 1,
+  'D': 2, 'Bm': 2,
+  'A': 3, 'F#m': 3,
+  'E': 4, 'C#m': 4,
+  'B': 5, 'G#m': 5,
+  'F#': 6, 'D#m': 6,
+  'F': -1, 'Dm': -1,
+  'Bb': -2, 'Gm': -2,
+  'Eb': -3, 'Cm': -3,
+  'Ab': -4, 'Fm': -4,
+  'Db': -5, 'Bbm': -5,
+  'Gb': -6, 'Ebm': -6,
+};
+
+/**
+ * Latin notation to American notation mapping
+ */
+const LATIN_TO_AMERICAN: Record<string, string> = {
+  'Do': 'C',
+  'Re': 'D', 
+  'Mi': 'E',
+  'Fa': 'F',
+  'Sol': 'G',
+  'La': 'A',
+  'Si': 'B',
+};
+
+/**
+ * American notation to Latin notation mapping
+ */
+const AMERICAN_TO_LATIN: Record<string, string> = {
+  'C': 'Do',
+  'D': 'Re',
+  'E': 'Mi', 
+  'F': 'Fa',
+  'G': 'Sol',
+  'A': 'La',
+  'B': 'Si',
 };
 
 /**
@@ -730,32 +805,185 @@ function parseChord(chord: string): { root: string; modifiers: string } {
 }
 
 /**
+ * Enhanced chord parsing that handles slash chords separately
+ */
+function parseChordEnhanced(chord: string): { 
+  root: string; 
+  modifiers: string; 
+  bassNote?: string; 
+  isSlashChord: boolean;
+} {
+  const trimmed = chord.trim();
+  if (!trimmed) return { root: '', modifiers: '', isSlashChord: false };
+
+  // Check for slash chord
+  const slashIndex = trimmed.indexOf('/');
+  if (slashIndex > 0) {
+    const chordPart = trimmed.substring(0, slashIndex);
+    const bassNotePart = trimmed.substring(slashIndex + 1);
+    const { root, modifiers } = parseChord(chordPart);
+    const { root: bassNote } = parseChord(bassNotePart);
+    
+    return {
+      root,
+      modifiers,
+      bassNote,
+      isSlashChord: true,
+    };
+  }
+
+  // Regular chord parsing
+  const { root, modifiers } = parseChord(trimmed);
+  return { root, modifiers, isSlashChord: false };
+}
+
+/**
+ * Convert between notation systems
+ */
+export function convertNotation(note: string, fromSystem: 'american' | 'latin', toSystem: 'american' | 'latin'): string {
+  if (fromSystem === toSystem) return note;
+  
+  if (fromSystem === 'latin' && toSystem === 'american') {
+    return LATIN_TO_AMERICAN[note] || note;
+  }
+  
+  if (fromSystem === 'american' && toSystem === 'latin') {
+    return AMERICAN_TO_LATIN[note] || note;
+  }
+  
+  return note;
+}
+
+/**
+ * Determine the preferred enharmonic spelling based on key signature
+ */
+function getPreferredEnharmonic(note: string, keySignature?: string): string {
+  if (!keySignature) {
+    // Default to sharp preference for no key context
+    return ENHARMONIC_MAP[note] || note;
+  }
+
+  const keyPreference = CIRCLE_OF_FIFTHS[keySignature];
+  if (keyPreference === undefined) {
+    // Unknown key, use sharp preference
+    return ENHARMONIC_MAP[note] || note;
+  }
+
+  // Sharp keys (positive values) prefer sharps
+  // Flat keys (negative values) prefer flats
+  if (keyPreference >= 0) {
+    // Prefer sharps
+    return ENHARMONIC_MAP[note] || note;
+  } else {
+    // Prefer flats - convert sharps to flats if available
+    return ENHARMONIC_MAP_REVERSE[note] || note;
+  }
+}
+
+/**
  * Transpose a single chord by a given number of semitones
  */
 export function transposeChord(chord: string, semitones: number): string {
+  return transposeChordWithKey(chord, semitones);
+}
+
+/**
+ * Enhanced transpose chord with key signature awareness and notation system support
+ */
+export function transposeChordWithKey(
+  chord: string, 
+  semitones: number, 
+  keySignature?: string,
+  notationSystem: 'american' | 'latin' = 'american'
+): string {
   if (!chord || !isValidChord(chord)) {
     return chord; // Return unchanged if invalid
   }
 
-  const { root, modifiers } = parseChord(chord);
-
-  // Convert flat to sharp for easier processing
-  const normalizedRoot = ENHARMONIC_MAP[root] || root;
-
-  // Find current position in chromatic scale
-  const currentIndex = CHROMATIC_SCALE.indexOf(normalizedRoot);
-  if (currentIndex === -1) {
-    return chord; // Return unchanged if root note not found
+  if (semitones === 0) {
+    return chord; // No transposition needed
   }
 
-  // Calculate new position (handle negative transposition and wrap around)
+  // Ensure semitones are within reasonable range
+  semitones = ((semitones % 12) + 12) % 12;
+  if (semitones > 6) {
+    semitones = semitones - 12; // Use shorter path on circle
+  }
+
+  const { root, modifiers, bassNote, isSlashChord } = parseChordEnhanced(chord);
+
+  // Transpose root note
+  const transposedRoot = transposeNote(root, semitones, keySignature);
+  
+  // Handle slash chords - transpose bass note as well
+  let result = transposedRoot + modifiers;
+  if (isSlashChord && bassNote) {
+    const transposedBass = transposeNote(bassNote, semitones, keySignature);
+    result += '/' + transposedBass;
+  }
+
+  // Convert notation system if needed
+  if (notationSystem === 'latin') {
+    result = convertChordToLatin(result);
+  }
+
+  return result;
+}
+
+/**
+ * Transpose a single note by semitones with key signature awareness
+ */
+function transposeNote(note: string, semitones: number, keySignature?: string): string {
+  if (!note) return note;
+
+  // Convert flat to sharp for chromatic scale lookup
+  const normalizedNote = ENHARMONIC_MAP[note] || note;
+
+  // Find current position in chromatic scale
+  const currentIndex = CHROMATIC_SCALE.indexOf(normalizedNote);
+  if (currentIndex === -1) {
+    return note; // Return unchanged if note not found
+  }
+
+  // Calculate new position with proper wrap-around
   let newIndex = (currentIndex + semitones) % 12;
   if (newIndex < 0) {
     newIndex += 12;
   }
 
-  const newRoot = CHROMATIC_SCALE[newIndex];
-  return newRoot + modifiers;
+  // Get the new note from appropriate scale based on key signature
+  let newNote: string;
+  if (keySignature && CIRCLE_OF_FIFTHS[keySignature] !== undefined) {
+    const keyPreference = CIRCLE_OF_FIFTHS[keySignature];
+    if (keyPreference < 0) {
+      // Flat key - prefer flat spelling
+      newNote = CHROMATIC_SCALE_FLATS[newIndex];
+    } else {
+      // Sharp key or C major - prefer sharp spelling
+      newNote = CHROMATIC_SCALE[newIndex];
+    }
+  } else {
+    // No key context - use sharp preference (default behavior)
+    newNote = CHROMATIC_SCALE[newIndex];
+  }
+
+  return newNote;
+}
+
+/**
+ * Convert a chord to Latin notation system
+ */
+function convertChordToLatin(chord: string): string {
+  const { root, modifiers, bassNote, isSlashChord } = parseChordEnhanced(chord);
+  
+  let result = convertNotation(root, 'american', 'latin') + modifiers;
+  
+  if (isSlashChord && bassNote) {
+    const latinBass = convertNotation(bassNote, 'american', 'latin');
+    result += '/' + latinBass;
+  }
+  
+  return result;
 }
 
 /**
@@ -765,15 +993,157 @@ export function transposeChordProContent(
   content: string,
   semitones: number
 ): string {
+  return transposeChordProContentWithKey(content, semitones);
+}
+
+/**
+ * Enhanced transpose ChordPro content with key signature awareness
+ */
+export function transposeChordProContentWithKey(
+  content: string,
+  semitones: number,
+  keySignature?: string,
+  notationSystem: 'american' | 'latin' = 'american'
+): string {
   if (!content || semitones === 0) {
     return content;
   }
+
+  // Auto-detect key signature if not provided
+  const detectedKey = keySignature || extractKeySignature(content);
 
   // Regular expression to find chord notation in ChordPro format [ChordName]
   const chordPattern = /\[([^\]]+)\]/g;
 
   return content.replace(chordPattern, (_match, chordName) => {
-    const transposedChord = transposeChord(chordName, semitones);
+    const transposedChord = transposeChordWithKey(
+      chordName, 
+      semitones, 
+      detectedKey,
+      notationSystem
+    );
     return `[${transposedChord}]`;
   });
+}
+
+/**
+ * Transpose chord with intelligent enharmonic selection
+ */
+export function transposeChordIntelligent(
+  chord: string,
+  semitones: number,
+  options: {
+    keySignature?: string;
+    notationSystem?: 'american' | 'latin';
+    preserveEnharmonics?: boolean;
+    preferredAccidentals?: 'sharps' | 'flats' | 'auto';
+  } = {}
+): string {
+  const {
+    keySignature,
+    notationSystem = 'american',
+    preserveEnharmonics = false,
+    preferredAccidentals = 'auto'
+  } = options;
+
+  if (!chord || !isValidChord(chord)) {
+    return chord;
+  }
+
+  if (semitones === 0) {
+    return chord;
+  }
+
+  // If preserving enharmonics, try to maintain the original accidental style
+  if (preserveEnharmonics) {
+    const originalHasFlats = chord.includes('b');
+    const originalHasSharps = chord.includes('#');
+    
+    if (originalHasFlats && preferredAccidentals === 'auto') {
+      return transposeChordWithFlatPreference(chord, semitones, keySignature);
+    }
+    if (originalHasSharps && preferredAccidentals === 'auto') {
+      return transposeChordWithSharpPreference(chord, semitones, keySignature);
+    }
+  }
+
+  // Handle preferred accidentals
+  if (preferredAccidentals === 'flats') {
+    return transposeChordWithFlatPreference(chord, semitones, keySignature);
+  }
+  if (preferredAccidentals === 'sharps') {
+    return transposeChordWithSharpPreference(chord, semitones, keySignature);
+  }
+
+  // Default intelligent transposition
+  return transposeChordWithKey(chord, semitones, keySignature, notationSystem);
+}
+
+/**
+ * Transpose chord with preference for flat accidentals
+ */
+function transposeChordWithFlatPreference(
+  chord: string,
+  semitones: number,
+  keySignature?: string
+): string {
+  const { root, modifiers, bassNote, isSlashChord } = parseChordEnhanced(chord);
+
+  const transposedRoot = transposeNoteWithPreference(root, semitones, 'flats');
+  
+  let result = transposedRoot + modifiers;
+  if (isSlashChord && bassNote) {
+    const transposedBass = transposeNoteWithPreference(bassNote, semitones, 'flats');
+    result += '/' + transposedBass;
+  }
+
+  return result;
+}
+
+/**
+ * Transpose chord with preference for sharp accidentals
+ */
+function transposeChordWithSharpPreference(
+  chord: string,
+  semitones: number,
+  keySignature?: string
+): string {
+  const { root, modifiers, bassNote, isSlashChord } = parseChordEnhanced(chord);
+
+  const transposedRoot = transposeNoteWithPreference(root, semitones, 'sharps');
+  
+  let result = transposedRoot + modifiers;
+  if (isSlashChord && bassNote) {
+    const transposedBass = transposeNoteWithPreference(bassNote, semitones, 'sharps');
+    result += '/' + transposedBass;
+  }
+
+  return result;
+}
+
+/**
+ * Transpose note with accidental preference
+ */
+function transposeNoteWithPreference(
+  note: string,
+  semitones: number,
+  preference: 'sharps' | 'flats'
+): string {
+  if (!note) return note;
+
+  const normalizedNote = ENHARMONIC_MAP[note] || note;
+  const currentIndex = CHROMATIC_SCALE.indexOf(normalizedNote);
+  
+  if (currentIndex === -1) {
+    return note;
+  }
+
+  let newIndex = (currentIndex + semitones) % 12;
+  if (newIndex < 0) {
+    newIndex += 12;
+  }
+
+  return preference === 'flats' 
+    ? CHROMATIC_SCALE_FLATS[newIndex]
+    : CHROMATIC_SCALE[newIndex];
 }

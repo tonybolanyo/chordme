@@ -353,8 +353,11 @@ class ChordProValidator:
 
 
 # Chord transposition utilities
-# Chromatic scale for chord transposition (matching frontend implementation)
+# Chromatic scale for chord transposition (sharp preference)
 CHROMATIC_SCALE = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+
+# Chromatic scale with flat preference
+CHROMATIC_SCALE_FLATS = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B']
 
 # Enharmonic equivalents mapping (flats to sharps)
 ENHARMONIC_MAP = {
@@ -363,6 +366,55 @@ ENHARMONIC_MAP = {
     'Gb': 'F#',
     'Ab': 'G#',
     'Bb': 'A#'
+}
+
+# Enharmonic equivalents mapping (sharps to flats)
+ENHARMONIC_MAP_REVERSE = {
+    'C#': 'Db',
+    'D#': 'Eb',
+    'F#': 'Gb',
+    'G#': 'Ab',
+    'A#': 'Bb'
+}
+
+# Circle of fifths for determining key signature preferences
+# Positive numbers = sharp keys, negative = flat keys
+CIRCLE_OF_FIFTHS = {
+    'C': 0, 'Am': 0,
+    'G': 1, 'Em': 1,
+    'D': 2, 'Bm': 2,
+    'A': 3, 'F#m': 3,
+    'E': 4, 'C#m': 4,
+    'B': 5, 'G#m': 5,
+    'F#': 6, 'D#m': 6,
+    'F': -1, 'Dm': -1,
+    'Bb': -2, 'Gm': -2,
+    'Eb': -3, 'Cm': -3,
+    'Ab': -4, 'Fm': -4,
+    'Db': -5, 'Bbm': -5,
+    'Gb': -6, 'Ebm': -6,
+}
+
+# Latin notation to American notation mapping
+LATIN_TO_AMERICAN = {
+    'Do': 'C',
+    'Re': 'D', 
+    'Mi': 'E',
+    'Fa': 'F',
+    'Sol': 'G',
+    'La': 'A',
+    'Si': 'B',
+}
+
+# American notation to Latin notation mapping
+AMERICAN_TO_LATIN = {
+    'C': 'Do',
+    'D': 'Re',
+    'E': 'Mi', 
+    'F': 'Fa',
+    'G': 'Sol',
+    'A': 'La',
+    'B': 'Si',
 }
 
 
@@ -401,6 +453,99 @@ def parse_chord(chord: str) -> Dict[str, str]:
     }
 
 
+def parse_chord_enhanced(chord: str) -> Dict[str, str]:
+    """
+    Enhanced chord parsing that handles slash chords separately.
+    
+    Args:
+        chord: The chord string
+        
+    Returns:
+        dict: Dictionary with 'root', 'modifiers', 'bass_note', and 'is_slash_chord' keys
+    """
+    trimmed = chord.strip()
+    if not trimmed:
+        return {'root': '', 'modifiers': '', 'bass_note': None, 'is_slash_chord': False}
+
+    # Check for slash chord
+    slash_index = trimmed.find('/')
+    if slash_index > 0:
+        chord_part = trimmed[:slash_index]
+        bass_note_part = trimmed[slash_index + 1:]
+        chord_parsed = parse_chord(chord_part)
+        bass_parsed = parse_chord(bass_note_part)
+        
+        return {
+            'root': chord_parsed['root'],
+            'modifiers': chord_parsed['modifiers'],
+            'bass_note': bass_parsed['root'],
+            'is_slash_chord': True,
+        }
+
+    # Regular chord parsing
+    parsed = parse_chord(trimmed)
+    return {
+        'root': parsed['root'],
+        'modifiers': parsed['modifiers'],
+        'bass_note': None,
+        'is_slash_chord': False
+    }
+
+
+def convert_notation(note: str, from_system: str = 'american', to_system: str = 'american') -> str:
+    """
+    Convert between notation systems.
+    
+    Args:
+        note: The note to convert
+        from_system: Source notation system ('american' or 'latin')
+        to_system: Target notation system ('american' or 'latin')
+        
+    Returns:
+        str: Converted note
+    """
+    if from_system == to_system:
+        return note
+    
+    if from_system == 'latin' and to_system == 'american':
+        return LATIN_TO_AMERICAN.get(note, note)
+    
+    if from_system == 'american' and to_system == 'latin':
+        return AMERICAN_TO_LATIN.get(note, note)
+    
+    return note
+
+
+def get_preferred_enharmonic(note: str, key_signature: str = None) -> str:
+    """
+    Determine the preferred enharmonic spelling based on key signature.
+    
+    Args:
+        note: The note to get enharmonic preference for
+        key_signature: Optional key signature for context
+        
+    Returns:
+        str: Preferred enharmonic spelling
+    """
+    if not key_signature:
+        # Default to sharp preference for no key context
+        return ENHARMONIC_MAP.get(note, note)
+
+    key_preference = CIRCLE_OF_FIFTHS.get(key_signature)
+    if key_preference is None:
+        # Unknown key, use sharp preference
+        return ENHARMONIC_MAP.get(note, note)
+
+    # Sharp keys (positive values) prefer sharps
+    # Flat keys (negative values) prefer flats
+    if key_preference >= 0:
+        # Prefer sharps
+        return ENHARMONIC_MAP.get(note, note)
+    else:
+        # Prefer flats - convert sharps to flats if available
+        return ENHARMONIC_MAP_REVERSE.get(note, note)
+
+
 def transpose_chord(chord: str, semitones: int) -> str:
     """
     Transpose a single chord by a given number of semitones.
@@ -412,29 +557,128 @@ def transpose_chord(chord: str, semitones: int) -> str:
     Returns:
         str: The transposed chord
     """
+    return transpose_chord_with_key(chord, semitones)
+
+
+def transpose_chord_with_key(
+    chord: str, 
+    semitones: int, 
+    key_signature: str = None,
+    notation_system: str = 'american'
+) -> str:
+    """
+    Enhanced transpose chord with key signature awareness and notation system support.
+    
+    Args:
+        chord: The chord string
+        semitones: Number of semitones to transpose
+        key_signature: Optional key signature for enharmonic preference
+        notation_system: Target notation system ('american' or 'latin')
+        
+    Returns:
+        str: The transposed chord
+    """
     if not chord or not ChordProValidator.is_valid_chord(chord):
         return chord  # Return unchanged if invalid
-    
-    parsed = parse_chord(chord)
+
+    if semitones == 0:
+        return chord  # No transposition needed
+
+    # Ensure semitones are within reasonable range
+    semitones = ((semitones % 12) + 12) % 12
+    if semitones > 6:
+        semitones = semitones - 12  # Use shorter path on circle
+
+    parsed = parse_chord_enhanced(chord)
     root = parsed['root']
     modifiers = parsed['modifiers']
+    bass_note = parsed['bass_note']
+    is_slash_chord = parsed['is_slash_chord']
+
+    # Transpose root note
+    transposed_root = transpose_note(root, semitones, key_signature)
     
-    # Convert flat to sharp for easier processing
-    normalized_root = ENHARMONIC_MAP.get(root, root)
+    # Handle slash chords - transpose bass note as well
+    result = transposed_root + modifiers
+    if is_slash_chord and bass_note:
+        transposed_bass = transpose_note(bass_note, semitones, key_signature)
+        result += '/' + transposed_bass
+
+    # Convert notation system if needed
+    if notation_system == 'latin':
+        result = convert_chord_to_latin(result)
+
+    return result
+
+
+def transpose_note(note: str, semitones: int, key_signature: str = None) -> str:
+    """
+    Transpose a single note by semitones with key signature awareness.
     
+    Args:
+        note: The note to transpose
+        semitones: Number of semitones to transpose
+        key_signature: Optional key signature for enharmonic preference
+        
+    Returns:
+        str: The transposed note
+    """
+    if not note:
+        return note
+
+    # Convert flat to sharp for chromatic scale lookup
+    normalized_note = ENHARMONIC_MAP.get(note, note)
+
     # Find current position in chromatic scale
     try:
-        current_index = CHROMATIC_SCALE.index(normalized_root)
+        current_index = CHROMATIC_SCALE.index(normalized_note)
     except ValueError:
-        return chord  # Return unchanged if root note not found
-    
-    # Calculate new position (handle negative transposition and wrap around)
+        return note  # Return unchanged if note not found
+
+    # Calculate new position with proper wrap-around
     new_index = (current_index + semitones) % 12
     if new_index < 0:
         new_index += 12
+
+    # Get the new note from appropriate scale based on key signature
+    if key_signature and key_signature in CIRCLE_OF_FIFTHS:
+        key_preference = CIRCLE_OF_FIFTHS[key_signature]
+        if key_preference < 0:
+            # Flat key - prefer flat spelling
+            new_note = CHROMATIC_SCALE_FLATS[new_index]
+        else:
+            # Sharp key or C major - prefer sharp spelling
+            new_note = CHROMATIC_SCALE[new_index]
+    else:
+        # No key context - use sharp preference (default behavior)
+        new_note = CHROMATIC_SCALE[new_index]
+
+    return new_note
+
+
+def convert_chord_to_latin(chord: str) -> str:
+    """
+    Convert a chord to Latin notation system.
     
-    new_root = CHROMATIC_SCALE[new_index]
-    return new_root + modifiers
+    Args:
+        chord: The chord in American notation
+        
+    Returns:
+        str: The chord in Latin notation
+    """
+    parsed = parse_chord_enhanced(chord)
+    root = parsed['root']
+    modifiers = parsed['modifiers']
+    bass_note = parsed['bass_note']
+    is_slash_chord = parsed['is_slash_chord']
+    
+    result = convert_notation(root, 'american', 'latin') + modifiers
+    
+    if is_slash_chord and bass_note:
+        latin_bass = convert_notation(bass_note, 'american', 'latin')
+        result += '/' + latin_bass
+    
+    return result
 
 
 def transpose_chordpro_content(content: str, semitones: int) -> str:
@@ -448,18 +692,206 @@ def transpose_chordpro_content(content: str, semitones: int) -> str:
     Returns:
         str: The content with all chords transposed
     """
+    return transpose_chordpro_content_with_key(content, semitones)
+
+
+def transpose_chordpro_content_with_key(
+    content: str, 
+    semitones: int,
+    key_signature: str = None,
+    notation_system: str = 'american'
+) -> str:
+    """
+    Enhanced transpose ChordPro content with key signature awareness.
+    
+    Args:
+        content: The ChordPro formatted content
+        semitones: Number of semitones to transpose
+        key_signature: Optional key signature for enharmonic preference
+        notation_system: Target notation system ('american' or 'latin')
+        
+    Returns:
+        str: The content with all chords transposed
+    """
     if not content or semitones == 0:
         return content
-    
+
+    # Auto-detect key signature if not provided
+    detected_key = key_signature or extract_key_signature(content)
+
     # Regular expression to find chord notation in ChordPro format [ChordName]
     chord_pattern = re.compile(r'\[([^\]]+)\]')
-    
+
     def transpose_match(match):
         chord_name = match.group(1)
-        transposed_chord = transpose_chord(chord_name, semitones)
+        transposed_chord = transpose_chord_with_key(
+            chord_name, 
+            semitones, 
+            detected_key,
+            notation_system
+        )
         return f'[{transposed_chord}]'
-    
+
     return chord_pattern.sub(transpose_match, content)
+
+
+def extract_key_signature(content: str) -> str:
+    """
+    Extract key signature from ChordPro content.
+    
+    Args:
+        content: The ChordPro formatted content
+        
+    Returns:
+        str: The key signature if found, None otherwise
+    """
+    key_pattern = re.compile(r'\{key\s*:\s*([A-G][#b]?m?)\s*\}', re.IGNORECASE)
+    match = key_pattern.search(content)
+    return match.group(1).strip() if match else None
+
+
+def transpose_chord_intelligent(
+    chord: str,
+    semitones: int,
+    key_signature: str = None,
+    notation_system: str = 'american',
+    preserve_enharmonics: bool = False,
+    preferred_accidentals: str = 'auto'
+) -> str:
+    """
+    Transpose chord with intelligent enharmonic selection.
+    
+    Args:
+        chord: The chord to transpose
+        semitones: Number of semitones to transpose
+        key_signature: Optional key signature for context
+        notation_system: Target notation system ('american' or 'latin')
+        preserve_enharmonics: Whether to preserve original accidental style
+        preferred_accidentals: Preferred accidental style ('sharps', 'flats', 'auto')
+        
+    Returns:
+        str: The intelligently transposed chord
+    """
+    if not chord or not ChordProValidator.is_valid_chord(chord):
+        return chord
+
+    if semitones == 0:
+        return chord
+
+    # If preserving enharmonics, try to maintain the original accidental style
+    if preserve_enharmonics:
+        original_has_flats = 'b' in chord
+        original_has_sharps = '#' in chord
+        
+        if original_has_flats and preferred_accidentals == 'auto':
+            return transpose_chord_with_flat_preference(chord, semitones, key_signature)
+        if original_has_sharps and preferred_accidentals == 'auto':
+            return transpose_chord_with_sharp_preference(chord, semitones, key_signature)
+
+    # Handle preferred accidentals
+    if preferred_accidentals == 'flats':
+        return transpose_chord_with_flat_preference(chord, semitones, key_signature)
+    if preferred_accidentals == 'sharps':
+        return transpose_chord_with_sharp_preference(chord, semitones, key_signature)
+
+    # Default intelligent transposition
+    return transpose_chord_with_key(chord, semitones, key_signature, notation_system)
+
+
+def transpose_chord_with_flat_preference(
+    chord: str,
+    semitones: int,
+    key_signature: str = None
+) -> str:
+    """
+    Transpose chord with preference for flat accidentals.
+    
+    Args:
+        chord: The chord to transpose
+        semitones: Number of semitones to transpose
+        key_signature: Optional key signature
+        
+    Returns:
+        str: The transposed chord with flat preference
+    """
+    parsed = parse_chord_enhanced(chord)
+    root = parsed['root']
+    modifiers = parsed['modifiers']
+    bass_note = parsed['bass_note']
+    is_slash_chord = parsed['is_slash_chord']
+
+    transposed_root = transpose_note_with_preference(root, semitones, 'flats')
+    
+    result = transposed_root + modifiers
+    if is_slash_chord and bass_note:
+        transposed_bass = transpose_note_with_preference(bass_note, semitones, 'flats')
+        result += '/' + transposed_bass
+
+    return result
+
+
+def transpose_chord_with_sharp_preference(
+    chord: str,
+    semitones: int,
+    key_signature: str = None
+) -> str:
+    """
+    Transpose chord with preference for sharp accidentals.
+    
+    Args:
+        chord: The chord to transpose
+        semitones: Number of semitones to transpose
+        key_signature: Optional key signature
+        
+    Returns:
+        str: The transposed chord with sharp preference
+    """
+    parsed = parse_chord_enhanced(chord)
+    root = parsed['root']
+    modifiers = parsed['modifiers']
+    bass_note = parsed['bass_note']
+    is_slash_chord = parsed['is_slash_chord']
+
+    transposed_root = transpose_note_with_preference(root, semitones, 'sharps')
+    
+    result = transposed_root + modifiers
+    if is_slash_chord and bass_note:
+        transposed_bass = transpose_note_with_preference(bass_note, semitones, 'sharps')
+        result += '/' + transposed_bass
+
+    return result
+
+
+def transpose_note_with_preference(
+    note: str,
+    semitones: int,
+    preference: str
+) -> str:
+    """
+    Transpose note with accidental preference.
+    
+    Args:
+        note: The note to transpose
+        semitones: Number of semitones to transpose
+        preference: Accidental preference ('sharps' or 'flats')
+        
+    Returns:
+        str: The transposed note with preferred accidentals
+    """
+    if not note:
+        return note
+
+    normalized_note = ENHARMONIC_MAP.get(note, note)
+    try:
+        current_index = CHROMATIC_SCALE.index(normalized_note)
+    except ValueError:
+        return note
+
+    new_index = (current_index + semitones) % 12
+    if new_index < 0:
+        new_index += 12
+
+    return CHROMATIC_SCALE_FLATS[new_index] if preference == 'flats' else CHROMATIC_SCALE[new_index]
 
 
 def validate_chordpro_content(content: str) -> Dict:

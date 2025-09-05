@@ -3,7 +3,17 @@ Test cases for chord transposition utilities and API endpoints.
 """
 
 import pytest
-from chordme.chordpro_utils import transpose_chord, transpose_chordpro_content, parse_chord
+from chordme.chordpro_utils import (
+    transpose_chord, 
+    transpose_chordpro_content, 
+    parse_chord,
+    transpose_chord_with_key,
+    transpose_chord_intelligent,
+    transpose_chordpro_content_with_key,
+    convert_notation,
+    extract_key_signature,
+    parse_chord_enhanced
+)
 
 
 class TestChordParsing:
@@ -131,9 +141,9 @@ class TestChordTransposition:
     
     def test_transpose_slash_chords(self):
         """Test transposition of slash chords."""
-        # Only root note should be transposed, not bass note
-        assert transpose_chord('C/E', 2) == 'D/E'
-        assert transpose_chord('G/B', 1) == 'G#/B'
+        # Both root note and bass note should be transposed to maintain relationships
+        assert transpose_chord('C/E', 2) == 'D/F#'
+        assert transpose_chord('G/B', 1) == 'G#/C'
     
     def test_transpose_invalid_chords(self):
         """Test transposition of invalid chords."""
@@ -191,7 +201,7 @@ class TestChordProContentTransposition:
         """Test transposition of complex chord progressions."""
         content = '[Cmaj7]Test [F#m7]progression [Bb]with [G/B]various chords'
         result = transpose_chordpro_content(content, 3)
-        expected = '[D#maj7]Test [Am7]progression [C#]with [A#/B]various chords'
+        expected = '[D#maj7]Test [Am7]progression [C#]with [A#/D]various chords'
         assert result == expected
     
     def test_transpose_zero_semitones(self):
@@ -272,3 +282,112 @@ class TestChordTranspositionEdgeCases:
         result = transpose_chordpro_content(content, 2)
         expected = '[D]Test with "quotes" [A]and \'apostrophes\' [Bm]& symbols!'
         assert result == expected
+
+
+class TestEnhancedChordTransposition:
+    """Test enhanced chord transposition functionality."""
+    
+    def test_transpose_with_key_signature_sharp_keys(self):
+        """Test transposition with sharp key preferences."""
+        # G major (1 sharp) should prefer sharps
+        assert transpose_chord_with_key('C', 1, 'G') == 'C#'
+        assert transpose_chord_with_key('F', 1, 'D') == 'F#'  # D major (2 sharps)
+    
+    def test_transpose_with_key_signature_flat_keys(self):
+        """Test transposition with flat key preferences.""" 
+        # F major (1 flat) should prefer flats
+        assert transpose_chord_with_key('C', 1, 'F') == 'Db'
+        assert transpose_chord_with_key('A', 1, 'Bb') == 'Bb'  # Bb major (2 flats)
+    
+    def test_transpose_with_minor_keys(self):
+        """Test transposition with minor key signatures."""
+        # E minor (1 sharp) should prefer sharps
+        assert transpose_chord_with_key('C', 1, 'Em') == 'C#'
+        # D minor (1 flat) should prefer flats
+        assert transpose_chord_with_key('C', 1, 'Dm') == 'Db'
+    
+    def test_transpose_slash_chords_with_key(self):
+        """Test slash chord transposition with key signature."""
+        assert transpose_chord_with_key('C/E', 2, 'G') == 'D/F#'
+        assert transpose_chord_with_key('F/A', -1, 'F') == 'E/Ab'
+    
+    def test_transpose_content_with_key_detection(self):
+        """Test content transposition with automatic key detection."""
+        content = """{key: F}
+[C]Test [G]content"""
+        result = transpose_chordpro_content_with_key(content, 1)
+        expected = """{key: F}
+[Db]Test [Ab]content"""
+        assert result == expected
+    
+    def test_transpose_intelligent_preserve_enharmonics(self):
+        """Test intelligent transposition preserving enharmonics."""
+        # Should maintain flat preference
+        result = transpose_chord_intelligent('Bb', 1, preserve_enharmonics=True)
+        assert result == 'B'
+        
+        # Should maintain sharp preference  
+        result = transpose_chord_intelligent('C#', 1, preserve_enharmonics=True)
+        assert result == 'D'
+    
+    def test_transpose_with_preferred_accidentals(self):
+        """Test transposition with preferred accidental styles."""
+        # Force flat preference
+        result = transpose_chord_intelligent('C', 1, preferred_accidentals='flats')
+        assert result == 'Db'
+        
+        # Force sharp preference
+        result = transpose_chord_intelligent('C', 1, preferred_accidentals='sharps')
+        assert result == 'C#'
+    
+    def test_notation_system_conversion(self):
+        """Test conversion between notation systems."""
+        # American to Latin
+        assert convert_notation('C', 'american', 'latin') == 'Do'
+        assert convert_notation('D', 'american', 'latin') == 'Re'
+        
+        # Latin to American
+        assert convert_notation('Do', 'latin', 'american') == 'C'
+        assert convert_notation('Re', 'latin', 'american') == 'D'
+        
+        # Unknown notes should be unchanged
+        assert convert_notation('X', 'american', 'latin') == 'X'
+    
+    def test_large_semitone_values(self):
+        """Test transposition with large semitone values."""
+        # Should wrap around correctly
+        assert transpose_chord('C', 15) == 'D#'  # 15 % 12 = 3 semitones
+        assert transpose_chord('C', -15) == 'A'  # -15 + 24 = 9 semitones
+    
+    def test_invalid_key_signature_handling(self):
+        """Test graceful handling of invalid key signatures."""
+        # Should default to sharp preference
+        assert transpose_chord_with_key('C', 1, 'InvalidKey') == 'C#'
+        assert transpose_chord_with_key('C', 1, '') == 'C#'
+    
+    def test_extract_key_signature(self):
+        """Test key signature extraction from content."""
+        content1 = "{key: G}\n[C]Test content"
+        assert extract_key_signature(content1) == 'G'
+        
+        content2 = "{Key: Am}\n[C]Test content"  
+        assert extract_key_signature(content2) == 'Am'
+        
+        content3 = "[C]No key signature"
+        assert extract_key_signature(content3) is None
+    
+    def test_enhanced_chord_parsing(self):
+        """Test enhanced chord parsing functionality."""
+        # Regular chord
+        result = parse_chord_enhanced('Cmaj7')
+        assert result['root'] == 'C'
+        assert result['modifiers'] == 'maj7'
+        assert result['bass_note'] is None
+        assert result['is_slash_chord'] is False
+        
+        # Slash chord
+        result = parse_chord_enhanced('C/E')
+        assert result['root'] == 'C'
+        assert result['modifiers'] == ''
+        assert result['bass_note'] == 'E'
+        assert result['is_slash_chord'] is True
