@@ -42,7 +42,7 @@ class ChordProValidator:
     @staticmethod
     def is_valid_chord(chord: str) -> bool:
         """
-        Check if a chord notation is valid.
+        Check if a chord notation is valid using enhanced chord recognition.
         
         Args:
             chord: The chord string (e.g., "C", "Am", "F#m7")
@@ -52,10 +52,15 @@ class ChordProValidator:
         """
         if not chord.strip():
             return False
-            
-        # Updated chord pattern: note + optional modifiers + extended notations + slash chords
-        chord_pattern = r'^[A-G][#b]?[mM]?(?:maj|min|dim|aug|sus|add)?[0-9]*(?:[#b]?[0-9]*)?(?:/[A-G][#b]?)?$'
-        return bool(re.match(chord_pattern, chord.strip()))
+        
+        # Use enhanced chord recognition engine
+        try:
+            from .chord_recognition import chord_recognition_engine
+            return chord_recognition_engine.is_valid_chord(chord.strip())
+        except ImportError:
+            # Fallback to original regex pattern if enhanced engine not available
+            chord_pattern = r'^[A-G][#b]?[mM]?(?:maj|min|dim|aug|sus|add)?[0-9]*(?:[#b]?[0-9]*)?(?:/[A-G][#b]?)?$'
+            return bool(re.match(chord_pattern, chord.strip()))
     
     @staticmethod
     def extract_directives(content: str) -> Dict[str, str]:

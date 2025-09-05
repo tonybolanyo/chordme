@@ -39,11 +39,12 @@ class TestChordProValidator:
         assert validator.is_valid_chord('Dm7')
         assert validator.is_valid_chord('Gsus4')
         
-        # Invalid chords
+        # Invalid chords  
         assert not validator.is_valid_chord('')  # Empty
-        assert not validator.is_valid_chord('H')  # Invalid note
-        assert not validator.is_valid_chord('c')  # Lowercase note
+        assert validator.is_valid_chord('H')  # Valid German notation (H = B)
+        assert validator.is_valid_chord('c')  # Now valid with enhanced engine (case-insensitive)
         assert not validator.is_valid_chord('123')  # Numbers only
+        assert not validator.is_valid_chord('X')  # Truly invalid note
 
     def test_extract_directives(self):
         """Test directive extraction."""

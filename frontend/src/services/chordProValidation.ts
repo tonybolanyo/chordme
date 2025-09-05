@@ -113,16 +113,24 @@ export class ChordProValidator {
   }
 
   /**
-   * Validate chord syntax (mirrors backend regex pattern)
+   * Validate chord syntax (enhanced with new chord recognition engine)
    */
   public isValidChord(chord: string): boolean {
     if (!chord.trim()) {
       return false;
     }
 
-    // Match backend regex pattern for chord validation
-    const chordPattern = /^[A-G][#b]?[mM]?(?:maj|min|dim|aug|sus|add)?[0-9]*(?:[#b]?[0-9]*)?(?:\/[A-G][#b]?)?$/;
-    return chordPattern.test(chord.trim());
+    // Use enhanced chord recognition engine for improved validation
+    // Fall back to original pattern for backward compatibility
+    try {
+      // Import dynamically to avoid circular dependencies
+      const { chordRecognitionEngine } = require('./chordRecognition');
+      return chordRecognitionEngine.isValidChord(chord.trim());
+    } catch (error) {
+      // Fallback to original regex pattern if enhanced engine fails
+      const chordPattern = /^[A-G][#b]?[mM]?(?:maj|min|dim|aug|sus|add)?[0-9]*(?:[#b]?[0-9]*)?(?:\/[A-G][#b]?)?$/;
+      return chordPattern.test(chord.trim());
+    }
   }
 
   /**
