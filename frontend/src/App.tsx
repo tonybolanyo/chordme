@@ -7,6 +7,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
 import ChordProDemo from './pages/ChordProDemo';
+import ChordDiagramDemo from './pages/ChordDiagramDemo';
 import AuthCallback from './pages/AuthCallback';
 import './App.css';
 
@@ -67,6 +68,8 @@ function AppContent() {
         return <Profile />;
       case 'demo':
         return <ChordProDemo />;
+      case 'chord-diagrams':
+        return <ChordDiagramDemo />;
       case 'auth/google/callback':
         return <AuthCallback />;
       case 'home':

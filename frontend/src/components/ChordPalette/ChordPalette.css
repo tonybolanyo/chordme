@@ -378,3 +378,116 @@
     color: #9ca3af;
   }
 }
+
+/* Chord Diagram Mode Styles */
+.chord-palette-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.chord-diagram-toggle {
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 0.5rem;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+}
+
+.chord-diagram-toggle:hover {
+  background: #e5e7eb;
+  border-color: #9ca3af;
+}
+
+.chord-diagram-toggle.active {
+  background: #3b82f6;
+  border-color: #2563eb;
+  color: white;
+}
+
+.chord-grid.diagram-mode {
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+}
+
+.chord-diagram-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.chord-diagram-item:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+  transform: translateY(-1px);
+}
+
+.chord-diagram-item:active {
+  transform: translateY(0);
+}
+
+.palette-chord-diagram {
+  margin-bottom: 0.5rem;
+  pointer-events: none; /* Prevent nested interactions */
+}
+
+.diagram-chord-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #374151;
+  text-align: center;
+}
+
+/* Responsive adjustments for diagram mode */
+@media (max-width: 768px) {
+  .chord-grid.diagram-mode {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+  
+  .chord-diagram-item {
+    padding: 0.5rem;
+  }
+}
+
+/* Dark mode for new elements */
+@media (prefers-color-scheme: dark) {
+  .chord-diagram-toggle {
+    background: #374151;
+    border-color: #4b5563;
+    color: #f9fafb;
+  }
+
+  .chord-diagram-toggle:hover {
+    background: #4b5563;
+    border-color: #6b7280;
+  }
+
+  .chord-diagram-item {
+    background: #1f2937;
+    border-color: #374151;
+  }
+
+  .chord-diagram-item:hover {
+    border-color: #60a5fa;
+    box-shadow: 0 2px 8px rgba(96, 165, 250, 0.15);
+  }
+
+  .diagram-chord-name {
+    color: #e5e7eb;
+  }
+}

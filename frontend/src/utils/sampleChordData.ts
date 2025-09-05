@@ -5,7 +5,7 @@
  * ChordDiagramRenderer component across different instruments.
  */
 
-import { ChordDiagram, INSTRUMENT_CONFIGS } from '../../types/chordDiagram';
+import { ChordDiagram, INSTRUMENT_CONFIGS } from '../types/chordDiagram';
 
 // Helper function to create chord metadata
 const createMetadata = (name: string) => ({
