@@ -8,6 +8,10 @@ import React, {
 import './ChordProEditor.css';
 import ChordAutocomplete from '../ChordAutocomplete';
 import { detectInputContext, isValidChord } from '../../services/chordService';
+import { useChordProValidation } from '../../hooks/useChordProValidation';
+import { ValidationErrorHighlight } from '../ValidationErrorHighlight';
+import { ValidationStatusBar } from '../ValidationStatusBar';
+import { ValidationConfig, ValidationError } from '../../services/chordProValidation';
 
 interface ChordProEditorProps {
   value: string;
@@ -19,6 +23,10 @@ interface ChordProEditorProps {
   required?: boolean;
   allowDrop?: boolean; // New prop to enable/disable drop functionality
   enableAutocomplete?: boolean; // New prop to enable/disable autocomplete
+  enableValidation?: boolean; // New prop to enable/disable real-time validation
+  validationConfig?: Partial<ValidationConfig>; // Validation configuration
+  showValidationStatus?: boolean; // Show validation status bar
+  onValidationChange?: (errors: ValidationError[], warnings: ValidationError[]) => void;
 }
 
 interface Token {
@@ -47,6 +55,10 @@ const ChordProEditor = forwardRef<HTMLTextAreaElement, ChordProEditorProps>(
       required = false,
       allowDrop = true, // Enable drop by default
       enableAutocomplete = true, // Enable autocomplete by default
+      enableValidation = true, // Enable validation by default
+      validationConfig,
+      showValidationStatus = true,
+      onValidationChange,
     },
     ref
   ) => {
@@ -68,6 +80,39 @@ const ChordProEditor = forwardRef<HTMLTextAreaElement, ChordProEditorProps>(
       start: number;
       end: number;
     } | null>(null);
+
+    // Validation state and hooks
+    const {
+      result: validationResult,
+      hasErrors,
+      hasWarnings,
+      errorCount,
+      warningCount,
+      isValidating,
+      validateNow,
+      updateConfig,
+      getErrorsAtPosition,
+      validator
+    } = useChordProValidation(value, {
+      enableRealTime: enableValidation,
+      debounceMs: 300,
+      onValidationChange: (result) => {
+        if (onValidationChange) {
+          onValidationChange(result.errors, result.warnings);
+        }
+      }
+    });
+
+    // Update validation config when prop changes
+    useEffect(() => {
+      if (validationConfig && enableValidation) {
+        updateConfig(validationConfig);
+      }
+    }, [validationConfig, enableValidation, updateConfig]);
+
+    // Get all validation errors for highlighting
+    const allValidationErrors = validationResult ? 
+      [...validationResult.errors, ...validationResult.warnings] : [];
 
     // Parse ChordPro content and identify tokens
     const parseChordPro = (text: string): Token[] => {
@@ -641,18 +686,41 @@ const ChordProEditor = forwardRef<HTMLTextAreaElement, ChordProEditorProps>(
     return (
       <>
         <div
-          className={`chordpro-editor-container ${isDragOver ? 'drag-over' : ''}`}
+          className={`chordpro-editor-container ${isDragOver ? 'drag-over' : ''} ${enableValidation ? 'with-validation' : ''}`}
           style={style}
           onDragOver={handleDragOver}
           onDragEnter={handleDragEnter}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
         >
+          {/* Syntax highlighting layer */}
           <div
             ref={highlightRef}
             className="chordpro-highlight-layer"
             dangerouslySetInnerHTML={{ __html: generateHighlightedHTML(value) }}
           />
+          
+          {/* Validation error highlighting layer */}
+          {enableValidation && allValidationErrors.length > 0 && (
+            <div className="chordpro-validation-layer">
+              <ValidationErrorHighlight
+                content={value}
+                errors={allValidationErrors}
+                showTooltips={true}
+                onErrorClick={(error) => {
+                  // Focus the textarea and position cursor at error location
+                  if (textareaRef.current) {
+                    textareaRef.current.focus();
+                    textareaRef.current.setSelectionRange(
+                      error.position.start,
+                      error.position.end
+                    );
+                  }
+                }}
+              />
+            </div>
+          )}
+          
           <textarea
             ref={textareaRef}
             id={id}
@@ -668,6 +736,31 @@ const ChordProEditor = forwardRef<HTMLTextAreaElement, ChordProEditorProps>(
             spellCheck={false}
           />
         </div>
+
+        {/* Validation status bar */}
+        {enableValidation && showValidationStatus && (
+          <ValidationStatusBar
+            errors={validationResult?.errors || []}
+            warnings={validationResult?.warnings || []}
+            isValidating={isValidating}
+            isValid={!hasErrors}
+            config={validator.getConfig()}
+            onConfigChange={updateConfig}
+            onErrorClick={(error) => {
+              // Focus the textarea and position cursor at error location
+              if (textareaRef.current) {
+                textareaRef.current.focus();
+                textareaRef.current.setSelectionRange(
+                  error.position.start,
+                  error.position.end
+                );
+              }
+            }}
+            onValidateNow={validateNow}
+            showSettings={true}
+            className="chordpro-validation-status"
+          />
+        )}
 
         {enableAutocomplete && (
           <ChordAutocomplete
