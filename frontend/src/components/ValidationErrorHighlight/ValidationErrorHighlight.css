@@ -1,0 +1,321 @@
+/* Validation Error Highlight Styles */
+
+.validation-error-highlight-container {
+  position: relative;
+  font-family: 'Courier New', monospace;
+  line-height: 1.4;
+}
+
+.validation-content {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* Error highlighting styles */
+.validation-error-highlight {
+  position: relative;
+  cursor: pointer;
+  border-radius: 2px;
+  padding: 1px 2px;
+  transition: all 0.2s ease;
+}
+
+/* Error severity styles */
+.validation-error-highlight.error {
+  background-color: rgba(220, 38, 38, 0.1);
+  color: #dc2626;
+  text-decoration: underline wavy #dc2626;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
+}
+
+.validation-error-highlight.warning {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+  text-decoration: underline wavy #f59e0b;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+.validation-error-highlight.info {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+  text-decoration: underline dotted #3b82f6;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+/* Error type specific styles */
+.validation-error-highlight.chord {
+  border-left: 3px solid #dc2626;
+  padding-left: 4px;
+}
+
+.validation-error-highlight.directive {
+  border-left: 3px solid #f59e0b;
+  padding-left: 4px;
+}
+
+.validation-error-highlight.security {
+  background-color: rgba(220, 38, 38, 0.2);
+  border: 1px solid #dc2626;
+  font-weight: bold;
+}
+
+.validation-error-highlight.bracket {
+  background-color: rgba(168, 85, 247, 0.1);
+  color: #a855f7;
+  text-decoration: underline wavy #a855f7;
+}
+
+/* Hover effects */
+.validation-error-highlight:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.validation-error-highlight.error:hover {
+  background-color: rgba(220, 38, 38, 0.2);
+}
+
+.validation-error-highlight.warning:hover {
+  background-color: rgba(245, 158, 11, 0.2);
+}
+
+.validation-error-highlight.info:hover {
+  background-color: rgba(59, 130, 246, 0.2);
+}
+
+/* Tooltip styles */
+.validation-tooltip-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 999;
+  background: transparent;
+}
+
+.validation-tooltip {
+  position: fixed;
+  z-index: 1000;
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  min-width: 200px;
+  max-width: 320px;
+  overflow: hidden;
+  animation: tooltipFadeIn 0.15s ease-out;
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.tooltip-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid #374151;
+  background: #111827;
+}
+
+.tooltip-icon {
+  font-size: 14px;
+}
+
+.tooltip-type {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #9ca3af;
+  flex: 1;
+}
+
+.tooltip-close {
+  background: none;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.tooltip-close:hover {
+  background-color: #374151;
+  color: #d1d5db;
+}
+
+.tooltip-content {
+  padding: 12px;
+  color: #e5e7eb;
+}
+
+.tooltip-message {
+  font-size: 14px;
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+.tooltip-suggestion {
+  font-size: 12px;
+  color: #93c5fd;
+  background: rgba(59, 130, 246, 0.1);
+  padding: 6px 8px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.tooltip-suggestion strong {
+  color: #60a5fa;
+}
+
+.tooltip-position {
+  font-size: 11px;
+  color: #6b7280;
+  font-family: 'Courier New', monospace;
+}
+
+/* Tooltip severity variants */
+.tooltip-error .tooltip-header {
+  background: #7f1d1d;
+  border-bottom-color: #991b1b;
+}
+
+.tooltip-error .tooltip-type {
+  color: #fca5a5;
+}
+
+.tooltip-warning .tooltip-header {
+  background: #78350f;
+  border-bottom-color: #92400e;
+}
+
+.tooltip-warning .tooltip-type {
+  color: #fde68a;
+}
+
+.tooltip-info .tooltip-header {
+  background: #1e3a8a;
+  border-bottom-color: #1e40af;
+}
+
+.tooltip-info .tooltip-type {
+  color: #93c5fd;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .validation-error-highlight.error {
+    color: #f87171;
+    text-decoration-color: #f87171;
+    background-color: rgba(248, 113, 113, 0.1);
+  }
+
+  .validation-error-highlight.warning {
+    color: #fbbf24;
+    text-decoration-color: #fbbf24;
+    background-color: rgba(251, 191, 36, 0.1);
+  }
+
+  .validation-error-highlight.info {
+    color: #60a5fa;
+    text-decoration-color: #60a5fa;
+    background-color: rgba(96, 165, 250, 0.1);
+  }
+
+  .validation-error-highlight.chord {
+    border-left-color: #f87171;
+  }
+
+  .validation-error-highlight.directive {
+    border-left-color: #fbbf24;
+  }
+
+  .validation-error-highlight.security {
+    background-color: rgba(248, 113, 113, 0.2);
+    border-color: #f87171;
+  }
+
+  .validation-error-highlight.bracket {
+    color: #c084fc;
+    text-decoration-color: #c084fc;
+    background-color: rgba(192, 132, 252, 0.1);
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .validation-error-highlight {
+    border: 2px solid;
+    font-weight: bold;
+  }
+
+  .validation-error-highlight.error {
+    border-color: #dc2626;
+    background-color: rgba(220, 38, 38, 0.3);
+  }
+
+  .validation-error-highlight.warning {
+    border-color: #f59e0b;
+    background-color: rgba(245, 158, 11, 0.3);
+  }
+
+  .validation-error-highlight.info {
+    border-color: #3b82f6;
+    background-color: rgba(59, 130, 246, 0.3);
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .validation-error-highlight {
+    transition: none;
+  }
+
+  .validation-tooltip {
+    animation: none;
+  }
+
+  .validation-error-highlight:hover {
+    transform: none;
+  }
+}
+
+/* Focus styles for accessibility */
+.validation-error-highlight:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Print styles */
+@media print {
+  .validation-tooltip {
+    display: none;
+  }
+
+  .validation-error-highlight {
+    background: transparent !important;
+    text-decoration: underline !important;
+    color: inherit !important;
+  }
+}

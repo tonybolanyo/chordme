@@ -7,6 +7,10 @@
   overflow: hidden;
 }
 
+.chordpro-editor-container.with-validation {
+  border-color: #e2e8f0;
+}
+
 .chordpro-textarea {
   width: 100%;
   box-sizing: border-box;
@@ -24,7 +28,8 @@
   position: relative;
 }
 
-.chordpro-highlight-layer {
+.chordpro-highlight-layer,
+.chordpro-validation-layer {
   position: absolute;
   top: 0;
   left: 0;
@@ -39,6 +44,15 @@
   white-space: pre-wrap;
   word-wrap: break-word;
   z-index: 1;
+}
+
+.chordpro-validation-layer {
+  z-index: 3;
+  pointer-events: auto; /* Allow clicking on validation errors */
+}
+
+.chordpro-validation-status {
+  margin-top: 8px;
 }
 
 /* Syntax highlighting colors */
