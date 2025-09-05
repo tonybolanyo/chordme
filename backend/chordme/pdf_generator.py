@@ -1,24 +1,28 @@
 """
 PDF generation utilities for ChordPro songs.
 Handles rendering chords above lyrics with proper layout and styling.
+Supports template-based styling for flexible PDF customization.
 """
 
 from reportlab.lib.pagesizes import letter, A4, legal
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
-from reportlab.lib.colors import black, blue, red
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.colors import black, blue, red, HexColor
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak
+from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 
-from reportlab.lib.enums import TA_CENTER
 from io import BytesIO
 import re
 from typing import Dict, List, Tuple, Optional
+
+from .pdf_template_schema import PDFTemplateConfig, FontConfig
+from .pdf_templates import get_template, get_template_manager
 
 
 class ChordProPDFGenerator:
     """
     Generates PDF documents from ChordPro formatted songs.
-    Supports customizable paper sizes, orientations, and styling.
+    Supports customizable paper sizes, orientations, styling, and templates.
     """
     
     # Supported paper sizes
@@ -28,16 +32,31 @@ class ChordProPDFGenerator:
         'legal': legal
     }
     
-    def __init__(self, paper_size: str = 'a4', orientation: str = 'portrait'):
+    def __init__(self, paper_size: str = 'a4', orientation: str = 'portrait', 
+                 template: Optional[PDFTemplateConfig] = None, template_name: Optional[str] = None):
         """
-        Initialize PDF generator with specified paper size and orientation.
+        Initialize PDF generator with specified paper size, orientation, and template.
         
         Args:
             paper_size: Paper size ('letter', 'a4', 'legal')
             orientation: Orientation ('portrait' or 'landscape')
+            template: Template configuration object
+            template_name: Name of predefined template to use
         """
-        self.paper_size = self.PAPER_SIZES.get(paper_size.lower(), A4)
-        self.orientation = orientation.lower()
+        # Set up template
+        self.template = None
+        if template:
+            self.template = template
+        elif template_name:
+            self.template = get_template(template_name)
+        
+        # Use template settings if available, otherwise use parameters
+        if self.template:
+            self.paper_size = self.PAPER_SIZES.get(self.template.page.size.lower(), A4)
+            self.orientation = self.template.page.orientation.lower()
+        else:
+            self.paper_size = self.PAPER_SIZES.get(paper_size.lower(), A4)
+            self.orientation = orientation.lower()
         
         if self.orientation == 'landscape':
             self.page_size = (self.paper_size[1], self.paper_size[0])
@@ -46,63 +65,150 @@ class ChordProPDFGenerator:
             
         self.styles = self._create_styles()
     
+    def _hex_to_color(self, hex_color: str):
+        """Convert hex color string to ReportLab color object."""
+        try:
+            return HexColor(hex_color)
+        except:
+            return black  # Fallback to black if conversion fails
+    
+    def _get_alignment(self, alignment: str):
+        """Convert alignment string to ReportLab constant."""
+        alignment_map = {
+            'left': TA_LEFT,
+            'center': TA_CENTER,
+            'right': TA_RIGHT
+        }
+        return alignment_map.get(alignment.lower(), TA_CENTER)
+    
     def _create_styles(self) -> Dict:
-        """Create custom styles for PDF document."""
+        """Create custom styles for PDF document based on template or defaults."""
         styles = getSampleStyleSheet()
         
-        # Title style
-        title_style = ParagraphStyle(
-            'SongTitle',
-            parent=styles['Heading1'],
-            fontSize=18,
-            spaceAfter=12,
-            alignment=TA_CENTER,
-            textColor=black
-        )
-        
-        # Author style
-        author_style = ParagraphStyle(
-            'SongAuthor',
-            parent=styles['Normal'],
-            fontSize=12,
-            spaceAfter=16,
-            alignment=TA_CENTER,
-            textColor=black,
-            fontName='Helvetica-Oblique'
-        )
-        
-        # Chord style (for chords above lyrics)
-        chord_style = ParagraphStyle(
-            'ChordStyle',
-            parent=styles['Normal'],
-            fontSize=10,
-            textColor=blue,
-            fontName='Helvetica-Bold',
-            spaceBefore=2,
-            spaceAfter=0
-        )
-        
-        # Lyrics style
-        lyrics_style = ParagraphStyle(
-            'LyricsStyle',
-            parent=styles['Normal'],
-            fontSize=11,
-            textColor=black,
-            fontName='Helvetica',
-            spaceBefore=0,
-            spaceAfter=4
-        )
-        
-        # Section style (for verse, chorus, etc.)
-        section_style = ParagraphStyle(
-            'SectionStyle',
-            parent=styles['Normal'],
-            fontSize=12,
-            textColor=red,
-            fontName='Helvetica-Bold',
-            spaceBefore=12,
-            spaceAfter=6
-        )
+        # Use template styles if available, otherwise use defaults
+        if self.template:
+            # Template-based styles
+            title_style = ParagraphStyle(
+                'SongTitle',
+                parent=styles['Heading1'],
+                fontSize=self.template.styles.title.size,
+                spaceAfter=self.template.spacing.paragraph_spacing,
+                alignment=TA_CENTER,
+                textColor=self._hex_to_color(self.template.styles.title.color),
+                fontName=self.template.styles.title.to_reportlab_font()
+            )
+            
+            author_style = ParagraphStyle(
+                'SongAuthor',
+                parent=styles['Normal'],
+                fontSize=self.template.styles.artist.size,
+                spaceAfter=self.template.spacing.paragraph_spacing + 4,
+                alignment=TA_CENTER,
+                textColor=self._hex_to_color(self.template.styles.artist.color),
+                fontName=self.template.styles.artist.to_reportlab_font()
+            )
+            
+            chord_style = ParagraphStyle(
+                'ChordStyle',
+                parent=styles['Normal'],
+                fontSize=self.template.styles.chords.size,
+                textColor=self._hex_to_color(self.template.styles.chords.color),
+                fontName=self.template.styles.chords.to_reportlab_font(),
+                spaceBefore=2,
+                spaceAfter=0
+            )
+            
+            lyrics_style = ParagraphStyle(
+                'LyricsStyle',
+                parent=styles['Normal'],
+                fontSize=self.template.styles.lyrics.size,
+                textColor=self._hex_to_color(self.template.styles.lyrics.color),
+                fontName=self.template.styles.lyrics.to_reportlab_font(),
+                spaceBefore=0,
+                spaceAfter=self.template.spacing.paragraph_spacing - 2
+            )
+            
+            section_style = ParagraphStyle(
+                'SectionStyle',
+                parent=styles['Normal'],
+                fontSize=self.template.styles.section_headers.size,
+                textColor=self._hex_to_color(self.template.styles.section_headers.color),
+                fontName=self.template.styles.section_headers.to_reportlab_font(),
+                spaceBefore=self.template.spacing.section_spacing,
+                spaceAfter=self.template.spacing.paragraph_spacing
+            )
+            
+            metadata_style = ParagraphStyle(
+                'MetadataStyle',
+                parent=styles['Normal'],
+                fontSize=self.template.styles.metadata.size,
+                textColor=self._hex_to_color(self.template.styles.metadata.color),
+                fontName=self.template.styles.metadata.to_reportlab_font(),
+                spaceBefore=0,
+                spaceAfter=self.template.spacing.paragraph_spacing,
+                alignment=TA_CENTER
+            )
+            
+        else:
+            # Default styles (original implementation)
+            title_style = ParagraphStyle(
+                'SongTitle',
+                parent=styles['Heading1'],
+                fontSize=18,
+                spaceAfter=12,
+                alignment=TA_CENTER,
+                textColor=black
+            )
+            
+            author_style = ParagraphStyle(
+                'SongAuthor',
+                parent=styles['Normal'],
+                fontSize=12,
+                spaceAfter=16,
+                alignment=TA_CENTER,
+                textColor=black,
+                fontName='Helvetica-Oblique'
+            )
+            
+            chord_style = ParagraphStyle(
+                'ChordStyle',
+                parent=styles['Normal'],
+                fontSize=10,
+                textColor=blue,
+                fontName='Helvetica-Bold',
+                spaceBefore=2,
+                spaceAfter=0
+            )
+            
+            lyrics_style = ParagraphStyle(
+                'LyricsStyle',
+                parent=styles['Normal'],
+                fontSize=11,
+                textColor=black,
+                fontName='Helvetica',
+                spaceBefore=0,
+                spaceAfter=4
+            )
+            
+            section_style = ParagraphStyle(
+                'SectionStyle',
+                parent=styles['Normal'],
+                fontSize=12,
+                textColor=red,
+                fontName='Helvetica-Bold',
+                spaceBefore=12,
+                spaceAfter=6
+            )
+            
+            metadata_style = ParagraphStyle(
+                'MetadataStyle',
+                parent=styles['Normal'],
+                fontSize=10,
+                textColor=black,
+                spaceBefore=0,
+                spaceAfter=12,
+                alignment=TA_CENTER
+            )
         
         return {
             'title': title_style,
@@ -110,6 +216,7 @@ class ChordProPDFGenerator:
             'chord': chord_style,
             'lyrics': lyrics_style,
             'section': section_style,
+            'metadata': metadata_style,
             'normal': styles['Normal']
         }
     
@@ -230,13 +337,26 @@ class ChordProPDFGenerator:
             PDF content as bytes
         """
         buffer = BytesIO()
+        
+        # Use template margins if available
+        if self.template:
+            top_margin = self.template.spacing.top_margin * inch
+            bottom_margin = self.template.spacing.bottom_margin * inch
+            left_margin = self.template.spacing.left_margin * inch
+            right_margin = self.template.spacing.right_margin * inch
+        else:
+            top_margin = 0.5 * inch
+            bottom_margin = 0.5 * inch
+            left_margin = 0.75 * inch
+            right_margin = 0.75 * inch
+        
         doc = SimpleDocTemplate(
             buffer,
             pagesize=self.page_size,
-            topMargin=0.5*inch,
-            bottomMargin=0.5*inch,
-            leftMargin=0.75*inch,
-            rightMargin=0.75*inch
+            topMargin=top_margin,
+            bottomMargin=bottom_margin,
+            leftMargin=left_margin,
+            rightMargin=right_margin
         )
         
         story = []
@@ -247,6 +367,24 @@ class ChordProPDFGenerator:
         # Use provided title/artist or fallback to parsed values
         song_title = title or parsed_data['title'] or 'Untitled Song'
         song_artist = artist or parsed_data['artist']
+        
+        # Add header if template specifies it
+        if self.template and self.template.header.enabled:
+            header_content = self._format_header_footer_content(
+                self.template.header.content, song_title, song_artist, parsed_data
+            )
+            if header_content:
+                header_style = ParagraphStyle(
+                    'HeaderStyle',
+                    parent=self.styles['normal'],
+                    fontSize=self.template.header.font.size,
+                    textColor=self._hex_to_color(self.template.header.font.color),
+                    fontName=self.template.header.font.to_reportlab_font(),
+                    alignment=self._get_alignment(self.template.header.alignment),
+                    spaceBefore=0,
+                    spaceAfter=8
+                )
+                story.append(Paragraph(header_content, header_style))
         
         # Add title
         story.append(Paragraph(song_title, self.styles['title']))
@@ -263,8 +401,11 @@ class ChordProPDFGenerator:
             metadata_parts.append(f"Tempo: {parsed_data['tempo']}")
         
         if metadata_parts:
-            story.append(Paragraph(" | ".join(metadata_parts), self.styles['normal']))
-            story.append(Spacer(1, 12))
+            story.append(Paragraph(" | ".join(metadata_parts), self.styles['metadata']))
+            
+            # Add extra spacing after metadata
+            spacing = self.template.spacing.section_spacing if self.template else 12
+            story.append(Spacer(1, spacing))
         
         # Add song sections
         for section in parsed_data['sections']:
@@ -286,7 +427,26 @@ class ChordProPDFGenerator:
                     story.append(Spacer(1, 6))
             
             # Add spacing between sections
-            story.append(Spacer(1, 12))
+            spacing = self.template.spacing.section_spacing if self.template else 12
+            story.append(Spacer(1, spacing))
+        
+        # Add footer if template specifies it
+        if self.template and self.template.footer.enabled:
+            footer_content = self._format_header_footer_content(
+                self.template.footer.content, song_title, song_artist, parsed_data
+            )
+            if footer_content:
+                footer_style = ParagraphStyle(
+                    'FooterStyle',
+                    parent=self.styles['normal'],
+                    fontSize=self.template.footer.font.size,
+                    textColor=self._hex_to_color(self.template.footer.font.color),
+                    fontName=self.template.footer.font.to_reportlab_font(),
+                    alignment=self._get_alignment(self.template.footer.alignment),
+                    spaceBefore=16,
+                    spaceAfter=0
+                )
+                story.append(Paragraph(footer_content, footer_style))
         
         # Build PDF
         doc.build(story)
@@ -296,6 +456,21 @@ class ChordProPDFGenerator:
         buffer.close()
         
         return pdf_bytes
+    
+    def _format_header_footer_content(self, template_content: str, title: str, 
+                                    artist: str, parsed_data: Dict) -> str:
+        """Format header/footer content with placeholders."""
+        if not template_content:
+            return ''
+        
+        # Replace placeholders
+        content = template_content.replace('{title}', title or '')
+        content = content.replace('{artist}', artist or '')
+        content = content.replace('{key}', parsed_data.get('key', '') or '')
+        content = content.replace('{tempo}', parsed_data.get('tempo', '') or '')
+        # Add more placeholders as needed
+        
+        return content.strip()
     
     def _create_chord_lyric_paragraphs(self, line_data: Dict) -> Tuple[Optional[object], object]:
         """
@@ -356,7 +531,8 @@ class ChordProPDFGenerator:
 
 
 def generate_song_pdf(content: str, title: str = None, artist: str = None, 
-                     paper_size: str = 'a4', orientation: str = 'portrait') -> bytes:
+                     paper_size: str = 'a4', orientation: str = 'portrait',
+                     template_name: str = None) -> bytes:
     """
     Convenience function to generate PDF for a song.
     
@@ -366,9 +542,14 @@ def generate_song_pdf(content: str, title: str = None, artist: str = None,
         artist: Song artist (optional)
         paper_size: Paper size ('letter', 'a4', 'legal')
         orientation: Orientation ('portrait' or 'landscape')
+        template_name: Name of template to use (optional)
         
     Returns:
         PDF content as bytes
     """
-    generator = ChordProPDFGenerator(paper_size=paper_size, orientation=orientation)
+    generator = ChordProPDFGenerator(
+        paper_size=paper_size, 
+        orientation=orientation,
+        template_name=template_name
+    )
     return generator.generate_pdf(content, title=title, artist=artist)

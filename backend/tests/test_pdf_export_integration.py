@@ -109,17 +109,29 @@ Was [Em]blind but [C]now I [G]see"""
             assert len(pdf_data) > 0
             assert pdf_data.startswith(b'%PDF')
     
-    def test_export_pdf_with_overrides(self, client, auth_headers, sample_song):
-        """Test PDF export with title and artist overrides."""
-        response = client.get(f'/api/v1/songs/{sample_song}/export/pdf?title=Override Title&artist=Override Artist',
+    def test_export_pdf_with_template(self, client, auth_headers, sample_song):
+        """Test PDF export with different templates."""
+        for template_name in ['classic', 'modern', 'minimal']:
+            response = client.get(f'/api/v1/songs/{sample_song}/export/pdf?template={template_name}',
+                                 headers=auth_headers)
+            
+            assert response.status_code == 200
+            assert response.content_type == 'application/pdf'
+            
+            pdf_data = response.data
+            assert len(pdf_data) > 0
+            assert pdf_data.startswith(b'%PDF')
+    
+    def test_export_pdf_invalid_template(self, client, auth_headers, sample_song):
+        """Test PDF export with invalid template."""
+        response = client.get(f'/api/v1/songs/{sample_song}/export/pdf?template=invalid_template',
                              headers=auth_headers)
         
-        assert response.status_code == 200
-        assert response.content_type == 'application/pdf'
-        
-        pdf_data = response.data
-        assert len(pdf_data) > 0
-        assert pdf_data.startswith(b'%PDF')
+        assert response.status_code == 400
+        assert response.get_json()['status'] == 'error'
+        error_data = response.get_json()['error']
+        error_message = error_data if isinstance(error_data, str) else error_data.get('message', str(error_data))
+        assert 'Invalid template' in error_message
     
     def test_export_pdf_invalid_paper_size(self, client, auth_headers, sample_song):
         """Test PDF export with invalid paper size."""
@@ -128,7 +140,9 @@ Was [Em]blind but [C]now I [G]see"""
         
         assert response.status_code == 400
         assert response.get_json()['status'] == 'error'
-        assert 'Invalid paper size' in response.get_json()['error']
+        error_data = response.get_json()['error']
+        error_message = error_data if isinstance(error_data, str) else error_data.get('message', str(error_data))
+        assert 'Invalid paper size' in error_message
     
     def test_export_pdf_invalid_orientation(self, client, auth_headers, sample_song):
         """Test PDF export with invalid orientation."""
@@ -137,7 +151,9 @@ Was [Em]blind but [C]now I [G]see"""
         
         assert response.status_code == 400
         assert response.get_json()['status'] == 'error'
-        assert 'Invalid orientation' in response.get_json()['error']
+        error_data = response.get_json()['error']
+        error_message = error_data if isinstance(error_data, str) else error_data.get('message', str(error_data))
+        assert 'Invalid orientation' in error_message
     
     def test_export_pdf_nonexistent_song(self, client, auth_headers):
         """Test PDF export for nonexistent song."""
@@ -146,7 +162,9 @@ Was [Em]blind but [C]now I [G]see"""
         
         assert response.status_code == 404
         assert response.get_json()['status'] == 'error'
-        assert 'Song not found' in response.get_json()['error']
+        error_data = response.get_json()['error']
+        error_message = error_data if isinstance(error_data, str) else error_data.get('message', str(error_data))
+        assert 'Song not found' in error_message
     
     def test_export_pdf_unauthorized(self, client, sample_song):
         """Test PDF export without authentication."""
@@ -154,7 +172,7 @@ Was [Em]blind but [C]now I [G]see"""
         
         assert response.status_code == 401
         assert response.get_json()['status'] == 'error'
-        assert 'Authentication required' in response.get_json()['error']
+        assert 'Authorization' in response.get_json()['error']
     
     def test_export_pdf_invalid_song_id(self, client, auth_headers):
         """Test PDF export with invalid song ID."""
@@ -387,3 +405,108 @@ class TestPDFExportPermissions:
                              headers=data['headers2'])
         
         assert response.status_code == 404  # Song not found (no permission)
+    
+    def test_export_pdf_all_parameters(self, client, users_and_songs):
+        """Test PDF export with all parameters including template."""
+        data = users_and_songs
+        
+        response = client.get(f'/api/v1/songs/{data["song_id"]}/export/pdf?paper_size=letter&orientation=landscape&template=modern&title=Full Test&artist=Test Artist',
+                             headers=data['headers1'])
+        
+        assert response.status_code == 200
+        assert response.content_type == 'application/pdf'
+        
+        pdf_data = response.data
+        assert len(pdf_data) > 0
+        assert pdf_data.startswith(b'%PDF')
+
+
+class TestPDFTemplateEndpoints:
+    """Test PDF template API endpoints."""
+    
+    @pytest.fixture
+    def client(self):
+        """Create test client."""
+        app.config["TESTING"] = True
+        app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
+        
+        with app.test_client() as client:
+            with app.app_context():
+                db.create_all()
+                yield client
+                db.drop_all()
+    
+    @pytest.fixture
+    def auth_headers(self, client):
+        """Create authenticated user and return auth headers."""
+        # Register user
+        user_data = {
+            "email": "test@example.com",
+            "password": "TestPassword123!"
+        }
+        client.post("/api/v1/auth/register", 
+                   data=json.dumps(user_data),
+                   content_type="application/json")
+        
+        # Login user
+        response = client.post("/api/v1/auth/login",
+                              data=json.dumps(user_data),
+                              content_type="application/json")
+        
+        token = response.get_json()["data"]["token"]
+        return {"Authorization": f"Bearer {token}"}
+    
+    def test_list_pdf_templates(self, client, auth_headers):
+        """Test listing PDF templates."""
+        response = client.get("/api/v1/pdf/templates",
+                             headers=auth_headers)
+        
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data["status"] == "success"
+        assert isinstance(data["data"], list)
+        assert len(data["data"]) >= 3  # At least classic, modern, minimal
+        
+        # Check structure of template info
+        for template in data["data"]:
+            assert "name" in template
+            assert "description" in template
+            assert "version" in template
+            assert "author" in template
+            assert "predefined" in template
+    
+    def test_get_pdf_template(self, client, auth_headers):
+        """Test getting specific PDF template details."""
+        response = client.get("/api/v1/pdf/templates/classic",
+                             headers=auth_headers)
+        
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data["status"] == "success"
+        assert data["data"]["name"] == "classic"
+        assert "description" in data["data"]
+        assert "styles" in data["data"]
+        assert "colors" in data["data"]
+        assert "spacing" in data["data"]
+        assert "page" in data["data"]
+    
+    def test_preview_pdf_template(self, client, auth_headers):
+        """Test generating PDF template preview."""
+        preview_data = {
+            "content": "{title: Preview Song}\\n[C]Hello [G]world",
+            "title": "Preview Song",
+            "artist": "Preview Artist"
+        }
+        
+        response = client.post("/api/v1/pdf/templates/modern/preview",
+                              data=json.dumps(preview_data),
+                              content_type="application/json",
+                              headers=auth_headers)
+        
+        assert response.status_code == 200
+        assert response.content_type == "application/pdf"
+        
+        pdf_data = response.data
+        assert len(pdf_data) > 0
+        assert pdf_data.startswith(b"%PDF")
+

@@ -6,6 +6,8 @@ import pytest
 from io import BytesIO
 from reportlab.lib.pagesizes import letter, A4, legal
 from chordme.pdf_generator import ChordProPDFGenerator, generate_song_pdf
+from chordme.pdf_templates import get_template
+from chordme.pdf_template_schema import PDFTemplateConfig
 
 
 class TestChordProPDFGenerator:
@@ -29,10 +31,38 @@ class TestChordProPDFGenerator:
         assert generator.orientation == 'landscape'
         assert generator.page_size == (letter[1], letter[0])  # Swapped for landscape
     
+    def test_init_with_template_name(self):
+        """Test generator initialization with template name."""
+        generator = ChordProPDFGenerator(template_name='classic')
+        assert generator.template is not None
+        assert generator.template.name == 'classic'
+        assert generator.paper_size == A4  # Classic template uses A4
+        assert generator.orientation == 'portrait'
+    
+    def test_init_with_template_object(self):
+        """Test generator initialization with template object."""
+        template = get_template('modern')
+        generator = ChordProPDFGenerator(template=template)
+        assert generator.template is not None
+        assert generator.template.name == 'modern'
+    
+    def test_init_template_overrides_parameters(self):
+        """Test that template settings override initialization parameters."""
+        # Create generator with letter size but classic template (which uses A4)
+        generator = ChordProPDFGenerator(paper_size='letter', template_name='classic')
+        assert generator.paper_size == A4  # Template overrides parameter
+        assert generator.orientation == 'portrait'
+    
     def test_init_invalid_paper_size(self):
         """Test generator initialization with invalid paper size defaults to a4."""
         generator = ChordProPDFGenerator(paper_size='invalid')
         assert generator.paper_size == A4
+    
+    def test_init_invalid_template_name(self):
+        """Test generator initialization with invalid template name."""
+        generator = ChordProPDFGenerator(template_name='non_existent')
+        assert generator.template is None  # Should fallback to no template
+        assert generator.paper_size == A4  # Should use default
     
     def test_parse_chordpro_content_basic(self):
         """Test parsing basic ChordPro content."""
@@ -122,19 +152,72 @@ Another verse"""
         # Check that G appears roughly at position 6
         assert formatted.find('G') >= 6
     
-    def test_generate_pdf_basic(self):
-        """Test basic PDF generation."""
+    def test_generate_pdf_with_template(self):
+        """Test PDF generation with template."""
         content = """{title: Test Song}
 {artist: Test Artist}
 [C]Hello [G]world
 This is a test"""
         
-        generator = ChordProPDFGenerator()
+        generator = ChordProPDFGenerator(template_name='classic')
         pdf_bytes = generator.generate_pdf(content)
         
         assert isinstance(pdf_bytes, bytes)
         assert len(pdf_bytes) > 0
         assert pdf_bytes.startswith(b'%PDF')  # PDF header
+    
+    def test_generate_pdf_different_templates(self):
+        """Test PDF generation with different templates."""
+        content = """{title: Template Test}
+{artist: Template Artist}
+Test content with [C]chords"""
+        
+        for template_name in ['classic', 'modern', 'minimal']:
+            generator = ChordProPDFGenerator(template_name=template_name)
+            pdf_bytes = generator.generate_pdf(content)
+            
+            assert isinstance(pdf_bytes, bytes)
+            assert len(pdf_bytes) > 0
+            assert pdf_bytes.startswith(b'%PDF')
+    
+    def test_template_styles_creation(self):
+        """Test that template styles are created correctly."""
+        generator = ChordProPDFGenerator(template_name='modern')
+        
+        # Check that styles are created and have expected properties
+        assert 'title' in generator.styles
+        assert 'author' in generator.styles
+        assert 'chord' in generator.styles
+        assert 'lyrics' in generator.styles
+        assert 'section' in generator.styles
+        assert 'metadata' in generator.styles
+        
+        # Check that modern template styles are applied
+        title_style = generator.styles['title']
+        assert title_style.fontSize == 22  # Modern template title size
+    
+    def test_hex_to_color_conversion(self):
+        """Test hex color conversion."""
+        generator = ChordProPDFGenerator()
+        
+        # Test valid hex color
+        color = generator._hex_to_color('#FF0000')
+        assert color is not None
+        
+        # Test invalid hex color (should fallback to black)
+        color_invalid = generator._hex_to_color('invalid')
+        assert color_invalid is not None  # Should fallback to black
+    
+    def test_alignment_conversion(self):
+        """Test alignment string conversion."""
+        generator = ChordProPDFGenerator()
+        
+        from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
+        
+        assert generator._get_alignment('left') == TA_LEFT
+        assert generator._get_alignment('center') == TA_CENTER
+        assert generator._get_alignment('right') == TA_RIGHT
+        assert generator._get_alignment('invalid') == TA_CENTER  # Default fallback
     
     def test_generate_pdf_with_overrides(self):
         """Test PDF generation with title and artist overrides."""
@@ -241,8 +324,8 @@ Test content"""
         assert len(pdf_bytes) > 0
         assert pdf_bytes.startswith(b'%PDF')
     
-    def test_generate_song_pdf_with_parameters(self):
-        """Test song PDF generation with all parameters."""
+    def test_generate_song_pdf_with_template(self):
+        """Test song PDF generation with template parameter."""
         content = "Test content"
         
         pdf_bytes = generate_song_pdf(
@@ -250,7 +333,8 @@ Test content"""
             title="Test Title",
             artist="Test Artist",
             paper_size="letter",
-            orientation="landscape"
+            orientation="landscape",
+            template_name="modern"
         )
         
         assert isinstance(pdf_bytes, bytes)

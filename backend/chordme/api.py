@@ -1668,6 +1668,13 @@ def export_song_pdf(song_id):
         enum: ['portrait', 'landscape']
         default: 'portrait'
       - in: query
+        name: template
+        description: PDF template to use
+        required: false
+        type: string
+        enum: ['classic', 'modern', 'minimal']
+        default: 'classic'
+      - in: query
         name: title
         description: Override song title
         required: false
@@ -1727,18 +1734,23 @@ def export_song_pdf(song_id):
         # Get export parameters from query string
         paper_size = request.args.get('paper_size', 'a4').lower()
         orientation = request.args.get('orientation', 'portrait').lower()
+        template_name = request.args.get('template', 'classic').lower()
         title_override = request.args.get('title')
         artist_override = request.args.get('artist')
         
         # Validate parameters
         valid_paper_sizes = ['a4', 'letter', 'legal']
         valid_orientations = ['portrait', 'landscape']
+        valid_templates = ['classic', 'modern', 'minimal']
         
         if paper_size not in valid_paper_sizes:
             return create_error_response(f"Invalid paper size. Must be one of: {', '.join(valid_paper_sizes)}", 400)
         
         if orientation not in valid_orientations:
             return create_error_response(f"Invalid orientation. Must be one of: {', '.join(valid_orientations)}", 400)
+        
+        if template_name not in valid_templates:
+            return create_error_response(f"Invalid template. Must be one of: {', '.join(valid_templates)}", 400)
         
         # Generate PDF
         content = song.content
@@ -1750,7 +1762,8 @@ def export_song_pdf(song_id):
             title=title,
             artist=artist,
             paper_size=paper_size,
-            orientation=orientation
+            orientation=orientation,
+            template_name=template_name
         )
         
         # Create safe filename
@@ -1768,7 +1781,7 @@ def export_song_pdf(song_id):
         )
         
         # Log export activity
-        app.logger.info(f"Song exported as PDF: {song.title} (paper: {paper_size}, orientation: {orientation}) by user {g.current_user_id} from IP {request.remote_addr}")
+        app.logger.info(f"Song exported as PDF: {song.title} (paper: {paper_size}, orientation: {orientation}, template: {template_name}) by user {g.current_user_id} from IP {request.remote_addr}")
         
         return response
         
@@ -1778,6 +1791,285 @@ def export_song_pdf(song_id):
     except Exception as e:
         return security_error_handler.handle_server_error(
             "An error occurred while exporting the song as PDF",
+            exception=e,
+            ip_address=request.remote_addr
+        )
+
+
+@app.route('/api/v1/pdf/templates', methods=['GET'])
+@auth_required
+@rate_limit(max_requests=30, window_seconds=60)  # 30 requests per minute
+@security_headers
+def list_pdf_templates():
+    """
+    List available PDF templates
+    ---
+    tags:
+      - PDF Templates
+    summary: List all available PDF templates
+    description: Get list of all available PDF templates including predefined and custom templates
+    security:
+      - Bearer: []
+    responses:
+      200:
+        description: List of templates retrieved successfully
+        schema:
+          type: object
+          properties:
+            status:
+              type: string
+              example: "success"
+            data:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: "classic"
+                  description:
+                    type: string
+                    example: "Traditional sheet music appearance"
+                  version:
+                    type: string
+                    example: "1.0"
+                  author:
+                    type: string
+                    example: "ChordMe"
+                  predefined:
+                    type: boolean
+                    example: true
+      401:
+        description: Authentication required
+        schema:
+          $ref: '#/definitions/Error'
+      500:
+        description: Internal server error
+        schema:
+          $ref: '#/definitions/Error'
+    """
+    try:
+        from .pdf_templates import get_template_manager
+        
+        template_manager = get_template_manager()
+        templates = template_manager.list_templates()
+        
+        return create_success_response(templates)
+        
+    except Exception as e:
+        return security_error_handler.handle_server_error(
+            "An error occurred while listing PDF templates",
+            exception=e,
+            ip_address=request.remote_addr
+        )
+
+
+@app.route('/api/v1/pdf/templates/<template_name>', methods=['GET'])
+@auth_required
+@rate_limit(max_requests=30, window_seconds=60)  # 30 requests per minute
+@security_headers
+def get_pdf_template(template_name):
+    """
+    Get PDF template details
+    ---
+    tags:
+      - PDF Templates
+    summary: Get specific PDF template details
+    description: Get detailed configuration of a specific PDF template
+    security:
+      - Bearer: []
+    parameters:
+      - in: path
+        name: template_name
+        description: Template name
+        required: true
+        type: string
+    responses:
+      200:
+        description: Template details retrieved successfully
+        schema:
+          type: object
+          properties:
+            status:
+              type: string
+              example: "success"
+            data:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "classic"
+                description:
+                  type: string
+                  example: "Traditional sheet music appearance"
+                styles:
+                  type: object
+                  description: Style configuration
+                colors:
+                  type: object
+                  description: Color scheme
+                spacing:
+                  type: object
+                  description: Spacing configuration
+                page:
+                  type: object
+                  description: Page configuration
+      401:
+        description: Authentication required
+        schema:
+          $ref: '#/definitions/Error'
+      404:
+        description: Template not found
+        schema:
+          $ref: '#/definitions/Error'
+      500:
+        description: Internal server error
+        schema:
+          $ref: '#/definitions/Error'
+    """
+    try:
+        from .pdf_templates import get_template_manager
+        
+        template_manager = get_template_manager()
+        template_data = template_manager.get_template_preview_data(template_name)
+        
+        if not template_data:
+            return create_error_response("Template not found", 404)
+        
+        return create_success_response(template_data)
+        
+    except Exception as e:
+        return security_error_handler.handle_server_error(
+            "An error occurred while retrieving PDF template",
+            exception=e,
+            ip_address=request.remote_addr
+        )
+
+
+@app.route('/api/v1/pdf/templates/<template_name>/preview', methods=['POST'])
+@auth_required
+@validate_request_size(max_content_length=1024)  # 1KB max for preview content
+@rate_limit(max_requests=10, window_seconds=60)  # 10 previews per minute
+@security_headers
+def preview_pdf_template(template_name):
+    """
+    Generate PDF preview using template
+    ---
+    tags:
+      - PDF Templates
+    summary: Generate PDF preview with template
+    description: Generate a small PDF preview using the specified template with sample content
+    security:
+      - Bearer: []
+    parameters:
+      - in: path
+        name: template_name
+        description: Template name
+        required: true
+        type: string
+      - in: body
+        name: preview_content
+        description: Sample content for preview
+        required: false
+        schema:
+          type: object
+          properties:
+            content:
+              type: string
+              example: "{title: Sample Song}\n[C]Hello [G]world"
+            title:
+              type: string
+              example: "Sample Song"
+            artist:
+              type: string
+              example: "Sample Artist"
+    produces:
+      - application/pdf
+    responses:
+      200:
+        description: PDF preview generated successfully
+        headers:
+          Content-Type:
+            type: string
+            description: application/pdf
+        schema:
+          type: string
+          format: binary
+          description: PDF preview content
+      400:
+        description: Invalid parameters
+        schema:
+          $ref: '#/definitions/Error'
+      401:
+        description: Authentication required
+        schema:
+          $ref: '#/definitions/Error'
+      404:
+        description: Template not found
+        schema:
+          $ref: '#/definitions/Error'
+      500:
+        description: Internal server error
+        schema:
+          $ref: '#/definitions/Error'
+    """
+    try:
+        from .pdf_templates import get_template_manager
+        from .pdf_generator import generate_song_pdf
+        
+        # Check if template exists
+        template_manager = get_template_manager()
+        if not template_manager.get_template(template_name):
+            return create_error_response("Template not found", 404)
+        
+        # Get preview content from request body
+        data = request.get_json() or {}
+        
+        # Use sample content if none provided
+        sample_content = data.get('content', """{title: Sample Song}
+{artist: Sample Artist}
+{key: C}
+
+{sov}
+[C]Hello [G]world, this is a [Am]sample [F]song
+To [C]demonstrate the [G]template [C]style
+{eov}
+
+{soc}
+[F]This is the [C]chorus [G]section
+[F]Showing how [C]chords are [G]displayed
+{eoc}""")
+        
+        sample_title = data.get('title', 'Sample Song')
+        sample_artist = data.get('artist', 'Sample Artist')
+        
+        # Generate preview PDF (limited to A4 portrait for consistency)
+        pdf_bytes = generate_song_pdf(
+            content=sample_content,
+            title=sample_title,
+            artist=sample_artist,
+            paper_size='a4',
+            orientation='portrait',
+            template_name=template_name
+        )
+        
+        # Create response with PDF
+        response = Response(
+            pdf_bytes,
+            mimetype='application/pdf',
+            headers={
+                'Content-Disposition': f'inline; filename="{template_name}-preview.pdf"'
+            }
+        )
+        
+        # Log preview activity
+        app.logger.info(f"PDF template preview generated: {template_name} by user {g.current_user_id} from IP {request.remote_addr}")
+        
+        return response
+        
+    except Exception as e:
+        return security_error_handler.handle_server_error(
+            "An error occurred while generating PDF template preview",
             exception=e,
             ip_address=request.remote_addr
         )
