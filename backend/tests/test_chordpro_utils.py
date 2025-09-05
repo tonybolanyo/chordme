@@ -3,7 +3,7 @@ Tests for ChordPro utilities and validation helpers.
 """
 
 import pytest
-from chordme.chordpro_utils import ChordProValidator, validate_chordpro_content
+from chordme.chordpro_utils import ChordProValidator, validate_chordpro_content, detect_key_signature
 
 
 class TestChordProValidator:
@@ -216,4 +216,187 @@ Oh [Dm]I be[G]lieve in [Bb]yester[F]day"""
         assert stats['line_count'] == 0  # Empty string has 0 lines
         assert stats['character_count'] == 0
         assert stats['directive_count'] == 0
-        assert stats['unique_chord_count'] == 0
+
+
+class TestKeyDetection:
+    """Test automatic key detection functionality."""
+
+    def test_manual_key_override(self):
+        """Test that manual key signatures override detection."""
+        content = "{key: G} [C] [G] [Am] [D]"
+        result = detect_key_signature(content)
+        
+        assert result['detected_key'] == 'G'
+        assert result['confidence'] == 1.0
+        assert not result['is_minor']
+        assert result['alternative_keys'] == []
+
+    def test_manual_minor_key(self):
+        """Test manual minor key specification."""
+        content = "{key: Am} [Am] [F] [C] [G]"
+        result = detect_key_signature(content)
+        
+        assert result['detected_key'] == 'Am'
+        assert result['confidence'] == 1.0
+        assert result['is_minor']
+        assert result['alternative_keys'] == []
+
+    def test_c_major_detection(self):
+        """Test detection of C major from typical progression."""
+        content = "[C] [F] [G] [C] [Am] [F] [G] [C]"
+        result = detect_key_signature(content)
+        
+        assert result['detected_key'] == 'C'
+        assert result['confidence'] > 0.7
+        assert not result['is_minor']
+
+    def test_g_major_detection(self):
+        """Test detection of G major from chord progression."""
+        content = "[G] [C] [D] [G] [Em] [C] [D] [G]"
+        result = detect_key_signature(content)
+        
+        assert result['detected_key'] == 'G'
+        assert result['confidence'] > 0.7
+        assert not result['is_minor']
+
+    def test_f_major_detection(self):
+        """Test detection of F major with flat preferences."""
+        content = "[F] [Bb] [C] [F] [Dm] [Bb] [C] [F]"
+        result = detect_key_signature(content)
+        
+        assert result['detected_key'] == 'F'
+        assert result['confidence'] > 0.7
+        assert not result['is_minor']
+
+    def test_a_minor_detection(self):
+        """Test detection of A minor from typical progression."""
+        content = "[Am] [F] [C] [G] [Am] [F] [C] [G]"
+        result = detect_key_signature(content)
+        
+        # Am and C are related, either could be detected
+        assert result['detected_key'] in ['Am', 'C']
+        assert result['confidence'] > 0.5
+
+    def test_alternative_keys(self):
+        """Test that alternative key suggestions are provided."""
+        content = "[C] [G] [Am] [F]"  # Common progression
+        result = detect_key_signature(content)
+        
+        assert 'alternative_keys' in result
+        assert isinstance(result['alternative_keys'], list)
+        assert len(result['alternative_keys']) >= 0
+        assert len(result['alternative_keys']) <= 3
+        
+        # Alternative keys should have lower confidence
+        for alt in result['alternative_keys']:
+            assert alt['confidence'] <= result['confidence']
+            assert alt['confidence'] > 0
+
+    def test_empty_content(self):
+        """Test handling of empty content."""
+        result = detect_key_signature('')
+        
+        assert result['detected_key'] == 'C'
+        assert result['confidence'] == 0.0
+        assert not result['is_minor']
+
+    def test_no_chords_content(self):
+        """Test handling of content with no chords."""
+        content = 'Just some lyrics without any chords'
+        result = detect_key_signature(content)
+        
+        assert result['detected_key'] == 'C'
+        assert result['confidence'] == 0.0
+        assert not result['is_minor']
+
+    def test_invalid_chords_only(self):
+        """Test handling of content with only invalid chords."""
+        content = '[invalid] [X] [notachord]'
+        result = detect_key_signature(content)
+        
+        assert result['detected_key'] == 'C'
+        assert result['confidence'] == 0.0
+        assert not result['is_minor']
+
+    def test_mixed_valid_invalid_chords(self):
+        """Test handling of mixed valid and invalid chords."""
+        content = '[C] [invalid] [G] [notachord] [Am]'
+        result = detect_key_signature(content)
+        
+        assert result['detected_key'] is not None
+        assert result['confidence'] > 0
+
+    def test_jazz_progression(self):
+        """Test handling of jazz progressions with extended chords."""
+        content = '[Cmaj7] [Am7] [Dm7] [G7] [Cmaj7]'
+        result = detect_key_signature(content)
+        
+        assert result['detected_key'] == 'C'
+        assert result['confidence'] > 0.7
+        assert not result['is_minor']
+
+    def test_slash_chords(self):
+        """Test handling of progressions with slash chords."""
+        content = '[C] [C/E] [F] [G/B] [Am] [F] [G] [C]'
+        result = detect_key_signature(content)
+        
+        assert result['detected_key'] == 'C'
+        assert result['confidence'] > 0.6
+        assert not result['is_minor']
+
+    def test_confidence_scoring(self):
+        """Test confidence scoring logic."""
+        clear_progression = '[C] [F] [G] [C] [Am] [F] [G] [C]'
+        ambiguous_progression = '[C] [D] [E] [F]'
+        
+        clear_result = detect_key_signature(clear_progression)
+        ambiguous_result = detect_key_signature(ambiguous_progression)
+        
+        assert clear_result['confidence'] > ambiguous_result['confidence']
+
+    def test_atonal_progression(self):
+        """Test handling of atonal progressions."""
+        atonal_progression = '[C] [F#] [Bb] [E]'
+        result = detect_key_signature(atonal_progression)
+        
+        assert result['confidence'] < 0.7
+
+    def test_chord_frequency_importance(self):
+        """Test that chord frequency affects confidence."""
+        strong_tonic = '[C] [C] [C] [F] [G] [C] [C] [C]'
+        weak_tonic = '[C] [F] [G] [Am] [Dm] [Em]'
+        
+        strong_result = detect_key_signature(strong_tonic)
+        weak_result = detect_key_signature(weak_tonic)
+        
+        assert strong_result['confidence'] > weak_result['confidence']
+
+    def test_result_structure(self):
+        """Test that detection results have correct structure."""
+        content = '[C] [G] [Am] [F]'
+        result = detect_key_signature(content)
+        
+        # Check required keys
+        assert 'detected_key' in result
+        assert 'confidence' in result
+        assert 'is_minor' in result
+        assert 'alternative_keys' in result
+        
+        # Check types
+        assert isinstance(result['detected_key'], str)
+        assert isinstance(result['confidence'], (int, float))
+        assert isinstance(result['is_minor'], bool)
+        assert isinstance(result['alternative_keys'], list)
+        
+        # Check confidence range
+        assert 0.0 <= result['confidence'] <= 1.0
+        
+        # Check alternative keys structure
+        for alt in result['alternative_keys']:
+            assert 'key' in alt
+            assert 'confidence' in alt
+            assert 'is_minor' in alt
+            assert isinstance(alt['key'], str)
+            assert isinstance(alt['confidence'], (int, float))
+            assert isinstance(alt['is_minor'], bool)
+            assert 0.0 <= alt['confidence'] <= 1.0

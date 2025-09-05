@@ -8,6 +8,8 @@ import {
   transposeChordWithKey,
   transposeChordIntelligent,
   convertNotation,
+  detectKeySignature,
+  type KeyDetectionResult,
 } from './chordService';
 
 describe('ChordService', () => {
@@ -338,6 +340,219 @@ Some lyrics without chords
       const content = '[C/E] and [G/B] chords';
       const result = transposeChordProContent(content, 2);
       expect(result).toBe('[D/F#] and [A/C#] chords');
+    });
+  });
+
+  describe('Automatic Key Detection', () => {
+    describe('Manual Key Override', () => {
+      it('returns manual key signature with full confidence', () => {
+        const content = '{key: G} [C] [G] [Am] [D]';
+        const result = detectKeySignature(content);
+        
+        expect(result.detectedKey).toBe('G');
+        expect(result.confidence).toBe(1.0);
+        expect(result.isMinor).toBe(false);
+        expect(result.alternativeKeys).toEqual([]);
+      });
+
+      it('detects minor keys from manual specification', () => {
+        const content = '{key: Am} [Am] [F] [C] [G]';
+        const result = detectKeySignature(content);
+        
+        expect(result.detectedKey).toBe('Am');
+        expect(result.confidence).toBe(1.0);
+        expect(result.isMinor).toBe(true);
+        expect(result.alternativeKeys).toEqual([]);
+      });
+    });
+
+    describe('Major Key Detection', () => {
+      it('detects C major from typical progression', () => {
+        const content = '[C] [F] [G] [C] [Am] [F] [G] [C]';
+        const result = detectKeySignature(content);
+        
+        expect(result.detectedKey).toBe('C');
+        expect(result.confidence).toBeGreaterThan(0.7);
+        expect(result.isMinor).toBe(false);
+      });
+
+      it('detects G major from chord progression', () => {
+        const content = '[G] [C] [D] [G] [Em] [C] [D] [G]';
+        const result = detectKeySignature(content);
+        
+        expect(result.detectedKey).toBe('G');
+        expect(result.confidence).toBeGreaterThan(0.7);
+        expect(result.isMinor).toBe(false);
+      });
+
+      it('detects F major with flat preferences', () => {
+        const content = '[F] [Bb] [C] [F] [Dm] [Bb] [C] [F]';
+        const result = detectKeySignature(content);
+        
+        expect(result.detectedKey).toBe('F');
+        expect(result.confidence).toBeGreaterThan(0.7);
+        expect(result.isMinor).toBe(false);
+      });
+    });
+
+    describe('Minor Key Detection', () => {
+      it('detects A minor from typical progression', () => {
+        const content = '[Am] [F] [C] [G] [Am] [F] [C] [G]';
+        const result = detectKeySignature(content);
+        
+        expect(['Am', 'C']).toContain(result.detectedKey); // Am and C are related
+        expect(result.confidence).toBeGreaterThan(0.5);
+      });
+
+      it('detects E minor progression', () => {
+        const content = '[Em] [Am] [B] [Em] [C] [Am] [B] [Em]';
+        const result = detectKeySignature(content);
+        
+        expect(['Em', 'G']).toContain(result.detectedKey);
+        expect(result.confidence).toBeGreaterThan(0.5);
+      });
+
+      it('detects D minor with characteristic chords', () => {
+        const content = '[Dm] [Gm] [A] [Dm] [Bb] [Gm] [A] [Dm]';
+        const result = detectKeySignature(content);
+        
+        expect(['Dm', 'F']).toContain(result.detectedKey);
+        expect(result.confidence).toBeGreaterThan(0.5);
+      });
+    });
+
+    describe('Alternative Key Suggestions', () => {
+      it('provides alternative key suggestions', () => {
+        const content = '[C] [G] [Am] [F]'; // Common progression
+        const result = detectKeySignature(content);
+        
+        expect(result.alternativeKeys).toBeDefined();
+        expect(result.alternativeKeys.length).toBeGreaterThan(0);
+        expect(result.alternativeKeys.length).toBeLessThanOrEqual(3);
+        
+        // Alternative keys should have lower confidence
+        result.alternativeKeys.forEach(alt => {
+          expect(alt.confidence).toBeLessThanOrEqual(result.confidence);
+          expect(alt.confidence).toBeGreaterThan(0);
+        });
+      });
+
+      it('includes relative major/minor in alternatives', () => {
+        const content = '[C] [Am] [F] [G]';
+        const result = detectKeySignature(content);
+        
+        const alternativeKeys = [result.detectedKey, ...result.alternativeKeys.map(k => k.key)];
+        
+        // Should include both C major and A minor as possibilities
+        expect(alternativeKeys.some(k => k === 'C' || k === 'Am')).toBe(true);
+      });
+    });
+
+    describe('Edge Cases', () => {
+      it('handles empty content gracefully', () => {
+        const result = detectKeySignature('');
+        
+        expect(result.detectedKey).toBe('C');
+        expect(result.confidence).toBe(0.0);
+        expect(result.isMinor).toBe(false);
+      });
+
+      it('handles content with no chords', () => {
+        const content = 'Just some lyrics without any chords';
+        const result = detectKeySignature(content);
+        
+        expect(result.detectedKey).toBe('C');
+        expect(result.confidence).toBe(0.0);
+        expect(result.isMinor).toBe(false);
+      });
+
+      it('handles content with only invalid chords', () => {
+        const content = '[invalid] [X] [notachord]';
+        const result = detectKeySignature(content);
+        
+        expect(result.detectedKey).toBe('C');
+        expect(result.confidence).toBe(0.0);
+        expect(result.isMinor).toBe(false);
+      });
+
+      it('handles mixed valid and invalid chords', () => {
+        const content = '[C] [invalid] [G] [notachord] [Am]';
+        const result = detectKeySignature(content);
+        
+        expect(result.detectedKey).toBeTruthy();
+        expect(result.confidence).toBeGreaterThan(0);
+      });
+    });
+
+    describe('Complex Progressions', () => {
+      it('handles jazz progressions with extended chords', () => {
+        const content = '[Cmaj7] [Am7] [Dm7] [G7] [Cmaj7]';
+        const result = detectKeySignature(content);
+        
+        expect(result.detectedKey).toBe('C');
+        expect(result.confidence).toBeGreaterThan(0.7);
+        expect(result.isMinor).toBe(false);
+      });
+
+      it('handles progressions with slash chords', () => {
+        const content = '[C] [C/E] [F] [G/B] [Am] [F] [G] [C]';
+        const result = detectKeySignature(content);
+        
+        expect(result.detectedKey).toBe('C');
+        expect(result.confidence).toBeGreaterThan(0.6);
+        expect(result.isMinor).toBe(false);
+      });
+
+      it('handles chord progressions with chromatic passing chords', () => {
+        const content = '[C] [F] [F#dim] [G] [C]';
+        const result = detectKeySignature(content);
+        
+        expect(result.detectedKey).toBe('C');
+        expect(result.confidence).toBeGreaterThan(0.5);
+      });
+    });
+
+    describe('Confidence Scoring', () => {
+      it('gives higher confidence to clear key signatures', () => {
+        const clearProgression = '[C] [F] [G] [C] [Am] [F] [G] [C]';
+        const ambiguousProgression = '[C] [D] [E] [F]';
+        
+        const clearResult = detectKeySignature(clearProgression);
+        const ambiguousResult = detectKeySignature(ambiguousProgression);
+        
+        expect(clearResult.confidence).toBeGreaterThan(ambiguousResult.confidence);
+      });
+
+      it('gives lower confidence to atonal progressions', () => {
+        const atonalProgression = '[C] [F#] [Bb] [E]';
+        const result = detectKeySignature(atonalProgression);
+        
+        expect(result.confidence).toBeLessThan(0.7);
+      });
+
+      it('considers chord frequency in confidence calculation', () => {
+        const strongTonic = '[C] [C] [C] [F] [G] [C] [C] [C]';
+        const weakTonic = '[C] [F] [G] [Am] [Dm] [Em]';
+        
+        const strongResult = detectKeySignature(strongTonic);
+        const weakResult = detectKeySignature(weakTonic);
+        
+        expect(strongResult.confidence).toBeGreaterThan(weakResult.confidence);
+      });
+    });
+
+    describe('Performance with Large Content', () => {
+      it('handles large chord progressions efficiently', () => {
+        const largeProgression = Array(100).fill('[C] [F] [G] [Am]').join(' ');
+        
+        const startTime = performance.now();
+        const result = detectKeySignature(largeProgression);
+        const endTime = performance.now();
+        
+        expect(endTime - startTime).toBeLessThan(100); // Should complete in <100ms
+        expect(result.detectedKey).toBeTruthy();
+        expect(result.confidence).toBeGreaterThan(0);
+      });
     });
   });
 });

@@ -1147,3 +1147,210 @@ function transposeNoteWithPreference(
     ? CHROMATIC_SCALE_FLATS[newIndex]
     : CHROMATIC_SCALE[newIndex];
 }
+
+/**
+ * Result interface for key detection
+ */
+export interface KeyDetectionResult {
+  detectedKey: string;
+  confidence: number;
+  isMinor: boolean;
+  alternativeKeys: Array<{
+    key: string;
+    confidence: number;
+    isMinor: boolean;
+  }>;
+}
+
+/**
+ * Automatically detect the key signature from ChordPro content
+ * using chord frequency analysis and circle of fifths
+ */
+export function detectKeySignature(content: string): KeyDetectionResult {
+  // First check if there's a manual key signature
+  const manualKey = extractKeySignature(content);
+  if (manualKey) {
+    return {
+      detectedKey: manualKey,
+      confidence: 1.0,
+      isMinor: manualKey.toLowerCase().includes('m'),
+      alternativeKeys: []
+    };
+  }
+
+  // Extract all chords from the content
+  const chords = extractChordsFromContent(content);
+  if (chords.length === 0) {
+    return {
+      detectedKey: 'C',
+      confidence: 0.0,
+      isMinor: false,
+      alternativeKeys: []
+    };
+  }
+
+  // Analyze chord frequencies (for basic implementation)
+  const chordFrequency = analyzeChordFrequency(chords);
+  
+  // Calculate key probabilities using circle of fifths
+  const keyProbabilities = calculateKeyProbabilities(chordFrequency);
+  
+  // Find the best key
+  const sortedKeys = Object.entries(keyProbabilities)
+    .sort(([, a], [, b]) => b - a)
+    .filter(([, score]) => score > 0); // Only include keys with positive scores
+  
+  if (sortedKeys.length === 0) {
+    return {
+      detectedKey: 'C',
+      confidence: 0.0,
+      isMinor: false,
+      alternativeKeys: []
+    };
+  }
+
+  const bestKey = sortedKeys[0];
+  const alternativeKeys = sortedKeys.slice(1, 4).map(([key, confidence]) => ({
+    key,
+    confidence: Math.round(confidence * 100) / 100,
+    isMinor: key.toLowerCase().includes('m')
+  }));
+
+  return {
+    detectedKey: bestKey[0],
+    confidence: Math.round(bestKey[1] * 100) / 100,
+    isMinor: bestKey[0].toLowerCase().includes('m'),
+    alternativeKeys
+  };
+}
+
+/**
+ * Extract chord names from ChordPro content
+ */
+function extractChordsFromContent(content: string): string[] {
+  const chordPattern = /\[([^\]]+)\]/g;
+  const chords: string[] = [];
+  let match;
+
+  while ((match = chordPattern.exec(content)) !== null) {
+    const chord = match[1].trim();
+    if (isValidChord(chord)) {
+      chords.push(chord);
+    }
+  }
+
+  return chords;
+}
+
+/**
+ * Analyze frequency of chord roots and types
+ */
+function analyzeChordFrequency(chords: string[]): Record<string, number> {
+  const frequency: Record<string, number> = {};
+  
+  chords.forEach(chord => {
+    const { root } = parseChordEnhanced(chord);
+    if (root) {
+      // Normalize enharmonic equivalents
+      const normalizedRoot = ENHARMONIC_MAP[root] || root;
+      frequency[normalizedRoot] = (frequency[normalizedRoot] || 0) + 1;
+    }
+  });
+
+  return frequency;
+}
+
+/**
+ * Analyze chord frequencies with quality information
+ */
+function analyzeChordQuality(chords: string[]): Array<{ root: string; isMinor: boolean; isDiminished: boolean; frequency: number }> {
+  const chordMap = new Map<string, { isMinor: boolean; isDiminished: boolean; frequency: number }>();
+  
+  chords.forEach(chord => {
+    const { root } = parseChordEnhanced(chord);
+    if (root) {
+      const normalizedRoot = ENHARMONIC_MAP[root] || root;
+      const isMinor = chord.toLowerCase().includes('m') && !chord.toLowerCase().includes('maj');
+      const isDiminished = chord.toLowerCase().includes('dim') || chord.includes('°');
+      
+      const key = `${normalizedRoot}-${isMinor ? 'minor' : 'major'}-${isDiminished ? 'dim' : 'normal'}`;
+      const existing = chordMap.get(key) || { isMinor, isDiminished, frequency: 0 };
+      chordMap.set(key, { ...existing, frequency: existing.frequency + 1 });
+    }
+  });
+
+  return Array.from(chordMap.entries()).map(([key, data]) => ({
+    root: key.split('-')[0],
+    isMinor: data.isMinor,
+    isDiminished: data.isDiminished,
+    frequency: data.frequency
+  }));
+}
+
+/**
+ * Calculate probabilities for each possible key using music theory analysis
+ */
+function calculateKeyProbabilities(chordFrequency: Record<string, number>): Record<string, number> {
+  const keyProbabilities: Record<string, number> = {};
+  
+  // Initialize all keys with base probability
+  Object.keys(CIRCLE_OF_FIFTHS).forEach(key => {
+    keyProbabilities[key] = 0;
+  });
+
+  // Get total number of chords for normalization
+  const totalChords = Object.values(chordFrequency).reduce((sum, count) => sum + count, 0);
+  if (totalChords === 0) return keyProbabilities;
+
+  // Major scale intervals (semitones from root) and their typical chord qualities
+  const majorDiatonicPattern = [
+    { interval: 0, quality: 'major', weight: 3.0 },    // I - tonic
+    { interval: 2, quality: 'minor', weight: 1.0 },    // ii
+    { interval: 4, quality: 'minor', weight: 1.0 },    // iii  
+    { interval: 5, quality: 'major', weight: 2.0 },    // IV - subdominant
+    { interval: 7, quality: 'major', weight: 2.5 },    // V - dominant
+    { interval: 9, quality: 'minor', weight: 1.5 },    // vi
+    { interval: 11, quality: 'diminished', weight: 0.5 } // vii°
+  ];
+
+  // Minor scale intervals (natural minor) and their typical chord qualities
+  const minorDiatonicPattern = [
+    { interval: 0, quality: 'minor', weight: 3.0 },    // i - tonic
+    { interval: 2, quality: 'diminished', weight: 0.5 }, // ii°
+    { interval: 3, quality: 'major', weight: 1.5 },    // III
+    { interval: 5, quality: 'minor', weight: 2.0 },    // iv - subdominant
+    { interval: 7, quality: 'minor', weight: 2.0 },    // v (sometimes major in harmonic minor)
+    { interval: 8, quality: 'major', weight: 1.5 },    // VI
+    { interval: 10, quality: 'major', weight: 1.0 }    // VII
+  ];
+
+  Object.keys(CIRCLE_OF_FIFTHS).forEach(key => {
+    const isMinorKey = key.toLowerCase().includes('m');
+    const rootNote = isMinorKey ? key.slice(0, -1) : key;
+    
+    // Get the root note index in chromatic scale
+    const rootIndex = CHROMATIC_SCALE.indexOf(ENHARMONIC_MAP[rootNote] || rootNote);
+    if (rootIndex === -1) return;
+
+    const pattern = isMinorKey ? minorDiatonicPattern : majorDiatonicPattern;
+    let score = 0;
+
+    pattern.forEach(({ interval, quality, weight }) => {
+      const scaleNoteIndex = (rootIndex + interval) % 12;
+      const scaleNote = CHROMATIC_SCALE[scaleNoteIndex];
+      const frequency = chordFrequency[scaleNote] || 0;
+      
+      if (frequency > 0) {
+        // Basic score for diatonic chord presence
+        score += frequency * weight;
+      }
+    });
+
+    // Normalize score by total chords and convert to probability (0-1)
+    if (totalChords > 0) {
+      keyProbabilities[key] = score / (totalChords * 3.0); // Divide by max possible weight
+    }
+  });
+
+  return keyProbabilities;
+}

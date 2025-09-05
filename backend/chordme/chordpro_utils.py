@@ -924,3 +924,181 @@ def validate_chordpro_content(content: str) -> Dict:
             'unique_chord_count': len(chords)
         }
     }
+
+
+def detect_key_signature(content: str) -> Dict:
+    """
+    Automatically detect the key signature from ChordPro content
+    using chord frequency analysis and circle of fifths.
+    
+    Args:
+        content: ChordPro formatted content
+        
+    Returns:
+        dict: Key detection results with confidence scores
+    """
+    # First check if there's a manual key signature
+    manual_key = extract_key_signature(content)
+    if manual_key:
+        return {
+            'detected_key': manual_key,
+            'confidence': 1.0,
+            'is_minor': 'm' in manual_key.lower(),
+            'alternative_keys': []
+        }
+    
+    # Extract all chords from the content
+    chords = _extract_chords_from_content(content)
+    if not chords:
+        return {
+            'detected_key': 'C',
+            'confidence': 0.0,
+            'is_minor': False,
+            'alternative_keys': []
+        }
+    
+    # Analyze chord frequencies
+    chord_frequency = _analyze_chord_frequency(chords)
+    
+    # Calculate key probabilities using circle of fifths
+    key_probabilities = _calculate_key_probabilities(chord_frequency)
+    
+    # Find the best key
+    sorted_keys = sorted(key_probabilities.items(), key=lambda x: x[1], reverse=True)
+    sorted_keys = [(k, v) for k, v in sorted_keys if v > 0]  # Only include keys with positive scores
+    
+    if not sorted_keys:
+        return {
+            'detected_key': 'C',
+            'confidence': 0.0,
+            'is_minor': False,
+            'alternative_keys': []
+        }
+    
+    best_key = sorted_keys[0]
+    alternative_keys = [
+        {
+            'key': key,
+            'confidence': round(confidence, 2),
+            'is_minor': 'm' in key.lower()
+        }
+        for key, confidence in sorted_keys[1:4]
+    ]
+    
+    return {
+        'detected_key': best_key[0],
+        'confidence': round(best_key[1], 2),
+        'is_minor': 'm' in best_key[0].lower(),
+        'alternative_keys': alternative_keys
+    }
+
+
+def _extract_chords_from_content(content: str) -> List[str]:
+    """Extract chord names from ChordPro content."""
+    chord_pattern = re.compile(r'\[([^\]]+)\]')
+    chords = []
+    
+    for match in chord_pattern.finditer(content):
+        chord = match.group(1).strip()
+        if _is_valid_chord_simple(chord):
+            chords.append(chord)
+    
+    return chords
+
+
+def _is_valid_chord_simple(chord: str) -> bool:
+    """Simple chord validation for key detection."""
+    if not chord.strip():
+        return False
+    
+    # Basic chord pattern: Root + optional modifiers
+    chord_pattern = r'^[A-G][#b]?[mM]?(?:maj|min|dim|aug|sus|add)?[0-9]*(?:[#b]?[0-9]*)?(?:/[A-G][#b]?)?$'
+    return bool(re.match(chord_pattern, chord.strip()))
+
+
+def _analyze_chord_frequency(chords: List[str]) -> Dict[str, int]:
+    """Analyze frequency of chord roots."""
+    frequency = {}
+    
+    for chord in chords:
+        root = _extract_chord_root(chord)
+        if root:
+            # Normalize enharmonic equivalents
+            normalized_root = ENHARMONIC_MAP.get(root, root)
+            frequency[normalized_root] = frequency.get(normalized_root, 0) + 1
+    
+    return frequency
+
+
+def _extract_chord_root(chord: str) -> Optional[str]:
+    """Extract the root note from a chord."""
+    # Simple pattern to extract root: first 1-2 characters (note + optional accidental)
+    root_pattern = r'^([A-G][#b]?)'
+    match = re.match(root_pattern, chord.strip())
+    return match.group(1) if match else None
+
+
+def _calculate_key_probabilities(chord_frequency: Dict[str, int]) -> Dict[str, float]:
+    """Calculate probabilities for each possible key using music theory analysis."""
+    key_probabilities = {}
+    
+    # Initialize all keys with base probability
+    for key in CIRCLE_OF_FIFTHS.keys():
+        key_probabilities[key] = 0.0
+    
+    # Get total number of chords for normalization
+    total_chords = sum(chord_frequency.values())
+    if total_chords == 0:
+        return key_probabilities
+    
+    # Major scale diatonic pattern
+    major_diatonic_pattern = [
+        {'interval': 0, 'quality': 'major', 'weight': 3.0},    # I - tonic
+        {'interval': 2, 'quality': 'minor', 'weight': 1.0},    # ii
+        {'interval': 4, 'quality': 'minor', 'weight': 1.0},    # iii  
+        {'interval': 5, 'quality': 'major', 'weight': 2.0},    # IV - subdominant
+        {'interval': 7, 'quality': 'major', 'weight': 2.5},    # V - dominant
+        {'interval': 9, 'quality': 'minor', 'weight': 1.5},    # vi
+        {'interval': 11, 'quality': 'diminished', 'weight': 0.5} # vii°
+    ]
+    
+    # Minor scale diatonic pattern
+    minor_diatonic_pattern = [
+        {'interval': 0, 'quality': 'minor', 'weight': 3.0},    # i - tonic
+        {'interval': 2, 'quality': 'diminished', 'weight': 0.5}, # ii°
+        {'interval': 3, 'quality': 'major', 'weight': 1.5},    # III
+        {'interval': 5, 'quality': 'minor', 'weight': 2.0},    # iv - subdominant
+        {'interval': 7, 'quality': 'minor', 'weight': 2.0},    # v
+        {'interval': 8, 'quality': 'major', 'weight': 1.5},    # VI
+        {'interval': 10, 'quality': 'major', 'weight': 1.0}    # VII
+    ]
+    
+    for key in CIRCLE_OF_FIFTHS.keys():
+        is_minor_key = 'm' in key.lower()
+        root_note = key[:-1] if is_minor_key else key
+        
+        # Get the root note index in chromatic scale
+        try:
+            root_index = CHROMATIC_SCALE.index(ENHARMONIC_MAP.get(root_note, root_note))
+        except ValueError:
+            continue
+        
+        pattern = minor_diatonic_pattern if is_minor_key else major_diatonic_pattern
+        score = 0.0
+        
+        for chord_info in pattern:
+            interval = chord_info['interval']
+            weight = chord_info['weight']
+            
+            scale_note_index = (root_index + interval) % 12
+            scale_note = CHROMATIC_SCALE[scale_note_index]
+            frequency = chord_frequency.get(scale_note, 0)
+            
+            if frequency > 0:
+                score += frequency * weight
+        
+        # Normalize score by total chords and convert to probability (0-1)
+        if total_chords > 0:
+            key_probabilities[key] = score / (total_chords * 3.0)  # Divide by max possible weight
+    
+    return key_probabilities
