@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { Song } from '../types';
 import { apiService } from '../services/api';
+import PDFPreview from './PDFPreview';
 
 interface PDFExportModalProps {
   song: Song;
@@ -62,6 +63,7 @@ const PDFExportModal: React.FC<PDFExportModalProps> = ({
   const [templates, setTemplates] = useState<PDFTemplate[]>([]);
   const [loadingTemplates, setLoadingTemplates] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
 
   // Load templates when modal opens
   useEffect(() => {
@@ -205,6 +207,28 @@ const PDFExportModal: React.FC<PDFExportModalProps> = ({
               <span>Include chord diagrams</span>
             </label>
           </div>
+
+          <div className="preview-toggle">
+            <button
+              type="button"
+              className="btn-link"
+              onClick={() => setShowPreview(!showPreview)}
+              disabled={isExporting}
+            >
+              {showPreview ? '▼ Hide Preview' : '▶ Show Preview'}
+            </button>
+          </div>
+
+          {showPreview && (
+            <div className="preview-section">
+              <PDFPreview
+                song={song}
+                options={options}
+                onPreviewReady={(url) => console.log('Preview ready:', url)}
+                onPreviewError={(error) => console.error('Preview error:', error)}
+              />
+            </div>
+          )}
 
           <div className="advanced-toggle">
             <button
@@ -392,8 +416,8 @@ const PDFExportModal: React.FC<PDFExportModalProps> = ({
           background: white;
           border-radius: 8px;
           padding: 0;
-          max-width: 600px;
-          width: 90%;
+          max-width: 800px;
+          width: 95%;
           max-height: 90vh;
           overflow-y: auto;
           box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -537,6 +561,19 @@ const PDFExportModal: React.FC<PDFExportModalProps> = ({
           margin: 1rem 0;
           border-top: 1px solid #e5e5e5;
           padding-top: 1rem;
+        }
+
+        .preview-toggle {
+          margin: 1rem 0;
+          border-top: 1px solid #e5e5e5;
+          padding-top: 1rem;
+        }
+
+        .preview-section {
+          margin: 1rem 0;
+          border: 1px solid #e5e5e5;
+          border-radius: 4px;
+          overflow: hidden;
         }
 
         .btn-link {

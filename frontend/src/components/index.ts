@@ -19,6 +19,8 @@ export { default as HistoryPanel } from './HistoryPanel';
 export { default as UndoRedoControls } from './UndoRedoControls';
 export { default as PDFExportModal } from './PDFExportModal';
 export type { PDFExportOptions } from './PDFExportModal';
+export { default as PDFPreview } from './PDFPreview';
+export { default as BatchExportDialog } from './BatchExportDialog';
 
 // Split-screen preview components
 export { default as SplitViewLayout } from './SplitViewLayout';
