@@ -254,6 +254,21 @@ export interface ChordDiagramValidationWarning {
 }
 
 /**
+ * Chord types for filtering
+ */
+export type ChordType = 'major' | 'minor' | '7th' | 'maj7' | 'min7' | 'sus2' | 'sus4' | 'dim' | 'aug' | '9th' | '11th' | '13th' | 'add9' | 'power';
+
+/**
+ * Fret range types for filtering
+ */
+export type FretRange = 'open' | 'barre' | 'high' | 'custom';
+
+/**
+ * Sort options for search results
+ */
+export type SortOption = 'relevance' | 'alphabetical' | 'difficulty' | 'popularity' | 'fretPosition';
+
+/**
  * Search criteria for chord diagrams
  */
 export interface ChordDiagramSearchCriteria {
@@ -263,14 +278,76 @@ export interface ChordDiagramSearchCriteria {
   instrument?: InstrumentType;
   /** Difficulty level(s) */
   difficulty?: DifficultyLevel[];
+  /** Chord type(s) */
+  chordType?: ChordType[];
   /** Maximum fret position */
   maxFret?: number;
+  /** Minimum fret position */
+  minFret?: number;
+  /** Fret range type */
+  fretRange?: FretRange;
   /** Whether to include barre chords */
   includeBarre?: boolean;
   /** Tags to search for */
   tags?: string[];
   /** Minimum popularity score */
   minPopularity?: number;
+  /** Use fuzzy search */
+  fuzzySearch?: boolean;
+  /** Search threshold for fuzzy matching (0-100) */
+  fuzzyThreshold?: number;
+}
+
+/**
+ * Search result with metadata
+ */
+export interface ChordDiagramSearchResult {
+  /** The chord diagram */
+  diagram: ChordDiagram;
+  /** Relevance score (0-100) */
+  score: number;
+  /** Match reason */
+  matchReason: string;
+}
+
+/**
+ * Search and filter options
+ */
+export interface ChordDiagramSearchOptions {
+  /** Search criteria */
+  criteria: ChordDiagramSearchCriteria;
+  /** Sort option */
+  sortBy?: SortOption;
+  /** Sort direction */
+  sortDirection?: 'asc' | 'desc';
+  /** Pagination: page number (0-based) */
+  page?: number;
+  /** Pagination: results per page */
+  pageSize?: number;
+  /** Maximum results to return */
+  maxResults?: number;
+}
+
+/**
+ * Paginated search results
+ */
+export interface ChordDiagramSearchResults {
+  /** Search results */
+  results: ChordDiagramSearchResult[];
+  /** Total number of matches */
+  totalCount: number;
+  /** Current page (0-based) */
+  page: number;
+  /** Results per page */
+  pageSize: number;
+  /** Total number of pages */
+  totalPages: number;
+  /** Search criteria used */
+  criteria: ChordDiagramSearchCriteria;
+  /** Sort option used */
+  sortBy: SortOption;
+  /** Sort direction used */
+  sortDirection: 'asc' | 'desc';
 }
 
 /**

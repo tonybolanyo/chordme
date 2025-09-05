@@ -252,7 +252,7 @@ export function getDirectiveSuggestions(
 /**
  * Enhanced fuzzy matching algorithm using Levenshtein distance and other metrics
  */
-function calculateFuzzyScore(input: string, target: string): number {
+export function calculateFuzzyScore(input: string, target: string): number {
   const inputLower = input.toLowerCase();
   const targetLower = target.toLowerCase();
   

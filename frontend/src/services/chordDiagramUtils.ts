@@ -18,8 +18,18 @@ import {
   ChordNotes,
   CHORD_INTERVALS,
   LocalizedChordInfo,
-  ChordDiagramMetadata
+  ChordDiagramMetadata,
+  ChordType,
+  FretRange,
+  SortOption,
+  ChordDiagramSearchCriteria,
+  ChordDiagramSearchResult,
+  ChordDiagramSearchOptions,
+  ChordDiagramSearchResults
 } from '../types/chordDiagram';
+
+// Import fuzzy search functionality from chordService
+import { calculateFuzzyScore } from './chordService';
 
 /**
  * Create a new chord diagram with default values
@@ -364,7 +374,250 @@ export function tabToStringPositions(
 }
 
 /**
- * Search chord diagrams by criteria
+ * Determine fret range type for a chord diagram
+ */
+function getFretRange(diagram: ChordDiagram): FretRange {
+  const maxFret = Math.max(...diagram.positions.map(p => p.fret));
+  const minFret = Math.min(...diagram.positions.filter(p => p.fret > 0).map(p => p.fret));
+  
+  if (diagram.barre) return 'barre';
+  if (maxFret <= 3) return 'open';
+  if (minFret >= 5) return 'high';
+  return 'custom';
+}
+
+/**
+ * Calculate relevance score for a chord diagram
+ */
+function calculateRelevanceScore(diagram: ChordDiagram, criteria: ChordDiagramSearchCriteria): number {
+  let score = 0;
+  
+  // Name matching score
+  if (criteria.name) {
+    if (criteria.fuzzySearch) {
+      score += calculateFuzzyScore(criteria.name, diagram.name);
+    } else {
+      const name = diagram.name.toLowerCase();
+      const searchName = criteria.name.toLowerCase();
+      if (name === searchName) score += 100;
+      else if (name.startsWith(searchName)) score += 80;
+      else if (name.includes(searchName)) score += 60;
+    }
+  }
+  
+  // Exact matches get bonus points
+  if (criteria.instrument && diagram.instrument.type === criteria.instrument) score += 10;
+  if (criteria.difficulty && criteria.difficulty.includes(diagram.difficulty)) score += 10;
+  
+  // Popularity score
+  score += (diagram.metadata.popularityScore || 0) * 20;
+  
+  // Verified diagrams get bonus
+  if (diagram.metadata.isVerified) score += 5;
+  
+  return Math.min(score, 100); // Cap at 100
+}
+
+/**
+ * Sort chord diagrams by specified option
+ */
+function sortChordDiagrams(
+  results: ChordDiagramSearchResult[], 
+  sortBy: SortOption, 
+  direction: 'asc' | 'desc' = 'desc'
+): ChordDiagramSearchResult[] {
+  const multiplier = direction === 'asc' ? 1 : -1;
+  
+  return results.sort((a, b) => {
+    let comparison = 0;
+    
+    switch (sortBy) {
+      case 'relevance':
+        comparison = a.score - b.score;
+        break;
+      case 'alphabetical':
+        comparison = a.diagram.name.localeCompare(b.diagram.name);
+        break;
+      case 'difficulty':
+        const difficultyOrder = { 'beginner': 1, 'intermediate': 2, 'advanced': 3, 'expert': 4 };
+        comparison = difficultyOrder[a.diagram.difficulty] - difficultyOrder[b.diagram.difficulty];
+        break;
+      case 'popularity':
+        comparison = (a.diagram.metadata.popularityScore || 0) - (b.diagram.metadata.popularityScore || 0);
+        break;
+      case 'fretPosition':
+        const aMaxFret = Math.max(...a.diagram.positions.map(p => p.fret));
+        const bMaxFret = Math.max(...b.diagram.positions.map(p => p.fret));
+        comparison = aMaxFret - bMaxFret;
+        break;
+      default:
+        comparison = a.score - b.score;
+    }
+    
+    return comparison * multiplier;
+  });
+}
+
+/**
+ * Enhanced search chord diagrams with advanced filtering, sorting, and pagination
+ */
+export function searchChordDiagramsAdvanced(
+  diagrams: ChordDiagram[],
+  options: ChordDiagramSearchOptions
+): ChordDiagramSearchResults {
+  const {
+    criteria,
+    sortBy = 'relevance',
+    sortDirection = 'desc',
+    page = 0,
+    pageSize = 20,
+    maxResults = 1000
+  } = options;
+  
+  // Default fuzzy search settings
+  const fuzzySearch = criteria.fuzzySearch ?? true;
+  const fuzzyThreshold = criteria.fuzzyThreshold ?? 30;
+  
+  // Filter diagrams
+  const filteredResults: ChordDiagramSearchResult[] = [];
+  
+  for (const diagram of diagrams) {
+    let matches = true;
+    let matchReason = '';
+    let score = 0;
+    
+    // Name filter
+    if (criteria.name) {
+      if (fuzzySearch) {
+        score = calculateFuzzyScore(criteria.name, diagram.name);
+        if (score < fuzzyThreshold) {
+          matches = false;
+        } else {
+          matchReason = `Name match (${score}% similarity)`;
+        }
+      } else {
+        const nameMatch = diagram.name.toLowerCase().includes(criteria.name.toLowerCase());
+        if (!nameMatch) {
+          matches = false;
+        } else {
+          matchReason = 'Name contains search term';
+          score = 80;
+        }
+      }
+    }
+    
+    // Instrument filter
+    if (matches && criteria.instrument && diagram.instrument.type !== criteria.instrument) {
+      matches = false;
+    }
+    
+    // Difficulty filter
+    if (matches && criteria.difficulty && !criteria.difficulty.includes(diagram.difficulty)) {
+      matches = false;
+    }
+    
+    // Chord type filter
+    if (matches && criteria.chordType) {
+      const diagramChordType = extractChordType(diagram.name);
+      if (!criteria.chordType.includes(diagramChordType)) {
+        matches = false;
+      }
+    }
+    
+    // Fret range filters
+    if (matches && (criteria.maxFret !== undefined || criteria.minFret !== undefined)) {
+      const maxFret = Math.max(...diagram.positions.map(p => p.fret));
+      const minFret = Math.min(...diagram.positions.filter(p => p.fret > 0).map(p => p.fret));
+      
+      if (criteria.maxFret !== undefined && maxFret > criteria.maxFret) {
+        matches = false;
+      }
+      if (criteria.minFret !== undefined && minFret < criteria.minFret) {
+        matches = false;
+      }
+    }
+    
+    // Fret range type filter
+    if (matches && criteria.fretRange) {
+      const diagramFretRange = getFretRange(diagram);
+      if (diagramFretRange !== criteria.fretRange) {
+        matches = false;
+      }
+    }
+    
+    // Barre filter
+    if (matches && criteria.includeBarre === true && !diagram.barre) {
+      matches = false;
+    }
+    if (matches && criteria.includeBarre === false && diagram.barre) {
+      matches = false;
+    }
+    
+    // Tags filter
+    if (matches && criteria.tags && criteria.tags.length > 0) {
+      const hasMatchingTag = criteria.tags.some(tag => 
+        diagram.metadata.tags.some(diagramTag => 
+          diagramTag.toLowerCase().includes(tag.toLowerCase())
+        )
+      );
+      if (!hasMatchingTag) {
+        matches = false;
+      }
+    }
+    
+    // Popularity filter
+    if (matches && criteria.minPopularity !== undefined) {
+      const popularity = diagram.metadata.popularityScore || 0;
+      if (popularity < criteria.minPopularity) {
+        matches = false;
+      }
+    }
+    
+    if (matches) {
+      // Calculate final relevance score
+      if (score === 0) {
+        score = calculateRelevanceScore(diagram, criteria);
+      }
+      
+      if (!matchReason) {
+        matchReason = 'Matches all criteria';
+      }
+      
+      filteredResults.push({
+        diagram,
+        score,
+        matchReason
+      });
+    }
+  }
+  
+  // Sort results
+  const sortedResults = sortChordDiagrams(filteredResults, sortBy, sortDirection);
+  
+  // Apply max results limit
+  const limitedResults = sortedResults.slice(0, maxResults);
+  
+  // Calculate pagination
+  const totalCount = limitedResults.length;
+  const totalPages = Math.ceil(totalCount / pageSize);
+  const startIndex = page * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalCount);
+  const paginatedResults = limitedResults.slice(startIndex, endIndex);
+  
+  return {
+    results: paginatedResults,
+    totalCount,
+    page,
+    pageSize,
+    totalPages,
+    criteria,
+    sortBy,
+    sortDirection
+  };
+}
+
+/**
+ * Legacy search function for backward compatibility
  */
 export function searchChordDiagrams(
   diagrams: ChordDiagram[],
@@ -376,37 +629,17 @@ export function searchChordDiagrams(
     includeBarre?: boolean;
   }
 ): ChordDiagram[] {
-  return diagrams.filter(diagram => {
-    // Name filter
-    if (criteria.name && !diagram.name.toLowerCase().includes(criteria.name.toLowerCase())) {
-      return false;
-    }
-
-    // Instrument filter
-    if (criteria.instrument && diagram.instrument.type !== criteria.instrument) {
-      return false;
-    }
-
-    // Difficulty filter
-    if (criteria.difficulty && !criteria.difficulty.includes(diagram.difficulty)) {
-      return false;
-    }
-
-    // Max fret filter
-    if (criteria.maxFret !== undefined) {
-      const maxFret = Math.max(...diagram.positions.map(p => p.fret));
-      if (maxFret > criteria.maxFret) {
-        return false;
-      }
-    }
-
-    // Barre filter
-    if (criteria.includeBarre === false && diagram.barre) {
-      return false;
-    }
-
-    return true;
-  });
+  const searchOptions: ChordDiagramSearchOptions = {
+    criteria: {
+      ...criteria,
+      fuzzySearch: false // Legacy behavior was exact matching
+    },
+    sortBy: 'relevance',
+    maxResults: 1000
+  };
+  
+  const results = searchChordDiagramsAdvanced(diagrams, searchOptions);
+  return results.results.map(result => result.diagram);
 }
 
 /**
@@ -458,15 +691,54 @@ function extractRootNote(chordName: string): string {
 }
 
 /**
- * Helper function to extract chord quality from chord name
+ * Extract chord quality/type from chord name
+ */
+export function extractChordType(chordName: string): ChordType {
+  const originalName = chordName;
+  const name = chordName.toLowerCase();
+  
+  // Check for specific patterns in order of specificity
+  if (name.includes('maj7')) return 'maj7';
+  if (originalName.includes('M7')) return 'maj7'; // Check for uppercase M7
+  if (name.includes('min7')) return 'min7';
+  if (name.includes('m7') && !name.includes('maj7')) return 'min7';
+  if (name.includes('sus2')) return 'sus2';
+  if (name.includes('sus4')) return 'sus4';
+  if (name.includes('dim')) return 'dim';
+  if (name.includes('aug') || name.includes('+')) return 'aug';
+  if (name.includes('add9')) return 'add9';
+  if (name.includes('13')) return '13th';
+  if (name.includes('11')) return '11th';
+  if (name.includes('9')) return '9th';
+  if (name.includes('7')) return '7th';
+  if (name.includes('m') && !name.includes('maj')) return 'minor';
+  if (name.match(/^[a-g][#b]?5$/)) return 'power'; // Power chords like C5, F#5
+  
+  return 'major'; // Default to major
+}
+
+/**
+ * Helper function to extract chord quality from chord name (legacy compatibility)
  */
 function extractChordQuality(chordName: string): string {
-  if (chordName.includes('m') && !chordName.includes('maj')) return 'minor';
-  if (chordName.includes('dim')) return 'diminished';
-  if (chordName.includes('aug')) return 'augmented';
-  if (chordName.includes('sus')) return 'suspended';
-  if (chordName.includes('7')) return 'seventh';
-  return 'major';
+  const chordType = extractChordType(chordName);
+  
+  // Map new types to legacy strings for backward compatibility
+  switch (chordType) {
+    case 'minor': return 'minor';
+    case 'dim': return 'diminished';
+    case 'aug': return 'augmented';
+    case 'sus2':
+    case 'sus4': return 'suspended';
+    case '7th':
+    case 'maj7':
+    case 'min7':
+    case '9th':
+    case '11th':
+    case '13th': return 'seventh';
+    case 'power': return 'power';
+    default: return 'major';
+  }
 }
 
 /**
