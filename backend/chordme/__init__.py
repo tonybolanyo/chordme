@@ -221,6 +221,10 @@ setup_monitoring(app)
 # Import API routes (must come after db initialization)
 from . import api
 
+# Initialize CLI commands for chord management
+from . import chord_cli
+chord_cli.init_app(app)
+
 # Enable foreign key constraints for SQLite - must be set up after app context is available
 def enable_foreign_key_constraints():
     """Enable foreign key constraints for SQLite databases."""

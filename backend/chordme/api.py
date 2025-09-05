@@ -4581,6 +4581,10 @@ def serve_static(path):
         return send_file(os.path.join(app.static_folder, 'index.html'))
 
 
+# Register chord routes blueprint
+from .chord_routes import chord_bp
+app.register_blueprint(chord_bp)
+
 # Initialize database tables
 with app.app_context():
     db.create_all()
