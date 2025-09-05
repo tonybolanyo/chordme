@@ -154,3 +154,11 @@ export type {
   PermissionChange,
   CollaborationEvent,
 } from './collaboration';
+
+// Re-export split view types
+export type {
+  ViewMode,
+  SplitOrientation,
+  SplitViewPreferences,
+  SplitViewConfig,
+} from './splitView';

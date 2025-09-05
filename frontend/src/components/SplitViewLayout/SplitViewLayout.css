@@ -1,0 +1,173 @@
+/* Split View Layout Styles */
+.split-view-container {
+  display: flex;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Vertical split (side-by-side) */
+.split-view-container.vertical {
+  flex-direction: row;
+}
+
+/* Horizontal split (top-bottom) */
+.split-view-container.horizontal {
+  flex-direction: column;
+}
+
+/* Individual panes */
+.split-view-pane {
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+  min-height: 0;
+}
+
+.split-view-pane.editor-pane {
+  display: flex;
+  flex-direction: column;
+}
+
+.split-view-pane.preview-pane {
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid #e0e0e0;
+}
+
+.split-view-container.horizontal .split-view-pane.preview-pane {
+  border-left: none;
+  border-top: 1px solid #e0e0e0;
+}
+
+/* Split resizer */
+.split-view-resizer {
+  background: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  position: relative;
+  cursor: col-resize;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
+
+.split-view-resizer:hover {
+  background: #e9ecef;
+}
+
+.split-view-resizer:active {
+  background: #dee2e6;
+}
+
+/* Vertical resizer (between left/right panes) */
+.split-view-container.vertical .split-view-resizer {
+  width: 8px;
+  cursor: col-resize;
+}
+
+/* Horizontal resizer (between top/bottom panes) */
+.split-view-container.horizontal .split-view-resizer {
+  height: 8px;
+  cursor: row-resize;
+}
+
+/* Resizer handle */
+.split-view-resizer::after {
+  content: '';
+  background: #adb5bd;
+  border-radius: 2px;
+}
+
+.split-view-container.vertical .split-view-resizer::after {
+  width: 2px;
+  height: 20px;
+}
+
+.split-view-container.horizontal .split-view-resizer::after {
+  width: 20px;
+  height: 2px;
+}
+
+/* Single pane modes */
+.split-view-container.edit-only .split-view-pane.preview-pane,
+.split-view-container.preview-only .split-view-pane.editor-pane {
+  display: none;
+}
+
+.split-view-container.edit-only .split-view-resizer,
+.split-view-container.preview-only .split-view-resizer {
+  display: none;
+}
+
+/* Pane content areas */
+.split-view-pane-content {
+  flex: 1;
+  overflow: auto;
+  padding: var(--space-md);
+  height: 100%;
+}
+
+.split-view-pane.editor-pane .split-view-pane-content {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Editor and viewer specific styling within panes */
+.split-view-pane .chordpro-editor {
+  flex: 1;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  resize: none;
+}
+
+.split-view-pane .chordpro-viewer {
+  flex: 1;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  background: white;
+}
+
+/* Responsive behavior */
+@media (max-width: 768px) {
+  /* Force vertical split on mobile */
+  .split-view-container.horizontal {
+    flex-direction: column;
+  }
+  
+  .split-view-container.vertical {
+    flex-direction: column;
+  }
+  
+  .split-view-container.vertical .split-view-pane.preview-pane {
+    border-left: none;
+    border-top: 1px solid #e0e0e0;
+  }
+  
+  .split-view-container.vertical .split-view-resizer {
+    width: auto;
+    height: 8px;
+    cursor: row-resize;
+  }
+  
+  .split-view-container.vertical .split-view-resizer::after {
+    width: 20px;
+    height: 2px;
+  }
+  
+  .split-view-pane-content {
+    padding: var(--space-sm);
+  }
+}
+
+@media (max-width: 480px) {
+  /* Even more compact on very small screens */
+  .split-view-pane-content {
+    padding: var(--space-xs);
+  }
+  
+  .split-view-resizer {
+    height: 6px;
+  }
+}
