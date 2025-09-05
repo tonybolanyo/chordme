@@ -1684,6 +1684,19 @@ def export_song_pdf(song_id):
         description: Override song artist
         required: false
         type: string
+      - in: query
+        name: chord_diagrams
+        description: Include chord diagrams in PDF
+        required: false
+        type: boolean
+        default: false
+      - in: query
+        name: instrument
+        description: Instrument type for chord diagrams
+        required: false
+        type: string
+        enum: ['guitar', 'ukulele']
+        default: 'guitar'
     produces:
       - application/pdf
     responses:
@@ -1737,11 +1750,14 @@ def export_song_pdf(song_id):
         template_name = request.args.get('template', 'classic').lower()
         title_override = request.args.get('title')
         artist_override = request.args.get('artist')
+        include_chord_diagrams = request.args.get('chord_diagrams', 'false').lower() == 'true'
+        diagram_instrument = request.args.get('instrument', 'guitar').lower()
         
         # Validate parameters
         valid_paper_sizes = ['a4', 'letter', 'legal']
         valid_orientations = ['portrait', 'landscape']
         valid_templates = ['classic', 'modern', 'minimal']
+        valid_instruments = ['guitar', 'ukulele']
         
         if paper_size not in valid_paper_sizes:
             return create_error_response(f"Invalid paper size. Must be one of: {', '.join(valid_paper_sizes)}", 400)
@@ -1751,6 +1767,9 @@ def export_song_pdf(song_id):
         
         if template_name not in valid_templates:
             return create_error_response(f"Invalid template. Must be one of: {', '.join(valid_templates)}", 400)
+        
+        if diagram_instrument not in valid_instruments:
+            return create_error_response(f"Invalid instrument. Must be one of: {', '.join(valid_instruments)}", 400)
         
         # Generate PDF
         content = song.content
@@ -1763,7 +1782,9 @@ def export_song_pdf(song_id):
             artist=artist,
             paper_size=paper_size,
             orientation=orientation,
-            template_name=template_name
+            template_name=template_name,
+            include_chord_diagrams=include_chord_diagrams,
+            diagram_instrument=diagram_instrument
         )
         
         # Create safe filename

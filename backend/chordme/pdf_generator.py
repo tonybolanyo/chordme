@@ -8,15 +8,18 @@ from reportlab.lib.pagesizes import letter, A4, legal
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.lib.colors import black, blue, red, HexColor
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Table, TableStyle, KeepTogether
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+from reportlab.graphics import renderPDF
+from reportlab.graphics.shapes import Drawing
 
 from io import BytesIO
 import re
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Tuple, Optional, Set
 
 from .pdf_template_schema import PDFTemplateConfig, FontConfig
 from .pdf_templates import get_template, get_template_manager
+from .chord_diagram_pdf import ChordDiagramGenerator, create_chord_diagram_for_pdf
 
 
 class ChordProPDFGenerator:
@@ -33,7 +36,8 @@ class ChordProPDFGenerator:
     }
     
     def __init__(self, paper_size: str = 'a4', orientation: str = 'portrait', 
-                 template: Optional[PDFTemplateConfig] = None, template_name: Optional[str] = None):
+                 template: Optional[PDFTemplateConfig] = None, template_name: Optional[str] = None,
+                 include_chord_diagrams: bool = False, diagram_instrument: str = 'guitar'):
         """
         Initialize PDF generator with specified paper size, orientation, and template.
         
@@ -42,6 +46,8 @@ class ChordProPDFGenerator:
             orientation: Orientation ('portrait' or 'landscape')
             template: Template configuration object
             template_name: Name of predefined template to use
+            include_chord_diagrams: Whether to include chord diagrams in PDF
+            diagram_instrument: Instrument type for chord diagrams ('guitar', 'ukulele')
         """
         # Set up template
         self.template = None
@@ -49,6 +55,11 @@ class ChordProPDFGenerator:
             self.template = template
         elif template_name:
             self.template = get_template(template_name)
+        
+        # Chord diagram settings
+        self.include_chord_diagrams = include_chord_diagrams
+        self.diagram_instrument = diagram_instrument
+        self.chord_diagram_generator = ChordDiagramGenerator() if include_chord_diagrams else None
         
         # Use template settings if available, otherwise use parameters
         if self.template:
@@ -407,6 +418,12 @@ class ChordProPDFGenerator:
             spacing = self.template.spacing.section_spacing if self.template else 12
             story.append(Spacer(1, spacing))
         
+        # Add chord diagrams if enabled
+        if self.include_chord_diagrams:
+            unique_chords = self._extract_unique_chords(parsed_data)
+            chord_diagram_elements = self._create_chord_diagram_section(unique_chords)
+            story.extend(chord_diagram_elements)
+        
         # Add song sections
         for section in parsed_data['sections']:
             # Add section header if not a basic verse
@@ -528,11 +545,112 @@ class ChordProPDFGenerator:
                     chord_line[pos + i] = char
         
         return ''.join(chord_line).rstrip()
+    
+    def _extract_unique_chords(self, parsed_data: Dict) -> Set[str]:
+        """
+        Extract unique chord names from parsed ChordPro data.
+        
+        Args:
+            parsed_data: Parsed ChordPro content
+            
+        Returns:
+            Set of unique chord names
+        """
+        chords = set()
+        
+        for section in parsed_data.get('sections', []):
+            for line in section.get('lines', []):
+                for chord_data in line.get('chords', []):
+                    chord_name = chord_data.get('chord', '').strip()
+                    if chord_name:
+                        # Clean up chord name (remove extra formatting)
+                        chord_name = re.sub(r'[^A-G#b/0-9maj\-min\+dim\*sus]+', '', chord_name)
+                        if chord_name:
+                            chords.add(chord_name)
+        
+        return chords
+    
+    def _create_chord_diagram_section(self, chords: Set[str]) -> List:
+        """
+        Create a chord diagram section for the PDF.
+        
+        Args:
+            chords: Set of unique chord names
+            
+        Returns:
+            List of story elements for the chord diagram section
+        """
+        if not chords or not self.include_chord_diagrams or not self.chord_diagram_generator:
+            return []
+        
+        elements = []
+        
+        # Add section title
+        section_style = self.styles.get('section', self.styles['normal'])
+        elements.append(Paragraph("Chord Diagrams", section_style))
+        elements.append(Spacer(1, 6))
+        
+        # Create chord diagrams in a table format (3 columns)
+        diagrams_per_row = 3
+        chord_list = sorted(list(chords))
+        
+        from .chord_diagram_pdf import COMMON_CHORDS
+        
+        # Create table data with chord diagrams
+        table_data = []
+        current_row = []
+        
+        for i, chord_name in enumerate(chord_list):
+            # Try to get chord definition from common chords
+            chord_def = COMMON_CHORDS.get(self.diagram_instrument, {}).get(chord_name)
+            
+            if chord_def:
+                # Create chord diagram
+                diagram = self.chord_diagram_generator.generate_chord_diagram_pdf_element(
+                    chord_def, chord_name, self.diagram_instrument
+                )
+                
+                if diagram:
+                    current_row.append(diagram)
+                else:
+                    # Fallback: just add chord name as text
+                    current_row.append(Paragraph(chord_name, self.styles['normal']))
+            else:
+                # Add chord name as text if no diagram available
+                current_row.append(Paragraph(chord_name, self.styles['normal']))
+            
+            # Complete row when we have enough diagrams or reached end
+            if len(current_row) == diagrams_per_row or i == len(chord_list) - 1:
+                # Pad row if necessary
+                while len(current_row) < diagrams_per_row:
+                    current_row.append("")
+                
+                table_data.append(current_row[:])
+                current_row = []
+        
+        if table_data:
+            # Create table with chord diagrams
+            col_width = (self.page_size[0] - 2 * inch) / diagrams_per_row
+            table = Table(table_data, colWidths=[col_width] * diagrams_per_row)
+            
+            table.setStyle(TableStyle([
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+                ('FONTSIZE', (0, 0), (-1, -1), 10),
+                ('SPACING', (0, 0), (-1, -1), 6),
+            ]))
+            
+            elements.append(KeepTogether(table))
+            elements.append(Spacer(1, 12))
+        
+        return elements
 
 
 def generate_song_pdf(content: str, title: str = None, artist: str = None, 
                      paper_size: str = 'a4', orientation: str = 'portrait',
-                     template_name: str = None) -> bytes:
+                     template_name: str = None, include_chord_diagrams: bool = False,
+                     diagram_instrument: str = 'guitar') -> bytes:
     """
     Convenience function to generate PDF for a song.
     
@@ -543,6 +661,8 @@ def generate_song_pdf(content: str, title: str = None, artist: str = None,
         paper_size: Paper size ('letter', 'a4', 'legal')
         orientation: Orientation ('portrait' or 'landscape')
         template_name: Name of template to use (optional)
+        include_chord_diagrams: Whether to include chord diagrams
+        diagram_instrument: Instrument for chord diagrams ('guitar', 'ukulele')
         
     Returns:
         PDF content as bytes
@@ -550,6 +670,8 @@ def generate_song_pdf(content: str, title: str = None, artist: str = None,
     generator = ChordProPDFGenerator(
         paper_size=paper_size, 
         orientation=orientation,
-        template_name=template_name
+        template_name=template_name,
+        include_chord_diagrams=include_chord_diagrams,
+        diagram_instrument=diagram_instrument
     )
     return generator.generate_pdf(content, title=title, artist=artist)
