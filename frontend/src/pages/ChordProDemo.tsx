@@ -7,9 +7,14 @@ import {
   SplitViewLayout,
   ViewModeSelector,
 } from '../components';
-import { transposeChordProContent } from '../services/chordService';
+import { 
+  transposeChordProContent,
+  transposeChordProContentWithKey,
+  detectKeySignature
+} from '../services/chordService';
 import { useSplitView } from '../hooks/useSplitView';
 import { useSyncedScrolling } from '../hooks/useSyncedScrolling';
+import { NotationSystem } from '../components/TranspositionControls/TranspositionControls';
 import '../styles/responsive.css';
 
 const ChordProDemo: React.FC = () => {
@@ -40,6 +45,13 @@ How [G]precious [G7]did that [C]grace ap[G]pear
 The [Em]hour I [D]first be[G]lieved
 {end_of_verse}`);
 
+  // Transposition state management
+  const [originalContent] = useState(content);
+  const [currentTransposition, setCurrentTransposition] = useState(0);
+  const [originalKey] = useState('G');
+  const [currentKey, setCurrentKey] = useState('G');
+  const [notationSystem, setNotationSystem] = useState<NotationSystem>('american');
+  
   const editorRef = useRef<HTMLTextAreaElement>(null);
   
   // Split view configuration
@@ -81,8 +93,48 @@ The [Em]hour I [D]first be[G]lieved
   };
 
   const handleTranspose = (semitones: number) => {
-    const transposedContent = transposeChordProContent(content, semitones);
+    const newTransposition = currentTransposition + semitones;
+    setCurrentTransposition(newTransposition);
+    
+    const transposedContent = transposeChordProContentWithKey(
+      originalContent, 
+      newTransposition,
+      originalKey,
+      notationSystem
+    );
     setContent(transposedContent);
+    
+    // Calculate new key for display
+    const detectedKey = detectKeySignature(transposedContent);
+    setCurrentKey(detectedKey.detectedKey);
+  };
+
+  const handleKeyChange = (key: string) => {
+    setCurrentKey(key);
+    // Update the content's key directive
+    const updatedContent = content.replace(
+      /\{key\s*:\s*[^}]+\}/i,
+      `{key: ${key}}`
+    );
+    setContent(updatedContent);
+  };
+
+  const handleNotationSystemChange = (system: NotationSystem) => {
+    setNotationSystem(system);
+    // Re-transpose with new notation system
+    const transposedContent = transposeChordProContentWithKey(
+      originalContent,
+      currentTransposition,
+      originalKey,
+      system
+    );
+    setContent(transposedContent);
+  };
+
+  const handleReset = () => {
+    setCurrentTransposition(0);
+    setCurrentKey(originalKey);
+    setContent(originalContent);
   };
 
   return (
@@ -129,8 +181,12 @@ The [Em]hour I [D]first be[G]lieved
             onto specific positions in the lyrics
           </li>
           <li>
-            <strong>Chord Transposition:</strong> Use the transpose buttons
-            (♭/♯) to transpose all chords up or down by semitones
+            <strong>Chord Transposition:</strong> Use the enhanced transpose 
+            controls with key selection, notation system toggle, and keyboard shortcuts
+          </li>
+          <li>
+            <strong>Keyboard Shortcuts:</strong> Ctrl+↑/↓ for transposition, 
+            Ctrl+0 for reset, Ctrl++ and Ctrl+- for quick transpose
           </li>
           <li>
             <strong>Visual Feedback:</strong> Invalid chord names are
@@ -166,12 +222,24 @@ The [Em]hour I [D]first be[G]lieved
                 style={{
                   display: 'flex',
                   justifyContent: 'space-between',
-                  alignItems: 'center',
+                  alignItems: 'flex-start',
                   marginBottom: 'var(--space-md)',
+                  flexWrap: 'wrap',
+                  gap: 'var(--space-md)',
                 }}
               >
                 <h2 style={{ margin: 0 }}>Editor</h2>
-                <TranspositionControls onTranspose={handleTranspose} />
+                <TranspositionControls 
+                  onTranspose={handleTranspose}
+                  onKeyChange={handleKeyChange}
+                  onNotationSystemChange={handleNotationSystemChange}
+                  onReset={handleReset}
+                  currentTransposition={currentTransposition}
+                  originalKey={originalKey}
+                  currentKey={currentKey}
+                  notationSystem={notationSystem}
+                  enableAdvancedFeatures={true}
+                />
               </div>
               <ChordProEditor
                 ref={(node) => {
@@ -205,6 +273,58 @@ The [Em]hour I [D]first be[G]lieved
             </div>
           }
         />
+      </div>
+
+      {/* Transposition Demo Section */}
+      <div style={{ marginTop: 'var(--space-lg)' }}>
+        <h2>Enhanced Transposition Features</h2>
+        <div className="text-responsive">
+          <p>The transposition controls offer comprehensive functionality:</p>
+          <ul style={{ marginBottom: '1rem' }}>
+            <li><strong>Semitone Controls:</strong> ♭/♯ buttons for precise transposition</li>
+            <li><strong>Key Selection:</strong> Dropdown with all major/minor keys</li>
+            <li><strong>Key Display:</strong> Shows original → current key transformation</li>
+            <li><strong>Notation Toggle:</strong> Switch between American (ABC) and Latin (DoReMi) notation</li>
+            <li><strong>Reset Function:</strong> Return to original key instantly</li>
+            <li><strong>Keyboard Shortcuts:</strong> Ctrl+↑/↓, Ctrl+±, Ctrl+0</li>
+            <li><strong>Smart Enharmonics:</strong> Context-aware sharp/flat preferences</li>
+          </ul>
+        </div>
+        
+        {/* Standalone Transposition Controls Demo */}
+        <div style={{ 
+          border: '1px solid #e0e0e0', 
+          borderRadius: '8px', 
+          padding: 'var(--space-lg)', 
+          backgroundColor: '#fafafa',
+          marginTop: 'var(--space-md)'
+        }}>
+          <h3 style={{ marginTop: 0 }}>Standalone Transposition Controls</h3>
+          <p style={{ marginBottom: 'var(--space-md)', color: '#666' }}>
+            Try all the features: transpose, change key, toggle notation system, and reset.
+          </p>
+          <TranspositionControls 
+            onTranspose={handleTranspose}
+            onKeyChange={handleKeyChange}
+            onNotationSystemChange={handleNotationSystemChange}
+            onReset={handleReset}
+            currentTransposition={currentTransposition}
+            originalKey={originalKey}
+            currentKey={currentKey}
+            notationSystem={notationSystem}
+            enableAdvancedFeatures={true}
+          />
+          <div style={{ 
+            marginTop: 'var(--space-md)', 
+            padding: 'var(--space-sm)', 
+            backgroundColor: '#e3f2fd', 
+            borderRadius: '4px',
+            fontSize: '14px'
+          }}>
+            <strong>Current State:</strong> Transposed {currentTransposition > 0 ? '+' : ''}{currentTransposition} semitones 
+            {originalKey !== currentKey && ` (${originalKey} → ${currentKey})`} using {notationSystem} notation
+          </div>
+        </div>
       </div>
 
       {/* Chord Palette - Show only in appropriate modes */}
