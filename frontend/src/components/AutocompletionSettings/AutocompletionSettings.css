@@ -1,0 +1,465 @@
+/* AutocompletionSettings.css */
+
+.autocompletion-settings-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.autocompletion-settings {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  max-width: 700px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e0e0e0;
+  background: #f8f9fa;
+  border-radius: 8px 8px 0 0;
+}
+
+.settings-header h2 {
+  margin: 0;
+  color: #333;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #666;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.close-button:hover {
+  background-color: #e9ecef;
+  color: #333;
+}
+
+.settings-content {
+  padding: 0;
+}
+
+.settings-section {
+  padding: 20px 24px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.settings-section:last-child {
+  border-bottom: none;
+}
+
+.settings-section h3 {
+  margin: 0 0 16px 0;
+  color: #333;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.setting-item {
+  margin-bottom: 12px;
+}
+
+.setting-item label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 14px;
+  color: #555;
+}
+
+.setting-item input[type="checkbox"] {
+  margin-right: 8px;
+  width: 16px;
+  height: 16px;
+}
+
+.number-input {
+  margin-left: 8px;
+  width: 60px;
+  padding: 4px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.number-input:focus {
+  outline: none;
+  border-color: #4A90E2;
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+/* Custom Chords Section */
+.custom-chords-actions {
+  margin-bottom: 16px;
+}
+
+.add-chord-button {
+  background-color: #4A90E2;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+}
+
+.add-chord-button:hover {
+  background-color: #357ABD;
+}
+
+.add-chord-form {
+  background: #f8f9fa;
+  padding: 16px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  border: 1px solid #e9ecef;
+}
+
+.form-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.form-row:last-child {
+  margin-bottom: 0;
+}
+
+.chord-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.chord-input:focus {
+  outline: none;
+  border-color: #4A90E2;
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+.chord-input::placeholder {
+  color: #999;
+}
+
+.save-chord-button {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-top: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.save-chord-button:hover:not(:disabled) {
+  background-color: #218838;
+}
+
+.save-chord-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.custom-chords-list {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #e9ecef;
+  border-radius: 4px;
+}
+
+.custom-chord-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background-color 0.2s ease;
+}
+
+.custom-chord-item:last-child {
+  border-bottom: none;
+}
+
+.custom-chord-item:hover {
+  background-color: #f8f9fa;
+}
+
+.chord-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.chord-name {
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+}
+
+.chord-description {
+  font-size: 12px;
+  color: #666;
+  font-style: italic;
+}
+
+.chord-definition {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: #888;
+}
+
+.remove-chord-button {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color 0.2s ease;
+}
+
+.remove-chord-button:hover {
+  background-color: #c82333;
+}
+
+.no-chords {
+  padding: 20px;
+  text-align: center;
+  color: #999;
+  font-style: italic;
+  margin: 0;
+}
+
+/* Data Management Section */
+.data-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.export-button,
+.import-button,
+.reset-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+}
+
+.export-button {
+  background-color: #17a2b8;
+  color: white;
+}
+
+.export-button:hover {
+  background-color: #138496;
+}
+
+.import-button {
+  background-color: #6f42c1;
+  color: white;
+  display: inline-block;
+  text-decoration: none;
+}
+
+.import-button:hover {
+  background-color: #5a32a3;
+}
+
+.reset-button {
+  background-color: #6c757d;
+  color: white;
+}
+
+.reset-button:hover {
+  background-color: #5a6268;
+}
+
+.reset-button.danger {
+  background-color: #dc3545;
+}
+
+.reset-button.danger:hover {
+  background-color: #c82333;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .autocompletion-settings-overlay {
+    padding: 10px;
+  }
+
+  .autocompletion-settings {
+    max-width: 100%;
+    max-height: 95vh;
+  }
+
+  .settings-header {
+    padding: 16px 20px;
+  }
+
+  .settings-section {
+    padding: 16px 20px;
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .data-actions {
+    flex-direction: column;
+  }
+
+  .data-actions button,
+  .data-actions label {
+    width: 100%;
+    text-align: center;
+  }
+
+  .custom-chords-list {
+    max-height: 150px;
+  }
+
+  .custom-chord-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .remove-chord-button {
+    align-self: flex-end;
+  }
+}
+
+@media (max-width: 480px) {
+  .settings-header h2 {
+    font-size: 18px;
+  }
+
+  .settings-section h3 {
+    font-size: 15px;
+  }
+
+  .chord-input {
+    font-size: 13px;
+    padding: 6px 10px;
+  }
+}
+
+/* Dark mode support (if implemented) */
+@media (prefers-color-scheme: dark) {
+  .autocompletion-settings {
+    background: #2d3748;
+    color: #e2e8f0;
+  }
+
+  .settings-header {
+    background: #1a202c;
+    border-bottom-color: #4a5568;
+  }
+
+  .settings-header h2 {
+    color: #e2e8f0;
+  }
+
+  .close-button {
+    color: #a0aec0;
+  }
+
+  .close-button:hover {
+    background-color: #4a5568;
+    color: #e2e8f0;
+  }
+
+  .settings-section {
+    border-bottom-color: #4a5568;
+  }
+
+  .settings-section h3 {
+    color: #e2e8f0;
+  }
+
+  .setting-item label {
+    color: #cbd5e0;
+  }
+
+  .number-input,
+  .chord-input {
+    background: #4a5568;
+    border-color: #718096;
+    color: #e2e8f0;
+  }
+
+  .number-input:focus,
+  .chord-input:focus {
+    border-color: #63b3ed;
+  }
+
+  .add-chord-form {
+    background: #1a202c;
+    border-color: #4a5568;
+  }
+
+  .custom-chords-list {
+    border-color: #4a5568;
+    background: #1a202c;
+  }
+
+  .custom-chord-item {
+    border-bottom-color: #4a5568;
+  }
+
+  .custom-chord-item:hover {
+    background-color: #2d3748;
+  }
+
+  .chord-name {
+    color: #e2e8f0;
+  }
+
+  .chord-description {
+    color: #a0aec0;
+  }
+
+  .chord-definition {
+    color: #718096;
+  }
+
+  .no-chords {
+    color: #718096;
+  }
+}

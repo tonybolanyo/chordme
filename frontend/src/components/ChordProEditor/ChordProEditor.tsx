@@ -7,7 +7,7 @@ import React, {
 } from 'react';
 import './ChordProEditor.css';
 import ChordAutocomplete from '../ChordAutocomplete';
-import { detectChordInput, isValidChord } from '../../services/chordService';
+import { detectInputContext, isValidChord } from '../../services/chordService';
 
 interface ChordProEditorProps {
   value: string;
@@ -448,22 +448,22 @@ const ChordProEditor = forwardRef<HTMLTextAreaElement, ChordProEditorProps>(
       [value, textareaRef]
     );
 
-    // Handle chord input detection and autocomplete
-    const handleChordInput = useCallback(
+    // Handle input detection and autocomplete (enhanced for both chords and directives)
+    const handleInputDetection = useCallback(
       (cursorPosition: number) => {
         if (!enableAutocomplete) return;
 
-        const chordInfo = detectChordInput(value, cursorPosition);
+        const inputContext = detectInputContext(value, cursorPosition);
 
-        if (chordInfo.isInChord && chordInfo.chordText !== undefined) {
-          setCurrentChordInput(chordInfo.chordText);
+        if (inputContext.type !== 'none' && inputContext.inputText !== undefined) {
+          setCurrentChordInput(inputContext.inputText);
           setChordInputPosition({
-            start: chordInfo.chordStart!,
-            end: chordInfo.chordEnd!,
+            start: inputContext.start!,
+            end: inputContext.end!,
           });
 
           // Only show autocomplete if there's some input and it's not just spaces
-          if (chordInfo.chordText.trim().length > 0) {
+          if (inputContext.inputText.trim().length > 0) {
             const position = calculateAutocompletePosition(cursorPosition);
             setAutocompletePosition(position);
             setAutocompleteVisible(true);
@@ -479,20 +479,20 @@ const ChordProEditor = forwardRef<HTMLTextAreaElement, ChordProEditorProps>(
       [value, enableAutocomplete, calculateAutocompletePosition]
     );
 
-    // Handle chord selection from autocomplete
-    const handleChordSelect = useCallback(
-      (selectedChord: string) => {
+    // Handle selection from autocomplete (works for both chords and directives)
+    const handleSuggestionSelect = useCallback(
+      (selectedSuggestion: string) => {
         if (!chordInputPosition || !textareaRef.current) return;
 
         const newValue =
           value.substring(0, chordInputPosition.start) +
-          selectedChord +
+          selectedSuggestion +
           value.substring(chordInputPosition.end);
 
         onChange(newValue);
 
-        // Position cursor after the inserted chord
-        const newCursorPos = chordInputPosition.start + selectedChord.length;
+        // Position cursor after the inserted suggestion
+        const newCursorPos = chordInputPosition.start + selectedSuggestion.length;
         setTimeout(() => {
           if (textareaRef.current) {
             textareaRef.current.focus();
@@ -511,22 +511,22 @@ const ChordProEditor = forwardRef<HTMLTextAreaElement, ChordProEditorProps>(
         const newValue = e.target.value;
         onChange(newValue);
 
-        // Check for chord input after a short delay to allow cursor position to update
+        // Check for input detection after a short delay to allow cursor position to update
         setTimeout(() => {
           if (textareaRef.current) {
-            handleChordInput(textareaRef.current.selectionStart);
+            handleInputDetection(textareaRef.current.selectionStart);
           }
         }, 0);
       },
-      [onChange, handleChordInput, textareaRef]
+      [onChange, handleInputDetection, textareaRef]
     );
 
     // Handle cursor position changes (clicks, arrow keys, etc.)
     const handleSelectionChange = useCallback(() => {
       if (textareaRef.current) {
-        handleChordInput(textareaRef.current.selectionStart);
+        handleInputDetection(textareaRef.current.selectionStart);
       }
-    }, [handleChordInput, textareaRef]);
+    }, [handleInputDetection, textareaRef]);
 
     // Handle special keys that might affect autocomplete
     const handleKeyDown = useCallback(
@@ -542,14 +542,14 @@ const ChordProEditor = forwardRef<HTMLTextAreaElement, ChordProEditorProps>(
           }
         }
 
-        // Update chord input detection on any key that might change cursor position
+        // Update input detection on any key that might change cursor position
         setTimeout(() => {
           if (textareaRef.current) {
-            handleChordInput(textareaRef.current.selectionStart);
+            handleInputDetection(textareaRef.current.selectionStart);
           }
         }, 0);
       },
-      [autocompleteVisible, handleChordInput, textareaRef]
+      [autocompleteVisible, handleInputDetection, textareaRef]
     );
 
     // Drop event handlers
@@ -672,10 +672,13 @@ const ChordProEditor = forwardRef<HTMLTextAreaElement, ChordProEditorProps>(
         {enableAutocomplete && (
           <ChordAutocomplete
             inputText={currentChordInput}
-            onSelectChord={handleChordSelect}
+            onSelectChord={handleSuggestionSelect}
             onClose={() => setAutocompleteVisible(false)}
             position={autocompletePosition}
             visible={autocompleteVisible}
+            inputType="auto"
+            chordProContent={value}
+            cursorPosition={textareaRef.current?.selectionStart}
           />
         )}
       </>
