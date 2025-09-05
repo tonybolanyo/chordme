@@ -1,0 +1,291 @@
+/**
+ * Chord Hover Preview Styles
+ */
+
+.chord-hover-preview {
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(8px);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  overflow: hidden;
+  animation: fadeInUp 0.2s ease-out;
+  user-select: none;
+  cursor: pointer;
+  max-width: 300px;
+}
+
+.chord-hover-preview.compact {
+  max-width: 120px;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Header */
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.chord-hover-preview.compact .preview-header {
+  padding: 6px 8px;
+}
+
+.chord-name {
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  font-size: 14px;
+  color: #374151;
+}
+
+.chord-hover-preview.compact .chord-name {
+  font-size: 12px;
+}
+
+.insert-button {
+  width: 20px;
+  height: 20px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  color: #3b82f6;
+  transition: all 0.2s ease;
+}
+
+.insert-button:hover {
+  background: #f3f4f6;
+  border-color: #3b82f6;
+  transform: scale(1.05);
+}
+
+.insert-button.small {
+  width: auto;
+  height: auto;
+  padding: 4px 8px;
+  font-size: 11px;
+  border-radius: 3px;
+}
+
+/* Diagrams */
+.preview-diagrams {
+  padding: 12px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+}
+
+.chord-hover-preview.compact .preview-diagrams {
+  padding: 8px;
+  gap: 8px;
+}
+
+.preview-diagram {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.hover-diagram {
+  transition: all 0.2s ease;
+}
+
+.hover-diagram:hover {
+  transform: scale(1.05);
+}
+
+.diagram-label {
+  font-size: 10px;
+  color: #6b7280;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* No Diagram State */
+.no-diagram {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  color: #6b7280;
+  text-align: center;
+}
+
+.chord-hover-preview.compact .no-diagram {
+  padding: 12px;
+}
+
+.no-diagram-text {
+  font-size: 12px;
+  font-style: italic;
+}
+
+.chord-hover-preview.compact .no-diagram-text {
+  font-size: 11px;
+}
+
+/* Footer */
+.preview-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px;
+  background: #f8fafc;
+  border-top: 1px solid #e5e7eb;
+  font-size: 10px;
+  color: #6b7280;
+}
+
+.instrument-info {
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.more-info {
+  font-style: italic;
+}
+
+/* Dark Mode */
+@media (prefers-color-scheme: dark) {
+  .chord-hover-preview {
+    background: rgba(31, 41, 55, 0.98);
+    border-color: #374151;
+    color: #f9fafb;
+  }
+  
+  .preview-header,
+  .preview-footer {
+    background: rgba(17, 24, 39, 0.9);
+    border-color: #374151;
+  }
+  
+  .chord-name {
+    color: #f9fafb;
+  }
+  
+  .insert-button {
+    background: #374151;
+    border-color: #4b5563;
+    color: #3b82f6;
+  }
+  
+  .insert-button:hover {
+    background: #4b5563;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .chord-hover-preview {
+    max-width: 250px;
+  }
+  
+  .chord-hover-preview.compact {
+    max-width: 100px;
+  }
+  
+  .preview-diagrams {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .chord-hover-preview:not(.compact) .preview-diagrams {
+    padding: 8px;
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .chord-hover-preview {
+    border-width: 2px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  }
+  
+  .insert-button {
+    border-width: 2px;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .chord-hover-preview {
+    animation: none;
+  }
+  
+  .hover-diagram,
+  .insert-button {
+    transition: none;
+  }
+  
+  .hover-diagram:hover,
+  .insert-button:hover {
+    transform: none;
+  }
+}
+
+/* Focus States */
+.insert-button:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 1px;
+}
+
+/* Pointer Events */
+.chord-hover-preview:hover {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+}
+
+/* Size Variants */
+.chord-hover-preview.large {
+  max-width: 400px;
+}
+
+.chord-hover-preview.large .preview-diagrams {
+  padding: 16px;
+  gap: 16px;
+}
+
+.chord-hover-preview.large .chord-name {
+  font-size: 16px;
+}
+
+/* Animation States */
+.chord-hover-preview.entering {
+  animation: fadeInUp 0.2s ease-out;
+}
+
+.chord-hover-preview.exiting {
+  animation: fadeOutDown 0.15s ease-in;
+}
+
+@keyframes fadeOutDown {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+}

@@ -1,4 +1,33 @@
 /* ChordPro Editor Styles */
+
+/* Editor Layout with Chord Panel */
+.chordpro-editor-layout {
+  display: flex;
+  gap: 0;
+  width: 100%;
+  max-width: 100%;
+}
+
+.chordpro-editor-layout.with-chord-panel {
+  min-height: 400px;
+}
+
+.chordpro-editor-layout .chordpro-editor-container {
+  flex: 1;
+  min-width: 0; /* Allow container to shrink */
+}
+
+/* Responsive chord panel layout */
+@media (max-width: 768px) {
+  .chordpro-editor-layout {
+    flex-direction: column;
+  }
+  
+  .chordpro-editor-layout.with-chord-panel {
+    min-height: auto;
+  }
+}
+
 .chordpro-editor-container {
   position: relative;
   font-family: 'Courier New', monospace;

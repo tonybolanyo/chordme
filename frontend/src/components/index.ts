@@ -7,6 +7,8 @@ export { default as ChordProViewer } from './ChordProViewer';
 export { default as ChordPalette } from './ChordPalette';
 export { default as ChordAutocomplete } from './ChordAutocomplete';
 export { default as ChordDiagramRenderer } from './ChordDiagramRenderer';
+export { default as ChordDiagramPanel } from './ChordDiagramPanel';
+export { default as ChordHoverPreview } from './ChordHoverPreview';
 export { default as TranspositionControls } from './TranspositionControls';
 export { default as StorageSettings } from './StorageSettings';
 export { default as StorageIndicator } from './StorageIndicator';

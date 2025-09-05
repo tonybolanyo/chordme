@@ -4,14 +4,19 @@ import React, {
   useEffect,
   useCallback,
   forwardRef,
+  useMemo,
 } from 'react';
 import './ChordProEditor.css';
 import ChordAutocomplete from '../ChordAutocomplete';
+import ChordDiagramPanel from '../ChordDiagramPanel';
+import ChordHoverPreview from '../ChordHoverPreview';
 import { detectInputContext, isValidChord } from '../../services/chordService';
+import { useChordDetection } from '../../services/chordDetectionService';
 import { useChordProValidation } from '../../hooks/useChordProValidation';
 import { ValidationErrorHighlight } from '../ValidationErrorHighlight';
 import { ValidationStatusBar } from '../ValidationStatusBar';
 import { ValidationConfig, ValidationError } from '../../services/chordProValidation';
+import { ChordDiagram, InstrumentType } from '../../types/chordDiagram';
 
 interface ChordProEditorProps {
   value: string;
@@ -27,6 +32,14 @@ interface ChordProEditorProps {
   validationConfig?: Partial<ValidationConfig>; // Validation configuration
   showValidationStatus?: boolean; // Show validation status bar
   onValidationChange?: (errors: ValidationError[], warnings: ValidationError[]) => void;
+  // Chord diagram integration props
+  enableChordDiagrams?: boolean; // Enable chord diagram integration
+  chordDiagrams?: ChordDiagram[]; // Available chord diagrams
+  instrument?: InstrumentType; // Current instrument for diagrams
+  showChordPanel?: boolean; // Show chord diagram panel
+  onChordPanelVisibilityChange?: (visible: boolean) => void; // Panel visibility callback
+  chordPanelWidth?: number; // Width of chord panel
+  enableChordHover?: boolean; // Enable hover preview of chords
 }
 
 interface Token {
@@ -59,6 +72,14 @@ const ChordProEditor = forwardRef<HTMLTextAreaElement, ChordProEditorProps>(
       validationConfig,
       showValidationStatus = true,
       onValidationChange,
+      // Chord diagram integration props
+      enableChordDiagrams = false, // Disabled by default for backward compatibility
+      chordDiagrams = [],
+      instrument = 'guitar',
+      showChordPanel = false,
+      onChordPanelVisibilityChange,
+      chordPanelWidth = 300,
+      enableChordHover = true,
     },
     ref
   ) => {
@@ -68,6 +89,62 @@ const ChordProEditor = forwardRef<HTMLTextAreaElement, ChordProEditorProps>(
     const highlightRef = useRef<HTMLDivElement>(null);
     const [isScrolling, setIsScrolling] = useState(false);
     const [isDragOver, setIsDragOver] = useState(false);
+    const [cursorPosition, setCursorPosition] = useState(0);
+
+    // Chord diagram integration state
+    const [hoverChord, setHoverChord] = useState<{
+      chord: string;
+      position: { x: number; y: number };
+    } | null>(null);
+    const [chordPanelVisible, setChordPanelVisible] = useState(showChordPanel);
+
+    // Chord detection hook
+    const chordDetection = useChordDetection(
+      enableChordDiagrams ? value : '',
+      enableChordDiagrams ? cursorPosition : undefined
+    );
+
+    // Current highlighted chord (chord at cursor)
+    const highlightedChord = useMemo(() => {
+      return chordDetection.chordAtCursor?.chord;
+    }, [chordDetection.chordAtCursor]);
+
+    // Update cursor position tracking
+    const updateCursorPosition = useCallback(() => {
+      if (textareaRef.current) {
+        setCursorPosition(textareaRef.current.selectionStart);
+      }
+    }, [textareaRef]);
+
+    // Handle chord panel visibility changes
+    useEffect(() => {
+      if (onChordPanelVisibilityChange) {
+        onChordPanelVisibilityChange(chordPanelVisible);
+      }
+    }, [chordPanelVisible, onChordPanelVisibilityChange]);
+
+    // Handle chord insertion from panel
+    const handleChordInsert = useCallback((chordText: string) => {
+      if (!textareaRef.current) return;
+
+      const currentPos = textareaRef.current.selectionStart;
+      const newValue = 
+        value.substring(0, currentPos) +
+        chordText +
+        value.substring(currentPos);
+
+      onChange(newValue);
+
+      // Position cursor after inserted chord
+      setTimeout(() => {
+        if (textareaRef.current) {
+          const newCursorPos = currentPos + chordText.length;
+          textareaRef.current.focus();
+          textareaRef.current.setSelectionRange(newCursorPos, newCursorPos);
+          setCursorPosition(newCursorPos);
+        }
+      }, 0);
+    }, [value, onChange, textareaRef]);
 
     // Autocomplete state
     const [autocompleteVisible, setAutocompleteVisible] = useState(false);
@@ -446,6 +523,39 @@ const ChordProEditor = forwardRef<HTMLTextAreaElement, ChordProEditorProps>(
       [value, textareaRef]
     );
 
+    // Handle mouse hover for chord preview
+    const handleMouseMove = useCallback(
+      (e: React.MouseEvent<HTMLTextAreaElement>) => {
+        if (!enableChordDiagrams || !enableChordHover || chordDiagrams.length === 0) {
+          return;
+        }
+
+        const position = getTextPositionFromPoint(e.clientX, e.clientY);
+        const chordAtPosition = chordDetection.getChordAtPosition(position);
+
+        if (chordAtPosition.chord) {
+          setHoverChord({
+            chord: chordAtPosition.chord.chord,
+            position: { x: e.clientX, y: e.clientY }
+          });
+        } else {
+          setHoverChord(null);
+        }
+      },
+      [
+        enableChordDiagrams,
+        enableChordHover,
+        chordDiagrams.length,
+        getTextPositionFromPoint,
+        chordDetection
+      ]
+    );
+
+    // Handle mouse leave to hide hover preview
+    const handleMouseLeave = useCallback(() => {
+      setHoverChord(null);
+    }, []);
+
     // Calculate cursor position for autocomplete positioning
     const calculateAutocompletePosition = useCallback(
       (cursorPosition: number): { top: number; left: number } => {
@@ -556,6 +666,9 @@ const ChordProEditor = forwardRef<HTMLTextAreaElement, ChordProEditorProps>(
         const newValue = e.target.value;
         onChange(newValue);
 
+        // Update cursor position
+        setCursorPosition(e.target.selectionStart);
+
         // Check for input detection after a short delay to allow cursor position to update
         setTimeout(() => {
           if (textareaRef.current) {
@@ -569,6 +682,7 @@ const ChordProEditor = forwardRef<HTMLTextAreaElement, ChordProEditorProps>(
     // Handle cursor position changes (clicks, arrow keys, etc.)
     const handleSelectionChange = useCallback(() => {
       if (textareaRef.current) {
+        setCursorPosition(textareaRef.current.selectionStart);
         handleInputDetection(textareaRef.current.selectionStart);
       }
     }, [handleInputDetection, textareaRef]);
@@ -685,56 +799,75 @@ const ChordProEditor = forwardRef<HTMLTextAreaElement, ChordProEditorProps>(
 
     return (
       <>
-        <div
-          className={`chordpro-editor-container ${isDragOver ? 'drag-over' : ''} ${enableValidation ? 'with-validation' : ''}`}
-          style={style}
-          onDragOver={handleDragOver}
-          onDragEnter={handleDragEnter}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-        >
-          {/* Syntax highlighting layer */}
-          <div
-            ref={highlightRef}
-            className="chordpro-highlight-layer"
-            dangerouslySetInnerHTML={{ __html: generateHighlightedHTML(value) }}
-          />
-          
-          {/* Validation error highlighting layer */}
-          {enableValidation && allValidationErrors.length > 0 && (
-            <div className="chordpro-validation-layer">
-              <ValidationErrorHighlight
-                content={value}
-                errors={allValidationErrors}
-                showTooltips={true}
-                onErrorClick={(error) => {
-                  // Focus the textarea and position cursor at error location
-                  if (textareaRef.current) {
-                    textareaRef.current.focus();
-                    textareaRef.current.setSelectionRange(
-                      error.position.start,
-                      error.position.end
-                    );
-                  }
-                }}
-              />
-            </div>
+        <div className={`chordpro-editor-layout ${enableChordDiagrams && chordPanelVisible ? 'with-chord-panel' : ''}`}>
+          {/* Chord Diagram Panel */}
+          {enableChordDiagrams && (
+            <ChordDiagramPanel
+              chordDetection={chordDetection}
+              availableDiagrams={chordDiagrams}
+              instrument={instrument}
+              visible={chordPanelVisible}
+              onChordInsert={handleChordInsert}
+              highlightedChord={highlightedChord}
+              width={chordPanelWidth}
+              onVisibilityChange={setChordPanelVisible}
+            />
           )}
-          
-          <textarea
-            ref={textareaRef}
-            id={id}
-            value={value}
-            onChange={handleInputChange}
-            onKeyDown={handleKeyDown}
-            onSelect={handleSelectionChange}
-            onClick={handleSelectionChange}
-            placeholder={placeholder}
-            rows={rows}
-            required={required}
-            className="chordpro-textarea"
-            spellCheck={false}
-          />
+
+          {/* Editor Container */}
+          <div
+            className={`chordpro-editor-container ${isDragOver ? 'drag-over' : ''} ${enableValidation ? 'with-validation' : ''}`}
+            style={style}
+            onDragOver={handleDragOver}
+            onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+          >
+            {/* Syntax highlighting layer */}
+            <div
+              ref={highlightRef}
+              className="chordpro-highlight-layer"
+              dangerouslySetInnerHTML={{ __html: generateHighlightedHTML(value) }}
+            />
+            
+            {/* Validation error highlighting layer */}
+            {enableValidation && allValidationErrors.length > 0 && (
+              <div className="chordpro-validation-layer">
+                <ValidationErrorHighlight
+                  content={value}
+                  errors={allValidationErrors}
+                  showTooltips={true}
+                  onErrorClick={(error) => {
+                    // Focus the textarea and position cursor at error location
+                    if (textareaRef.current) {
+                      textareaRef.current.focus();
+                      textareaRef.current.setSelectionRange(
+                        error.position.start,
+                        error.position.end
+                      );
+                    }
+                  }}
+                />
+              </div>
+            )}
+            
+            <textarea
+              ref={textareaRef}
+              id={id}
+              value={value}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              onSelect={handleSelectionChange}
+              onClick={handleSelectionChange}
+              onMouseMove={handleMouseMove}
+              onMouseLeave={handleMouseLeave}
+              placeholder={placeholder}
+              rows={rows}
+              required={required}
+              className="chordpro-textarea"
+              spellCheck={false}
+            />
+          </div>
         </div>
 
         {/* Validation status bar */}
@@ -762,6 +895,7 @@ const ChordProEditor = forwardRef<HTMLTextAreaElement, ChordProEditorProps>(
           />
         )}
 
+        {/* Autocomplete */}
         {enableAutocomplete && (
           <ChordAutocomplete
             inputText={currentChordInput}
@@ -772,6 +906,19 @@ const ChordProEditor = forwardRef<HTMLTextAreaElement, ChordProEditorProps>(
             inputType="auto"
             chordProContent={value}
             cursorPosition={textareaRef.current?.selectionStart}
+          />
+        )}
+
+        {/* Chord Hover Preview */}
+        {enableChordDiagrams && enableChordHover && hoverChord && (
+          <ChordHoverPreview
+            chordName={hoverChord.chord}
+            availableDiagrams={chordDiagrams}
+            instrument={instrument}
+            position={hoverChord.position}
+            visible={true}
+            onChordSelect={handleChordInsert}
+            compact={true}
           />
         )}
       </>
