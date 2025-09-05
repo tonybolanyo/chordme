@@ -57,7 +57,7 @@ const PDFPreview: React.FC<PDFPreviewProps> = ({
     return (
       <div className="pdf-preview-container">
         <div className="preview-loading">
-          <div className="loading-spinner"></div>
+          <div className="loading-spinner" role="status" aria-label="Loading"></div>
           <p>Generating preview...</p>
         </div>
         <style>{`
@@ -174,7 +174,7 @@ const PDFPreview: React.FC<PDFPreviewProps> = ({
               )}
             </div>
             
-            <div className="pdf-title" style={{ 
+            <div className="pdf-title" data-testid="pdf-title" style={{ 
               fontSize: `${Math.max(14, (options.fontSize || 12) + 6)}px`,
               fontFamily: options.fontFamily || 'Helvetica'
             }}>
@@ -190,7 +190,7 @@ const PDFPreview: React.FC<PDFPreviewProps> = ({
               </div>
             )}
             
-            <div className="pdf-content" style={{
+            <div className="pdf-content" data-testid="pdf-content" style={{
               fontSize: `${options.fontSize || 12}px`,
               fontFamily: options.fontFamily || 'Helvetica',
               marginTop: `${(options.marginTop || 0.5) * 16}px`,
