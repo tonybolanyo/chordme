@@ -275,3 +275,155 @@ class TestAPIIntegration:
             assert retrieved_song["data"]["title"] == song_data["title"]
         except requests.exceptions.ConnectionError:
             pytest.skip("Backend server not available at localhost:5000")
+
+    def test_key_detection_endpoint(self):
+        """Test the key detection API endpoint."""
+        try:
+            # First, register and login a user
+            user_data = self.create_user_data()
+            
+            # Register
+            requests.post(
+                f"{BASE_URL}/api/v1/auth/register",
+                json=user_data,
+                headers={"Content-Type": "application/json"}
+            )
+            
+            # Login
+            login_response = requests.post(
+                f"{BASE_URL}/api/v1/auth/login",
+                json=user_data,
+                headers={"Content-Type": "application/json"}
+            )
+            
+            token = login_response.json()["data"]["token"]
+            auth_headers = {
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json"
+            }
+            
+            # Test key detection with C major progression
+            content_data = {
+                "content": "[C]Amazing [F]grace, how [G]sweet the [Am]sound\n[F]That saved a [C]wretch like [G]me"
+            }
+            
+            response = requests.post(
+                f"{BASE_URL}/api/v1/songs/detect-key",
+                json=content_data,
+                headers=auth_headers
+            )
+            
+            assert response.status_code == 200
+            data = response.json()
+            
+            # Check response structure
+            assert "data" in data
+            result = data["data"]
+            assert "detected_key" in result
+            assert "confidence" in result
+            assert "is_minor" in result
+            assert "alternative_keys" in result
+            
+            # Check that C major is detected with good confidence
+            assert result["detected_key"] == "C"
+            assert result["confidence"] > 0.7
+            assert not result["is_minor"]
+            
+            # Test with manual key override
+            manual_key_data = {
+                "content": "{key: G}\n[C]Amazing [F]grace, how [G]sweet the [Am]sound"
+            }
+            
+            response = requests.post(
+                f"{BASE_URL}/api/v1/songs/detect-key",
+                json=manual_key_data,
+                headers=auth_headers
+            )
+            
+            assert response.status_code == 200
+            data = response.json()
+            result = data["data"]
+            
+            # Manual key should override detection
+            assert result["detected_key"] == "G"
+            assert result["confidence"] == 1.0
+            assert not result["is_minor"]
+            assert result["alternative_keys"] == []
+            
+            # Test with minor key
+            minor_key_data = {
+                "content": "[Am]Scarborough [F]fair, are you [C]going to Scarborough [G]fair"
+            }
+            
+            response = requests.post(
+                f"{BASE_URL}/api/v1/songs/detect-key",
+                json=minor_key_data,
+                headers=auth_headers
+            )
+            
+            assert response.status_code == 200
+            data = response.json()
+            result = data["data"]
+            
+            # Should detect either Am or C (both are valid)
+            assert result["detected_key"] in ["Am", "C"]
+            assert result["confidence"] > 0.5
+            
+        except requests.exceptions.ConnectionError:
+            pytest.skip("Backend server not available at localhost:5000")
+
+    def test_key_detection_error_cases(self):
+        """Test key detection endpoint error handling."""
+        try:
+            # First, register and login a user
+            user_data = self.create_user_data()
+            
+            # Register
+            requests.post(
+                f"{BASE_URL}/api/v1/auth/register",
+                json=user_data,
+                headers={"Content-Type": "application/json"}
+            )
+            
+            # Login
+            login_response = requests.post(
+                f"{BASE_URL}/api/v1/auth/login",
+                json=user_data,
+                headers={"Content-Type": "application/json"}
+            )
+            
+            token = login_response.json()["data"]["token"]
+            auth_headers = {
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json"
+            }
+            
+            # Test with missing content
+            response = requests.post(
+                f"{BASE_URL}/api/v1/songs/detect-key",
+                json={},
+                headers=auth_headers
+            )
+            
+            assert response.status_code == 400
+            
+            # Test with empty content
+            response = requests.post(
+                f"{BASE_URL}/api/v1/songs/detect-key",
+                json={"content": ""},
+                headers=auth_headers
+            )
+            
+            assert response.status_code == 400
+            
+            # Test without authentication
+            response = requests.post(
+                f"{BASE_URL}/api/v1/songs/detect-key",
+                json={"content": "[C] [G] [Am] [F]"},
+                headers={"Content-Type": "application/json"}
+            )
+            
+            assert response.status_code == 401
+            
+        except requests.exceptions.ConnectionError:
+            pytest.skip("Backend server not available at localhost:5000")

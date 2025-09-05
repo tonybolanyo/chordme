@@ -4,7 +4,7 @@ from .utils import validate_email, validate_password, create_error_response, cre
 from .rate_limiter import rate_limit
 from .csrf_protection import csrf_protect, get_csrf_token
 from .security_headers import security_headers, security_error_handler
-from .chordpro_utils import validate_chordpro_content, ChordProValidator
+from .chordpro_utils import validate_chordpro_content, ChordProValidator, detect_key_signature
 from flask import send_from_directory, send_file, request, jsonify, g, Response
 from sqlalchemy.exc import IntegrityError
 from datetime import datetime
@@ -2383,6 +2383,129 @@ def transpose_chordpro():
     except Exception as e:
         return security_error_handler.handle_server_error(
             "An error occurred while transposing ChordPro content",
+            exception=e,
+            ip_address=request.remote_addr
+        )
+
+
+@app.route('/api/v1/songs/detect-key', methods=['POST'])
+@auth_required
+@validate_request_size(max_content_length=50*1024)  # 50KB for song content
+@rate_limit(max_requests=30, window_seconds=300)  # 30 key detections per 5 minutes
+@csrf_protect(require_token=False)  # CSRF optional for API endpoints
+@security_headers
+def detect_key():
+    """
+    Automatically detect the key signature from ChordPro content
+    ---
+    tags:
+      - Songs
+    summary: Detect key signature from ChordPro content
+    description: Analyze chord progressions to determine the most likely key signature with confidence scores
+    security:
+      - Bearer: []
+    parameters:
+      - in: body
+        name: body
+        description: ChordPro content to analyze
+        required: true
+        schema:
+          type: object
+          required:
+            - content
+          properties:
+            content:
+              type: string
+              description: ChordPro content to analyze for key detection
+              example: "{title: Test Song}\n[C]Hello [F]world [G]test [Am]end"
+    responses:
+      200:
+        description: Key detection performed successfully
+        schema:
+          allOf:
+            - $ref: '#/definitions/Success'
+            - type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    detected_key:
+                      type: string
+                      description: Most likely key signature detected
+                      example: "C"
+                    confidence:
+                      type: number
+                      format: float
+                      description: Confidence score (0.0-1.0) for the detected key
+                      example: 0.85
+                    is_minor:
+                      type: boolean
+                      description: Whether the detected key is a minor key
+                      example: false
+                    alternative_keys:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          key:
+                            type: string
+                            description: Alternative key possibility
+                          confidence:
+                            type: number
+                            format: float
+                            description: Confidence score for this alternative
+                          is_minor:
+                            type: boolean
+                            description: Whether this alternative is minor
+                      description: List of alternative key possibilities
+                      example: [{"key": "Am", "confidence": 0.75, "is_minor": true}]
+      400:
+        description: Invalid request data
+        schema:
+          $ref: '#/definitions/Error'
+      401:
+        description: Authentication required
+        schema:
+          $ref: '#/definitions/Error'
+      429:
+        description: Rate limit exceeded
+        schema:
+          $ref: '#/definitions/Error'
+      500:
+        description: Internal server error
+        schema:
+          $ref: '#/definitions/Error'
+    """
+    try:
+        data = request.get_json()
+        
+        if not data:
+            return create_error_response("JSON data required", 400)
+        
+        content = data.get('content', '')
+        
+        if not content:
+            return create_error_response("Content is required", 400)
+        
+        if not isinstance(content, str):
+            return create_error_response("Content must be a string", 400)
+        
+        # Sanitize input content
+        content = sanitize_input(content)
+        
+        # Detect key signature
+        detection_result = detect_key_signature(content)
+        
+        app.logger.info(f"Key detection performed by user {g.current_user_id} from IP {request.remote_addr}")
+        
+        return create_success_response(
+            data=detection_result,
+            message=f"Key detection completed. Detected key: {detection_result['detected_key']} (confidence: {detection_result['confidence']:.1%})"
+        )
+        
+    except Exception as e:
+        return security_error_handler.handle_server_error(
+            "An error occurred while detecting key signature",
             exception=e,
             ip_address=request.remote_addr
         )
