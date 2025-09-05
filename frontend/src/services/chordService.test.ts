@@ -5,6 +5,9 @@ import {
   detectChordInput,
   transposeChord,
   transposeChordProContent,
+  transposeChordWithKey,
+  transposeChordIntelligent,
+  convertNotation,
 } from './chordService';
 
 describe('ChordService', () => {
@@ -202,8 +205,8 @@ describe('ChordService', () => {
     });
 
     it('handles slash chords', () => {
-      expect(transposeChord('C/E', 2)).toBe('D/E');
-      expect(transposeChord('G/B', 1)).toBe('G#/B');
+      expect(transposeChord('C/E', 2)).toBe('D/F#');
+      expect(transposeChord('G/B', 1)).toBe('G#/C');
     });
 
     it('returns unchanged for invalid chords', () => {
@@ -245,7 +248,7 @@ Some lyrics without chords
         '[Cmaj7]Test [F#m7]progression [Bb]with [G/B]various chords';
       const result = transposeChordProContent(content, 3);
       expect(result).toBe(
-        '[D#maj7]Test [Am7]progression [C#]with [A#/B]various chords'
+        '[D#maj7]Test [Am7]progression [C#]with [A#/D]various chords'
       );
     });
 
@@ -266,6 +269,75 @@ Some lyrics without chords
       const content = '[C]Hello [G]world';
       const result = transposeChordProContent(content, -1);
       expect(result).toBe('[B]Hello [F#]world');
+    });
+  });
+
+  describe('Enhanced Transposition with Key Signature', () => {
+    it('uses sharp preference for sharp keys', () => {
+      expect(transposeChordWithKey('C', 1, 'G')).toBe('C#'); // G major (1 sharp)
+      expect(transposeChordWithKey('F', 1, 'D')).toBe('F#'); // D major (2 sharps)
+    });
+
+    it('uses flat preference for flat keys', () => {
+      expect(transposeChordWithKey('C', 1, 'F')).toBe('Db'); // F major (1 flat) 
+      expect(transposeChordWithKey('A', 1, 'Bb')).toBe('Bb'); // Bb major (2 flats)
+    });
+
+    it('handles minor keys correctly', () => {
+      expect(transposeChordWithKey('C', 1, 'Em')).toBe('C#'); // E minor (1 sharp)
+      expect(transposeChordWithKey('C', 1, 'Dm')).toBe('Db'); // D minor (1 flat)
+    });
+
+    it('maintains slash chord relationships', () => {
+      expect(transposeChordWithKey('C/E', 2, 'G')).toBe('D/F#');
+      expect(transposeChordWithKey('F/A', -1, 'F')).toBe('E/Ab');
+    });
+
+    it('handles complex chords with key signature', () => {
+      expect(transposeChordWithKey('Cmaj7', 1, 'F')).toBe('Dbmaj7');
+      expect(transposeChordWithKey('Am7', 3, 'Bb')).toBe('Cm7');
+    });
+  });
+
+  describe('Intelligent Transposition', () => {
+    it('preserves enharmonics when requested', () => {
+      const options = { preserveEnharmonics: true };
+      expect(transposeChordIntelligent('Bb', 1, options)).toBe('B');
+      expect(transposeChordIntelligent('C#', 1, options)).toBe('D');
+    });
+
+    it('respects preferred accidentals', () => {
+      expect(transposeChordIntelligent('C', 1, { preferredAccidentals: 'flats' })).toBe('Db');
+      expect(transposeChordIntelligent('C', 1, { preferredAccidentals: 'sharps' })).toBe('C#');
+    });
+
+    it('handles notation system conversion', () => {
+      expect(transposeChordIntelligent('C', 2, { notationSystem: 'latin' })).toBe('Re');
+      expect(transposeChordIntelligent('F', -1, { notationSystem: 'latin' })).toBe('Mi');
+    });
+  });
+
+  describe('Edge Cases and Error Handling', () => {
+    it('handles large semitone values correctly', () => {
+      expect(transposeChord('C', 15)).toBe('D#'); // 15 % 12 = 3 semitones
+      expect(transposeChord('C', -15)).toBe('A'); // -15 + 24 = 9 semitones
+    });
+
+    it('handles invalid key signatures gracefully', () => {
+      expect(transposeChordWithKey('C', 1, 'InvalidKey')).toBe('C#');
+      expect(transposeChordWithKey('C', 1, '')).toBe('C#');
+    });
+
+    it('preserves chord extensions and alterations', () => {
+      expect(transposeChord('Cmaj7', 2)).toBe('Dmaj7');
+      expect(transposeChord('Fm7', -1)).toBe('Em7');
+      expect(transposeChord('Gsus4', 4)).toBe('Bsus4');
+    });
+
+    it('handles multiple slash chords correctly', () => {
+      const content = '[C/E] and [G/B] chords';
+      const result = transposeChordProContent(content, 2);
+      expect(result).toBe('[D/F#] and [A/C#] chords');
     });
   });
 });
