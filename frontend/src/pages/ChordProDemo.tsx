@@ -4,8 +4,12 @@ import {
   ChordProViewer,
   ChordPalette,
   TranspositionControls,
+  SplitViewLayout,
+  ViewModeSelector,
 } from '../components';
 import { transposeChordProContent } from '../services/chordService';
+import { useSplitView } from '../hooks/useSplitView';
+import { useSyncedScrolling } from '../hooks/useSyncedScrolling';
 import '../styles/responsive.css';
 
 const ChordProDemo: React.FC = () => {
@@ -37,6 +41,18 @@ The [Em]hour I [D]first be[G]lieved
 {end_of_verse}`);
 
   const editorRef = useRef<HTMLTextAreaElement>(null);
+  
+  // Split view configuration
+  const { config, setViewMode, setSplitOrientation, setSplitRatio } = useSplitView({
+    defaultViewMode: 'split',
+    defaultSplitOrientation: 'vertical',
+    defaultSplitRatio: 0.5,
+  });
+
+  // Synchronized scrolling
+  const { editorRef: syncedEditorRef, previewRef: syncedPreviewRef } = useSyncedScrolling({
+    enabled: config.enableSyncedScrolling && config.viewMode === 'split',
+  });
 
   const handleChordSelect = (chord: string) => {
     if (editorRef.current) {
@@ -120,52 +136,84 @@ The [Em]hour I [D]first be[G]lieved
             <strong>Visual Feedback:</strong> Invalid chord names are
             highlighted with red underlines
           </li>
+          <li>
+            <strong>Split-Screen Mode:</strong> Toggle between edit-only, preview-only, 
+            and split views with synchronized scrolling
+          </li>
         </ul>
       </div>
 
-      <div
-        className="editor-layout-responsive"
-        style={{ marginTop: 'var(--space-lg)' }}
-      >
-        <div className="editor-main-responsive">
-          <div
-            className="flex-responsive-md-row"
-            style={{
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: 'var(--space-md)',
-            }}
-          >
-            <h2>Interactive Editor</h2>
-            <TranspositionControls onTranspose={handleTranspose} />
-          </div>
-          <ChordProEditor
-            ref={editorRef}
-            value={content}
-            onChange={setContent}
-            rows={15}
-            placeholder="Enter your ChordPro content here..."
-            style={{ width: '100%', marginTop: 'var(--space-sm)' }}
-          />
-
-          <h2 style={{ marginTop: 'var(--space-lg)' }}>Rendered Output</h2>
-          <div
-            style={{
-              border: '1px solid #ddd',
-              borderRadius: '4px',
-              marginTop: 'var(--space-sm)',
-            }}
-          >
-            <ChordProViewer content={content} />
-          </div>
-        </div>
-
-        <div className="editor-sidebar-responsive">
-          <div style={{ position: 'sticky', top: 'var(--space-lg)' }}>
-            <ChordPalette onChordSelect={handleChordSelect} />
-          </div>
-        </div>
+      {/* View Mode Selector */}
+      <div style={{ marginTop: 'var(--space-lg)' }}>
+        <ViewModeSelector
+          viewMode={config.viewMode}
+          splitOrientation={config.splitOrientation}
+          onViewModeChange={setViewMode}
+          onSplitOrientationChange={setSplitOrientation}
+        />
       </div>
+
+      {/* Split View Layout */}
+      <div style={{ marginTop: 'var(--space-lg)', height: '80vh' }}>
+        <SplitViewLayout
+          viewMode={config.viewMode}
+          splitOrientation={config.splitOrientation}
+          splitRatio={config.splitRatio}
+          onSplitRatioChange={setSplitRatio}
+          editorContent={
+            <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: 'var(--space-md)',
+                }}
+              >
+                <h2 style={{ margin: 0 }}>Editor</h2>
+                <TranspositionControls onTranspose={handleTranspose} />
+              </div>
+              <ChordProEditor
+                ref={(node) => {
+                  // Support both refs
+                  if (editorRef) editorRef.current = node;
+                  if (syncedEditorRef) syncedEditorRef.current = node;
+                }}
+                value={content}
+                onChange={setContent}
+                rows={15}
+                placeholder="Enter your ChordPro content here..."
+                style={{ flex: 1, width: '100%', minHeight: '300px' }}
+              />
+            </div>
+          }
+          previewContent={
+            <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+              <h2 style={{ margin: 0, marginBottom: 'var(--space-md)' }}>Preview</h2>
+              <div
+                ref={syncedPreviewRef}
+                style={{
+                  flex: 1,
+                  overflow: 'auto',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  background: 'white',
+                }}
+              >
+                <ChordProViewer content={content} />
+              </div>
+            </div>
+          }
+        />
+      </div>
+
+      {/* Chord Palette - Show only in appropriate modes */}
+      {(config.viewMode === 'edit-only' || config.viewMode === 'split') && (
+        <div style={{ marginTop: 'var(--space-lg)' }}>
+          <h3>Chord Palette</h3>
+          <ChordPalette onChordSelect={handleChordSelect} />
+        </div>
+      )}
 
       <h2 style={{ marginTop: 'var(--space-lg)' }}>Raw Content</h2>
       <pre

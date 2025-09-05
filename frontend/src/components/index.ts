@@ -17,6 +17,10 @@ export { default as UndoRedoControls } from './UndoRedoControls';
 export { default as PDFExportModal } from './PDFExportModal';
 export type { PDFExportOptions } from './PDFExportModal';
 
+// Split-screen preview components
+export { default as SplitViewLayout } from './SplitViewLayout';
+export { default as ViewModeSelector } from './ViewModeSelector';
+
 // Google Auth components
 export * from './GoogleAuth';
 
