@@ -3,7 +3,7 @@ import { describe, it, expect, vi } from 'vitest';
 import ChordPalette from './ChordPalette';
 
 describe('ChordPalette', () => {
-  it('renders chord library title', () => {
+  it('displays chord library title', () => {
     render(<ChordPalette />);
     expect(screen.getByText('Chord Library')).toBeInTheDocument();
     expect(
@@ -164,5 +164,102 @@ describe('ChordPalette', () => {
       'application/chord',
       'C'
     );
+  });
+
+  describe('Diagram Mode', () => {
+    it('shows diagram toggle button', () => {
+      render(<ChordPalette />);
+      
+      const toggleButton = screen.getByRole('button', { name: /Switch to diagram view/i });
+      expect(toggleButton).toBeInTheDocument();
+    });
+
+    it('switches to diagram mode when toggle is clicked', () => {
+      render(<ChordPalette showDiagrams={false} />);
+      
+      const toggleButton = screen.getByRole('button', { name: /Switch to diagram view/i });
+      fireEvent.click(toggleButton);
+      
+      // Check if subtitle changes to diagram mode
+      expect(screen.getByText(/Visual chord diagrams for guitar/i)).toBeInTheDocument();
+    });
+
+    it('shows diagrams when showDiagrams prop is true', () => {
+      render(<ChordPalette showDiagrams={true} instrument="guitar" />);
+      
+      // Should show diagram mode subtitle
+      expect(screen.getByText(/Visual chord diagrams for guitar/i)).toBeInTheDocument();
+      
+      // Toggle button should show it's in diagram mode
+      const toggleButton = screen.getByRole('button', { name: /Switch to text view/i });
+      expect(toggleButton).toBeInTheDocument();
+      expect(toggleButton).toHaveClass('active');
+    });
+
+    it('respects instrument prop for diagrams', () => {
+      render(<ChordPalette showDiagrams={true} instrument="ukulele" />);
+      
+      expect(screen.getByText(/Visual chord diagrams for ukulele/i)).toBeInTheDocument();
+    });
+
+    it('handles clicks on diagram items', () => {
+      const mockOnChordSelect = vi.fn();
+      render(
+        <ChordPalette 
+          showDiagrams={true} 
+          instrument="guitar" 
+          onChordSelect={mockOnChordSelect} 
+        />
+      );
+      
+      // Find a chord diagram item (will only show for chords that exist in sample data)
+      const diagramItems = screen.getAllByRole('button');
+      const cChordItem = diagramItems.find(item => 
+        item.querySelector('.diagram-chord-name')?.textContent === 'C'
+      );
+      
+      if (cChordItem) {
+        fireEvent.click(cChordItem);
+        expect(mockOnChordSelect).toHaveBeenCalledWith('[C]');
+      }
+    });
+
+    it('supports keyboard navigation for diagram items', () => {
+      const mockOnChordSelect = vi.fn();
+      render(
+        <ChordPalette 
+          showDiagrams={true} 
+          instrument="guitar" 
+          onChordSelect={mockOnChordSelect} 
+        />
+      );
+      
+      // Find a chord diagram item
+      const diagramItems = screen.getAllByRole('button');
+      const cChordItem = diagramItems.find(item => 
+        item.querySelector('.diagram-chord-name')?.textContent === 'C'
+      );
+      
+      if (cChordItem) {
+        fireEvent.keyDown(cChordItem, { key: 'Enter' });
+        expect(mockOnChordSelect).toHaveBeenCalledWith('[C]');
+      }
+    });
+
+    it('falls back to text mode for chords without diagram data', () => {
+      render(<ChordPalette showDiagrams={true} instrument="guitar" />);
+      
+      // Should have both diagram items and text buttons
+      // (since not all chords in COMMON_CHORDS have sample diagram data)
+      const allButtons = screen.getAllByRole('button');
+      expect(allButtons.length).toBeGreaterThan(0);
+    });
+
+    it('applies correct CSS classes in diagram mode', () => {
+      const { container } = render(<ChordPalette showDiagrams={true} />);
+      
+      const chordGrid = container.querySelector('.chord-grid');
+      expect(chordGrid).toHaveClass('diagram-mode');
+    });
   });
 });

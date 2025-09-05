@@ -1,4 +1,7 @@
 import React, { useState, useMemo } from 'react';
+import ChordDiagramRenderer from '../ChordDiagramRenderer';
+import { getChord } from '../../utils/sampleChordData';
+import { InstrumentType } from '../../types/chordDiagram';
 import './ChordPalette.css';
 
 interface Chord {
@@ -11,6 +14,12 @@ interface ChordPaletteProps {
   onChordSelect?: (chord: string) => void;
   className?: string;
   style?: React.CSSProperties;
+  /** Whether to show chord diagrams instead of just text buttons */
+  showDiagrams?: boolean;
+  /** Instrument type for chord diagrams */
+  instrument?: InstrumentType;
+  /** Width of chord diagrams when shown */
+  diagramWidth?: number;
 }
 
 // Comprehensive list of commonly used chords
@@ -95,9 +104,13 @@ const ChordPalette: React.FC<ChordPaletteProps> = ({
   onChordSelect,
   className = '',
   style,
+  showDiagrams = false,
+  instrument = 'guitar',
+  diagramWidth = 120
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [showDiagramMode, setShowDiagramMode] = useState(showDiagrams);
 
   // Get unique categories for filter
   const categories = useMemo(() => {
@@ -151,9 +164,23 @@ const ChordPalette: React.FC<ChordPaletteProps> = ({
   return (
     <div className={`chord-palette ${className}`} style={style}>
       <div className="chord-palette-header">
-        <h3 className="chord-palette-title">Chord Library</h3>
+        <div className="chord-palette-title-row">
+          <h3 className="chord-palette-title">Chord Library</h3>
+          <button
+            type="button"
+            className={`chord-diagram-toggle ${showDiagramMode ? 'active' : ''}`}
+            onClick={() => setShowDiagramMode(!showDiagramMode)}
+            title={showDiagramMode ? 'Show text buttons' : 'Show chord diagrams'}
+            aria-label={showDiagramMode ? 'Switch to text view' : 'Switch to diagram view'}
+          >
+            {showDiagramMode ? '📝' : '🎸'}
+          </button>
+        </div>
         <p className="chord-palette-subtitle">
-          Click to insert chord or drag to position
+          {showDiagramMode 
+            ? `Visual chord diagrams for ${instrument}`
+            : 'Click to insert chord or drag to position'
+          }
         </p>
       </div>
 
@@ -200,22 +227,58 @@ const ChordPalette: React.FC<ChordPaletteProps> = ({
 
       <div className="chord-palette-content">
         {filteredChords.length > 0 ? (
-          <div className="chord-grid">
-            {filteredChords.map((chord) => (
-              <button
-                key={chord.name}
-                type="button"
-                className={`chord-button chord-button-${chord.category}`}
-                onClick={() => handleChordClick(chord.name)}
-                onDragStart={(e) => handleDragStart(e, chord.name)}
-                onDragEnd={handleDragEnd}
-                draggable={true}
-                title={chord.description || chord.name}
-                aria-label={`Insert ${chord.name} chord`}
-              >
-                <span className="chord-name">{chord.name}</span>
-              </button>
-            ))}
+          <div className={`chord-grid ${showDiagramMode ? 'diagram-mode' : 'button-mode'}`}>
+            {filteredChords.map((chord) => {
+              // Try to get chord diagram data for this chord
+              const chordDiagram = getChord(chord.name, instrument);
+              
+              if (showDiagramMode && chordDiagram) {
+                // Render chord diagram
+                return (
+                  <div
+                    key={chord.name}
+                    className="chord-diagram-item"
+                    onClick={() => handleChordClick(chord.name)}
+                    onDragStart={(e) => handleDragStart(e, chord.name)}
+                    onDragEnd={handleDragEnd}
+                    draggable={true}
+                    title={chord.description || chord.name}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        handleChordClick(chord.name);
+                      }
+                    }}
+                  >
+                    <ChordDiagramRenderer
+                      chord={chordDiagram}
+                      width={diagramWidth}
+                      showTooltips={false}
+                      className="palette-chord-diagram"
+                    />
+                    <span className="diagram-chord-name">{chord.name}</span>
+                  </div>
+                );
+              } else {
+                // Render text button (original mode)
+                return (
+                  <button
+                    key={chord.name}
+                    type="button"
+                    className={`chord-button chord-button-${chord.category}`}
+                    onClick={() => handleChordClick(chord.name)}
+                    onDragStart={(e) => handleDragStart(e, chord.name)}
+                    onDragEnd={handleDragEnd}
+                    draggable={true}
+                    title={chord.description || chord.name}
+                    aria-label={`Insert ${chord.name} chord`}
+                  >
+                    <span className="chord-name">{chord.name}</span>
+                  </button>
+                );
+              }
+            })}
           </div>
         ) : (
           <div className="chord-palette-empty">
