@@ -162,3 +162,28 @@ export type {
   SplitViewPreferences,
   SplitViewConfig,
 } from './splitView';
+
+// Re-export chord diagram types
+export type {
+  InstrumentType,
+  DifficultyLevel,
+  FingerNumber,
+  StringPosition,
+  BarreChord,
+  AlternativeFingering,
+  ChordNotes,
+  InstrumentConfig,
+  ChordDiagramMetadata,
+  LocalizedChordInfo,
+  ChordDiagram,
+  ChordDiagramCollection,
+  ChordDiagramValidationResult,
+  ChordDiagramValidationError,
+  ChordDiagramValidationWarning,
+  ChordDiagramSearchCriteria,
+} from './chordDiagram';
+
+export {
+  INSTRUMENT_CONFIGS,
+  CHORD_INTERVALS,
+} from './chordDiagram';
