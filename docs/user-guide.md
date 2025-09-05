@@ -850,6 +850,339 @@ ChordMe follows accessibility best practices:
 - **GDPR compliance**: Full compliance with data protection regulations
 - **Account security**: Strong authentication and session management
 
+## ChordPro Validation
+
+ChordMe includes a comprehensive real-time validation system that helps you write correct ChordPro notation and catch common errors while editing.
+
+### Overview
+
+The validation system provides:
+
+- **Real-time error detection** while you type
+- **Inline error highlighting** with color-coded severity
+- **Interactive hover tooltips** with detailed error descriptions
+- **Quick-fix suggestions** for common mistakes
+- **Validation status bar** with error summaries
+- **Multilingual support** for error messages
+
+### Error Types
+
+#### Chord Validation
+
+The system validates chord notation syntax:
+
+**Valid Examples:**
+```
+[C] [G] [Am] [F] [C7] [Dm9] [G/B] [F#m]
+```
+
+**Invalid Examples:**
+```
+[X] [123] [lowercase] [H] [cb]
+```
+
+**Common Issues:**
+- **Lowercase chords**: Use `[C]` not `[c]`
+- **Invalid chord names**: Stick to standard notation (A-G)
+- **German notation**: Use `[B]` instead of `[H]`
+- **Empty chords**: Don't use `[]`
+
+#### Directive Validation
+
+The system checks directive syntax and recognizes common typos:
+
+**Valid Examples:**
+```
+{title: Song Title}
+{artist: Artist Name}
+{start_of_chorus}
+{end_of_verse}
+```
+
+**Invalid Examples:**
+```
+{titel: Wrong Spelling}
+{unknown_directive}
+{incomplete
+```
+
+**Common Issues:**
+- **Typos**: `{titel}` should be `{title}`
+- **Unknown directives**: Check spelling and documentation
+- **Incomplete syntax**: Missing closing brace `}`
+- **Empty directives**: Don't use `{}`
+
+#### Bracket Matching
+
+The validator ensures brackets are properly paired:
+
+**Mismatched Examples:**
+```
+[C [G] {title: test
+[Am] missing bracket}
+```
+
+**Fix by ensuring:**
+- Every `[` has a matching `]`
+- Every `{` has a matching `}`
+- Brackets don't overlap or nest incorrectly
+
+#### Security Validation
+
+The system detects potentially dangerous content:
+
+**Blocked Patterns:**
+```
+<script>alert('xss')</script>
+<iframe src="malicious.com">
+javascript:void(0)
+```
+
+**Why It Matters:**
+- Prevents script injection attacks
+- Protects against malicious content
+- Ensures safe sharing of songs
+
+### Visual Indicators
+
+#### Error Highlighting
+
+Errors are highlighted with different colors:
+
+- **Red underline**: Critical errors that break ChordPro syntax
+- **Yellow underline**: Warnings for questionable content
+- **Blue underline**: Informational notices and suggestions
+
+#### Hover Tooltips
+
+Hover over highlighted errors to see:
+
+- **Error description**: What's wrong with the syntax
+- **Fix suggestions**: How to correct the issue
+- **Examples**: Correct usage patterns
+- **Location**: Line and column information
+
+#### Status Bar
+
+The validation status bar shows:
+
+- **Error count**: Number of critical errors found
+- **Warning count**: Number of warnings detected
+- **Validation settings**: Quick access to configuration
+- **No issues message**: When content is valid
+
+### Validation Settings
+
+#### Accessing Settings
+
+Click the gear icon in the validation status bar to access:
+
+- **Validation strictness**: Choose between strict, relaxed, or minimal
+- **Check toggles**: Enable/disable specific validation types
+- **Security options**: Configure security checking level
+- **Language settings**: Select validation language
+
+#### Validation Levels
+
+**Strict Mode:**
+- Validates all directives against known ChordPro standard
+- Reports unknown directives as warnings
+- Enforces proper formatting conventions
+- Best for ChordPro specification compliance
+
+**Relaxed Mode (Default):**
+- Allows custom directives without warnings
+- Focuses on critical syntax errors
+- Balances validation with flexibility
+- Best for most users
+
+**Minimal Mode:**
+- Only checks critical syntax errors
+- Minimal performance impact
+- Very permissive approach
+- Best for large documents or older systems
+
+#### Configurable Checks
+
+Toggle specific validation types:
+
+- **Chord syntax**: Validate chord notation
+- **Directive format**: Check directive syntax
+- **Bracket matching**: Ensure brackets are paired
+- **Empty elements**: Flag empty `{}` and `[]`
+- **Typo detection**: Check for common directive typos
+- **Security scanning**: Detect potentially dangerous content
+
+### Language Support
+
+#### Supported Languages
+
+- **English**: Full validation with English error messages
+- **Spanish**: Complete Spanish translation and chord notation support
+
+#### Spanish Chord Notation
+
+The validator recognizes Spanish chord notation:
+
+**Spanish Notation:**
+```
+[Do] [Re] [Mi] [Fa] [Sol] [La] [Si]
+[dom] [rem] [mim] [fam] [solm] [lam] [sim]
+```
+
+**Automatic Conversion:**
+- Spanish chords are automatically converted to standard notation
+- Validation proceeds with international standard
+- Error messages appear in selected language
+
+#### Spanish Directives
+
+Spanish directive aliases are recognized:
+
+```
+{titulo: Song Title}      → {title: Song Title}
+{artista: Artist Name}    → {artist: Artist Name}
+{coro}                    → {chorus}
+{estrofa}                 → {verse}
+```
+
+#### Changing Language
+
+To switch validation language:
+
+1. Use the language selector in the top navigation
+2. Or change in validation settings panel
+3. Error messages update immediately
+4. Language-specific rules activate automatically
+
+### Performance Features
+
+#### Debounced Validation
+
+- **300ms debounce**: Validation waits for typing pauses
+- **No typing interference**: Never blocks your input
+- **Smooth experience**: Updates feel instant but don't lag
+
+#### Efficient Processing
+
+- **Optimized algorithms**: Fast validation even for large documents
+- **Memory efficient**: Minimal memory usage and no leaks
+- **Background processing**: Never blocks the UI thread
+
+#### Large Document Support
+
+The validator handles:
+
+- **1000+ line documents**: Validates in under 100ms
+- **10,000+ chords**: Processes efficiently
+- **Complex nesting**: Handles deep verse/chorus structures
+- **Mixed languages**: Supports multilingual content
+
+### Error Navigation
+
+#### Click to Navigate
+
+- **Click error indicators** to jump to error location
+- **Cursor positioning**: Automatically places cursor at error
+- **Selection highlighting**: Shows exact error span
+
+#### Keyboard Shortcuts
+
+- **Tab navigation**: Move between validation elements
+- **Enter**: Activate error correction suggestions
+- **Escape**: Close error tooltips and panels
+
+### Best Practices
+
+#### Writing Valid ChordPro
+
+1. **Start with metadata**:
+   ```
+   {title: Song Title}
+   {artist: Artist Name}
+   {key: C}
+   ```
+
+2. **Use proper chord notation**:
+   ```
+   [C] [G] [Am] [F]  ✓ Correct
+   [c] [g] [am] [f]  ✗ Incorrect
+   ```
+
+3. **Structure with directives**:
+   ```
+   {start_of_verse}
+   [C]Verse content here
+   {end_of_verse}
+   ```
+
+4. **Include helpful comments**:
+   ```
+   # Capo on 3rd fret
+   # Moderate tempo
+   ```
+
+#### Fixing Common Errors
+
+**For chord errors:**
+1. Check chord name spelling (A-G only)
+2. Use uppercase letters
+3. Verify chord extensions (7, 9, sus, etc.)
+4. Check slash chord format: `[C/G]`
+
+**For directive errors:**
+1. Check directive spelling in documentation
+2. Ensure proper syntax: `{directive: value}`
+3. Match opening and closing braces
+4. Use known ChordPro directives
+
+**For bracket mismatches:**
+1. Count opening and closing brackets
+2. Use editor bracket matching features
+3. Check for overlapping or nested brackets
+4. Ensure each chord and directive is properly closed
+
+### Troubleshooting
+
+#### Validation Not Working
+
+**Possible causes:**
+- Validation disabled in settings
+- JavaScript errors in browser console
+- Large document causing performance issues
+- Browser compatibility problems
+
+**Solutions:**
+1. Check validation toggle in status bar
+2. Refresh the page and try again
+3. Clear browser cache and cookies
+4. Update to a modern browser version
+5. Contact support if issues persist
+
+#### Performance Issues
+
+**If validation feels slow:**
+1. Switch to "Minimal" validation mode
+2. Disable unnecessary validation checks
+3. Break large documents into smaller files
+4. Check browser performance and memory usage
+
+#### False Positives
+
+**If validator reports incorrect errors:**
+1. Check validation level (try "Relaxed" mode)
+2. Verify ChordPro syntax against documentation
+3. Use custom rules for special requirements
+4. Report persistent issues to support
+
+#### Language Issues
+
+**If translations are incorrect:**
+1. Verify browser language settings
+2. Check ChordMe language selector
+3. Clear browser cache and reload
+4. Report translation errors to support
+
 ## Tips and Best Practices
 
 ### Writing Effective ChordPro

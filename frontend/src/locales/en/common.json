@@ -138,5 +138,53 @@
     "siteFooter": "Site footer",
     "openNavigation": "Open navigation menu",
     "closeNavigation": "Close navigation menu"
+  },
+  "chordProValidation": {
+    "errors": {
+      "invalidChord": "Invalid chord notation: \"{{chord}}\"",
+      "unknownDirective": "Unknown directive: \"{{directive}}\"",
+      "bracketMismatch": "Mismatched {{type}} brackets: {{open}} opening, {{close}} closing",
+      "emptyDirective": "Found empty directive {}",
+      "emptyChord": "Found empty chord notation []",
+      "scriptTag": "Script tags are not allowed",
+      "javascript": "JavaScript protocol is not allowed",
+      "eventHandler": "Event handlers are not allowed",
+      "iframe": "Iframe tags are not allowed",
+      "object": "Object tags are not allowed",
+      "embed": "Embed tags are not allowed",
+      "specialChars": "High concentration of special characters detected",
+      "typoSuggestion": "Possible typo in directive: \"{{typo}}\""
+    },
+    "suggestions": {
+      "useUppercase": "Use uppercase: {{suggestion}}",
+      "didYouMean": "Did you mean: {{suggestion}}?",
+      "checkSpelling": "Check spelling of directive name"
+    },
+    "categories": {
+      "chord": "Chord",
+      "directive": "Directive", 
+      "bracket": "Bracket",
+      "syntax": "Syntax",
+      "security": "Security",
+      "format": "Format"
+    },
+    "severity": {
+      "error": "Error",
+      "warning": "Warning",
+      "info": "Info"
+    },
+    "statusBar": {
+      "errorsCount": "{{count}} error",
+      "errorsCount_plural": "{{count}} errors",
+      "warningsCount": "{{count}} warning", 
+      "warningsCount_plural": "{{count}} warnings",
+      "noIssues": "No validation issues",
+      "validationSettings": "Validation Settings",
+      "strictMode": "Strict Mode",
+      "checkSecurity": "Security Check",
+      "checkBrackets": "Bracket Matching",
+      "checkEmpty": "Empty Elements",
+      "checkTypos": "Typo Detection"
+    }
   }
 }

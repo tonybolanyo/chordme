@@ -138,5 +138,53 @@
     "siteFooter": "Pie de página del sitio",
     "openNavigation": "Abrir menú de navegación",
     "closeNavigation": "Cerrar menú de navegación"
+  },
+  "chordProValidation": {
+    "errors": {
+      "invalidChord": "Notación de acorde inválida: \"{{chord}}\"",
+      "unknownDirective": "Directiva desconocida: \"{{directive}}\"",
+      "bracketMismatch": "Corchetes de {{type}} desbalanceados: {{open}} de apertura, {{close}} de cierre",
+      "emptyDirective": "Se encontró directiva vacía {}",
+      "emptyChord": "Se encontró notación de acorde vacía []",
+      "scriptTag": "Las etiquetas script no están permitidas",
+      "javascript": "El protocolo JavaScript no está permitido",
+      "eventHandler": "Los manejadores de eventos no están permitidos",
+      "iframe": "Las etiquetas iframe no están permitidas",
+      "object": "Las etiquetas object no están permitidas",
+      "embed": "Las etiquetas embed no están permitidas",
+      "specialChars": "Alta concentración de caracteres especiales detectada",
+      "typoSuggestion": "Posible error tipográfico en directiva: \"{{typo}}\""
+    },
+    "suggestions": {
+      "useUppercase": "Usar mayúscula: {{suggestion}}",
+      "didYouMean": "¿Quisiste decir: {{suggestion}}?",
+      "checkSpelling": "Revisa la ortografía del nombre de la directiva"
+    },
+    "categories": {
+      "chord": "Acorde",
+      "directive": "Directiva",
+      "bracket": "Corchete",
+      "syntax": "Sintaxis",
+      "security": "Seguridad",
+      "format": "Formato"
+    },
+    "severity": {
+      "error": "Error",
+      "warning": "Advertencia",
+      "info": "Información"
+    },
+    "statusBar": {
+      "errorsCount": "{{count}} error",
+      "errorsCount_plural": "{{count}} errores",
+      "warningsCount": "{{count}} advertencia",
+      "warningsCount_plural": "{{count}} advertencias", 
+      "noIssues": "Sin problemas de validación",
+      "validationSettings": "Configuración de Validación",
+      "strictMode": "Modo Estricto",
+      "checkSecurity": "Verificación de Seguridad",
+      "checkBrackets": "Coincidencia de Corchetes",
+      "checkEmpty": "Elementos Vacíos",
+      "checkTypos": "Detección de Errores Tipográficos"
+    }
   }
 }
