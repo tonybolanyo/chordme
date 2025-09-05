@@ -71,18 +71,68 @@
   font-weight: 600;
 }
 
-.chord-validity-indicator {
+.suggestion-main {
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  flex: 1;
+}
+
+.directive-description {
+  font-size: 11px;
+  color: #666;
+  font-style: italic;
+  margin-left: 8px;
+  flex: 2;
+  font-family: inherit;
+}
+
+.directive-item {
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 10px 12px;
+}
+
+.directive-item .suggestion-main {
+  color: #7c3aed;
+  margin-bottom: 2px;
+}
+
+.directive-item .directive-description {
+  margin-left: 0;
+  margin-bottom: 2px;
+}
+
+.directive-item .suggestion-validity-indicator {
+  align-self: flex-end;
+  position: absolute;
+  right: 12px;
+  top: 10px;
+}
+
+.chord-item .suggestion-main {
+  color: #333;
+}
+
+.chord-autocomplete-item.invalid .suggestion-main {
+  color: #d32f2f;
+  text-decoration: line-through;
+}
+
+.chord-validity-indicator,
+.suggestion-validity-indicator {
   font-size: 12px;
   font-weight: bold;
   min-width: 16px;
   text-align: center;
 }
 
-.chord-autocomplete-item.valid .chord-validity-indicator {
+.chord-autocomplete-item.valid .chord-validity-indicator,
+.chord-autocomplete-item.valid .suggestion-validity-indicator {
   color: #4caf50;
 }
 
-.chord-autocomplete-item.invalid .chord-validity-indicator {
+.chord-autocomplete-item.invalid .chord-validity-indicator,
+.chord-autocomplete-item.invalid .suggestion-validity-indicator {
   color: #d32f2f;
 }
 

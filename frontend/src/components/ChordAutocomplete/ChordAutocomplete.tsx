@@ -2,8 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import './ChordAutocomplete.css';
 import {
   getChordSuggestions,
+  getDirectiveSuggestions,
+  getEnhancedChordSuggestions,
+  getContextAwareChordSuggestions,
+  detectInputContext,
   type ChordSuggestion,
+  type DirectiveSuggestion,
 } from '../../services/chordService';
+import { autocompletionSettingsService } from '../../services/autocompletionSettings';
 
 interface ChordAutocompleteProps {
   inputText: string;
@@ -11,6 +17,10 @@ interface ChordAutocompleteProps {
   onClose: () => void;
   position: { top: number; left: number };
   visible: boolean;
+  inputType?: 'chord' | 'directive' | 'auto'; // New prop to specify suggestion type
+  keySignature?: string; // For context-aware suggestions
+  chordProContent?: string; // For extracting context
+  cursorPosition?: number; // For auto-detection
 }
 
 const ChordAutocomplete: React.FC<ChordAutocompleteProps> = ({
@@ -19,20 +29,57 @@ const ChordAutocomplete: React.FC<ChordAutocompleteProps> = ({
   onClose,
   position,
   visible,
+  inputType = 'auto',
+  keySignature,
+  chordProContent,
+  cursorPosition,
 }) => {
-  const [suggestions, setSuggestions] = useState<ChordSuggestion[]>([]);
+  const [suggestions, setSuggestions] = useState<(ChordSuggestion | DirectiveSuggestion)[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [suggestionType, setSuggestionType] = useState<'chord' | 'directive'>('chord');
   const autocompleteRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (visible && inputText) {
-      const newSuggestions = getChordSuggestions(inputText, 8);
-      setSuggestions(newSuggestions);
-      setSelectedIndex(0);
-    } else {
+    if (!visible || !inputText) {
       setSuggestions([]);
+      return;
     }
-  }, [inputText, visible]);
+
+    const settings = autocompletionSettingsService.getSettings();
+    if (!settings.enabled) {
+      setSuggestions([]);
+      return;
+    }
+
+    let currentInputType = inputType;
+    
+    // Auto-detect input type if needed
+    if (inputType === 'auto' && chordProContent && cursorPosition !== undefined) {
+      const context = detectInputContext(chordProContent, cursorPosition);
+      currentInputType = context.type === 'none' ? 'chord' : context.type;
+    }
+
+    let newSuggestions: (ChordSuggestion | DirectiveSuggestion)[] = [];
+
+    if (currentInputType === 'directive' && settings.showDirectives) {
+      newSuggestions = getDirectiveSuggestions(inputText, settings.maxSuggestions);
+      setSuggestionType('directive');
+    } else if (currentInputType === 'chord' && settings.showChords) {
+      const customChords = settings.customChords;
+      
+      if (settings.contextAware && keySignature) {
+        // Use context-aware suggestions if key signature is available
+        newSuggestions = getContextAwareChordSuggestions(inputText, keySignature, settings.maxSuggestions);
+      } else {
+        // Use enhanced suggestions with custom chords
+        newSuggestions = getEnhancedChordSuggestions(inputText, customChords, settings.maxSuggestions);
+      }
+      setSuggestionType('chord');
+    }
+
+    setSuggestions(newSuggestions);
+    setSelectedIndex(0);
+  }, [inputText, visible, inputType, keySignature, chordProContent, cursorPosition]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -55,7 +102,9 @@ const ChordAutocomplete: React.FC<ChordAutocompleteProps> = ({
         case 'Tab':
           e.preventDefault();
           if (suggestions[selectedIndex]) {
-            onSelectChord(suggestions[selectedIndex].chord);
+            const suggestion = suggestions[selectedIndex];
+            const suggestionText = 'chord' in suggestion ? suggestion.chord : suggestion.directive;
+            onSelectChord(suggestionText);
           }
           break;
         case 'Escape':
@@ -103,26 +152,39 @@ const ChordAutocomplete: React.FC<ChordAutocompleteProps> = ({
       }}
     >
       <div className="chord-autocomplete-header">
-        <span className="chord-autocomplete-title">Chord Suggestions</span>
+        <span className="chord-autocomplete-title">
+          {suggestionType === 'directive' ? 'Directive Suggestions' : 'Chord Suggestions'}
+        </span>
         <span className="chord-autocomplete-hint">
           ↑↓ navigate, Enter/Tab select, Esc close
         </span>
       </div>
       <ul className="chord-autocomplete-list">
-        {suggestions.map((suggestion, index) => (
-          <li
-            key={suggestion.chord}
-            className={`chord-autocomplete-item ${
-              index === selectedIndex ? 'selected' : ''
-            } ${suggestion.isValid ? 'valid' : 'invalid'}`}
-            onClick={() => onSelectChord(suggestion.chord)}
-          >
-            <span className="chord-name">{suggestion.chord}</span>
-            <span className="chord-validity-indicator">
-              {suggestion.isValid ? '✓' : '!'}
-            </span>
-          </li>
-        ))}
+        {suggestions.map((suggestion, index) => {
+          const isChord = 'chord' in suggestion;
+          const displayText = isChord ? suggestion.chord : suggestion.directive;
+          const isValid = isChord ? suggestion.isValid : true;
+          
+          return (
+            <li
+              key={displayText}
+              className={`chord-autocomplete-item ${
+                index === selectedIndex ? 'selected' : ''
+              } ${isValid ? 'valid' : 'invalid'} ${
+                suggestionType === 'directive' ? 'directive-item' : 'chord-item'
+              }`}
+              onClick={() => onSelectChord(displayText)}
+            >
+              <span className="suggestion-main">{displayText}</span>
+              {suggestionType === 'directive' && 'description' in suggestion && (
+                <span className="directive-description">{suggestion.description}</span>
+              )}
+              <span className="suggestion-validity-indicator">
+                {isValid ? '✓' : '!'}
+              </span>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

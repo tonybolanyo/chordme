@@ -9,10 +9,28 @@ describe('ChordAutocomplete', () => {
     onClose: vi.fn(),
     position: { top: 100, left: 200 },
     visible: false,
+    inputType: 'chord' as const, // Force chord mode for existing tests
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
+    // Mock localStorage for autocompletion settings
+    const mockLocalStorage = {
+      getItem: vi.fn(() => JSON.stringify({
+        enabled: true,
+        maxSuggestions: 8,
+        showDirectives: true,
+        showChords: true,
+        contextAware: true,
+        customChords: [],
+      })),
+      setItem: vi.fn(),
+      removeItem: vi.fn(),
+    };
+    Object.defineProperty(window, 'localStorage', {
+      value: mockLocalStorage,
+      writable: true,
+    });
   });
 
   it('renders nothing when not visible', () => {
