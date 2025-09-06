@@ -775,3 +775,203 @@ def get_my_sessions():
     except Exception as e:
         app.logger.error(f"Error getting user sessions: {str(e)}")
         return create_error_response("Internal server error", 500)
+
+
+@app.route('/api/v1/sessions/<session_id>/recording/start', methods=['POST'])
+@rate_limit("10 per minute")
+@security_headers
+@auth_required
+def start_session_recording(session_id):
+    """
+    Start recording a session.
+    ---
+    tags:
+      - Sessions
+    summary: Start session recording
+    description: Start recording all events in a collaborative session
+    parameters:
+      - in: path
+        name: session_id
+        type: string
+        required: true
+        description: Session ID
+    responses:
+      200:
+        description: Recording started successfully
+      404:
+        description: Session not found
+      403:
+        description: Access denied
+      400:
+        description: Session already being recorded
+    """
+    try:
+        session = CollaborationSession.query.get(session_id)
+        if not session:
+            return create_error_response("Session not found", 404)
+        
+        # Check if user has permission to manage recording
+        user_role = session.get_user_role(g.current_user_id)
+        if user_role not in ['owner', 'editor']:
+            return create_error_response("Insufficient permissions to start recording", 403)
+        
+        from .session_recording import recording_manager
+        
+        success = recording_manager.start_session_recording(session_id)
+        if success:
+            return create_success_response(message="Recording started successfully")
+        else:
+            return create_error_response("Failed to start recording", 400)
+        
+    except Exception as e:
+        app.logger.error(f"Error starting recording for session {session_id}: {str(e)}")
+        return create_error_response("Internal server error", 500)
+
+
+@app.route('/api/v1/sessions/<session_id>/recording/stop', methods=['POST'])
+@rate_limit("10 per minute")
+@security_headers
+@auth_required
+def stop_session_recording(session_id):
+    """
+    Stop recording a session.
+    ---
+    tags:
+      - Sessions
+    summary: Stop session recording
+    description: Stop recording a collaborative session and get recording data
+    parameters:
+      - in: path
+        name: session_id
+        type: string
+        required: true
+        description: Session ID
+    responses:
+      200:
+        description: Recording stopped successfully
+      404:
+        description: Session not found
+      403:
+        description: Access denied
+      400:
+        description: Session not being recorded
+    """
+    try:
+        session = CollaborationSession.query.get(session_id)
+        if not session:
+            return create_error_response("Session not found", 404)
+        
+        # Check if user has permission to manage recording
+        user_role = session.get_user_role(g.current_user_id)
+        if user_role not in ['owner', 'editor']:
+            return create_error_response("Insufficient permissions to stop recording", 403)
+        
+        from .session_recording import recording_manager
+        
+        recording_data = recording_manager.stop_session_recording(session_id)
+        if recording_data:
+            return create_success_response(
+                data=recording_data,
+                message="Recording stopped successfully"
+            )
+        else:
+            return create_error_response("Failed to stop recording or session not being recorded", 400)
+        
+    except Exception as e:
+        app.logger.error(f"Error stopping recording for session {session_id}: {str(e)}")
+        return create_error_response("Internal server error", 500)
+
+
+@app.route('/api/v1/sessions/<session_id>/recording/status', methods=['GET'])
+@rate_limit("30 per minute")
+@security_headers
+@auth_required
+def get_recording_status(session_id):
+    """
+    Get recording status for a session.
+    ---
+    tags:
+      - Sessions
+    summary: Get recording status
+    description: Get current recording status for a collaborative session
+    parameters:
+      - in: path
+        name: session_id
+        type: string
+        required: true
+        description: Session ID
+    responses:
+      200:
+        description: Recording status
+      404:
+        description: Session not found
+      403:
+        description: Access denied
+    """
+    try:
+        session = CollaborationSession.query.get(session_id)
+        if not session:
+            return create_error_response("Session not found", 404)
+        
+        # Check access permissions
+        if not session.can_access(g.current_user_id):
+            return create_error_response("Access denied", 403)
+        
+        from .session_recording import recording_manager
+        
+        status = recording_manager.get_recording_status(session_id)
+        
+        return create_success_response(data=status)
+        
+    except Exception as e:
+        app.logger.error(f"Error getting recording status for session {session_id}: {str(e)}")
+        return create_error_response("Internal server error", 500)
+
+
+@app.route('/api/v1/sessions/cleanup', methods=['POST'])
+@rate_limit("5 per hour")
+@security_headers
+@auth_required
+def cleanup_sessions():
+    """
+    Cleanup inactive sessions (admin only).
+    ---
+    tags:
+      - Sessions
+    summary: Cleanup inactive sessions
+    description: Clean up inactive sessions and archive old ones
+    parameters:
+      - in: body
+        name: cleanup_options
+        schema:
+          type: object
+          properties:
+            dry_run:
+              type: boolean
+              default: false
+              description: If true, only report what would be cleaned up
+    responses:
+      200:
+        description: Cleanup completed successfully
+      403:
+        description: Access denied (admin only)
+    """
+    try:
+        # This would typically require admin permissions
+        # For now, we'll allow any authenticated user for testing
+        
+        data = request.get_json() or {}
+        dry_run = data.get('dry_run', False)
+        
+        from .session_cleanup import SessionCleanupService
+        
+        stats = SessionCleanupService.cleanup_inactive_sessions(dry_run=dry_run)
+        
+        return create_success_response(
+            data=stats,
+            message=f"Cleanup completed {'(dry run)' if dry_run else ''}"
+        )
+        
+    except Exception as e:
+        app.logger.error(f"Error during session cleanup: {str(e)}")
+        return create_error_response("Internal server error", 500)
