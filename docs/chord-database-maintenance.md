@@ -1,3 +1,8 @@
+---
+layout: default
+title: Chord Database Maintenance Guide
+---
+
 # Chord Database Maintenance Guide
 
 ## Overview

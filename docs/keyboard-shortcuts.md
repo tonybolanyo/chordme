@@ -1,3 +1,8 @@
+---
+layout: default
+title: Keyboard Shortcuts
+---
+
 # Keyboard Shortcuts Documentation
 
 ## Transposition Shortcuts

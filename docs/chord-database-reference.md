@@ -1,3 +1,8 @@
+---
+layout: default
+title: Chord Database Reference
+---
+
 # Chord Database Reference - ChordMe
 
 ## Overview

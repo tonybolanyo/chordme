@@ -1,3 +1,8 @@
+---
+layout: default
+title: Chord Recognition Engine
+---
+
 # Enhanced Chord Recognition Engine Documentation
 
 ## Overview

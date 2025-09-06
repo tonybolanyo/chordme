@@ -1,3 +1,8 @@
+---
+layout: default
+title: ChordMe Integration Testing Demo Script
+---
+
 # ChordMe Integration Testing Demo Script
 
 ## Overview
