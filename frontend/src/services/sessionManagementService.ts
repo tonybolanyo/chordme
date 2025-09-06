@@ -477,6 +477,3 @@ export class SessionManagementService {
 
 // Export singleton instance
 export const sessionManagementService = new SessionManagementService();
-
-// Export service class for testing
-export { SessionManagementService };

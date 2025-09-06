@@ -60,6 +60,9 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
           <a href="#songs" className="nav-link" onClick={closeMobileMenu}>
             {t('navigation.songs')}
           </a>
+          <a href="#setlists" className="nav-link" onClick={closeMobileMenu}>
+            {t('navigation.setlists', 'Setlists')}
+          </a>
           <a href="#profile" className="nav-link" onClick={closeMobileMenu}>
             {t('navigation.profile')}
           </a>
@@ -82,6 +85,9 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
         <>
           <a href="#demo" className="nav-link" onClick={closeMobileMenu}>
             {t('navigation.demo')}
+          </a>
+          <a href="#setlist-demo" className="nav-link" onClick={closeMobileMenu}>
+            Setlist Demo
           </a>
           <div className="auth-links">
             <StorageIndicator onClick={handleStorageSettingsOpen} />

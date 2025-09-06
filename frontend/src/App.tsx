@@ -9,6 +9,8 @@ import Profile from './pages/Profile';
 import ChordProDemo from './pages/ChordProDemo';
 import ChordDiagramDemo from './pages/ChordDiagramDemo';
 import AuthCallback from './pages/AuthCallback';
+import { SetlistPage } from './pages/Setlist';
+import { SetlistDemo } from './pages/SetlistDemo';
 import './App.css';
 
 // Main app content that uses auth context
@@ -66,6 +68,19 @@ function AppContent() {
           return <Login />;
         }
         return <Profile />;
+      case 'setlists':
+        // Protect setlists page - redirect to login if not authenticated
+        if (!isAuthenticated) {
+          return <Login />;
+        }
+        return <SetlistPage mode="list" />;
+      case 'setlist/create':
+        if (!isAuthenticated) {
+          return <Login />;
+        }
+        return <SetlistPage mode="create" />;
+      case 'setlist-demo':
+        return <SetlistDemo />;
       case 'demo':
         return <ChordProDemo />;
       case 'chord-diagrams':

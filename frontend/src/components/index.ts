@@ -39,3 +39,6 @@ export * from './CollaborativeEditing';
 
 // Session management components
 export * from './SessionManagement';
+
+// Setlist components
+export { SetlistBuilder } from './SetlistBuilder';
