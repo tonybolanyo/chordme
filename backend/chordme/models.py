@@ -1087,3 +1087,438 @@ class FilterPreset(db.Model):
     
     def __repr__(self):
         return f'<FilterPreset {self.name} by user:{self.user_id}>'
+
+
+# Collaborative Session Management Models
+
+class CollaborationSession(db.Model):
+    """Model for managing collaborative editing sessions."""
+    __tablename__ = 'collaboration_sessions'
+    
+    id = db.Column(db.String(36), primary_key=True)  # UUID
+    song_id = db.Column(db.Integer, db.ForeignKey('songs.id'), nullable=False)
+    template_id = db.Column(db.Integer, db.ForeignKey('session_templates.id'), nullable=True)
+    creator_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    
+    # Session configuration
+    name = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    access_mode = db.Column(db.String(20), default='invite-only')  # 'invite-only', 'link-access', 'public'
+    invitation_code = db.Column(db.String(12), unique=True, nullable=True)  # For link-based access
+    max_participants = db.Column(db.Integer, default=10)
+    
+    # Session state
+    status = db.Column(db.String(20), default='active')  # 'active', 'paused', 'ended', 'archived'
+    participant_count = db.Column(db.Integer, default=0)
+    is_recording = db.Column(db.Boolean, default=False)
+    auto_save_enabled = db.Column(db.Boolean, default=True)
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+    started_at = db.Column(db.DateTime, nullable=True)
+    ended_at = db.Column(db.DateTime, nullable=True)
+    last_activity = db.Column(db.DateTime, default=utc_now)
+    
+    # Cleanup configuration
+    auto_cleanup_after = db.Column(db.Integer, default=7)  # Days after inactivity
+    archive_after = db.Column(db.Integer, default=30)  # Days before archival
+    
+    # Settings and configuration
+    settings = db.Column(db.JSON, default=dict)  # Session-specific settings
+    session_metadata = db.Column(db.JSON, default=dict)  # Additional metadata
+    
+    # Relationships
+    song = db.relationship('Song', backref='collaboration_sessions')
+    creator = db.relationship('User', foreign_keys=[creator_id], backref='created_sessions')
+    template = db.relationship('SessionTemplate', backref='sessions')
+    participants = db.relationship('SessionParticipant', backref='session', cascade='all, delete-orphan')
+    activities = db.relationship('SessionActivity', backref='session', cascade='all, delete-orphan')
+    
+    def __init__(self, session_id, song_id, creator_id, name, template_id=None, 
+                 description=None, access_mode='invite-only', max_participants=10):
+        self.id = session_id
+        self.song_id = song_id
+        self.creator_id = creator_id
+        self.name = name
+        self.template_id = template_id
+        self.description = description
+        self.access_mode = access_mode
+        self.max_participants = max_participants
+        if access_mode == 'link-access':
+            import secrets
+            self.invitation_code = secrets.token_urlsafe(8)
+    
+    def to_dict(self, include_participants=False, include_activities=False):
+        """Convert session to dictionary."""
+        result = {
+            'id': self.id,
+            'song_id': self.song_id,
+            'template_id': self.template_id,
+            'creator_id': self.creator_id,
+            'name': self.name,
+            'description': self.description,
+            'access_mode': self.access_mode,
+            'invitation_code': self.invitation_code,
+            'max_participants': self.max_participants,
+            'status': self.status,
+            'participant_count': self.participant_count,
+            'is_recording': self.is_recording,
+            'auto_save_enabled': self.auto_save_enabled,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'started_at': self.started_at.isoformat() if self.started_at else None,
+            'ended_at': self.ended_at.isoformat() if self.ended_at else None,
+            'last_activity': self.last_activity.isoformat() if self.last_activity else None,
+            'auto_cleanup_after': self.auto_cleanup_after,
+            'archive_after': self.archive_after,
+            'settings': self.settings,
+            'session_metadata': self.session_metadata
+        }
+        
+        if include_participants:
+            result['participants'] = [p.to_dict() for p in self.participants]
+        
+        if include_activities:
+            result['activities'] = [a.to_dict() for a in self.activities]
+        
+        return result
+    
+    def add_participant(self, user_id, role='viewer', invited_by=None):
+        """Add participant to session."""
+        existing = SessionParticipant.query.filter_by(
+            session_id=self.id, user_id=user_id
+        ).first()
+        
+        if existing:
+            return existing
+        
+        participant = SessionParticipant(
+            session_id=self.id,
+            user_id=user_id,
+            role=role,
+            invited_by=invited_by
+        )
+        
+        db.session.add(participant)
+        self.participant_count += 1
+        self.last_activity = utc_now()
+        
+        return participant
+    
+    def remove_participant(self, user_id):
+        """Remove participant from session."""
+        participant = SessionParticipant.query.filter_by(
+            session_id=self.id, user_id=user_id
+        ).first()
+        
+        if participant:
+            db.session.delete(participant)
+            self.participant_count = max(0, self.participant_count - 1)
+            self.last_activity = utc_now()
+            return True
+        return False
+    
+    def can_access(self, user_id):
+        """Check if user can access this session."""
+        # Creator always has access
+        if self.creator_id == user_id:
+            return True
+        
+        # Check if user is a participant
+        participant = SessionParticipant.query.filter_by(
+            session_id=self.id, user_id=user_id
+        ).first()
+        
+        return participant is not None
+    
+    def get_user_role(self, user_id):
+        """Get user's role in this session."""
+        if self.creator_id == user_id:
+            return 'owner'
+        
+        participant = SessionParticipant.query.filter_by(
+            session_id=self.id, user_id=user_id
+        ).first()
+        
+        return participant.role if participant else None
+    
+    def log_activity(self, user_id, activity_type, details=None):
+        """Log activity in this session."""
+        activity = SessionActivity(
+            session_id=self.id,
+            user_id=user_id,
+            activity_type=activity_type,
+            details=details or {}
+        )
+        
+        db.session.add(activity)
+        self.last_activity = utc_now()
+        
+        return activity
+    
+    def __repr__(self):
+        return f'<CollaborationSession {self.name} ({self.id})>'
+
+
+class SessionTemplate(db.Model):
+    """Templates for different types of collaborative sessions."""
+    __tablename__ = 'session_templates'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    category = db.Column(db.String(50), nullable=False)  # 'rehearsal', 'lesson', 'arrangement', 'jamming'
+    
+    # Template configuration
+    default_roles = db.Column(db.JSON, default=list)  # Default participant roles
+    max_participants = db.Column(db.Integer, default=10)
+    auto_recording = db.Column(db.Boolean, default=False)
+    auto_save_interval = db.Column(db.Integer, default=30)  # Seconds
+    
+    # Template settings
+    settings = db.Column(db.JSON, default=dict)
+    permissions = db.Column(db.JSON, default=dict)  # Default permissions per role
+    
+    # Visibility and sharing
+    is_public = db.Column(db.Boolean, default=True)
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    usage_count = db.Column(db.Integer, default=0)
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+    
+    # Relationships
+    creator = db.relationship('User', foreign_keys=[created_by], backref='session_templates')
+    
+    def __init__(self, name, category, created_by, description=None, max_participants=10):
+        self.name = name
+        self.category = category
+        self.created_by = created_by
+        self.description = description
+        self.max_participants = max_participants
+        
+        # Set default permissions based on category
+        self.permissions = self._get_default_permissions(category)
+    
+    def _get_default_permissions(self, category):
+        """Get default permissions based on template category."""
+        base_permissions = {
+            'owner': ['read', 'edit', 'manage_participants', 'manage_session', 'delete'],
+            'editor': ['read', 'edit', 'comment'],
+            'viewer': ['read', 'comment'],
+            'commenter': ['read', 'comment']
+        }
+        
+        if category == 'lesson':
+            # More restrictive for lessons
+            base_permissions['editor'] = ['read', 'comment']
+            base_permissions['viewer'] = ['read']
+        elif category == 'jamming':
+            # More open for jamming sessions
+            base_permissions['editor'] = ['read', 'edit', 'comment', 'add_participants']
+        
+        return base_permissions
+    
+    def to_dict(self):
+        """Convert template to dictionary."""
+        return {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+            'category': self.category,
+            'default_roles': self.default_roles,
+            'max_participants': self.max_participants,
+            'auto_recording': self.auto_recording,
+            'auto_save_interval': self.auto_save_interval,
+            'settings': self.settings,
+            'permissions': self.permissions,
+            'is_public': self.is_public,
+            'created_by': self.created_by,
+            'usage_count': self.usage_count,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+    
+    def increment_usage(self):
+        """Increment usage count."""
+        self.usage_count += 1
+        self.updated_at = utc_now()
+    
+    def __repr__(self):
+        return f'<SessionTemplate {self.name} ({self.category})>'
+
+
+class SessionParticipant(db.Model):
+    """Participants in collaborative sessions."""
+    __tablename__ = 'session_participants'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    session_id = db.Column(db.String(36), db.ForeignKey('collaboration_sessions.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    
+    # Participant information
+    role = db.Column(db.String(20), default='viewer')  # 'owner', 'editor', 'viewer', 'commenter'
+    status = db.Column(db.String(20), default='active')  # 'active', 'inactive', 'banned'
+    invited_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    
+    # Participation tracking
+    joined_at = db.Column(db.DateTime, default=utc_now)
+    last_seen = db.Column(db.DateTime, default=utc_now)
+    total_time = db.Column(db.Integer, default=0)  # Total time in session (seconds)
+    contribution_count = db.Column(db.Integer, default=0)  # Number of contributions/edits
+    
+    # Settings
+    notifications_enabled = db.Column(db.Boolean, default=True)
+    color = db.Column(db.String(7), nullable=True)  # Hex color for cursor/presence
+    
+    # Unique constraint
+    __table_args__ = (db.UniqueConstraint('session_id', 'user_id', name='unique_session_participant'),)
+    
+    # Relationships
+    user = db.relationship('User', foreign_keys=[user_id], backref='session_participations')
+    inviter = db.relationship('User', foreign_keys=[invited_by])
+    
+    def __init__(self, session_id, user_id, role='viewer', invited_by=None):
+        self.session_id = session_id
+        self.user_id = user_id
+        self.role = role
+        self.invited_by = invited_by
+        
+        # Assign random color
+        import random
+        colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', 
+                 '#DDA0DD', '#98D8C8', '#FDA7DF', '#F7DC6F', '#BB8FCE']
+        self.color = random.choice(colors)
+    
+    def to_dict(self, include_user=False):
+        """Convert participant to dictionary."""
+        result = {
+            'id': self.id,
+            'session_id': self.session_id,
+            'user_id': self.user_id,
+            'role': self.role,
+            'status': self.status,
+            'invited_by': self.invited_by,
+            'joined_at': self.joined_at.isoformat() if self.joined_at else None,
+            'last_seen': self.last_seen.isoformat() if self.last_seen else None,
+            'total_time': self.total_time,
+            'contribution_count': self.contribution_count,
+            'notifications_enabled': self.notifications_enabled,
+            'color': self.color
+        }
+        
+        if include_user and self.user:
+            result['user'] = {
+                'id': self.user.id,
+                'email': self.user.email,
+                'display_name': self.user.display_name
+            }
+        
+        return result
+    
+    def has_permission(self, permission):
+        """Check if participant has specific permission."""
+        # Get session template permissions
+        session = CollaborationSession.query.get(self.session_id)
+        if not session or not session.template:
+            # Default permissions
+            permissions = {
+                'owner': ['read', 'edit', 'manage_participants', 'manage_session', 'delete'],
+                'editor': ['read', 'edit', 'comment'],
+                'viewer': ['read', 'comment'],
+                'commenter': ['read', 'comment']
+            }
+        else:
+            permissions = session.template.permissions
+        
+        role_permissions = permissions.get(self.role, [])
+        return permission in role_permissions
+    
+    def update_activity(self, contribution=False):
+        """Update participant activity."""
+        self.last_seen = utc_now()
+        if contribution:
+            self.contribution_count += 1
+    
+    def __repr__(self):
+        return f'<SessionParticipant {self.user_id} in {self.session_id} ({self.role})>'
+
+
+class SessionActivity(db.Model):
+    """Activity log for collaborative sessions."""
+    __tablename__ = 'session_activities'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    session_id = db.Column(db.String(36), db.ForeignKey('collaboration_sessions.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    
+    # Activity information
+    activity_type = db.Column(db.String(50), nullable=False)  # 'edit', 'join', 'leave', 'permission_change', etc.
+    description = db.Column(db.String(500), nullable=True)
+    details = db.Column(db.JSON, default=dict)  # Additional activity data
+    
+    # Privacy and metadata
+    is_private = db.Column(db.Boolean, default=False)  # Private activities (not shown to all users)
+    ip_address = db.Column(db.String(45), nullable=True)  # For audit purposes
+    user_agent = db.Column(db.String(500), nullable=True)
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=utc_now)
+    
+    # Relationships
+    user = db.relationship('User', backref='session_activities')
+    
+    def __init__(self, session_id, user_id, activity_type, description=None, details=None):
+        self.session_id = session_id
+        self.user_id = user_id
+        self.activity_type = activity_type
+        self.description = description
+        self.details = details or {}
+    
+    def to_dict(self, include_user=False, include_private=False):
+        """Convert activity to dictionary."""
+        if self.is_private and not include_private:
+            return None
+        
+        result = {
+            'id': self.id,
+            'session_id': self.session_id,
+            'user_id': self.user_id,
+            'activity_type': self.activity_type,
+            'description': self.description,
+            'details': self.details,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+        
+        if include_user and self.user:
+            result['user'] = {
+                'id': self.user.id,
+                'display_name': self.user.display_name or self.user.email
+            }
+        
+        if include_private:
+            result['is_private'] = self.is_private
+            result['ip_address'] = self.ip_address
+            result['user_agent'] = self.user_agent
+        
+        return result
+    
+    @classmethod
+    def log(cls, session_id, user_id, activity_type, description=None, details=None, is_private=False):
+        """Convenience method to log activity."""
+        activity = cls(
+            session_id=session_id,
+            user_id=user_id,
+            activity_type=activity_type,
+            description=description,
+            details=details
+        )
+        activity.is_private = is_private
+        
+        db.session.add(activity)
+        return activity
+    
+    def __repr__(self):
+        return f'<SessionActivity {self.activity_type} by {self.user_id} in {self.session_id}>'

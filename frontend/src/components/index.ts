@@ -36,3 +36,6 @@ export * from './GoogleAuth';
 
 // Collaborative editing components
 export * from './CollaborativeEditing';
+
+// Session management components
+export * from './SessionManagement';
