@@ -1522,3 +1522,682 @@ class SessionActivity(db.Model):
     
     def __repr__(self):
         return f'<SessionActivity {self.activity_type} by {self.user_id} in {self.session_id}>'
+
+
+# Setlist Management Models
+
+class Setlist(db.Model):
+    """Core setlist model for performance management."""
+    __tablename__ = 'setlists'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    
+    # Performance context
+    event_type = db.Column(db.String(50), default='performance')  # performance, rehearsal, lesson, etc.
+    venue = db.Column(db.String(255))
+    event_date = db.Column(db.DateTime(timezone=True))
+    estimated_duration = db.Column(db.Integer)  # Total estimated duration in minutes
+    
+    # Template and organizational features
+    is_template = db.Column(db.Boolean, default=False)
+    template_id = db.Column(db.Integer, db.ForeignKey('setlists.id'), nullable=True)
+    is_public = db.Column(db.Boolean, default=False)
+    is_recurring = db.Column(db.Boolean, default=False)
+    recurring_pattern = db.Column(db.String(50))  # weekly, monthly, custom, etc.
+    
+    # Status and lifecycle
+    status = db.Column(db.String(20), default='draft')  # draft, ready, in_progress, completed, archived
+    is_deleted = db.Column(db.Boolean, default=False)
+    is_archived = db.Column(db.Boolean, default=False)
+    deleted_at = db.Column(db.DateTime(timezone=True))
+    archived_at = db.Column(db.DateTime(timezone=True))
+    
+    # Metadata
+    tags = db.Column(db.JSON, default=list)  # Quick tags for categorization
+    notes = db.Column(db.Text)  # General notes about the setlist
+    view_count = db.Column(db.Integer, default=0)
+    usage_count = db.Column(db.Integer, default=0)  # How many times performed
+    last_performed = db.Column(db.DateTime(timezone=True))
+    
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+    
+    # Relationships
+    user = db.relationship('User', foreign_keys=[user_id], backref='setlists')
+    template = db.relationship('Setlist', remote_side=[id], backref='instances')
+    setlist_songs = db.relationship('SetlistSong', backref='setlist', cascade='all, delete-orphan')
+    versions = db.relationship('SetlistVersion', backref='setlist', cascade='all, delete-orphan')
+    collaborators = db.relationship('SetlistCollaborator', backref='setlist', cascade='all, delete-orphan')
+    performances = db.relationship('SetlistPerformance', backref='setlist', cascade='all, delete-orphan')
+    
+    def __init__(self, name, user_id, description=None, event_type='performance', **kwargs):
+        self.name = name
+        self.user_id = user_id
+        self.description = description
+        self.event_type = event_type
+        
+        # Handle additional parameters
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+    
+    def to_dict(self, include_songs=False, include_versions=False):
+        """Convert setlist to dictionary."""
+        result = {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+            'user_id': self.user_id,
+            'event_type': self.event_type,
+            'venue': self.venue,
+            'event_date': self.event_date.isoformat() if self.event_date else None,
+            'estimated_duration': self.estimated_duration,
+            'is_template': self.is_template,
+            'template_id': self.template_id,
+            'is_public': self.is_public,
+            'is_recurring': self.is_recurring,
+            'recurring_pattern': self.recurring_pattern,
+            'status': self.status,
+            'is_deleted': self.is_deleted,
+            'is_archived': self.is_archived,
+            'deleted_at': self.deleted_at.isoformat() if self.deleted_at else None,
+            'archived_at': self.archived_at.isoformat() if self.archived_at else None,
+            'tags': self.tags,
+            'notes': self.notes,
+            'view_count': self.view_count,
+            'usage_count': self.usage_count,
+            'last_performed': self.last_performed.isoformat() if self.last_performed else None,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+        
+        if include_songs:
+            result['songs'] = [song.to_dict() for song in self.setlist_songs]
+        
+        if include_versions:
+            result['versions'] = [version.to_dict() for version in self.versions]
+        
+        return result
+    
+    def add_song(self, song_id, sort_order=None, section=None, **kwargs):
+        """Add a song to this setlist."""
+        if sort_order is None:
+            # Get the next sort order
+            max_order = db.session.query(db.func.max(SetlistSong.sort_order)).filter_by(setlist_id=self.id).scalar()
+            sort_order = (max_order or 0) + 1
+        
+        setlist_song = SetlistSong(
+            setlist_id=self.id,
+            song_id=song_id,
+            sort_order=sort_order,
+            section=section,
+            **kwargs
+        )
+        
+        db.session.add(setlist_song)
+        return setlist_song
+    
+    def remove_song(self, song_id):
+        """Remove a song from this setlist."""
+        setlist_song = SetlistSong.query.filter_by(setlist_id=self.id, song_id=song_id).first()
+        if setlist_song:
+            db.session.delete(setlist_song)
+            return True
+        return False
+    
+    def reorder_songs(self, song_order):
+        """Reorder songs in the setlist based on provided list of song IDs."""
+        for i, song_id in enumerate(song_order):
+            setlist_song = SetlistSong.query.filter_by(setlist_id=self.id, song_id=song_id).first()
+            if setlist_song:
+                setlist_song.sort_order = i + 1
+    
+    def can_user_access(self, user_id):
+        """Check if a user can access this setlist."""
+        # Owner always has access
+        if self.user_id == user_id:
+            return True
+        
+        # Public setlists are accessible
+        if self.is_public and not self.is_deleted:
+            return True
+        
+        # Check if user is a collaborator
+        collaborator = SetlistCollaborator.query.filter_by(
+            setlist_id=self.id, user_id=user_id, status='accepted'
+        ).first()
+        
+        return collaborator is not None
+    
+    def can_user_edit(self, user_id):
+        """Check if a user can edit this setlist."""
+        # Owner can always edit
+        if self.user_id == user_id:
+            return True
+        
+        # Check if user has edit permissions
+        collaborator = SetlistCollaborator.query.filter_by(
+            setlist_id=self.id, user_id=user_id, status='accepted'
+        ).first()
+        
+        return collaborator and collaborator.permission_level in ['edit', 'admin']
+    
+    def __repr__(self):
+        return f'<Setlist {self.name}>'
+
+
+class SetlistSong(db.Model):
+    """Songs within setlists with performance-specific metadata."""
+    __tablename__ = 'setlist_songs'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    setlist_id = db.Column(db.Integer, db.ForeignKey('setlists.id'), nullable=False)
+    song_id = db.Column(db.Integer, db.ForeignKey('songs.id'), nullable=False)
+    
+    # Position and organization
+    sort_order = db.Column(db.Integer, nullable=False, default=0)
+    section = db.Column(db.String(50))  # opening, main, encore, break, etc.
+    
+    # Performance-specific metadata
+    performance_key = db.Column(db.String(10))  # Key for this performance
+    performance_tempo = db.Column(db.Integer)  # BPM for this performance
+    performance_capo = db.Column(db.Integer, default=0)
+    estimated_duration = db.Column(db.Integer)  # Duration in seconds
+    
+    # Arrangement and notes
+    arrangement_notes = db.Column(db.Text)
+    performance_notes = db.Column(db.Text)
+    intro_notes = db.Column(db.Text)
+    outro_notes = db.Column(db.Text)
+    transition_notes = db.Column(db.Text)
+    
+    # Status and flags
+    is_optional = db.Column(db.Boolean, default=False)
+    is_highlight = db.Column(db.Boolean, default=False)
+    requires_preparation = db.Column(db.Boolean, default=False)
+    
+    # Analytics metadata (populated after performance)
+    actual_duration = db.Column(db.Integer)
+    performance_rating = db.Column(db.Integer)  # 1-5 rating
+    audience_response = db.Column(db.String(20))  # excellent, good, fair, poor
+    technical_notes = db.Column(db.Text)
+    
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+    
+    # Unique constraint
+    __table_args__ = (db.UniqueConstraint('setlist_id', 'song_id', name='unique_setlist_song'),)
+    
+    # Relationships
+    song = db.relationship('Song', backref='setlist_songs')
+    
+    def __init__(self, setlist_id, song_id, sort_order=0, **kwargs):
+        self.setlist_id = setlist_id
+        self.song_id = song_id
+        self.sort_order = sort_order
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+    
+    def to_dict(self, include_song=False):
+        """Convert setlist song to dictionary."""
+        result = {
+            'id': self.id,
+            'setlist_id': self.setlist_id,
+            'song_id': self.song_id,
+            'sort_order': self.sort_order,
+            'section': self.section,
+            'performance_key': self.performance_key,
+            'performance_tempo': self.performance_tempo,
+            'performance_capo': self.performance_capo,
+            'estimated_duration': self.estimated_duration,
+            'arrangement_notes': self.arrangement_notes,
+            'performance_notes': self.performance_notes,
+            'intro_notes': self.intro_notes,
+            'outro_notes': self.outro_notes,
+            'transition_notes': self.transition_notes,
+            'is_optional': self.is_optional,
+            'is_highlight': self.is_highlight,
+            'requires_preparation': self.requires_preparation,
+            'actual_duration': self.actual_duration,
+            'performance_rating': self.performance_rating,
+            'audience_response': self.audience_response,
+            'technical_notes': self.technical_notes,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+        
+        if include_song and self.song:
+            result['song'] = self.song.to_dict()
+        
+        return result
+    
+    def __repr__(self):
+        return f'<SetlistSong {self.song_id} in setlist {self.setlist_id}>'
+
+
+class SetlistVersion(db.Model):
+    """Version control for setlist changes."""
+    __tablename__ = 'setlist_versions'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    setlist_id = db.Column(db.Integer, db.ForeignKey('setlists.id'), nullable=False)
+    version_number = db.Column(db.Integer, nullable=False)
+    
+    # Snapshot of setlist at this version
+    name = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text)
+    event_type = db.Column(db.String(50))
+    venue = db.Column(db.String(255))
+    event_date = db.Column(db.DateTime(timezone=True))
+    estimated_duration = db.Column(db.Integer)
+    status = db.Column(db.String(20))
+    tags = db.Column(db.JSON)
+    notes = db.Column(db.Text)
+    
+    # Version metadata
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    version_note = db.Column(db.Text)
+    is_major_version = db.Column(db.Boolean, default=False)
+    change_summary = db.Column(db.JSON)  # Summary of changes
+    
+    created_at = db.Column(db.DateTime, default=utc_now)
+    
+    # Unique constraint
+    __table_args__ = (db.UniqueConstraint('setlist_id', 'version_number', name='unique_setlist_version'),)
+    
+    # Relationships
+    creator = db.relationship('User', foreign_keys=[created_by])
+    
+    def __init__(self, setlist_id, version_number, name, created_by, **kwargs):
+        self.setlist_id = setlist_id
+        self.version_number = version_number
+        self.name = name
+        self.created_by = created_by
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+    
+    def to_dict(self):
+        """Convert setlist version to dictionary."""
+        return {
+            'id': self.id,
+            'setlist_id': self.setlist_id,
+            'version_number': self.version_number,
+            'name': self.name,
+            'description': self.description,
+            'event_type': self.event_type,
+            'venue': self.venue,
+            'event_date': self.event_date.isoformat() if self.event_date else None,
+            'estimated_duration': self.estimated_duration,
+            'status': self.status,
+            'tags': self.tags,
+            'notes': self.notes,
+            'created_by': self.created_by,
+            'version_note': self.version_note,
+            'is_major_version': self.is_major_version,
+            'change_summary': self.change_summary,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+    
+    def __repr__(self):
+        return f'<SetlistVersion {self.setlist_id}v{self.version_number}>'
+
+
+class SetlistTemplate(db.Model):
+    """Templates for creating reusable setlist structures."""
+    __tablename__ = 'setlist_templates'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text)
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    
+    # Template characteristics
+    category = db.Column(db.String(50))  # worship, concert, wedding, etc.
+    subcategory = db.Column(db.String(50))
+    target_duration = db.Column(db.Integer)  # Target duration in minutes
+    song_count_min = db.Column(db.Integer, default=0)
+    song_count_max = db.Column(db.Integer)
+    
+    # Template configuration
+    default_sections = db.Column(db.JSON, default=list)
+    required_tags = db.Column(db.JSON, default=list)
+    preferred_keys = db.Column(db.JSON, default=list)
+    tempo_guidelines = db.Column(db.JSON, default=dict)
+    
+    # Usage and sharing
+    is_public = db.Column(db.Boolean, default=False)
+    is_system = db.Column(db.Boolean, default=False)
+    usage_count = db.Column(db.Integer, default=0)
+    rating_average = db.Column(db.Numeric(3, 2), default=0.0)
+    rating_count = db.Column(db.Integer, default=0)
+    
+    # Metadata
+    tags = db.Column(db.JSON, default=list)
+    difficulty_level = db.Column(db.String(20), default='intermediate')
+    
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+    
+    # Relationships
+    creator = db.relationship('User', foreign_keys=[created_by], backref='created_setlist_templates')
+    sections = db.relationship('SetlistTemplateSection', backref='template', cascade='all, delete-orphan')
+    
+    def __init__(self, name, created_by, category=None, **kwargs):
+        self.name = name
+        self.created_by = created_by
+        self.category = category
+        
+        # Handle additional parameters
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+    
+    def to_dict(self, include_sections=False):
+        """Convert template to dictionary."""
+        result = {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+            'created_by': self.created_by,
+            'category': self.category,
+            'subcategory': self.subcategory,
+            'target_duration': self.target_duration,
+            'song_count_min': self.song_count_min,
+            'song_count_max': self.song_count_max,
+            'default_sections': self.default_sections,
+            'required_tags': self.required_tags,
+            'preferred_keys': self.preferred_keys,
+            'tempo_guidelines': self.tempo_guidelines,
+            'is_public': self.is_public,
+            'is_system': self.is_system,
+            'usage_count': self.usage_count,
+            'rating_average': float(self.rating_average) if self.rating_average else 0.0,
+            'rating_count': self.rating_count,
+            'tags': self.tags,
+            'difficulty_level': self.difficulty_level,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+        
+        if include_sections:
+            result['sections'] = [section.to_dict() for section in self.sections]
+        
+        return result
+    
+    def __repr__(self):
+        return f'<SetlistTemplate {self.name}>'
+
+
+class SetlistTemplateSection(db.Model):
+    """Sections within setlist templates."""
+    __tablename__ = 'setlist_template_sections'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    template_id = db.Column(db.Integer, db.ForeignKey('setlist_templates.id'), nullable=False)
+    
+    # Section definition
+    section_name = db.Column(db.String(50), nullable=False)
+    section_order = db.Column(db.Integer, nullable=False, default=0)
+    
+    # Section requirements
+    min_songs = db.Column(db.Integer, default=1)
+    max_songs = db.Column(db.Integer)
+    target_duration = db.Column(db.Integer)  # Minutes
+    
+    # Musical guidelines
+    suggested_keys = db.Column(db.JSON, default=list)
+    tempo_range_min = db.Column(db.Integer)
+    tempo_range_max = db.Column(db.Integer)
+    energy_level = db.Column(db.String(20))  # low, medium, high, building, falling
+    
+    # Content guidelines
+    required_tags = db.Column(db.JSON, default=list)
+    preferred_themes = db.Column(db.JSON, default=list)
+    notes = db.Column(db.Text)
+    
+    created_at = db.Column(db.DateTime, default=utc_now)
+    
+    def __init__(self, template_id, section_name, section_order=0, **kwargs):
+        self.template_id = template_id
+        self.section_name = section_name
+        self.section_order = section_order
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+    
+    def to_dict(self):
+        """Convert template section to dictionary."""
+        return {
+            'id': self.id,
+            'template_id': self.template_id,
+            'section_name': self.section_name,
+            'section_order': self.section_order,
+            'min_songs': self.min_songs,
+            'max_songs': self.max_songs,
+            'target_duration': self.target_duration,
+            'suggested_keys': self.suggested_keys,
+            'tempo_range_min': self.tempo_range_min,
+            'tempo_range_max': self.tempo_range_max,
+            'energy_level': self.energy_level,
+            'required_tags': self.required_tags,
+            'preferred_themes': self.preferred_themes,
+            'notes': self.notes,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+    
+    def __repr__(self):
+        return f'<SetlistTemplateSection {self.section_name}>'
+
+
+class SetlistCollaborator(db.Model):
+    """Setlist sharing and collaboration."""
+    __tablename__ = 'setlist_collaborators'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    setlist_id = db.Column(db.Integer, db.ForeignKey('setlists.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    
+    # Permission level
+    permission_level = db.Column(db.String(20), default='view')  # view, comment, edit, admin
+    
+    # Collaboration metadata
+    invited_by = db.Column(db.Integer, db.ForeignKey('users.id'))
+    invited_at = db.Column(db.DateTime, default=utc_now)
+    accepted_at = db.Column(db.DateTime)
+    last_accessed = db.Column(db.DateTime)
+    
+    # Status
+    status = db.Column(db.String(20), default='pending')  # pending, accepted, declined, revoked
+    
+    created_at = db.Column(db.DateTime, default=utc_now)
+    
+    # Unique constraint
+    __table_args__ = (db.UniqueConstraint('setlist_id', 'user_id', name='unique_setlist_collaborator'),)
+    
+    # Relationships
+    user = db.relationship('User', foreign_keys=[user_id], backref='setlist_collaborations')
+    inviter = db.relationship('User', foreign_keys=[invited_by])
+    
+    def __init__(self, setlist_id, user_id, permission_level='view', invited_by=None):
+        self.setlist_id = setlist_id
+        self.user_id = user_id
+        self.permission_level = permission_level
+        self.invited_by = invited_by
+    
+    def to_dict(self, include_user=False):
+        """Convert collaborator to dictionary."""
+        result = {
+            'id': self.id,
+            'setlist_id': self.setlist_id,
+            'user_id': self.user_id,
+            'permission_level': self.permission_level,
+            'invited_by': self.invited_by,
+            'invited_at': self.invited_at.isoformat() if self.invited_at else None,
+            'accepted_at': self.accepted_at.isoformat() if self.accepted_at else None,
+            'last_accessed': self.last_accessed.isoformat() if self.last_accessed else None,
+            'status': self.status,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+        
+        if include_user and self.user:
+            result['user'] = {
+                'id': self.user.id,
+                'email': self.user.email,
+                'display_name': self.user.display_name
+            }
+        
+        return result
+    
+    def __repr__(self):
+        return f'<SetlistCollaborator {self.user_id} on setlist {self.setlist_id}>'
+
+
+class SetlistPerformance(db.Model):
+    """Performance analytics and reporting."""
+    __tablename__ = 'setlist_performances'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    setlist_id = db.Column(db.Integer, db.ForeignKey('setlists.id'), nullable=False)
+    performed_by = db.Column(db.Integer, db.ForeignKey('users.id'))
+    
+    # Performance context
+    performance_date = db.Column(db.DateTime(timezone=True), nullable=False)
+    venue = db.Column(db.String(255))
+    event_type = db.Column(db.String(50))
+    audience_size = db.Column(db.Integer)
+    
+    # Performance metrics
+    total_duration = db.Column(db.Integer)  # Actual total duration in minutes
+    songs_performed = db.Column(db.Integer)
+    songs_skipped = db.Column(db.Integer, default=0)
+    
+    # Quality metrics
+    overall_rating = db.Column(db.Integer)  # 1-5
+    technical_rating = db.Column(db.Integer)  # 1-5
+    audience_engagement = db.Column(db.String(20))  # excellent, good, fair, poor
+    
+    # Analytics
+    notes = db.Column(db.Text)
+    improvements_needed = db.Column(db.Text)
+    highlights = db.Column(db.Text)
+    
+    # Metadata
+    weather_conditions = db.Column(db.String(50))
+    equipment_used = db.Column(db.JSON, default=list)
+    team_members = db.Column(db.JSON, default=list)
+    
+    created_at = db.Column(db.DateTime, default=utc_now)
+    
+    # Relationships
+    performer = db.relationship('User', foreign_keys=[performed_by], backref='setlist_performances')
+    performance_songs = db.relationship('SetlistPerformanceSong', backref='performance', cascade='all, delete-orphan')
+    
+    def __init__(self, setlist_id, performance_date, performed_by=None, **kwargs):
+        self.setlist_id = setlist_id
+        self.performance_date = performance_date
+        self.performed_by = performed_by
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+    
+    def to_dict(self, include_songs=False):
+        """Convert performance to dictionary."""
+        result = {
+            'id': self.id,
+            'setlist_id': self.setlist_id,
+            'performed_by': self.performed_by,
+            'performance_date': self.performance_date.isoformat() if self.performance_date else None,
+            'venue': self.venue,
+            'event_type': self.event_type,
+            'audience_size': self.audience_size,
+            'total_duration': self.total_duration,
+            'songs_performed': self.songs_performed,
+            'songs_skipped': self.songs_skipped,
+            'overall_rating': self.overall_rating,
+            'technical_rating': self.technical_rating,
+            'audience_engagement': self.audience_engagement,
+            'notes': self.notes,
+            'improvements_needed': self.improvements_needed,
+            'highlights': self.highlights,
+            'weather_conditions': self.weather_conditions,
+            'equipment_used': self.equipment_used,
+            'team_members': self.team_members,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+        
+        if include_songs:
+            result['songs'] = [song.to_dict() for song in self.performance_songs]
+        
+        return result
+    
+    def __repr__(self):
+        return f'<SetlistPerformance {self.id} for setlist {self.setlist_id}>'
+
+
+class SetlistPerformanceSong(db.Model):
+    """Individual song performance details within a setlist performance."""
+    __tablename__ = 'setlist_performance_songs'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    performance_id = db.Column(db.Integer, db.ForeignKey('setlist_performances.id'), nullable=False)
+    setlist_song_id = db.Column(db.Integer, db.ForeignKey('setlist_songs.id'), nullable=False)
+    
+    # Performance specifics
+    actual_order = db.Column(db.Integer)  # Order actually performed
+    was_performed = db.Column(db.Boolean, default=True)
+    actual_key = db.Column(db.String(10))
+    actual_tempo = db.Column(db.Integer)
+    actual_duration = db.Column(db.Integer)  # Duration in seconds
+    
+    # Performance quality
+    performance_rating = db.Column(db.Integer)  # 1-5
+    technical_issues = db.Column(db.Text)
+    audience_response = db.Column(db.String(20))
+    
+    # Notes
+    performance_notes = db.Column(db.Text)
+    improvement_notes = db.Column(db.Text)
+    
+    created_at = db.Column(db.DateTime, default=utc_now)
+    
+    # Relationships
+    setlist_song = db.relationship('SetlistSong', backref='performance_records')
+    
+    def __init__(self, performance_id, setlist_song_id, **kwargs):
+        self.performance_id = performance_id
+        self.setlist_song_id = setlist_song_id
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+    
+    def to_dict(self, include_setlist_song=False):
+        """Convert performance song to dictionary."""
+        result = {
+            'id': self.id,
+            'performance_id': self.performance_id,
+            'setlist_song_id': self.setlist_song_id,
+            'actual_order': self.actual_order,
+            'was_performed': self.was_performed,
+            'actual_key': self.actual_key,
+            'actual_tempo': self.actual_tempo,
+            'actual_duration': self.actual_duration,
+            'performance_rating': self.performance_rating,
+            'technical_issues': self.technical_issues,
+            'audience_response': self.audience_response,
+            'performance_notes': self.performance_notes,
+            'improvement_notes': self.improvement_notes,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+        
+        if include_setlist_song and self.setlist_song:
+            result['setlist_song'] = self.setlist_song.to_dict()
+        
+        return result
+    
+    def __repr__(self):
+        return f'<SetlistPerformanceSong {self.setlist_song_id} in performance {self.performance_id}>'
