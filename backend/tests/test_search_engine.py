@@ -35,8 +35,7 @@ def auth_headers():
     """Create authentication headers for test user"""
     with app.app_context():
         # Create test user
-        test_user = User(email='test@example.com')
-        test_user.set_password('password123')
+        test_user = User(email='test@example.com', password='password123')
         db.session.add(test_user)
         db.session.commit()
         
@@ -57,7 +56,7 @@ def sample_songs():
                 title='Amazing Grace',
                 artist='Traditional',
                 content='{title: Amazing Grace}\n{artist: Traditional}\n[G]Amazing [C]grace how [G]sweet the sound',
-                author_id=user.id,
+                user_id=user.id,
                 genre='gospel',
                 song_key='G',
                 difficulty='beginner',
@@ -69,7 +68,7 @@ def sample_songs():
                 title='Hotel California',
                 artist='Eagles',
                 content='{title: Hotel California}\n{artist: Eagles}\n[Am]On a dark desert [F]highway',
-                author_id=user.id,
+                user_id=user.id,
                 genre='rock',
                 song_key='Am',
                 difficulty='intermediate',
@@ -81,7 +80,7 @@ def sample_songs():
                 title='Wonderwall',
                 artist='Oasis',
                 content='{title: Wonderwall}\n{artist: Oasis}\n[Em7]Today is gonna be the day',
-                author_id=user.id,
+                user_id=user.id,
                 genre='rock',
                 song_key='Em',
                 difficulty='beginner',
@@ -93,7 +92,7 @@ def sample_songs():
                 title='La Bamba',
                 artist='Ritchie Valens',
                 content='{title: La Bamba}\n{artist: Ritchie Valens}\n[C]Para bailar la [F]Bamba',
-                author_id=user.id,
+                user_id=user.id,
                 genre='latin',
                 song_key='C',
                 difficulty='intermediate',
@@ -105,7 +104,7 @@ def sample_songs():
                 title='Blackbird',
                 artist='The Beatles',
                 content='{title: Blackbird}\n{artist: The Beatles}\n[G]Blackbird singing in the dead of night',
-                author_id=user.id,
+                user_id=user.id,
                 genre='folk',
                 song_key='G',
                 difficulty='advanced',

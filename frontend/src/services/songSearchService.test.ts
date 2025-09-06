@@ -13,16 +13,37 @@ import {
   SearchQueryParser,
   SearchResultUtils,
   SearchHistoryManager
-} from '../songSearchService';
+} from './songSearchService';
 
 // Mock the apiRequest function
-vi.mock('../apiUtils', () => ({
+vi.mock('../utils/apiUtils', () => ({
   apiRequest: vi.fn()
 }));
 
-import { apiRequest } from '../apiUtils';
+import { apiRequest } from '../utils/apiUtils';
 
 const mockApiRequest = apiRequest as any;
+
+const mockResult = {
+  id: '1',
+  title: 'Amazing Grace',
+  artist: 'Traditional',
+  genre: 'gospel',
+  song_key: 'G',
+  tempo: 80,
+  difficulty: 'beginner',
+  language: 'en',
+  view_count: 100,
+  favorite_count: 10,
+  created_at: '2023-01-01T00:00:00Z',
+  relevance_score: 0.85,
+  match_type: 'title_contains',
+  matched_fields: ['title', 'genre'],
+  highlights: {
+    title: '<mark>Amazing</mark> Grace',
+    artist: 'Traditional'
+  }
+};
 
 describe('SearchQueryParser', () => {
   describe('parseQuery', () => {
@@ -337,7 +358,9 @@ describe('SongSearchService', () => {
     });
 
     it('should handle search cancellation', async () => {
-      mockApiRequest.mockRejectedValueOnce(new Error('AbortError'));
+      const abortError = new Error('AbortError');
+      abortError.name = 'AbortError';
+      mockApiRequest.mockRejectedValueOnce(abortError);
 
       const query = { q: 'test' };
 
@@ -418,7 +441,7 @@ describe('SongSearchService', () => {
       const url = songSearchService.buildSearchUrl(query, 'https://example.com');
       
       expect(url).toContain('https://example.com/search');
-      expect(url).toContain('q=test%20query');
+      expect(url).toContain('q=test+query'); // + encoding for spaces is also valid
       expect(url).toContain('genre=rock');
       expect(url).toContain('difficulty=beginner');
       expect(url).toContain('tags=worship%2Ccontemporary');

@@ -9,7 +9,7 @@
  * - Performance optimization with caching
  */
 
-import { apiRequest, ApiError } from './apiUtils';
+import { apiRequest, ApiError } from '../utils/apiUtils';
 
 // Types for search functionality
 export interface SearchQuery {
@@ -194,7 +194,13 @@ export class SearchQueryParser {
           result.or_terms.push(...currentTerms);
           currentTerms = [];
         }
-        i++;
+        // Add the next term to OR terms if it exists
+        if (i + 1 < terms.length) {
+          result.or_terms.push(terms[i + 1]);
+          i += 2;
+        } else {
+          i++;
+        }
         continue;
       } else if (term.toUpperCase() === 'NOT' && i + 1 < terms.length) {
         result.has_operators = true;
@@ -527,7 +533,5 @@ export class SearchResultUtils {
 
 // Export types and utilities
 export {
-  SearchHistoryManager,
-  SearchQueryParser,
-  SearchResultUtils
+  SearchHistoryManager
 };
