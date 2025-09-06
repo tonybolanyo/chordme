@@ -186,13 +186,14 @@ describe('OperationalTransform', () => {
   });
 
   describe('Complex Transformation Scenarios', () => {
-    it('should handle multiple concurrent insertions', () => {
+    it('should handle multiple sequential insertions', () => {
       const content = 'Hello World';
 
+      // Apply operations sequentially with adjusted positions
       const operations: TextOperation[] = [
-        { type: 'insert', position: 5, content: ' Beautiful', length: 10 },
-        { type: 'insert', position: 0, content: 'Amazing ', length: 8 },
-        { type: 'insert', position: 11, content: '!', length: 1 },
+        { type: 'insert', position: 5, content: ' Beautiful', length: 10 }, // "Hello Beautiful World"
+        { type: 'insert', position: 0, content: 'Amazing ', length: 8 },     // "Amazing Hello Beautiful World" 
+        { type: 'insert', position: content.length + 18 + 8, content: '!', length: 1 }, // At end
       ];
 
       const result = OperationalTransform.applyOperations(content, operations);
@@ -201,6 +202,7 @@ describe('OperationalTransform', () => {
       expect(result).toContain('Beautiful');
       expect(result).toContain('World');
       expect(result).toContain('!');
+      expect(result).toBe('Amazing Hello Beautiful World!');
     });
 
     it('should handle mixed insert and delete operations', () => {
@@ -436,15 +438,10 @@ describe('OperationalTransform', () => {
       const initialContent = 'The quick brown fox jumps over the lazy dog';
 
       const operations: TextOperation[] = [
-        { type: 'insert', position: 0, content: 'Today, ', length: 7 },
-        { type: 'delete', position: 20, length: 5 }, // Remove 'brown'
-        { type: 'insert', position: 20, content: 'red', length: 3 },
-        {
-          type: 'insert',
-          position: initialContent.length + 4,
-          content: '.',
-          length: 1,
-        },
+        { type: 'insert', position: 0, content: 'Today, ', length: 7 },  // "Today, The quick brown fox..."
+        { type: 'delete', position: 17, length: 5 }, // Remove 'brown' (now at position 17 after "Today, The quick ")
+        { type: 'insert', position: 17, content: 'red', length: 3 },   // Insert 'red' at same position
+        { type: 'insert', position: initialContent.length + 7 - 5 + 3, content: '.', length: 1 }, // At end
       ];
 
       const result = OperationalTransform.applyOperations(

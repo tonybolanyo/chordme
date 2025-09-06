@@ -1,57 +1,73 @@
 // Operational Transformation engine for real-time collaborative editing
-import type { TextOperation } from '../types/collaboration';
+import type { 
+  TextOperation, 
+  ChordProOperation, 
+  VectorClock, 
+  OrderedOperation, 
+  OperationHistory, 
+  DocumentCheckpoint,
+  RecoveryState,
+  OperationFailure
+} from '../types/collaboration';
 
 /**
  * Operational Transformation (OT) class for handling concurrent text editing
  * Based on the operational transformation algorithm for maintaining consistency
  * in collaborative text editing environments.
+ * 
+ * Enhanced with:
+ * - Vector clocks for operation ordering
+ * - Undo/redo functionality
+ * - ChordPro-specific operations
+ * - Recovery mechanisms
+ * - Performance optimizations
  */
 export class OperationalTransform {
   /**
    * Transform an operation against another operation that was applied concurrently
    * This is the core of OT - ensuring operations can be applied in any order
    * while maintaining document consistency.
+   * 
+   * The function transforms op2 against op1 (op1 has priority in case of conflicts)
    */
   static transform(op1: TextOperation, op2: TextOperation): TextOperation {
-    // If both operations are at different positions, no transformation needed
-    if (op1.type === 'retain' && op2.type === 'retain') {
-      return op1;
+    // Retain operations don't affect transformations
+    if (op1.type === 'retain' || op2.type === 'retain') {
+      return op2;
     }
+
+    const pos1 = op1.position || 0;
+    const pos2 = op2.position || 0;
 
     // Handle insert vs insert conflicts
     if (op1.type === 'insert' && op2.type === 'insert') {
-      const pos1 = op1.position || 0;
-      const pos2 = op2.position || 0;
-
-      if (pos1 <= pos2) {
-        // op1 comes before op2, adjust op2's position
+      if (pos1 < pos2 || (pos1 === pos2 && op1.content && op2.content && op1.content <= op2.content)) {
+        // op1 comes before op2 (or has lexicographic priority), adjust op2's position
         return {
           ...op2,
           position: pos2 + (op1.content?.length || 0),
         };
       } else {
-        // op2 comes before op1, no change needed for op1
-        return op1;
+        // op2 comes before op1, no change needed
+        return op2;
       }
     }
 
     // Handle insert vs delete conflicts
     if (op1.type === 'insert' && op2.type === 'delete') {
-      const insertPos = op1.position || 0;
-      const deletePos = op2.position || 0;
-      const deleteEnd = deletePos + op2.length;
+      const deleteEnd = pos2 + op2.length;
 
-      if (insertPos <= deletePos) {
+      if (pos1 <= pos2) {
         // Insert comes before delete, adjust delete position
         return {
           ...op2,
-          position: deletePos + (op1.content?.length || 0),
+          position: pos2 + (op1.content?.length || 0),
         };
-      } else if (insertPos > deleteEnd) {
+      } else if (pos1 >= deleteEnd) {
         // Insert comes after delete, no change needed
-        return op1;
+        return op2;
       } else {
-        // Insert is within delete range, adjust accordingly
+        // Insert is within delete range, extend delete length
         return {
           ...op2,
           length: op2.length + (op1.content?.length || 0),
@@ -59,38 +75,33 @@ export class OperationalTransform {
       }
     }
 
-    // Handle delete vs insert conflicts (symmetric to above)
+    // Handle delete vs insert conflicts
     if (op1.type === 'delete' && op2.type === 'insert') {
-      const deletePos = op1.position || 0;
-      const deleteEnd = deletePos + op1.length;
-      const insertPos = op2.position || 0;
+      const deleteEnd = pos1 + op1.length;
 
-      if (insertPos <= deletePos) {
+      if (pos2 <= pos1) {
         // Insert comes before delete, adjust delete position
-        return {
-          ...op1,
-          position: deletePos + (op2.content?.length || 0),
-        };
-      } else if (insertPos > deleteEnd) {
-        // Insert comes after delete, no change needed
         return op2;
-      } else {
-        // Insert is within delete range
+      } else if (pos2 >= deleteEnd) {
+        // Insert comes after delete, adjust insert position
         return {
           ...op2,
-          position: deletePos,
+          position: pos2 - op1.length,
+        };
+      } else {
+        // Insert is within delete range, move to delete start
+        return {
+          ...op2,
+          position: pos1,
         };
       }
     }
 
     // Handle delete vs delete conflicts
     if (op1.type === 'delete' && op2.type === 'delete') {
-      const pos1 = op1.position || 0;
       const end1 = pos1 + op1.length;
-      const pos2 = op2.position || 0;
       const end2 = pos2 + op2.length;
 
-      // No overlap
       if (end1 <= pos2) {
         // op1 comes before op2, adjust op2's position
         return {
@@ -98,28 +109,33 @@ export class OperationalTransform {
           position: pos2 - op1.length,
         };
       } else if (end2 <= pos1) {
-        // op2 comes before op1, adjust op1's position
-        return {
-          ...op1,
-          position: pos1 - op2.length,
-        };
+        // op2 comes before op1, no change needed
+        return op2;
       } else {
-        // Overlapping deletes - complex case, merge them
-        const newPos = Math.min(pos1, pos2);
-        const newEnd = Math.max(end1, end2);
-        return {
-          type: 'delete',
-          position: newPos,
-          length:
-            newEnd -
-            newPos -
-            Math.max(0, Math.min(end1, end2) - Math.max(pos1, pos2)),
-        };
+        // Overlapping deletes - calculate new delete operation
+        const overlapStart = Math.max(pos1, pos2);
+        const overlapEnd = Math.min(end1, end2);
+        const overlapLength = Math.max(0, overlapEnd - overlapStart);
+        
+        if (pos2 < pos1) {
+          // op2 starts before op1, keep the non-overlapping part
+          return {
+            ...op2,
+            length: Math.max(0, op2.length - overlapLength),
+          };
+        } else {
+          // op2 starts after or at op1, adjust position and length
+          return {
+            ...op2,
+            position: pos1,
+            length: Math.max(0, end2 - end1),
+          };
+        }
       }
     }
 
     // Default case - return the operation unchanged
-    return op1;
+    return op2;
   }
 
   /**
@@ -182,15 +198,42 @@ export class OperationalTransform {
   static applyOperation(content: string, operation: TextOperation): string {
     switch (operation.type) {
       case 'insert':
-        const insertPos = operation.position || 0;
+        let insertPos = operation.position || 0;
         const insertContent = operation.content || '';
+        
+        // Handle negative positions by treating as 0
+        if (insertPos < 0) {
+          insertPos = 0;
+        }
+        
+        // Handle positions beyond content length
+        if (insertPos > content.length) {
+          insertPos = content.length;
+        }
+        
         return (
           content.slice(0, insertPos) + insertContent + content.slice(insertPos)
         );
 
       case 'delete':
-        const deletePos = operation.position || 0;
-        const deleteEnd = deletePos + operation.length;
+        let deletePos = operation.position || 0;
+        let deleteEnd = deletePos + operation.length;
+        
+        // Handle negative positions
+        if (deletePos < 0) {
+          deletePos = 0;
+        }
+        
+        // Handle positions beyond content length
+        if (deletePos >= content.length) {
+          return content;
+        }
+        
+        // Clamp delete end to content length
+        if (deleteEnd > content.length) {
+          deleteEnd = content.length;
+        }
+        
         return content.slice(0, deletePos) + content.slice(deleteEnd);
 
       case 'retain':
@@ -451,5 +494,602 @@ export class OperationalTransform {
     operations: TextOperation[]
   ): number {
     return initialVersion + operations.length;
+  }
+
+  // === VECTOR CLOCK SYSTEM ===
+
+  /**
+   * Create a new vector clock
+   */
+  static createVectorClock(userId: string): VectorClock {
+    return { [userId]: 0 };
+  }
+
+  /**
+   * Increment vector clock for a user
+   */
+  static incrementVectorClock(clock: VectorClock, userId: string): VectorClock {
+    return {
+      ...clock,
+      [userId]: (clock[userId] || 0) + 1,
+    };
+  }
+
+  /**
+   * Merge two vector clocks (taking maximum of each user's clock)
+   */
+  static mergeVectorClocks(clock1: VectorClock, clock2: VectorClock): VectorClock {
+    const merged: VectorClock = { ...clock1 };
+    
+    for (const userId in clock2) {
+      merged[userId] = Math.max(merged[userId] || 0, clock2[userId]);
+    }
+    
+    return merged;
+  }
+
+  /**
+   * Compare two vector clocks
+   * Returns: 'before', 'after', 'concurrent', or 'equal'
+   */
+  static compareVectorClocks(clock1: VectorClock, clock2: VectorClock): 'before' | 'after' | 'concurrent' | 'equal' {
+    const allUsers = new Set([...Object.keys(clock1), ...Object.keys(clock2)]);
+    
+    let clock1Greater = false;
+    let clock2Greater = false;
+    
+    for (const userId of allUsers) {
+      const val1 = clock1[userId] || 0;
+      const val2 = clock2[userId] || 0;
+      
+      if (val1 > val2) {
+        clock1Greater = true;
+      } else if (val2 > val1) {
+        clock2Greater = true;
+      }
+    }
+    
+    if (clock1Greater && !clock2Greater) return 'after';
+    if (clock2Greater && !clock1Greater) return 'before';
+    if (!clock1Greater && !clock2Greater) return 'equal';
+    return 'concurrent';
+  }
+
+  /**
+   * Check if operation can be applied based on vector clock dependencies
+   */
+  static canApplyOperation(operation: OrderedOperation, currentClock: VectorClock): boolean {
+    const comparison = this.compareVectorClocks(currentClock, operation.vectorClock);
+    return comparison === 'after' || comparison === 'equal';
+  }
+
+  /**
+   * Order operations based on vector clocks and timestamps
+   */
+  static orderOperations(operations: OrderedOperation[]): OrderedOperation[] {
+    return operations.sort((a, b) => {
+      const clockComparison = this.compareVectorClocks(a.vectorClock, b.vectorClock);
+      
+      if (clockComparison === 'before') return -1;
+      if (clockComparison === 'after') return 1;
+      
+      // For concurrent operations, use timestamp as tiebreaker
+      if (clockComparison === 'concurrent') {
+        return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+      }
+      
+      return 0;
+    });
+  }
+
+  // === OPERATION HISTORY AND UNDO/REDO ===
+
+  /**
+   * Create a new operation history
+   */
+  static createOperationHistory(maxSize = 100): OperationHistory {
+    return {
+      operations: [],
+      undoStack: [],
+      redoStack: [],
+      currentIndex: -1,
+      maxHistorySize: maxSize,
+    };
+  }
+
+  /**
+   * Add operation to history
+   */
+  static addToHistory(history: OperationHistory, operation: OrderedOperation): OperationHistory {
+    const newOperations = [...history.operations];
+    const newUndoStack = [...history.undoStack];
+    
+    // Add operation to history
+    newOperations.push(operation);
+    
+    // Trim history if too large
+    if (newOperations.length > history.maxHistorySize) {
+      newOperations.shift();
+    }
+    
+    // Add to undo stack if it's not an undo operation
+    if (!operation.operation.type.includes('undo')) {
+      newUndoStack.push(operation.id);
+    }
+    
+    return {
+      ...history,
+      operations: newOperations,
+      undoStack: newUndoStack,
+      redoStack: [], // Clear redo stack when new operation is added
+      currentIndex: newOperations.length - 1,
+    };
+  }
+
+  /**
+   * Generate undo operation for a given operation
+   */
+  static generateUndoOperation(
+    operation: OrderedOperation,
+    originalContent: string,
+    userId: string,
+    vectorClock: VectorClock
+  ): OrderedOperation | null {
+    if (operation.operation.type === 'insert') {
+      const textOp = operation.operation as TextOperation;
+      return {
+        id: `undo-${operation.id}`,
+        operation: {
+          type: 'delete',
+          position: textOp.position,
+          length: textOp.content?.length || 0,
+        },
+        vectorClock: this.incrementVectorClock(vectorClock, userId),
+        userId,
+        timestamp: new Date().toISOString(),
+        dependencies: [operation.id],
+      };
+    }
+    
+    if (operation.operation.type === 'delete') {
+      const textOp = operation.operation as TextOperation;
+      const deletedContent = originalContent.slice(
+        textOp.position || 0,
+        (textOp.position || 0) + textOp.length
+      );
+      
+      return {
+        id: `undo-${operation.id}`,
+        operation: {
+          type: 'insert',
+          position: textOp.position,
+          content: deletedContent,
+          length: deletedContent.length,
+        },
+        vectorClock: this.incrementVectorClock(vectorClock, userId),
+        userId,
+        timestamp: new Date().toISOString(),
+        dependencies: [operation.id],
+      };
+    }
+    
+    return null;
+  }
+
+  /**
+   * Perform undo operation
+   */
+  static performUndo(
+    history: OperationHistory,
+    currentContent: string,
+    userId: string,
+    vectorClock: VectorClock
+  ): { undoOperation: OrderedOperation | null; newHistory: OperationHistory } {
+    if (history.undoStack.length === 0) {
+      return { undoOperation: null, newHistory: history };
+    }
+    
+    const lastOperationId = history.undoStack[history.undoStack.length - 1];
+    const lastOperation = history.operations.find(op => op.id === lastOperationId);
+    
+    if (!lastOperation) {
+      return { undoOperation: null, newHistory: history };
+    }
+    
+    const undoOperation = this.generateUndoOperation(lastOperation, currentContent, userId, vectorClock);
+    
+    const newUndoStack = history.undoStack.slice(0, -1);
+    const newRedoStack = [...history.redoStack, lastOperationId];
+    
+    return {
+      undoOperation,
+      newHistory: {
+        ...history,
+        undoStack: newUndoStack,
+        redoStack: newRedoStack,
+      },
+    };
+  }
+
+  /**
+   * Perform redo operation
+   */
+  static performRedo(
+    history: OperationHistory,
+    currentContent: string,
+    userId: string,
+    vectorClock: VectorClock
+  ): { redoOperation: OrderedOperation | null; newHistory: OperationHistory } {
+    if (history.redoStack.length === 0) {
+      return { redoOperation: null, newHistory: history };
+    }
+    
+    const redoOperationId = history.redoStack[history.redoStack.length - 1];
+    const redoOperation = history.operations.find(op => op.id === redoOperationId);
+    
+    if (!redoOperation) {
+      return { redoOperation: null, newHistory: history };
+    }
+    
+    const newRedoStack = history.redoStack.slice(0, -1);
+    const newUndoStack = [...history.undoStack, redoOperationId];
+    
+    return {
+      redoOperation,
+      newHistory: {
+        ...history,
+        undoStack: newUndoStack,
+        redoStack: newRedoStack,
+      },
+    };
+  }
+
+  // === CHORDPRO-SPECIFIC OPERATIONS ===
+
+  /**
+   * Apply ChordPro-specific operation to content
+   */
+  static applyChordProOperation(content: string, operation: ChordProOperation): string {
+    switch (operation.type) {
+      case 'chord-insert':
+        if (operation.chordData) {
+          const insertPos = Math.max(0, Math.min(operation.position, content.length));
+          const chordNotation = `[${operation.chordData.original}]`;
+          return content.slice(0, insertPos) + chordNotation + content.slice(insertPos);
+        }
+        break;
+        
+      case 'chord-modify':
+        if (operation.chordData) {
+          // Find and replace existing chord at position
+          const chordPattern = /\[[^\]]+\]/g;
+          let match;
+          
+          while ((match = chordPattern.exec(content)) !== null) {
+            if (match.index <= operation.position && match.index + match[0].length > operation.position) {
+              const newChord = `[${operation.chordData.original}]`;
+              return content.slice(0, match.index) + newChord + content.slice(match.index + match[0].length);
+            }
+          }
+        }
+        break;
+        
+      case 'directive-insert':
+        if (operation.directiveData) {
+          const insertPos = Math.max(0, Math.min(operation.position, content.length));
+          const directive = `{${operation.directiveData.type}: ${operation.directiveData.value}}`;
+          return content.slice(0, insertPos) + directive + content.slice(insertPos);
+        }
+        break;
+        
+      case 'directive-modify':
+        if (operation.directiveData) {
+          // Find and replace existing directive at position
+          const directivePattern = /\{[^}]+\}/g;
+          let match;
+          
+          while ((match = directivePattern.exec(content)) !== null) {
+            if (match.index <= operation.position && match.index + match[0].length > operation.position) {
+              const newDirective = `{${operation.directiveData.type}: ${operation.directiveData.value}}`;
+              return content.slice(0, match.index) + newDirective + content.slice(match.index + match[0].length);
+            }
+          }
+        }
+        break;
+        
+      case 'directive-delete':
+        // Find and delete directive at position
+        const directivePattern = /\{[^}]+\}/g;
+        let match;
+        
+        while ((match = directivePattern.exec(content)) !== null) {
+          if (match.index <= operation.position && match.index + match[0].length > operation.position) {
+            return content.slice(0, match.index) + content.slice(match.index + match[0].length);
+          }
+        }
+        break;
+    }
+    
+    return content;
+  }
+
+  /**
+   * Transform ChordPro operation against text operation
+   */
+  static transformChordProOperation(
+    chordProOp: ChordProOperation,
+    textOp: TextOperation
+  ): ChordProOperation {
+    const textPos = textOp.position || 0;
+    
+    if (textOp.type === 'insert') {
+      if (textPos <= chordProOp.position) {
+        return {
+          ...chordProOp,
+          position: chordProOp.position + (textOp.content?.length || 0),
+        };
+      }
+    } else if (textOp.type === 'delete') {
+      const deleteEnd = textPos + textOp.length;
+      
+      if (deleteEnd <= chordProOp.position) {
+        return {
+          ...chordProOp,
+          position: chordProOp.position - textOp.length,
+        };
+      } else if (textPos < chordProOp.position) {
+        // ChordPro operation is within deleted range, move to delete start
+        return {
+          ...chordProOp,
+          position: textPos,
+        };
+      }
+    }
+    
+    return chordProOp;
+  }
+
+  /**
+   * Extract chords from ChordPro content
+   */
+  static extractChordsFromContent(content: string): Array<{ chord: string; position: number }> {
+    const chords: Array<{ chord: string; position: number }> = [];
+    const chordPattern = /\[([^\]]+)\]/g;
+    let match;
+    
+    while ((match = chordPattern.exec(content)) !== null) {
+      chords.push({
+        chord: match[1],
+        position: match.index,
+      });
+    }
+    
+    return chords;
+  }
+
+  /**
+   * Extract directives from ChordPro content
+   */
+  static extractDirectivesFromContent(content: string): Array<{ type: string; value: string; position: number }> {
+    const directives: Array<{ type: string; value: string; position: number }> = [];
+    const directivePattern = /\{([^:}]+):\s*([^}]+)\}/g;
+    let match;
+    
+    while ((match = directivePattern.exec(content)) !== null) {
+      directives.push({
+        type: match[1],
+        value: match[2],
+        position: match.index,
+      });
+    }
+    
+    return directives;
+  }
+
+  // === RECOVERY MECHANISMS ===
+
+  /**
+   * Create document checkpoint for recovery
+   */
+  static createCheckpoint(
+    content: string,
+    version: number,
+    vectorClock: VectorClock,
+    operationId: string
+  ): DocumentCheckpoint {
+    return {
+      id: `checkpoint-${Date.now()}`,
+      content,
+      version,
+      vectorClock: { ...vectorClock },
+      timestamp: new Date().toISOString(),
+      operationId,
+    };
+  }
+
+  /**
+   * Attempt to recover from operation failure
+   */
+  static attemptRecovery(
+    failure: OperationFailure,
+    checkpoints: DocumentCheckpoint[],
+    operations: OrderedOperation[]
+  ): { success: boolean; recoveredContent?: string; recoveryStrategy: string } {
+    // Strategy 1: Retry with exponential backoff
+    if (failure.retryCount < 3 && failure.canRecover) {
+      return {
+        success: false,
+        recoveryStrategy: 'retry',
+      };
+    }
+    
+    // Strategy 2: Skip failed operation and continue
+    if (failure.canRecover) {
+      return {
+        success: true,
+        recoveryStrategy: 'skip',
+      };
+    }
+    
+    // Strategy 3: Rollback to last known good state
+    if (checkpoints.length > 0) {
+      const lastCheckpoint = checkpoints[checkpoints.length - 1];
+      
+      // Replay operations from checkpoint
+      let content = lastCheckpoint.content;
+      const operationsAfterCheckpoint = operations.filter(
+        op => new Date(op.timestamp) > new Date(lastCheckpoint.timestamp) && op.id !== failure.operationId
+      );
+      
+      try {
+        for (const op of operationsAfterCheckpoint) {
+          if (op.operation.type === 'insert' || op.operation.type === 'delete' || op.operation.type === 'retain') {
+            content = this.applyOperation(content, op.operation as TextOperation);
+          }
+        }
+        
+        return {
+          success: true,
+          recoveredContent: content,
+          recoveryStrategy: 'rollback',
+        };
+      } catch (error) {
+        return {
+          success: false,
+          recoveryStrategy: 'manual',
+        };
+      }
+    }
+    
+    return {
+      success: false,
+      recoveryStrategy: 'manual',
+    };
+  }
+
+  /**
+   * Validate operation sequence for potential issues
+   */
+  static validateOperationForRecovery(
+    operation: OrderedOperation,
+    currentContent: string,
+    currentVectorClock: VectorClock
+  ): { valid: boolean; issues: string[] } {
+    const issues: string[] = [];
+    
+    // Check vector clock dependencies
+    if (!this.canApplyOperation(operation, currentVectorClock)) {
+      issues.push('Vector clock dependency not satisfied');
+    }
+    
+    // Check operation bounds
+    if (operation.operation.type === 'insert' || operation.operation.type === 'delete') {
+      const textOp = operation.operation as TextOperation;
+      const pos = textOp.position || 0;
+      
+      if (pos < 0) {
+        issues.push('Negative position');
+      }
+      
+      if (textOp.type === 'insert' && pos > currentContent.length) {
+        issues.push('Insert position beyond content length');
+      }
+      
+      if (textOp.type === 'delete') {
+        if (pos >= currentContent.length) {
+          issues.push('Delete position beyond content length');
+        }
+        if (pos + textOp.length > currentContent.length) {
+          issues.push('Delete length extends beyond content');
+        }
+      }
+    }
+    
+    return {
+      valid: issues.length === 0,
+      issues,
+    };
+  }
+
+  // === PERFORMANCE OPTIMIZATIONS ===
+
+  /**
+   * Compress operation sequence by merging adjacent operations
+   */
+  static compressOperations(operations: TextOperation[]): TextOperation[] {
+    if (operations.length <= 1) return operations;
+    
+    const compressed: TextOperation[] = [];
+    let current = operations[0];
+    
+    for (let i = 1; i < operations.length; i++) {
+      const next = operations[i];
+      const merged = this.compose(current, next);
+      
+      if (merged.length === 1) {
+        // Successfully merged
+        current = merged[0];
+      } else {
+        // Cannot merge, add current and move to next
+        compressed.push(current);
+        current = next;
+      }
+    }
+    
+    compressed.push(current);
+    return compressed;
+  }
+
+  /**
+   * Optimize operation sequence for bandwidth
+   */
+  static optimizeForBandwidth(operations: OrderedOperation[]): OrderedOperation[] {
+    // Group operations by user and time window
+    const groups = new Map<string, OrderedOperation[]>();
+    
+    for (const op of operations) {
+      const key = `${op.userId}-${Math.floor(new Date(op.timestamp).getTime() / 1000)}`;
+      if (!groups.has(key)) {
+        groups.set(key, []);
+      }
+      groups.get(key)!.push(op);
+    }
+    
+    // Compress operations within each group
+    const optimized: OrderedOperation[] = [];
+    
+    for (const group of groups.values()) {
+      if (group.length === 1) {
+        optimized.push(group[0]);
+        continue;
+      }
+      
+      // Try to compress text operations
+      const textOps = group
+        .filter(op => op.operation.type === 'insert' || op.operation.type === 'delete' || op.operation.type === 'retain')
+        .map(op => op.operation as TextOperation);
+      
+      if (textOps.length === group.length) {
+        const compressed = this.compressOperations(textOps);
+        
+        if (compressed.length < textOps.length) {
+          // Create new optimized operations
+          const baseOp = group[0];
+          for (let i = 0; i < compressed.length; i++) {
+            optimized.push({
+              ...baseOp,
+              id: `${baseOp.id}-compressed-${i}`,
+              operation: compressed[i],
+            });
+          }
+          continue;
+        }
+      }
+      
+      // No compression possible, add all operations
+      optimized.push(...group);
+    }
+    
+    return optimized;
   }
 }
