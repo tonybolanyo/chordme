@@ -1,0 +1,438 @@
+/* BandCoordination.css - Styles for band coordination component */
+
+.band-coordination {
+  max-width: 100%;
+}
+
+.coordination-start {
+  text-align: center;
+  padding: 3rem 1.5rem;
+}
+
+.coordination-start h3 {
+  margin: 0 0 1rem 0;
+  color: #343a40;
+  font-size: 1.5rem;
+}
+
+.coordination-start p {
+  color: #6c757d;
+  margin-bottom: 2rem;
+  font-size: 1.1rem;
+}
+
+.coordination-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.rehearsal-btn {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.rehearsal-btn:hover {
+  background: #218838;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.performance-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.performance-btn:hover {
+  background: #c82333;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+.coordination-active {
+  padding: 0;
+}
+
+.coordination-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 2px solid #e9ecef;
+  margin-bottom: 2rem;
+}
+
+.mode-indicator {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.rehearsal-mode {
+  background: #d4edda;
+  color: #155724;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 600;
+  border: 1px solid #c3e6cb;
+}
+
+.performance-mode {
+  background: #f8d7da;
+  color: #721c24;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 600;
+  border: 1px solid #f5c6cb;
+}
+
+.stop-btn {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.stop-btn:hover {
+  background: #545b62;
+}
+
+.band-layout h4 {
+  margin: 0 0 1.5rem 0;
+  color: #343a40;
+  font-size: 1.3rem;
+}
+
+.role-sections {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.role-section {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 1.5rem;
+  border: 1px solid #e9ecef;
+}
+
+.role-section h5 {
+  margin: 0 0 1rem 0;
+  color: #495057;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.role-section.vocals {
+  border-left: 4px solid #007bff;
+}
+
+.role-section.guitars {
+  border-left: 4px solid #fd7e14;
+}
+
+.role-section.rhythm {
+  border-left: 4px solid #28a745;
+}
+
+.role-section.tech {
+  border-left: 4px solid #6f42c1;
+}
+
+.role-members {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.band-member {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.band-member:hover {
+  border-color: #007bff;
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.1);
+}
+
+.band-member.lead {
+  border-left: 4px solid #ffc107;
+  background: #fff3cd;
+}
+
+.member-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 1.2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.member-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.member-info .name {
+  font-weight: 600;
+  color: #343a40;
+  font-size: 1rem;
+}
+
+.member-info .role {
+  color: #6c757d;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.member-info .instrument {
+  color: #007bff;
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+.member-info .status {
+  font-size: 0.8rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 12px;
+  font-weight: 500;
+  text-transform: capitalize;
+  align-self: flex-start;
+}
+
+.status.active {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status.idle {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status.away {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.status.offline {
+  background: #e2e3e5;
+  color: #383d41;
+}
+
+.ready-indicator {
+  font-size: 1.2rem;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.coordination-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.ready-status {
+  background: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.ready-status h4 {
+  margin: 0 0 1rem 0;
+  color: #343a40;
+  font-size: 1.1rem;
+}
+
+.ready-toggle {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.ready-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-weight: 500;
+  color: #495057;
+}
+
+.ready-checkbox input[type="checkbox"] {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #007bff;
+  border-radius: 4px;
+  position: relative;
+  cursor: pointer;
+}
+
+.ready-checkbox input[type="checkbox"]:checked {
+  background: #007bff;
+}
+
+.ready-checkbox input[type="checkbox"]:checked::after {
+  content: '✓';
+  position: absolute;
+  color: white;
+  font-size: 14px;
+  top: -2px;
+  left: 2px;
+  font-weight: bold;
+}
+
+.quick-communication {
+  background: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.quick-communication h4 {
+  margin: 0 0 1rem 0;
+  color: #343a40;
+  font-size: 1.1rem;
+}
+
+.message-input {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.message-input input {
+  flex: 1;
+  padding: 0.75rem;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.message-input input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.message-input button {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.message-input button:hover:not(:disabled) {
+  background: #0056b3;
+}
+
+.message-input button:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+.current-leader {
+  background: #e7f3ff;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid #b8daff;
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.current-leader h4 {
+  margin: 0 0 0.5rem 0;
+  color: #0056b3;
+  font-size: 1.1rem;
+}
+
+.leader-info {
+  font-weight: 600;
+  color: #0056b3;
+  font-size: 1.1rem;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .coordination-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .coordination-header {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+  
+  .role-sections {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .coordination-controls {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .band-member {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .member-info {
+    align-items: center;
+  }
+}

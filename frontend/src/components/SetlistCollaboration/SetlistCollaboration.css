@@ -1,0 +1,217 @@
+/* SetlistCollaboration.css - Styles for setlist collaboration features */
+
+.setlist-collaboration {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.setlist-collaboration-error {
+  padding: 2rem;
+  text-align: center;
+}
+
+.error-message {
+  background: #fee;
+  border: 1px solid #fcc;
+  border-radius: 8px;
+  padding: 1.5rem;
+  color: #c33;
+}
+
+.error-message h3 {
+  margin: 0 0 1rem 0;
+  color: #c33;
+}
+
+.collaboration-header {
+  background: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.collaboration-status {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.status-indicator {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.status-indicator.connected {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.status-indicator.disconnected {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.collaboration-mode {
+  padding: 0.5rem 1rem;
+  background: #e7f3ff;
+  color: #0056b3;
+  border-radius: 20px;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.collaboration-tabs {
+  display: flex;
+  border-bottom: 1px solid #dee2e6;
+  background: #f8f9fa;
+}
+
+.collaboration-tabs .tab {
+  background: none;
+  border: none;
+  padding: 1rem 1.5rem;
+  cursor: pointer;
+  font-weight: 500;
+  color: #6c757d;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.collaboration-tabs .tab:hover {
+  background: rgba(0, 123, 255, 0.1);
+  color: #007bff;
+}
+
+.collaboration-tabs .tab.active {
+  color: #007bff;
+  border-bottom-color: #007bff;
+  background: white;
+}
+
+.collaboration-content {
+  padding: 1.5rem;
+  min-height: 400px;
+}
+
+.mobile-disabled {
+  padding: 3rem;
+  text-align: center;
+  color: #6c757d;
+  font-style: italic;
+}
+
+/* Button styles */
+.btn-primary {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-primary:hover {
+  background: #0056b3;
+}
+
+.btn-primary:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: #545b62;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .collaboration-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+  
+  .collaboration-status {
+    justify-content: center;
+  }
+  
+  .collaboration-tabs {
+    flex-direction: column;
+  }
+  
+  .collaboration-tabs .tab {
+    text-align: center;
+    border-bottom: 1px solid #dee2e6;
+    border-right: none;
+  }
+  
+  .collaboration-tabs .tab.active {
+    border-bottom: 1px solid #dee2e6;
+    border-left: 3px solid #007bff;
+  }
+  
+  .collaboration-content {
+    padding: 1rem;
+  }
+}
+
+/* Realtime participants styles */
+.realtime-participants {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.participant-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 500;
+  font-size: 0.8rem;
+  position: relative;
+}
+
+.participant-avatar.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 10px;
+  height: 10px;
+  background: #28a745;
+  border: 2px solid white;
+  border-radius: 50%;
+}
+
+.participant-count {
+  margin-left: 0.5rem;
+  color: #6c757d;
+  font-size: 0.9rem;
+}

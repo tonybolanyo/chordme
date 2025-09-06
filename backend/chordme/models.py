@@ -1996,7 +1996,7 @@ class SetlistTemplateSection(db.Model):
 
 
 class SetlistCollaborator(db.Model):
-    """Setlist sharing and collaboration."""
+    """Setlist sharing and collaboration with role-based band coordination."""
     __tablename__ = 'setlist_collaborators'
     
     id = db.Column(db.Integer, primary_key=True)
@@ -2005,6 +2005,22 @@ class SetlistCollaborator(db.Model):
     
     # Permission level
     permission_level = db.Column(db.String(20), default='view')  # view, comment, edit, admin
+    
+    # Band role coordination (NEW)
+    band_role = db.Column(db.String(30))  # lead, rhythm, bass, drums, keys, vocals, sound_engineer, etc.
+    instrument = db.Column(db.String(50))  # primary instrument for this collaborator
+    is_lead_for_role = db.Column(db.Boolean, default=False)  # lead guitarist, lead vocalist, etc.
+    backup_roles = db.Column(db.JSON, default=list)  # additional roles this person can fill
+    
+    # External sharing capabilities (NEW)
+    external_access_level = db.Column(db.String(20))  # full, limited, view_only, none
+    can_download_files = db.Column(db.Boolean, default=False)
+    can_view_contact_info = db.Column(db.Boolean, default=False)
+    external_notes = db.Column(db.Text)  # notes for external collaborators (venues, sound engineers)
+    
+    # Performance preparation (NEW)
+    preparation_tasks = db.Column(db.JSON, default=list)  # assigned preparation tasks
+    task_completion_status = db.Column(db.JSON, default=dict)  # task_id -> completion status
     
     # Collaboration metadata
     invited_by = db.Column(db.Integer, db.ForeignKey('users.id'))
@@ -2037,6 +2053,16 @@ class SetlistCollaborator(db.Model):
             'setlist_id': self.setlist_id,
             'user_id': self.user_id,
             'permission_level': self.permission_level,
+            'band_role': self.band_role,
+            'instrument': self.instrument,
+            'is_lead_for_role': self.is_lead_for_role,
+            'backup_roles': self.backup_roles,
+            'external_access_level': self.external_access_level,
+            'can_download_files': self.can_download_files,
+            'can_view_contact_info': self.can_view_contact_info,
+            'external_notes': self.external_notes,
+            'preparation_tasks': self.preparation_tasks,
+            'task_completion_status': self.task_completion_status,
             'invited_by': self.invited_by,
             'invited_at': self.invited_at.isoformat() if self.invited_at else None,
             'accepted_at': self.accepted_at.isoformat() if self.accepted_at else None,
@@ -2202,3 +2228,223 @@ class SetlistPerformanceSong(db.Model):
     
     def __repr__(self):
         return f'<SetlistPerformanceSong {self.setlist_song_id} in performance {self.performance_id}>'
+
+
+class SetlistComment(db.Model):
+    """Comments and annotations for setlist items."""
+    __tablename__ = 'setlist_comments'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    setlist_id = db.Column(db.Integer, db.ForeignKey('setlists.id'), nullable=False)
+    setlist_song_id = db.Column(db.Integer, db.ForeignKey('setlist_songs.id'), nullable=True)  # null for general comments
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    parent_comment_id = db.Column(db.Integer, db.ForeignKey('setlist_comments.id'), nullable=True)  # for threaded comments
+    
+    # Comment content
+    content = db.Column(db.Text, nullable=False)
+    comment_type = db.Column(db.String(30), default='general')  # general, suggestion, arrangement, technical, performance
+    priority = db.Column(db.String(10), default='normal')  # low, normal, high, urgent
+    
+    # Status tracking
+    is_resolved = db.Column(db.Boolean, default=False)
+    resolved_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    resolved_at = db.Column(db.DateTime)
+    
+    # Positioning for inline comments
+    target_element = db.Column(db.String(50))  # song_title, section, lyrics, chords, etc.
+    element_position = db.Column(db.Integer)  # line number, character position, etc.
+    
+    # Visibility and permissions
+    is_private = db.Column(db.Boolean, default=False)  # private to the author
+    visible_to_roles = db.Column(db.JSON, default=list)  # specific roles that can see this comment
+    
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+    
+    # Relationships
+    setlist = db.relationship('Setlist', backref='comments')
+    setlist_song = db.relationship('SetlistSong', backref='comments')
+    author = db.relationship('User', foreign_keys=[user_id], backref='setlist_comments')
+    resolver = db.relationship('User', foreign_keys=[resolved_by])
+    parent_comment = db.relationship('SetlistComment', remote_side=[id], backref='replies')
+    
+    def __init__(self, setlist_id, user_id, content, **kwargs):
+        self.setlist_id = setlist_id
+        self.user_id = user_id
+        self.content = content
+        
+        # Handle additional parameters
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+    
+    def to_dict(self, include_author=True, include_replies=False):
+        """Convert comment to dictionary."""
+        result = {
+            'id': self.id,
+            'setlist_id': self.setlist_id,
+            'setlist_song_id': self.setlist_song_id,
+            'user_id': self.user_id,
+            'parent_comment_id': self.parent_comment_id,
+            'content': self.content,
+            'comment_type': self.comment_type,
+            'priority': self.priority,
+            'is_resolved': self.is_resolved,
+            'resolved_by': self.resolved_by,
+            'resolved_at': self.resolved_at.isoformat() if self.resolved_at else None,
+            'target_element': self.target_element,
+            'element_position': self.element_position,
+            'is_private': self.is_private,
+            'visible_to_roles': self.visible_to_roles,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+        
+        if include_author and self.author:
+            result['author'] = {
+                'id': self.author.id,
+                'email': self.author.email,
+                'display_name': self.author.display_name
+            }
+        
+        if include_replies:
+            result['replies'] = [reply.to_dict(include_author=include_author, include_replies=False) 
+                               for reply in self.replies]
+        
+        return result
+    
+    def can_user_view(self, user_id):
+        """Check if a user can view this comment."""
+        # Author can always view
+        if self.user_id == user_id:
+            return True
+        
+        # Private comments only visible to author
+        if self.is_private:
+            return False
+        
+        # Check setlist access
+        setlist = Setlist.query.get(self.setlist_id)
+        if not setlist or not setlist.can_user_access(user_id):
+            return False
+        
+        # Check role-based visibility
+        if self.visible_to_roles:
+            collaborator = SetlistCollaborator.query.filter_by(
+                setlist_id=self.setlist_id, user_id=user_id, status='accepted'
+            ).first()
+            
+            if collaborator and collaborator.band_role in self.visible_to_roles:
+                return True
+            
+            # Owner has access to all comments
+            if setlist.user_id == user_id:
+                return True
+            
+            return False
+        
+        return True
+    
+    def __repr__(self):
+        return f'<SetlistComment {self.id} on setlist {self.setlist_id}>'
+
+
+class SetlistTask(db.Model):
+    """Performance preparation tasks for setlist collaborators."""
+    __tablename__ = 'setlist_tasks'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    setlist_id = db.Column(db.Integer, db.ForeignKey('setlists.id'), nullable=False)
+    setlist_song_id = db.Column(db.Integer, db.ForeignKey('setlist_songs.id'), nullable=True)  # null for general tasks
+    assigned_to = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)  # null for unassigned
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    
+    # Task details
+    title = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text)
+    task_type = db.Column(db.String(30), default='general')  # practice, setup, coordination, technical, review
+    priority = db.Column(db.String(10), default='normal')  # low, normal, high, urgent
+    
+    # Status and tracking
+    status = db.Column(db.String(20), default='todo')  # todo, in_progress, completed, cancelled
+    progress_percentage = db.Column(db.Integer, default=0)
+    estimated_duration = db.Column(db.Integer)  # minutes
+    actual_duration = db.Column(db.Integer)  # minutes
+    
+    # Scheduling
+    due_date = db.Column(db.DateTime)
+    started_at = db.Column(db.DateTime)
+    completed_at = db.Column(db.DateTime)
+    
+    # Dependencies and coordination
+    depends_on_tasks = db.Column(db.JSON, default=list)  # task IDs this depends on
+    role_requirements = db.Column(db.JSON, default=list)  # roles needed for this task
+    
+    # Notes and updates
+    notes = db.Column(db.Text)
+    completion_notes = db.Column(db.Text)
+    
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+    
+    # Relationships
+    setlist = db.relationship('Setlist', backref='tasks')
+    setlist_song = db.relationship('SetlistSong', backref='tasks')
+    assignee = db.relationship('User', foreign_keys=[assigned_to], backref='assigned_setlist_tasks')
+    creator = db.relationship('User', foreign_keys=[created_by])
+    
+    def __init__(self, setlist_id, created_by, title, **kwargs):
+        self.setlist_id = setlist_id
+        self.created_by = created_by
+        self.title = title
+        
+        # Handle additional parameters
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+    
+    def to_dict(self, include_assignee=True, include_creator=True):
+        """Convert task to dictionary."""
+        result = {
+            'id': self.id,
+            'setlist_id': self.setlist_id,
+            'setlist_song_id': self.setlist_song_id,
+            'assigned_to': self.assigned_to,
+            'created_by': self.created_by,
+            'title': self.title,
+            'description': self.description,
+            'task_type': self.task_type,
+            'priority': self.priority,
+            'status': self.status,
+            'progress_percentage': self.progress_percentage,
+            'estimated_duration': self.estimated_duration,
+            'actual_duration': self.actual_duration,
+            'due_date': self.due_date.isoformat() if self.due_date else None,
+            'started_at': self.started_at.isoformat() if self.started_at else None,
+            'completed_at': self.completed_at.isoformat() if self.completed_at else None,
+            'depends_on_tasks': self.depends_on_tasks,
+            'role_requirements': self.role_requirements,
+            'notes': self.notes,
+            'completion_notes': self.completion_notes,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+        
+        if include_assignee and self.assignee:
+            result['assignee'] = {
+                'id': self.assignee.id,
+                'email': self.assignee.email,
+                'display_name': self.assignee.display_name
+            }
+        
+        if include_creator and self.creator:
+            result['creator'] = {
+                'id': self.creator.id,
+                'email': self.creator.email,
+                'display_name': self.creator.display_name
+            }
+        
+        return result
+    
+    def __repr__(self):
+        return f'<SetlistTask {self.title} for setlist {self.setlist_id}>'
