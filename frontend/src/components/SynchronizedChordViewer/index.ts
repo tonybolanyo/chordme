@@ -1,0 +1,1 @@
+export { SynchronizedChordViewer } from './SynchronizedChordViewer';

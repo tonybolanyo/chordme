@@ -191,6 +191,22 @@ export enum AudioErrorCode {
   DEVICE_BUSY = 'DEVICE_BUSY',
   QUOTA_EXCEEDED = 'QUOTA_EXCEEDED',
   CROSSFADE_FAILED = 'CROSSFADE_FAILED',
+  // Synchronization error codes
+  SYNC_TIMELINE_INVALID = 'SYNC_TIMELINE_INVALID',
+  SYNC_ANALYSIS_FAILED = 'SYNC_ANALYSIS_FAILED',
+  SYNC_ANNOTATION_FAILED = 'SYNC_ANNOTATION_FAILED',
+  SYNC_EXPORT_FAILED = 'SYNC_EXPORT_FAILED',
+  SYNC_IMPORT_FAILED = 'SYNC_IMPORT_FAILED',
+}
+
+// Synchronization-specific errors
+export interface SyncError {
+  code: AudioErrorCode;
+  message: string;
+  details?: any;
+  timestamp: Date;
+  context: 'timeline' | 'annotation' | 'analysis' | 'export' | 'import';
+  recoverable: boolean;
 }
 
 // Audio engine capabilities
@@ -258,6 +274,17 @@ export interface AudioEventMap {
   'ended': { track: AudioSource };
   'buffering': { isBuffering: boolean; progress: number };
   'visualization': { data: VisualizationData };
+  // Synchronization events
+  'sync:chordchange': { chord: ChordTimeMapping; nextChord?: ChordTimeMapping };
+  'sync:markerreached': { marker: PlaybackMarker };
+  'sync:loopstart': { loop: LoopSection };
+  'sync:loopend': { loop: LoopSection };
+  'sync:timelineloaded': { timeline: SyncTimeline };
+  'sync:annotationadded': { annotation: ChordTimeMapping };
+  'sync:annotationupdated': { annotation: ChordTimeMapping };
+  'sync:annotationremoved': { annotationId: string };
+  'sync:analysiscomplete': { result: AudioAnalysisResult };
+  'sync:error': { error: SyncError };
 }
 
 // Audio engine interface
@@ -286,6 +313,24 @@ export interface IAudioEngine {
   
   // State
   getState(): AudioEngineState;
+  
+  // Synchronization methods
+  loadSyncTimeline(timeline: SyncTimeline): Promise<void>;
+  addChordMapping(mapping: ChordTimeMapping): void;
+  updateChordMapping(mapping: ChordTimeMapping): void;
+  removeChordMapping(id: string): void;
+  addPlaybackMarker(marker: PlaybackMarker): void;
+  removePlaybackMarker(id: string): void;
+  setLoopSection(loop: LoopSection): void;
+  clearLoopSection(): void;
+  enableSync(config: AudioSyncConfig): void;
+  disableSync(): void;
+  getSyncState(): SyncState;
+  startChordAnnotation(): void;
+  stopChordAnnotation(): void;
+  analyzeAudioForChords(config: AutoDetectionConfig): Promise<AudioAnalysisResult>;
+  exportSyncData(): SyncTimeline;
+  importSyncData(timeline: SyncTimeline): Promise<void>;
   
   // Events
   addEventListener<K extends keyof AudioEventMap>(
@@ -363,6 +408,19 @@ export type {
   YouTubeSearchResult,
   YouTubeSyncConfig,
   IYouTubeService,
+  // Synchronization types
+  ChordTimeMapping,
+  ChordTimingMetadata,
+  TempoMapping,
+  AudioSyncConfig,
+  LoopSection,
+  PlaybackMarker,
+  SyncTimeline,
+  SyncTimelineMetadata,
+  SyncState,
+  AutoDetectionConfig,
+  AudioAnalysisResult,
+  SyncError,
 };
 
 // YouTube Player configuration
@@ -428,18 +486,133 @@ export interface YouTubeSyncConfig {
 
 // Chord timing mapping for synchronization
 export interface ChordTimeMapping {
+  id: string; // Unique identifier for the mapping
   chordName: string;
   startTime: number; // Time in seconds when chord starts
   endTime: number; // Time in seconds when chord ends
   barNumber?: number;
   beatPosition?: number;
+  confidence?: number; // 0-1, for auto-detected timings
+  source: 'manual' | 'automatic' | 'imported';
+  verified?: boolean; // Has been manually verified
+  metadata?: ChordTimingMetadata;
+}
+
+// Additional metadata for chord timing
+export interface ChordTimingMetadata {
+  intensity?: number; // 0-1, how prominent the chord is
+  isTransition?: boolean; // Is this a transitional chord
+  notes?: string[]; // Additional notes about this timing
+  originalPosition?: number; // Original position in ChordPro content
+  lyricLine?: string; // Associated lyric line
 }
 
 // Tempo mapping for synchronization
 export interface TempoMapping {
+  id: string;
   time: number; // Time in seconds
   bpm: number; // Beats per minute
   timeSignature?: string; // e.g., "4/4", "3/4"
+  confidence?: number; // 0-1, for auto-detected tempo
+  source: 'manual' | 'automatic' | 'imported';
+}
+
+// Audio synchronization configuration
+export interface AudioSyncConfig {
+  enabled: boolean;
+  tolerance: number; // Synchronization tolerance in milliseconds (default: 50)
+  autoHighlight: boolean; // Auto-highlight current chord
+  scrollSync: boolean; // Synchronize scrolling with playback
+  visualFeedback: boolean; // Show visual feedback
+  practiceMode: boolean; // Enable practice mode features
+  loopSection?: LoopSection; // Current loop section
+  playbackMarkers: PlaybackMarker[]; // Custom playback markers
+}
+
+// Loop section for practice mode
+export interface LoopSection {
+  id: string;
+  name: string;
+  startTime: number;
+  endTime: number;
+  enabled: boolean;
+  repeatCount?: number; // Number of times to repeat, undefined = infinite
+  speedModifier?: number; // 0.5-2.0, speed adjustment for this section
+}
+
+// Playback markers for navigation
+export interface PlaybackMarker {
+  id: string;
+  time: number;
+  label: string;
+  type: 'verse' | 'chorus' | 'bridge' | 'solo' | 'intro' | 'outro' | 'custom';
+  color?: string;
+}
+
+// Synchronization timeline data
+export interface SyncTimeline {
+  id: string;
+  audioSourceId: string;
+  chordMappings: ChordTimeMapping[];
+  tempoMappings: TempoMapping[];
+  markers: PlaybackMarker[];
+  loopSections: LoopSection[];
+  metadata: SyncTimelineMetadata;
+  version: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Timeline metadata
+export interface SyncTimelineMetadata {
+  title?: string;
+  artist?: string;
+  key?: string;
+  bpm?: number;
+  timeSignature?: string;
+  duration: number;
+  chordProContent?: string; // Original ChordPro content
+  notes?: string;
+  tags?: string[];
+}
+
+// Synchronization state
+export interface SyncState {
+  isEnabled: boolean;
+  currentTimeline?: SyncTimeline;
+  currentChord?: ChordTimeMapping;
+  nextChord?: ChordTimeMapping;
+  isHighlighting: boolean;
+  syncPosition: number; // Current sync position in seconds
+  lastSyncTime: number; // Last successful sync timestamp
+  driftCompensation: number; // Accumulated drift compensation
+}
+
+// Auto-detection configuration
+export interface AutoDetectionConfig {
+  enabled: boolean;
+  method: 'onset' | 'chroma' | 'combined';
+  sensitivity: number; // 0-1
+  minChordDuration: number; // Minimum chord duration in seconds
+  maxChordDuration: number; // Maximum chord duration in seconds
+  confidenceThreshold: number; // Minimum confidence for auto-detection
+  postProcessing: boolean; // Apply post-processing to improve accuracy
+}
+
+// Audio analysis result for chord detection
+export interface AudioAnalysisResult {
+  chordMappings: ChordTimeMapping[];
+  confidence: number;
+  analysisTime: number; // Time taken for analysis in ms
+  method: string;
+  sampleRate: number;
+  duration: number;
+  metadata?: {
+    onsetTimes?: number[];
+    chromaFeatures?: number[][];
+    tempo?: number;
+    key?: string;
+  };
 }
 
 // YouTube service interface
