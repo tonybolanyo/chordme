@@ -41,7 +41,9 @@ class ChordProPDFGenerator:
     def __init__(self, paper_size: str = 'a4', orientation: str = 'portrait', 
                  template: Optional[PDFTemplateConfig] = None, template_name: Optional[str] = None,
                  include_chord_diagrams: bool = False, diagram_instrument: str = 'guitar',
-                 intelligent_page_breaks: bool = True, optimize_file_size: bool = True):
+                 intelligent_page_breaks: bool = True, optimize_file_size: bool = True,
+                 font_size: int = 11, quality: str = 'standard', header: str = '', 
+                 footer: str = '', margins: Dict = None, colors: Dict = None):
         """
         Initialize PDF generator with specified paper size, orientation, and template.
         
@@ -54,13 +56,31 @@ class ChordProPDFGenerator:
             diagram_instrument: Instrument type for chord diagrams ('guitar', 'ukulele')
             intelligent_page_breaks: Whether to use intelligent page break algorithms
             optimize_file_size: Whether to optimize PDF file size
+            font_size: Base font size for the document
+            quality: Export quality ('draft', 'standard', 'high')
+            header: Custom header text
+            footer: Custom footer text
+            margins: Dictionary with margin values
+            colors: Dictionary with color values
         """
+        # Store customization options
+        self.font_size = font_size
+        self.quality = quality
+        self.header = header
+        self.footer = footer
+        self.margins = margins or {'top': 1.0, 'bottom': 1.0, 'left': 1.0, 'right': 1.0}
+        self.colors = colors or {'title': '#000000', 'artist': '#555555', 'chords': '#333333', 'lyrics': '#000000'}
+        
         # Set up template
         self.template = None
         if template:
             self.template = template
         elif template_name:
             self.template = get_template(template_name)
+        
+        # Override template with custom options if provided
+        if self.template and (colors or margins or font_size != 11):
+            self._customize_template()
         
         # Chord diagram settings
         self.include_chord_diagrams = include_chord_diagrams
@@ -85,6 +105,51 @@ class ChordProPDFGenerator:
             self.page_size = self.paper_size
             
         self.styles = self._create_styles()
+    
+    def _customize_template(self):
+        """Apply custom colors, margins, and font sizes to the template."""
+        if not self.template:
+            return
+        
+        # Update colors if provided
+        if self.colors:
+            if 'title' in self.colors:
+                self.template.colors.title = self.colors['title']
+            if 'artist' in self.colors:
+                self.template.colors.artist = self.colors['artist']
+            if 'chords' in self.colors:
+                self.template.colors.chords = self.colors['chords']
+            if 'lyrics' in self.colors:
+                self.template.colors.lyrics = self.colors['lyrics']
+        
+        # Update margins if provided
+        if self.margins:
+            if 'top' in self.margins:
+                self.template.spacing.top_margin = self.margins['top']
+            if 'bottom' in self.margins:
+                self.template.spacing.bottom_margin = self.margins['bottom']
+            if 'left' in self.margins:
+                self.template.spacing.left_margin = self.margins['left']
+            if 'right' in self.margins:
+                self.template.spacing.right_margin = self.margins['right']
+        
+        # Update font sizes if provided
+        if self.font_size != 11:
+            # Adjust all font sizes proportionally
+            scale_factor = self.font_size / 11.0
+            self.template.styles.title.size = int(self.template.styles.title.size * scale_factor)
+            self.template.styles.artist.size = int(self.template.styles.artist.size * scale_factor)
+            self.template.styles.chords.size = int(self.template.styles.chords.size * scale_factor)
+            self.template.styles.lyrics.size = int(self.template.styles.lyrics.size * scale_factor)
+        
+        # Update header/footer if provided
+        if self.header:
+            self.template.header.enabled = True
+            self.template.header.content = self.header
+        
+        if self.footer:
+            self.template.footer.enabled = True
+            self.template.footer.content = self.footer
     
     def _hex_to_color(self, hex_color: str):
         """Convert hex color string to ReportLab color object."""
@@ -1009,7 +1074,9 @@ def generate_song_pdf(content: str, title: str = None, artist: str = None,
                      paper_size: str = 'a4', orientation: str = 'portrait',
                      template_name: str = None, include_chord_diagrams: bool = False,
                      diagram_instrument: str = 'guitar', intelligent_page_breaks: bool = True,
-                     optimize_file_size: bool = True) -> bytes:
+                     optimize_file_size: bool = True, font_size: int = 11, 
+                     quality: str = 'standard', header: str = '', footer: str = '',
+                     margins: Dict = None, colors: Dict = None) -> bytes:
     """
     Convenience function to generate PDF for a song.
     
@@ -1024,10 +1091,24 @@ def generate_song_pdf(content: str, title: str = None, artist: str = None,
         diagram_instrument: Instrument for chord diagrams ('guitar', 'ukulele')
         intelligent_page_breaks: Whether to use intelligent page break algorithms
         optimize_file_size: Whether to optimize PDF file size
+        font_size: Base font size for the document
+        quality: Export quality ('draft', 'standard', 'high')
+        header: Custom header text
+        footer: Custom footer text
+        margins: Dictionary with margin values {'top': float, 'bottom': float, 'left': float, 'right': float}
+        colors: Dictionary with color values {'title': str, 'artist': str, 'chords': str, 'lyrics': str}
         
     Returns:
         PDF content as bytes
     """
+    # Set default margins if not provided
+    if margins is None:
+        margins = {'top': 1.0, 'bottom': 1.0, 'left': 1.0, 'right': 1.0}
+    
+    # Set default colors if not provided  
+    if colors is None:
+        colors = {'title': '#000000', 'artist': '#555555', 'chords': '#333333', 'lyrics': '#000000'}
+    
     generator = ChordProPDFGenerator(
         paper_size=paper_size, 
         orientation=orientation,
@@ -1035,6 +1116,12 @@ def generate_song_pdf(content: str, title: str = None, artist: str = None,
         include_chord_diagrams=include_chord_diagrams,
         diagram_instrument=diagram_instrument,
         intelligent_page_breaks=intelligent_page_breaks,
-        optimize_file_size=optimize_file_size
+        optimize_file_size=optimize_file_size,
+        font_size=font_size,
+        quality=quality,
+        header=header,
+        footer=footer,
+        margins=margins,
+        colors=colors
     )
     return generator.generate_pdf(content, title=title, artist=artist)

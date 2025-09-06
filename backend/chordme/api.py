@@ -1750,14 +1750,33 @@ def export_song_pdf(song_id):
         template_name = request.args.get('template', 'classic').lower()
         title_override = request.args.get('title')
         artist_override = request.args.get('artist')
-        include_chord_diagrams = request.args.get('chord_diagrams', 'false').lower() == 'true'
+        include_chord_diagrams = request.args.get('chord_diagrams', 'true').lower() == 'true'
         diagram_instrument = request.args.get('instrument', 'guitar').lower()
+        
+        # New customization options
+        font_size = int(request.args.get('font_size', 11))
+        quality = request.args.get('quality', 'standard').lower()
+        header = request.args.get('header', '')
+        footer = request.args.get('footer', '')
+        
+        # Margin options (in inches)
+        margin_top = float(request.args.get('margin_top', 1.0))
+        margin_bottom = float(request.args.get('margin_bottom', 1.0))
+        margin_left = float(request.args.get('margin_left', 1.0))
+        margin_right = float(request.args.get('margin_right', 1.0))
+        
+        # Color options
+        color_title = request.args.get('color_title', '#000000')
+        color_artist = request.args.get('color_artist', '#555555')
+        color_chords = request.args.get('color_chords', '#333333')
+        color_lyrics = request.args.get('color_lyrics', '#000000')
         
         # Validate parameters
         valid_paper_sizes = ['a4', 'letter', 'legal']
         valid_orientations = ['portrait', 'landscape']
         valid_templates = ['classic', 'modern', 'minimal']
         valid_instruments = ['guitar', 'ukulele']
+        valid_qualities = ['draft', 'standard', 'high']
         
         if paper_size not in valid_paper_sizes:
             return create_error_response(f"Invalid paper size. Must be one of: {', '.join(valid_paper_sizes)}", 400)
@@ -1770,6 +1789,42 @@ def export_song_pdf(song_id):
         
         if diagram_instrument not in valid_instruments:
             return create_error_response(f"Invalid instrument. Must be one of: {', '.join(valid_instruments)}", 400)
+        
+        if quality not in valid_qualities:
+            return create_error_response(f"Invalid quality. Must be one of: {', '.join(valid_qualities)}", 400)
+        
+        # Validate numeric parameters
+        if not (8 <= font_size <= 20):
+            return create_error_response("Font size must be between 8 and 20", 400)
+        
+        if not (0.25 <= margin_top <= 3):
+            return create_error_response("Top margin must be between 0.25 and 3 inches", 400)
+        
+        if not (0.25 <= margin_bottom <= 3):
+            return create_error_response("Bottom margin must be between 0.25 and 3 inches", 400)
+        
+        if not (0.25 <= margin_left <= 3):
+            return create_error_response("Left margin must be between 0.25 and 3 inches", 400)
+        
+        if not (0.25 <= margin_right <= 3):
+            return create_error_response("Right margin must be between 0.25 and 3 inches", 400)
+        
+        # Validate color format (simple hex validation)
+        def is_valid_hex_color(color):
+            import re
+            return re.match(r'^#[0-9A-Fa-f]{6}$', color) is not None
+        
+        if not is_valid_hex_color(color_title):
+            return create_error_response("Invalid title color format. Use #RRGGBB format", 400)
+        
+        if not is_valid_hex_color(color_artist):
+            return create_error_response("Invalid artist color format. Use #RRGGBB format", 400)
+        
+        if not is_valid_hex_color(color_chords):
+            return create_error_response("Invalid chords color format. Use #RRGGBB format", 400)
+        
+        if not is_valid_hex_color(color_lyrics):
+            return create_error_response("Invalid lyrics color format. Use #RRGGBB format", 400)
         
         # Generate PDF
         content = song.content
@@ -1784,7 +1839,23 @@ def export_song_pdf(song_id):
             orientation=orientation,
             template_name=template_name,
             include_chord_diagrams=include_chord_diagrams,
-            diagram_instrument=diagram_instrument
+            diagram_instrument=diagram_instrument,
+            font_size=font_size,
+            quality=quality,
+            header=header,
+            footer=footer,
+            margins={
+                'top': margin_top,
+                'bottom': margin_bottom,
+                'left': margin_left,
+                'right': margin_right,
+            },
+            colors={
+                'title': color_title,
+                'artist': color_artist,
+                'chords': color_chords,
+                'lyrics': color_lyrics,
+            }
         )
         
         # Create safe filename

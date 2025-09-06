@@ -8,6 +8,9 @@ import type {
   ShareSongRequest,
   UpdatePermissionRequest,
   SharingResponse,
+  PDFTemplate,
+  PDFPreviewRequest,
+  BatchExportRequest,
   // User, // removed as it is unused
 } from '../types';
 import { isTokenExpired } from '../utils/jwt';
@@ -409,6 +412,24 @@ class ApiService {
       orientation?: 'portrait' | 'landscape';
       title?: string;
       artist?: string;
+      template?: string;
+      fontSize?: number;
+      chordDiagrams?: boolean;
+      quality?: 'draft' | 'standard' | 'high';
+      margins?: {
+        top: number;
+        bottom: number;
+        left: number;
+        right: number;
+      };
+      header?: string;
+      footer?: string;
+      colors?: {
+        title?: string;
+        artist?: string;
+        chords?: string;
+        lyrics?: string;
+      };
     } = {}
   ): Promise<void> {
     if (this.shouldUseFirebase()) {
@@ -425,6 +446,28 @@ class ApiService {
     if (options.orientation) params.append('orientation', options.orientation);
     if (options.title) params.append('title', options.title);
     if (options.artist) params.append('artist', options.artist);
+    if (options.template) params.append('template', options.template);
+    if (options.fontSize) params.append('font_size', options.fontSize.toString());
+    if (options.chordDiagrams !== undefined) params.append('chord_diagrams', options.chordDiagrams.toString());
+    if (options.quality) params.append('quality', options.quality);
+    if (options.header) params.append('header', options.header);
+    if (options.footer) params.append('footer', options.footer);
+    
+    // Handle margins
+    if (options.margins) {
+      params.append('margin_top', options.margins.top.toString());
+      params.append('margin_bottom', options.margins.bottom.toString());
+      params.append('margin_left', options.margins.left.toString());
+      params.append('margin_right', options.margins.right.toString());
+    }
+    
+    // Handle colors
+    if (options.colors) {
+      if (options.colors.title) params.append('color_title', options.colors.title);
+      if (options.colors.artist) params.append('color_artist', options.colors.artist);
+      if (options.colors.chords) params.append('color_chords', options.colors.chords);
+      if (options.colors.lyrics) params.append('color_lyrics', options.colors.lyrics);
+    }
 
     const queryString = params.toString();
     const url = `${API_BASE_URL}/api/v1/songs/${id}/export/pdf${queryString ? `?${queryString}` : ''}`;
@@ -480,6 +523,116 @@ class ApiService {
     // Get the filename from the Content-Disposition header
     const contentDisposition = response.headers.get('Content-Disposition');
     let filename = 'song.pdf'; // default filename
+
+    if (contentDisposition) {
+      const filenameMatch = contentDisposition.match(/filename="([^"]+)"/);
+      if (filenameMatch) {
+        filename = filenameMatch[1];
+      }
+    }
+
+    // Create a blob from the response
+    const blob = await response.blob();
+
+    // Create a temporary URL for the blob
+    const blobUrl = window.URL.createObjectURL(blob);
+
+    // Create a temporary anchor element to trigger the download
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+
+    // Clean up
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(blobUrl);
+  }
+
+  async listPDFTemplates(): Promise<PDFTemplate[]> {
+    if (this.shouldUseFirebase()) {
+      throw new Error('PDF templates are not currently supported with Firebase storage');
+    }
+
+    const response = await this.fetchApi('/api/v1/pdf/templates');
+    return response.data;
+  }
+
+  async getPDFTemplate(templateName: string): Promise<any> {
+    if (this.shouldUseFirebase()) {
+      throw new Error('PDF templates are not currently supported with Firebase storage');
+    }
+
+    const response = await this.fetchApi(`/api/v1/pdf/templates/${templateName}`);
+    return response.data;
+  }
+
+  async previewPDFTemplate(templateName: string, previewData: PDFPreviewRequest): Promise<Blob> {
+    if (this.shouldUseFirebase()) {
+      throw new Error('PDF template preview is not currently supported with Firebase storage');
+    }
+
+    const token = this.getAuthToken();
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json'
+    };
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/api/v1/pdf/templates/${templateName}/preview`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(previewData),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Preview generation failed: ${response.statusText}`);
+    }
+
+    return await response.blob();
+  }
+
+  async batchExportPDF(request: BatchExportRequest): Promise<void> {
+    if (this.shouldUseFirebase()) {
+      throw new Error('Batch PDF export is not currently supported with Firebase storage');
+    }
+
+    const token = this.getAuthToken();
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json'
+    };
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/api/v1/songs/export/pdf/batch`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(request),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorMessage = `Batch export failed: ${response.statusText}`;
+
+      try {
+        const errorData = JSON.parse(errorText);
+        if (errorData.error) {
+          errorMessage = errorData.error;
+        }
+      } catch {
+        // If response is not JSON, use status text
+      }
+
+      throw new Error(errorMessage);
+    }
+
+    // Get the filename from the Content-Disposition header
+    const contentDisposition = response.headers.get('Content-Disposition');
+    let filename = 'songs-export.zip'; // default filename
 
     if (contentDisposition) {
       const filenameMatch = contentDisposition.match(/filename="([^"]+)"/);
