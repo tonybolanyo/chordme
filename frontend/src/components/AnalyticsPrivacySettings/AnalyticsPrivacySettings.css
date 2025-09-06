@@ -1,0 +1,428 @@
+/* Analytics Privacy Settings Component Styles */
+
+.privacy-settings-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.privacy-settings-modal {
+  background: white;
+  border-radius: 16px;
+  max-width: 800px;
+  width: 100%;
+  max-height: 90vh;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.privacy-settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 32px;
+  border-bottom: 2px solid #e2e8f0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.privacy-settings-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.close-button {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+/* Content */
+.privacy-settings-content {
+  padding: 32px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.loading-state,
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 32px;
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #e2e8f0;
+  border-top: 3px solid #4299e1;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-message {
+  color: #e53e3e;
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+.retry-button {
+  padding: 12px 24px;
+  background: #4299e1;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.retry-button:hover {
+  background: #3182ce;
+  transform: translateY(-1px);
+}
+
+/* Settings Sections */
+.settings-section {
+  margin-bottom: 40px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.settings-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.settings-section h3 {
+  margin: 0 0 12px 0;
+  color: #1a365d;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.section-description {
+  margin: 0 0 24px 0;
+  color: #718096;
+  line-height: 1.6;
+}
+
+/* Setting Items */
+.setting-item {
+  margin-bottom: 20px;
+}
+
+.setting-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  padding: 16px;
+  border-radius: 12px;
+  border: 2px solid #e2e8f0;
+  transition: all 0.2s ease;
+  background: #f8fafc;
+}
+
+.setting-label:hover {
+  border-color: #cbd5e0;
+  background: #edf2f7;
+}
+
+.setting-checkbox {
+  margin: 0;
+  width: 20px;
+  height: 20px;
+  accent-color: #4299e1;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.setting-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.setting-text strong {
+  color: #1a365d;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.setting-description {
+  color: #718096;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.setting-select {
+  padding: 8px 12px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  background: white;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 150px;
+}
+
+.setting-select:hover {
+  border-color: #cbd5e0;
+}
+
+.setting-select:focus {
+  outline: none;
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+}
+
+/* Rights List */
+.rights-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.right-item {
+  padding: 16px;
+  background: #f0fff4;
+  border-radius: 8px;
+  border-left: 4px solid #38a169;
+  color: #1a202c;
+  line-height: 1.5;
+}
+
+.right-item strong {
+  color: #276749;
+}
+
+/* Danger Zone */
+.danger-zone {
+  background: #fed7d7;
+  border: 2px solid #fc8181;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.danger-zone h3 {
+  color: #742a2a;
+}
+
+.delete-data-button {
+  padding: 12px 24px;
+  background: #e53e3e;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 12px;
+}
+
+.delete-data-button:hover {
+  background: #c53030;
+  transform: translateY(-1px);
+}
+
+.delete-data-button:disabled {
+  background: #a0aec0;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.delete-warning {
+  margin: 0;
+  color: #742a2a;
+  font-size: 14px;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+/* Footer */
+.privacy-settings-footer {
+  padding: 24px 32px;
+  border-top: 2px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.button-group {
+  display: flex;
+  gap: 16px;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+
+.cancel-button,
+.save-button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 100px;
+}
+
+.cancel-button {
+  background: #edf2f7;
+  color: #4a5568;
+  border: 2px solid #e2e8f0;
+}
+
+.cancel-button:hover {
+  background: #e2e8f0;
+  border-color: #cbd5e0;
+}
+
+.save-button {
+  background: #38a169;
+  color: white;
+}
+
+.save-button:hover {
+  background: #2f855a;
+  transform: translateY(-1px);
+}
+
+.save-button:disabled,
+.cancel-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.compliance-notice {
+  padding: 16px;
+  background: #e6fffa;
+  border-radius: 8px;
+  border-left: 4px solid #38b2ac;
+}
+
+.compliance-notice p {
+  margin: 0;
+  color: #234e52;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.compliance-notice strong {
+  color: #0d9488;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .privacy-settings-overlay {
+    padding: 10px;
+  }
+  
+  .privacy-settings-modal {
+    max-height: 95vh;
+  }
+  
+  .privacy-settings-header {
+    padding: 16px 20px;
+  }
+  
+  .privacy-settings-header h2 {
+    font-size: 1.3rem;
+  }
+  
+  .privacy-settings-content {
+    padding: 20px;
+  }
+  
+  .privacy-settings-footer {
+    padding: 16px 20px;
+  }
+  
+  .button-group {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .cancel-button,
+  .save-button {
+    width: 100%;
+  }
+  
+  .setting-label {
+    padding: 12px;
+  }
+  
+  .settings-section {
+    margin-bottom: 28px;
+    padding-bottom: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .privacy-settings-header h2 {
+    font-size: 1.1rem;
+  }
+  
+  .close-button {
+    width: 36px;
+    height: 36px;
+    font-size: 1.3rem;
+  }
+  
+  .privacy-settings-content {
+    padding: 16px;
+  }
+  
+  .setting-text strong {
+    font-size: 14px;
+  }
+  
+  .setting-description {
+    font-size: 13px;
+  }
+  
+  .right-item {
+    padding: 12px;
+  }
+  
+  .danger-zone {
+    padding: 16px;
+  }
+}
