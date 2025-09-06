@@ -47,6 +47,43 @@ npm run dev:frontend   # Terminal 2 (React App - Port 5173)
 
 Then open http://localhost:5173 in your browser.
 
+## 🐳 Docker Setup (Recommended)
+
+For a complete containerized development environment, use Docker Compose or Minikube:
+
+### Docker Compose (Easiest)
+
+```bash
+# Start all services (database, backend, frontend)
+npm run docker:start
+
+# Check status
+npm run docker:status
+
+# Access the application
+# Frontend: http://localhost:5173
+# Backend API: http://localhost:5000
+# Database: localhost:5432
+
+# Stop services
+npm run docker:stop
+```
+
+### Minikube (Kubernetes)
+
+```bash
+# Complete setup (start cluster + deploy application)
+npm run k8s:setup
+
+# Open application in browser
+./scripts/docker/minikube-setup.sh open
+
+# Clean up
+npm run k8s:cleanup
+```
+
+**[📖 Complete Docker Documentation](docs/docker-development.md)** - Detailed setup and troubleshooting guide
+
 ## Project Structure
 
 This project consists of two main parts:

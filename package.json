@@ -28,7 +28,17 @@
     "deploy:staging": "./scripts/deployment/deploy-full-stack.sh staging",
     "deploy:production": "./scripts/deployment/deploy-full-stack.sh production",
     "health-check": "python scripts/deployment/health-check.py",
-    "migrate": "python database/migrate.py"
+    "migrate": "python database/migrate.py",
+    "docker:start": "./scripts/docker/docker-setup.sh start",
+    "docker:stop": "./scripts/docker/docker-setup.sh stop",
+    "docker:status": "./scripts/docker/docker-setup.sh status",
+    "docker:logs": "./scripts/docker/docker-setup.sh logs",
+    "docker:cleanup": "./scripts/docker/docker-setup.sh cleanup",
+    "k8s:setup": "./scripts/docker/minikube-setup.sh full-setup",
+    "k8s:start": "./scripts/docker/minikube-setup.sh start",
+    "k8s:deploy": "./scripts/docker/minikube-setup.sh deploy",
+    "k8s:status": "./scripts/docker/minikube-setup.sh status",
+    "k8s:cleanup": "./scripts/docker/minikube-setup.sh cleanup"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.2",
