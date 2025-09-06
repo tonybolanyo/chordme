@@ -309,6 +309,170 @@ def record_user_activity(user_id: str, activity_type: str):
     )
 
 
+@monitoring_bp.route('/frontend-error', methods=['POST'])
+def log_frontend_error():
+    """Endpoint to receive frontend error reports."""
+    try:
+        from flask import request
+        error_data = request.get_json()
+        
+        # Log frontend error with structured logging
+        monitor_logger.error(
+            f"Frontend Error: {error_data.get('message', 'Unknown error')}",
+            error_type='frontend',
+            user_id=error_data.get('userId'),
+            url=error_data.get('url'),
+            user_agent=error_data.get('userAgent'),
+            stack_trace=error_data.get('stack'),
+            error_id=error_data.get('errorId'),
+            timestamp=error_data.get('timestamp')
+        )
+        
+        # Record in metrics if user is tracked
+        if error_data.get('userId'):
+            record_user_activity(error_data['userId'], 'frontend_error')
+        
+        return jsonify({
+            'status': 'success',
+            'message': 'Frontend error logged successfully'
+        }), 200
+        
+    except Exception as e:
+        monitor_logger.error(f"Failed to log frontend error: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': 'Failed to log frontend error'
+        }), 500
+
+
+@monitoring_bp.route('/frontend-metrics', methods=['POST'])
+def log_frontend_metrics():
+    """Endpoint to receive frontend performance metrics."""
+    try:
+        from flask import request
+        metric_data = request.get_json()
+        
+        # Log frontend performance metric
+        monitor_logger.info(
+            f"Frontend Metric: {metric_data.get('name')} = {metric_data.get('value')}",
+            metric_type='frontend_performance',
+            metric_name=metric_data.get('name'),
+            metric_value=metric_data.get('value'),
+            user_id=metric_data.get('userId'),
+            url=metric_data.get('url'),
+            timestamp=metric_data.get('timestamp')
+        )
+        
+        # Check if metric exceeds alert thresholds
+        _check_frontend_metric_thresholds(metric_data)
+        
+        return jsonify({
+            'status': 'success',
+            'message': 'Frontend metric logged successfully'
+        }), 200
+        
+    except Exception as e:
+        monitor_logger.error(f"Failed to log frontend metric: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': 'Failed to log frontend metric'
+        }), 500
+
+
+def _check_frontend_metric_thresholds(metric_data):
+    """Check if frontend metrics exceed alert thresholds."""
+    from flask import current_app
+    
+    # Define frontend metric thresholds
+    thresholds = {
+        'LCP': 2500,  # Largest Contentful Paint (ms)
+        'FID': 100,   # First Input Delay (ms)
+        'CLS': 0.1,   # Cumulative Layout Shift
+        'PageLoadTime': 3000,  # Page load time (ms)
+        'APIResponseTime': 1000  # API response time (ms)
+    }
+    
+    metric_name = metric_data.get('name')
+    metric_value = metric_data.get('value', 0)
+    
+    if metric_name in thresholds and metric_value > thresholds[metric_name]:
+        # Log threshold exceeded
+        monitor_logger.warning(
+            f"Frontend metric threshold exceeded: {metric_name} = {metric_value} > {thresholds[metric_name]}",
+            metric_name=metric_name,
+            metric_value=metric_value,
+            threshold=thresholds[metric_name],
+            url=metric_data.get('url'),
+            user_id=metric_data.get('userId')
+        )
+        
+        # Trigger alert if alert manager is available
+        if hasattr(current_app, 'alert_manager'):
+            current_app.alert_manager.send_alerts([{
+                'metric': f'frontend_{metric_name}',
+                'value': metric_value,
+                'threshold': thresholds[metric_name],
+                'severity': 'medium',
+                'timestamp': metric_data.get('timestamp'),
+                'source': 'frontend'
+            }])
+
+
+@monitoring_bp.route('/alerts/test', methods=['POST'])
+def test_alerts():
+    """Test endpoint to trigger sample alerts for monitoring validation."""
+    try:
+        from flask import request, current_app
+        
+        # Get test parameters
+        data = request.get_json() or {}
+        alert_type = data.get('type', 'error_rate')
+        
+        # Generate test metrics that exceed thresholds
+        test_metrics = {
+            'error_rate_percent': 5.0 if alert_type == 'error_rate' else 0.5,
+            'response_time_ms': 1000 if alert_type == 'latency' else 200,
+            'cpu_usage_percent': 90 if alert_type == 'cpu' else 30,
+            'timestamp': datetime.now(UTC).isoformat()
+        }
+        
+        # Check thresholds and trigger alerts
+        if hasattr(current_app, 'alert_manager'):
+            alerts = current_app.alert_manager.check_thresholds(test_metrics)
+            if alerts:
+                current_app.alert_manager.send_alerts(alerts)
+                
+                monitor_logger.info(
+                    f"Test alerts triggered: {len(alerts)} alerts",
+                    alert_type=alert_type,
+                    alerts=alerts
+                )
+                
+                return jsonify({
+                    'status': 'success',
+                    'message': f'Triggered {len(alerts)} test alerts',
+                    'alerts': alerts
+                }), 200
+            else:
+                return jsonify({
+                    'status': 'success',
+                    'message': 'No alerts triggered (metrics within thresholds)',
+                    'metrics': test_metrics
+                }), 200
+        else:
+            return jsonify({
+                'status': 'warning',
+                'message': 'Alert manager not configured'
+            }), 200
+            
+    except Exception as e:
+        monitor_logger.error(f"Failed to test alerts: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': 'Failed to test alerts'
+        }), 500
+
+
 def setup_monitoring(app):
     """Initialize monitoring for the Flask application."""
     # Register monitoring blueprint
@@ -318,5 +482,14 @@ def setup_monitoring(app):
     if not hasattr(app, 'logger_structured'):
         from .logging_config import setup_logging
         setup_logging(app)
+    
+    # Initialize APM and alerting
+    try:
+        from .apm_config import setup_apm, setup_alerting
+        setup_apm(app)
+        setup_alerting(app)
+        monitor_logger.info("APM and alerting initialized")
+    except Exception as e:
+        monitor_logger.warning(f"Failed to initialize APM/alerting: {e}")
     
     monitor_logger.info("Application monitoring initialized")

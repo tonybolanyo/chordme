@@ -213,10 +213,42 @@ https_enforcement = HTTPSEnforcement(app)
 
 # Initialize logging and monitoring
 from .logging_config import setup_logging
-from .monitoring import setup_monitoring
+from .monitoring import setup_monitoring, monitor_request_metrics
 
 setup_logging(app)
 setup_monitoring(app)
+
+# Add monitoring middleware to track all requests
+@app.before_request
+def before_request_monitoring():
+    """Monitor request start time for performance tracking."""
+    from flask import g
+    import time
+    g.start_time = time.time()
+
+@app.after_request
+def after_request_monitoring(response):
+    """Monitor request completion and collect metrics."""
+    from flask import g, request
+    import time
+    
+    if hasattr(g, 'start_time'):
+        duration = time.time() - g.start_time
+        
+        # Apply monitoring to all requests
+        try:
+            from .monitoring import metrics_collector
+            metrics_collector.record_request(
+                endpoint=request.endpoint or 'unknown',
+                method=request.method,
+                status_code=response.status_code,
+                duration=duration
+            )
+        except Exception as e:
+            # Don't let monitoring errors break the request
+            app.logger.warning(f"Monitoring error: {e}")
+    
+    return response
 
 # Import API routes (must come after db initialization)
 from . import api

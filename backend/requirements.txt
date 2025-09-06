@@ -39,6 +39,6 @@ supabase==2.18.1
 # System monitoring (to be installed when needed)
 # psutil==6.1.1
 
-# Monitoring and logging (to be installed when needed)
-# sentry-sdk[flask]==2.20.0
-# structlog==25.4.0
+# Monitoring and logging
+sentry-sdk[flask]==2.20.0
+structlog==25.4.0
