@@ -8,6 +8,7 @@ import {
   SearchQueryParser,
   SearchResultUtils
 } from '../../services/songSearchService';
+import { favoritesService, FavoriteQuery } from '../../services/favoritesService';
 import { 
   SearchResultsViewMode, 
   SearchSortOption, 
@@ -24,6 +25,7 @@ import ResultCard from '../ResultCard/ResultCard';
 import BulkActionsToolbar from '../BulkActionsToolbar/BulkActionsToolbar';
 import ExportResultsModal from '../ExportResultsModal/ExportResultsModal';
 import SearchAnalytics from '../SearchAnalytics/SearchAnalytics';
+import FavoritesModal from '../FavoritesModal/FavoritesModal';
 import './SongSearch.css';
 
 interface SongSearchProps {
@@ -79,6 +81,7 @@ const SongSearch: React.FC<SongSearchProps> = ({
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
+  const [showFavoritesModal, setShowFavoritesModal] = useState(false);
 
   // Available actions for results
   const availableActions: ResultAction[] = ['preview', 'edit', 'favorite', 'share', 'delete'];
@@ -148,7 +151,7 @@ const SongSearch: React.FC<SongSearchProps> = ({
 
   // Load recent queries on mount
   useEffect(() => {
-    setRecentQueries(songSearchService.getRecentQueries(10));
+    setRecentQueries(favoritesService.getRecentSearchQueries(10));
   }, []);
 
   // Parse query to show syntax help
@@ -223,7 +226,7 @@ const SongSearch: React.FC<SongSearchProps> = ({
 
       // Update recent queries
       if (searchQuery.trim()) {
-        setRecentQueries(songSearchService.getRecentQueries(10));
+        setRecentQueries(favoritesService.getRecentSearchQueries(10));
       }
     } catch (error) {
       console.error('Search error:', error);
@@ -320,18 +323,27 @@ const SongSearch: React.FC<SongSearchProps> = ({
   }, []);
 
   // Handle result actions
-  const handleResultAction = useCallback((id: string, action: ResultAction) => {
+  const handleResultAction = useCallback(async (id: string, action: ResultAction) => {
     switch (action) {
       case 'favorite':
-        setFavoriteResults(prev => {
-          const newSet = new Set(prev);
-          if (newSet.has(id)) {
-            newSet.delete(id);
-          } else {
-            newSet.add(id);
-          }
-          return newSet;
-        });
+        try {
+          const songId = parseInt(id);
+          await favoritesService.toggleSongFavorite(songId);
+          
+          // Update local state to reflect the change
+          setFavoriteResults(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(id)) {
+              newSet.delete(id);
+            } else {
+              newSet.add(id);
+            }
+            return newSet;
+          });
+        } catch (error) {
+          console.error('Failed to toggle favorite:', error);
+          // Optionally show an error message to the user
+        }
         break;
       case 'preview':
         // TODO: Implement preview modal
@@ -382,6 +394,21 @@ const SongSearch: React.FC<SongSearchProps> = ({
     // TODO: Implement actual export functionality
     // This would typically make an API call to generate and download the file
   }, [selectedResults]);
+
+  // Handle favorites modal actions
+  const handleSelectFavoriteSong = useCallback((songId: number) => {
+    // Navigate to or open the selected song
+    console.log('Opening favorite song:', songId);
+    // TODO: Implement navigation to song
+  }, []);
+
+  const handleSelectFavoriteQuery = useCallback((favoriteQuery: FavoriteQuery) => {
+    // Apply the favorite query and filters
+    setQuery(favoriteQuery.query);
+    // TODO: Apply filters if any
+    performSearch(favoriteQuery.query, 0);
+    setShowFavoritesModal(false);
+  }, [performSearch]);
 
   // Get selected song titles for export modal
   const selectedTitles = useMemo(() => {
@@ -548,7 +575,7 @@ const SongSearch: React.FC<SongSearchProps> = ({
             type="button"
             className="clear-history-btn"
             onClick={() => {
-              songSearchService.clearSearchHistory();
+              favoritesService.clearSearchHistory();
               setRecentQueries([]);
               setShowHistory(false);
             }}
@@ -877,6 +904,16 @@ const SongSearch: React.FC<SongSearchProps> = ({
               🔧
             </button>
           )}
+
+          <button
+            type="button"
+            className="favorites-btn"
+            onClick={() => setShowFavoritesModal(true)}
+            aria-label="Open favorites and history"
+            title="Favorites & History"
+          >
+            ⭐
+          </button>
         </div>
 
         {renderSuggestions()}
@@ -899,6 +936,13 @@ const SongSearch: React.FC<SongSearchProps> = ({
         onExport={handleExport}
         selectedCount={selectedResults.size}
         selectedTitles={selectedTitles}
+      />
+
+      <FavoritesModal
+        isOpen={showFavoritesModal}
+        onClose={() => setShowFavoritesModal(false)}
+        onSelectSong={handleSelectFavoriteSong}
+        onSelectQuery={handleSelectFavoriteQuery}
       />
     </div>
   );
