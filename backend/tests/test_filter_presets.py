@@ -4,7 +4,7 @@ Tests for Filter Preset API Routes
 
 import pytest
 import json
-from chordme import create_app, db
+from chordme import app, db
 from chordme.models import User, FilterPreset
 from datetime import datetime, UTC
 
@@ -12,13 +12,13 @@ from datetime import datetime, UTC
 @pytest.fixture
 def app():
     """Create and configure a new app instance for each test."""
-    app = create_app()
-    app.config['TESTING'] = True
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+    from chordme import app as chordme_app
+    chordme_app.config['TESTING'] = True
+    chordme_app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
     
-    with app.app_context():
+    with chordme_app.app_context():
         db.create_all()
-        yield app
+        yield chordme_app
         db.drop_all()
 
 
