@@ -221,9 +221,13 @@ setup_monitoring(app)
 # Import API routes (must come after db initialization)
 from . import api
 from . import search_routes
+from . import filter_preset_routes
 
 # Register search blueprint
 app.register_blueprint(search_routes.search_bp)
+
+# Register filter preset blueprint
+app.register_blueprint(filter_preset_routes.filter_preset_bp, url_prefix='/api/v1')
 
 # Initialize CLI commands for chord management
 from . import chord_cli

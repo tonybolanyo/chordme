@@ -143,6 +143,7 @@ class Song(db.Model):
     genre = db.Column(db.String(100))
     song_key = db.Column(db.String(10))  # Musical key (C, Am, etc.)
     tempo = db.Column(db.Integer)  # BPM
+    time_signature = db.Column(db.String(10))  # Time signature (4/4, 3/4, 6/8, etc.)
     capo = db.Column(db.Integer, default=0)
     difficulty = db.Column(db.String(20), default='medium')  # beginner, intermediate, advanced, expert
     duration = db.Column(db.Integer)  # Duration in seconds
@@ -187,7 +188,7 @@ class Song(db.Model):
         self.user_id = value
     
     def __init__(self, title, user_id=None, content=None, artist=None, genre=None, song_key=None, 
-                 tempo=None, capo=0, difficulty='medium', duration=None, language='en',
+                 tempo=None, time_signature=None, capo=0, difficulty='medium', duration=None, language='en',
                  shared_with=None, permissions=None, share_settings='private', author_id=None):
         self.title = title
         # Support both user_id and author_id for backward compatibility
@@ -197,6 +198,7 @@ class Song(db.Model):
         self.genre = genre
         self.song_key = song_key
         self.tempo = tempo
+        self.time_signature = time_signature
         self.capo = capo
         self.difficulty = difficulty
         self.duration = duration
@@ -217,6 +219,7 @@ class Song(db.Model):
             'genre': self.genre,
             'song_key': self.song_key,
             'tempo': self.tempo,
+            'time_signature': self.time_signature,
             'capo': self.capo,
             'difficulty': self.difficulty,
             'duration': self.duration,
@@ -411,10 +414,11 @@ class Song(db.Model):
     @classmethod
     def search(cls, query=None, genre=None, song_key=None, difficulty=None, 
                language='en', tags=None, categories=None, min_tempo=None, 
-               max_tempo=None, user_id=None, include_public=True, 
-               include_deleted=False, include_archived=False, limit=50, offset=0):
+               max_tempo=None, time_signature=None, user_id=None, include_public=True, 
+               include_deleted=False, include_archived=False, date_from=None, date_to=None,
+               date_field='created_at', limit=50, offset=0):
         """
-        Search for songs with various filters.
+        Enhanced search for songs with various filters including date ranges.
         
         Args:
             query (str): Text search query
@@ -426,10 +430,14 @@ class Song(db.Model):
             categories (list): Filter by category names
             min_tempo (int): Minimum tempo BPM
             max_tempo (int): Maximum tempo BPM
+            time_signature (str): Filter by time signature (4/4, 3/4, etc.)
             user_id (int): Filter by specific user
             include_public (bool): Include public songs
             include_deleted (bool): Include soft-deleted songs
             include_archived (bool): Include archived songs
+            date_from (datetime): Filter songs created/modified after this date
+            date_to (datetime): Filter songs created/modified before this date
+            date_field (str): Date field to filter on ('created_at' or 'updated_at')
             limit (int): Maximum number of results
             offset (int): Offset for pagination
             
@@ -478,6 +486,20 @@ class Song(db.Model):
             base_query = base_query.filter(cls.tempo >= min_tempo)
         if max_tempo:
             base_query = base_query.filter(cls.tempo <= max_tempo)
+        if time_signature:
+            base_query = base_query.filter(cls.time_signature == time_signature)
+        
+        # Date range filters
+        if date_from or date_to:
+            if date_field == 'updated_at':
+                date_column = cls.updated_at
+            else:
+                date_column = cls.created_at
+            
+            if date_from:
+                base_query = base_query.filter(date_column >= date_from)
+            if date_to:
+                base_query = base_query.filter(date_column <= date_to)
         
         # Tag filters
         if tags:
@@ -919,3 +941,149 @@ class PDFExportJob(db.Model):
     
     def __repr__(self):
         return f'<PDFExportJob {self.id} ({self.job_type}, {self.status})>'
+
+
+class FilterPreset(db.Model):
+    """
+    Model for saving and sharing custom filter combinations.
+    Allows users to create reusable filter presets for advanced song searching.
+    """
+    __tablename__ = 'filter_presets'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    
+    # Filter configuration stored as JSON
+    filter_config = db.Column(db.JSON, nullable=False)  # Stores complete filter criteria
+    
+    # Sharing and visibility
+    is_public = db.Column(db.Boolean, default=False)  # Whether preset is publicly visible
+    is_shared = db.Column(db.Boolean, default=False)  # Whether preset can be shared
+    shared_with = db.Column(db.JSON, default=list)  # Array of user IDs who can access
+    
+    # Usage tracking
+    usage_count = db.Column(db.Integer, default=0)  # How many times preset has been used
+    last_used = db.Column(db.DateTime)  # When preset was last used
+    
+    # Metadata
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+    
+    # Relationships
+    user = db.relationship('User', backref='filter_presets', lazy=True)
+    
+    def __init__(self, name, user_id, filter_config, description=None, is_public=False, is_shared=False):
+        self.name = name
+        self.user_id = user_id
+        self.filter_config = filter_config
+        self.description = description
+        self.is_public = is_public
+        self.is_shared = is_shared
+        self.shared_with = []
+    
+    def can_user_access(self, user_id):
+        """Check if a user can access this filter preset."""
+        # Owner always has access
+        if self.user_id == user_id:
+            return True
+        
+        # Public presets are accessible to all
+        if self.is_public:
+            return True
+        
+        # Check if directly shared with user
+        return bool(self.shared_with and user_id in self.shared_with)
+    
+    def can_user_edit(self, user_id):
+        """Check if a user can edit this filter preset."""
+        # Only the owner can edit
+        return self.user_id == user_id
+    
+    def share_with_user(self, user_id):
+        """Share preset with a specific user."""
+        if self.shared_with is None:
+            self.shared_with = []
+        if user_id not in self.shared_with:
+            self.shared_with.append(user_id)
+            self.is_shared = True
+    
+    def unshare_with_user(self, user_id):
+        """Remove sharing access for a specific user."""
+        if self.shared_with and user_id in self.shared_with:
+            self.shared_with.remove(user_id)
+            # Update is_shared flag based on remaining shares
+            self.is_shared = len(self.shared_with) > 0
+    
+    def increment_usage(self):
+        """Increment usage count and update last used timestamp."""
+        self.usage_count = (self.usage_count or 0) + 1
+        self.last_used = utc_now()
+    
+    def validate_filter_config(self):
+        """Validate that filter configuration has required structure."""
+        if not isinstance(self.filter_config, dict):
+            return False, "Filter configuration must be a JSON object"
+        
+        # Check for valid filter fields
+        valid_fields = {
+            'q', 'genre', 'key', 'difficulty', 'language', 'tags', 
+            'minTempo', 'maxTempo', 'timeSignature', 'dateRange',
+            'categories', 'includePublic', 'combineMode'
+        }
+        
+        invalid_fields = set(self.filter_config.keys()) - valid_fields
+        if invalid_fields:
+            return False, f"Invalid filter fields: {', '.join(invalid_fields)}"
+        
+        return True, "Valid configuration"
+    
+    def to_dict(self, include_config=True):
+        """Convert filter preset to dictionary."""
+        result = {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+            'user_id': self.user_id,
+            'is_public': self.is_public,
+            'is_shared': self.is_shared,
+            'usage_count': self.usage_count,
+            'last_used': self.last_used.isoformat() if self.last_used else None,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+        
+        if include_config:
+            result['filter_config'] = self.filter_config
+            result['shared_with'] = self.shared_with
+        
+        return result
+    
+    @classmethod
+    def get_accessible_presets(cls, user_id, include_public=True):
+        """Get all filter presets accessible to a user."""
+        query = cls.query
+        
+        if include_public:
+            # User's own presets + public presets + presets shared with user
+            query = query.filter(
+                db.or_(
+                    cls.user_id == user_id,
+                    cls.is_public == True,
+                    cls.shared_with.contains([user_id])
+                )
+            )
+        else:
+            # Only user's own presets + presets shared with user
+            query = query.filter(
+                db.or_(
+                    cls.user_id == user_id,
+                    cls.shared_with.contains([user_id])
+                )
+            )
+        
+        return query.order_by(cls.updated_at.desc())
+    
+    def __repr__(self):
+        return f'<FilterPreset {self.name} by user:{self.user_id}>'

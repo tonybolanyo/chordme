@@ -317,7 +317,9 @@ def search_songs():
         song_key = sanitize_input(request.args.get('key', ''))
         difficulty = sanitize_input(request.args.get('difficulty', ''))
         language = sanitize_input(request.args.get('language', 'en'))
+        time_signature = sanitize_input(request.args.get('time_signature', ''))
         tags_param = request.args.get('tags', '')
+        categories_param = request.args.get('categories', '')
         min_tempo = request.args.get('min_tempo', type=int)
         max_tempo = request.args.get('max_tempo', type=int)
         include_public = request.args.get('include_public', 'true').lower() == 'true'
@@ -325,8 +327,29 @@ def search_songs():
         offset = max(request.args.get('offset', 0, type=int), 0)
         enable_cache = request.args.get('enable_cache', 'true').lower() == 'true'
         
-        # Parse tags
+        # Date range parameters
+        date_from_str = request.args.get('date_from', '')
+        date_to_str = request.args.get('date_to', '')
+        date_field = request.args.get('date_field', 'created_at')  # 'created_at' or 'updated_at'
+        
+        # Parse tags and categories
         tags = [tag.strip() for tag in tags_param.split(',') if tag.strip()] if tags_param else None
+        categories = [cat.strip() for cat in categories_param.split(',') if cat.strip()] if categories_param else None
+        
+        # Parse date range
+        date_from = None
+        date_to = None
+        if date_from_str:
+            try:
+                date_from = datetime.fromisoformat(date_from_str.replace('Z', '+00:00'))
+            except ValueError:
+                return jsonify({'error': 'Invalid date_from format. Use ISO 8601.'}), 400
+        
+        if date_to_str:
+            try:
+                date_to = datetime.fromisoformat(date_to_str.replace('Z', '+00:00'))
+            except ValueError:
+                return jsonify({'error': 'Invalid date_to format. Use ISO 8601.'}), 400
         
         # Validate parameters
         if min_tempo is not None and (min_tempo < 0 or min_tempo > 300):
@@ -335,6 +358,8 @@ def search_songs():
             return jsonify({'error': 'Invalid max_tempo value'}), 400
         if difficulty and difficulty not in ['beginner', 'intermediate', 'advanced', 'expert']:
             return jsonify({'error': 'Invalid difficulty level'}), 400
+        if date_field not in ['created_at', 'updated_at']:
+            return jsonify({'error': 'Invalid date_field. Must be created_at or updated_at'}), 400
             
         # Create cache key for this search
         cache_key = None
@@ -345,9 +370,14 @@ def search_songs():
                 'song_key': song_key,
                 'difficulty': difficulty,
                 'language': language,
+                'time_signature': time_signature,
                 'tags': tags,
+                'categories': categories,
                 'min_tempo': min_tempo,
                 'max_tempo': max_tempo,
+                'date_from': date_from_str,
+                'date_to': date_to_str,
+                'date_field': date_field,
                 'include_public': include_public,
                 'limit': limit,
                 'offset': offset,
@@ -363,38 +393,51 @@ def search_songs():
         # Parse search query
         parsed_query = parse_search_query(query)
         
-        # Execute search using enhanced database function
-        search_params = {
-            'search_query': query if query else None,
-            'search_genre': genre if genre else None,
-            'search_key': song_key if song_key else None,
-            'search_difficulty': difficulty if difficulty else None,
-            'search_language': language,
-            'search_tags': tags,
-            'search_categories': None,  # Could be added later
-            'min_tempo': min_tempo,
-            'max_tempo': max_tempo,
-            'user_id_filter': g.current_user.id,
-            'include_public': include_public,
-            'limit_count': limit,
-            'offset_count': offset,
-            'enable_fuzzy': True
-        }
+        # Use Song model's enhanced search method
+        from .models import Song
+        search_query = Song.search(
+            query=query if query else None,
+            genre=genre if genre else None,
+            song_key=song_key if song_key else None,
+            difficulty=difficulty if difficulty else None,
+            language=language,
+            tags=tags,
+            categories=categories,
+            min_tempo=min_tempo,
+            max_tempo=max_tempo,
+            time_signature=time_signature if time_signature else None,
+            user_id=g.current_user.id,
+            include_public=include_public,
+            date_from=date_from,
+            date_to=date_to,
+            date_field=date_field,
+            limit=limit,
+            offset=offset
+        )
         
-        # Execute search query
-        search_sql = text('''
-            SELECT * FROM search_songs_advanced(
-                :search_query, :search_genre, :search_key, :search_difficulty,
-                :search_language, :search_tags, :search_categories,
-                :min_tempo, :max_tempo, :user_id_filter, :include_public,
-                :limit_count, :offset_count, :enable_fuzzy
-            )
-        ''')
-        
-        search_results = db.session.execute(search_sql, search_params).fetchall()
+        search_results_raw = search_query.all()
         
         # Get total count for pagination (run without limit/offset)
-        count_params = search_params.copy()
+        count_query = Song.search(
+            query=query if query else None,
+            genre=genre if genre else None,
+            song_key=song_key if song_key else None,
+            difficulty=difficulty if difficulty else None,
+            language=language,
+            tags=tags,
+            categories=categories,
+            min_tempo=min_tempo,
+            max_tempo=max_tempo,
+            time_signature=time_signature if time_signature else None,
+            user_id=g.current_user.id,
+            include_public=include_public,
+            date_from=date_from,
+            date_to=date_to,
+            date_field=date_field,
+            limit=None,
+            offset=None
+        )
+        total_count = count_query.count()
         count_params['limit_count'] = 999999
         count_params['offset_count'] = 0
         
@@ -418,36 +461,36 @@ def search_songs():
             search_terms.extend(parsed_query['and_terms'])
             search_terms.extend(parsed_query['or_terms'])
         
-        for row in search_results:
+        for song in search_results_raw:
             result = {
-                'id': str(row.id),
-                'title': row.title,
-                'artist': row.artist,
-                'genre': row.genre,
-                'song_key': row.song_key,
-                'tempo': row.tempo,
-                'difficulty': row.difficulty,
-                'language': row.language,
-                'view_count': row.view_count,
-                'favorite_count': row.favorite_count,
-                'created_at': row.created_at.isoformat() if row.created_at else None,
-                'relevance_score': float(row.relevance_score) if row.relevance_score else 0.0,
-                'match_type': row.match_type,
-                'matched_fields': list(row.matched_fields) if row.matched_fields else []
+                'id': str(song.id),
+                'title': song.title,
+                'artist': song.artist,
+                'genre': song.genre,
+                'song_key': song.song_key,
+                'tempo': song.tempo,
+                'time_signature': song.time_signature,
+                'difficulty': song.difficulty,
+                'language': song.language,
+                'view_count': song.view_count or 0,
+                'favorite_count': song.favorite_count or 0,
+                'created_at': song.created_at.isoformat() if song.created_at else None,
+                'updated_at': song.updated_at.isoformat() if song.updated_at else None,
+                'relevance_score': 1.0,  # Basic relevance for now
+                'match_type': 'query_match',
+                'matched_fields': ['title', 'artist', 'content']  # Basic match fields
             }
             
             # Add highlights if search terms exist
             if search_terms:
                 highlights = {}
                 
-                # Get full song data for highlighting (normally you'd fetch this or include in search)
-                song_sql = text('SELECT title, artist, lyrics FROM songs WHERE id = :song_id')
-                song_data = db.session.execute(song_sql, {'song_id': row.id}).fetchone()
-                
-                if song_data:
-                    highlights['title'] = highlight_text(song_data.title, search_terms, 100)
-                    highlights['artist'] = highlight_text(song_data.artist, search_terms, 100) 
-                    highlights['lyrics'] = highlight_text(song_data.lyrics, search_terms, 200)
+                if song.title:
+                    highlights['title'] = highlight_text(song.title, search_terms, 100)
+                if song.artist:
+                    highlights['artist'] = highlight_text(song.artist, search_terms, 100) 
+                if song.lyrics:
+                    highlights['lyrics'] = highlight_text(song.lyrics, search_terms, 200)
                 
                 result['highlights'] = highlights
             
