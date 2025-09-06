@@ -2,6 +2,7 @@
 
 import logging
 import time
+import os
 from typing import Dict, Set, Optional, Any
 from functools import wraps
 from flask import request
@@ -19,7 +20,9 @@ class WebSocketServer:
     def __init__(self, app=None, redis_url: Optional[str] = None):
         self.socketio = None
         self.app = app
-        self.redis_url = redis_url
+        
+        # Set redis_url from environment if not provided
+        self.redis_url = redis_url or os.environ.get('REDIS_URL') or os.environ.get('REDISCLOUD_URL')
         
         # Connection tracking
         self.active_connections: Dict[str, Dict[str, Any]] = {}
@@ -47,8 +50,16 @@ class WebSocketServer:
             'ping_interval': 25,
         }
         
+        # Add Redis message queue for load balancing if URL is provided
         if self.redis_url:
-            socketio_config['message_queue'] = self.redis_url
+            try:
+                socketio_config['message_queue'] = self.redis_url
+                logger.info(f"WebSocket server configured with Redis message queue: {self.redis_url}")
+            except Exception as e:
+                logger.warning(f"Failed to configure Redis message queue: {e}")
+                logger.info("WebSocket server will run in single-instance mode")
+        else:
+            logger.info("WebSocket server running in single-instance mode (no Redis configured)")
             
         self.socketio = SocketIO(app, **socketio_config)
         self._register_event_handlers()

@@ -4,29 +4,38 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
+
+// Mock Socket.IO client
+vi.mock('socket.io-client', () => {
+  const mockSocket = {
+    connected: false,
+    emit: vi.fn(),
+    on: vi.fn(),
+    off: vi.fn(),
+    disconnect: vi.fn(),
+  };
+
+  return {
+    io: vi.fn(() => mockSocket),
+  };
+});
+
+// Now import the modules after mocking
 import { WebSocketService } from '../services/webSocketService';
 import { useWebSocketConnection, useWebSocketRoom, useWebSocketCollaboration } from '../hooks/useWebSocket';
-
-// Mock Socket.IO
-const mockSocket = {
-  connected: false,
-  emit: vi.fn(),
-  on: vi.fn(),
-  off: vi.fn(),
-  disconnect: vi.fn(),
-};
-
-const mockIo = vi.fn(() => mockSocket);
-
-vi.mock('socket.io-client', () => ({
-  io: mockIo,
-}));
 
 describe('WebSocketService', () => {
   let service: WebSocketService;
   let mockEventHandlers: Record<string, Function>;
+  let mockSocket: any;
+  let mockIo: any;
 
   beforeEach(() => {
+    // Get fresh mock instances
+    const { io } = await import('socket.io-client');
+    mockIo = io as any;
+    mockSocket = mockIo();
+    
     mockEventHandlers = {};
     mockSocket.on.mockImplementation((event: string, handler: Function) => {
       mockEventHandlers[event] = handler;

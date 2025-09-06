@@ -24,12 +24,21 @@ def app_with_socketio():
             rate_limiter.requests.clear()
             rate_limiter.blocked_ips.clear()
             
+            # Clear WebSocket server state
+            websocket_server.active_connections.clear()
+            websocket_server.room_participants.clear()
+            websocket_server.user_rooms.clear()
+            
             db.create_all()
             try:
                 yield client
             finally:
                 db.session.remove()
                 db.drop_all()
+                # Clean up WebSocket state after test
+                websocket_server.active_connections.clear()
+                websocket_server.room_participants.clear()
+                websocket_server.user_rooms.clear()
 
 
 @pytest.fixture
@@ -134,8 +143,11 @@ class TestWebSocketServer:
         assert websocket_server.get_connection_count() == 1
         assert websocket_server.get_room_count() == 1
         
-        # Cleanup with 1 hour threshold
-        websocket_server.cleanup_stale_connections(max_age=3600)
+        # Mock the leave_room call since we're not in a Socket.IO context
+        with patch('chordme.websocket_server.leave_room') as mock_leave:
+            with patch('chordme.websocket_server.emit') as mock_emit:
+                # Cleanup with 1 hour threshold
+                websocket_server.cleanup_stale_connections(max_age=3600)
         
         assert websocket_server.get_connection_count() == 0
         assert websocket_server.get_room_count() == 0
@@ -241,19 +253,20 @@ class TestWebSocketEvents:
             mock_request.sid = session_id
             
             with patch('chordme.websocket_server.join_room') as mock_join:
-                with patch('chordme.websocket_server.emit') as mock_emit:
-                    # Simulate joining room
-                    websocket_server.room_participants[room_id] = {test_user['id']}
-                    websocket_server.user_rooms[test_user['id']] = {room_id}
-                    
-                    assert test_user['id'] in websocket_server.get_room_participants(room_id)
-                    assert websocket_server.get_room_count() == 1
-                    
-                    # Test leaving room
-                    websocket_server._leave_room_internal(session_id, room_id)
-                    
-                    assert test_user['id'] not in websocket_server.get_room_participants(room_id)
-                    assert websocket_server.get_room_count() == 0
+                with patch('chordme.websocket_server.leave_room') as mock_leave:
+                    with patch('chordme.websocket_server.emit') as mock_emit:
+                        # Simulate joining room
+                        websocket_server.room_participants[room_id] = {test_user['id']}
+                        websocket_server.user_rooms[test_user['id']] = {room_id}
+                        
+                        assert test_user['id'] in websocket_server.get_room_participants(room_id)
+                        assert websocket_server.get_room_count() == 1
+                        
+                        # Test leaving room
+                        websocket_server._leave_room_internal(session_id, room_id)
+                        
+                        assert test_user['id'] not in websocket_server.get_room_participants(room_id)
+                        assert websocket_server.get_room_count() == 0
 
 
 class TestWebSocketSecurity:
