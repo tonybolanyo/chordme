@@ -1,5 +1,6 @@
 from chordme.api import *
 from chordme import app
+from chordme.websocket_server import websocket_server
 import os
 
 if __name__ == '__main__':
@@ -25,9 +26,14 @@ if __name__ == '__main__':
         https_status = "enabled" if is_https_required() else "disabled"
         print(f"HTTPS enforcement: {https_status}")
     
-    app.run(
-        debug=debug_mode, 
-        host=host, 
+    # Print WebSocket server status
+    print(f"WebSocket server initialized: {websocket_server.socketio is not None}")
+    
+    # Use SocketIO server for both HTTP and WebSocket support
+    websocket_server.socketio.run(
+        app,
+        debug=debug_mode,
+        host=host,
         port=port,
         ssl_context=ssl_context
     )

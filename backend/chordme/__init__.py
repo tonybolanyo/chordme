@@ -28,6 +28,10 @@ cors = CORS(app, resources={
 # Initialize database
 db = SQLAlchemy(app)
 
+# Initialize WebSocket server
+from .websocket_server import websocket_server
+websocket_server.init_app(app)
+
 # Initialize Swagger documentation
 from flasgger import Swagger
 swagger_config = {
