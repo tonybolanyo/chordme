@@ -8,9 +8,19 @@ title: ChordMe User Guide
 
 This guide covers all the features and functionality available in ChordMe for end users.
 
+> **📝 User Feedback Integration**: This user guide is continuously improved based on User Acceptance Testing (UAT) feedback and real user experiences. Recent updates are marked with 🆕 and include improvements suggested by our user community.
+
 ## Overview
 
 ChordMe provides a comprehensive platform for managing songs with lyrics and chords. Whether you're a musician, songwriter, or music teacher, ChordMe offers the tools you need to organize and display your musical content.
+
+### Recent Improvements 🆕
+*This section will be updated with each release based on UAT findings*
+
+**Latest User-Requested Features**:
+- [Feature updates based on UAT feedback will be listed here]
+- [Usability improvements from user testing will be documented here]
+- [Interface enhancements requested by users will be noted here]
 
 ## User Authentication
 
@@ -48,13 +58,17 @@ ChordMe implements robust password security:
 
 ChordMe supports creating songs using the ChordPro format:
 
-#### Using the Web Interface
+#### Using the Web Interface 🆕
 
 1. Click "Create New Song" or similar button
 2. Enter song metadata (title, artist, key, etc.)
 3. Add your lyrics and chords using ChordPro format
 4. Preview your song as you type
 5. Save your song to your library
+
+> **💡 User Tip**: Based on user feedback, we recommend starting with simple chord progressions and gradually adding complexity. The live preview helps you see your formatting in real-time.
+
+> **🔧 Common Issue Resolution**: If you encounter formatting problems, check our [ChordPro Format Guide](chordpro-format.md) or refer to the error messages in the editor.
 
 #### Using the API
 
@@ -63,10 +77,28 @@ Send a POST request to `/api/v1/songs`:
 ```json
 {
   "title": "Amazing Grace",
-  "artist": "John Newton",
+  "artist": "John Newton", 
   "content": "{title: Amazing Grace}\n{artist: John Newton}\n[G]Amazing [G7]grace..."
 }
 ```
+
+### Managing Your Song Library 🆕
+
+*This section enhanced based on UAT feedback on organization needs*
+
+#### Organization Features
+- **Search and Filter**: Find songs by title, artist, or content
+- **Categories**: Organize songs into custom categories
+- **Tags**: Add metadata tags for better organization
+- **Favorites**: Mark frequently used songs for quick access
+
+#### Tips for Better Organization
+> **📋 User-Requested Feature**: Many users asked for better organization tools. Here are the most effective approaches based on user feedback:
+
+1. **Use Consistent Naming**: Follow a pattern like "Title - Artist" for easier searching
+2. **Tag by Genre**: Add genre tags to group similar songs
+3. **Mark Performance Songs**: Use favorites or special tags for songs you perform regularly
+4. **Regular Cleanup**: Periodically review and organize your library
 
 ### Viewing Songs
 
@@ -1219,8 +1251,77 @@ If you need help using ChordMe:
 4. **Contact support** through the GitHub repository
 5. **Join the community** for user discussions
 
+## User Feedback and Continuous Improvement 🆕
+
+### Help Us Improve ChordMe
+
+Your feedback is invaluable in making ChordMe better for all users. This user guide and the application itself are continuously improved based on real user experiences.
+
+#### How to Provide Feedback
+
+**For General Feedback:**
+- [GitHub Discussions](https://github.com/tonybolanyo/chordme/discussions): Share suggestions and feature requests
+- [GitHub Issues](https://github.com/tonybolanyo/chordme/issues): Report bugs or specific problems
+
+**For User Experience Feedback:**
+- **Usability Issues**: If something is confusing or hard to use
+- **Feature Requests**: Missing functionality you need
+- **Interface Improvements**: Visual or interaction suggestions
+- **Documentation Gaps**: Areas where this guide could be clearer
+
+#### What We Do With Your Feedback
+
+1. **User Testing Integration**: Major feedback themes become part of our User Acceptance Testing
+2. **Documentation Updates**: This guide is updated based on common questions and confusion points
+3. **Feature Prioritization**: User requests help us prioritize new features
+4. **Interface Improvements**: Usability feedback directly influences design decisions
+
+#### Recent Community Contributions
+
+> **🙏 Thank You**: These recent improvements came directly from user feedback:
+> 
+> - [This section will be updated with actual user contributions]
+> - [Examples of features implemented based on feedback]
+> - [Documentation improvements from user suggestions]
+
+#### Participating in User Testing
+
+Occasionally, we conduct User Acceptance Testing (UAT) with volunteer users to validate new features and improvements. If you're interested in participating:
+
+- **Time Commitment**: Usually 60-90 minutes
+- **Requirements**: Regular ChordMe use and willingness to provide detailed feedback
+- **Benefits**: Early access to new features and direct influence on development
+- **Contact**: Watch for announcements in GitHub Discussions or contact the development team
+
+#### Feedback Categories We Value
+
+**Functional Feedback:**
+- Features that don't work as expected
+- Missing functionality for your use case
+- Performance or reliability issues
+
+**Usability Feedback:**
+- Confusing interface elements
+- Inefficient workflows
+- Accessibility challenges
+
+**Content Feedback:**
+- Documentation that's unclear or incomplete
+- Missing tutorials or examples
+- Help text that doesn't help
+
+### Community Guidelines
+
+When providing feedback:
+- **Be Specific**: Include steps to reproduce issues
+- **Be Constructive**: Suggest improvements when possible
+- **Be Patient**: Popular requests may take time to implement
+- **Be Respectful**: Remember there are people behind the software
+
 ---
 
 **Language:** **English** | [Español](user-guide-es.md)
 
 *For technical details and API usage, see the [API Reference](api-reference.md) and [Developer Guide](developer-guide.md).*
+
+*This user guide was last updated with user feedback from UAT cycle [Date]. Next scheduled UAT: [Date].*
