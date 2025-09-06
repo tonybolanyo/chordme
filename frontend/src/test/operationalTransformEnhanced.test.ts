@@ -2,9 +2,7 @@
 import { describe, it, expect } from 'vitest';
 import { OperationalTransform } from '../services/operationalTransform';
 import type { 
-  VectorClock, 
   OrderedOperation, 
-  OperationHistory, 
   ChordProOperation,
   DocumentCheckpoint,
   OperationFailure
