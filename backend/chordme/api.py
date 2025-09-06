@@ -6197,11 +6197,13 @@ def serve_static(path):
         return send_file(os.path.join(app.static_folder, 'index.html'))
 
 
-# Register chord routes blueprint
+# Register route blueprints
 from .chord_routes import chord_bp
 from .analytics_routes import analytics_bp
+from .setlist_routes import setlist_bp
 app.register_blueprint(chord_bp)
 app.register_blueprint(analytics_bp)
+app.register_blueprint(setlist_bp)
 
 # Initialize database tables
 with app.app_context():

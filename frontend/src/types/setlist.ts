@@ -119,6 +119,23 @@ export interface SetlistCollaborator {
   setlist_id: string;
   user_id: string;
   permission_level: PermissionLevel;
+  
+  // Band role coordination (NEW)
+  band_role?: string; // lead, rhythm, bass, drums, keys, vocals, sound_engineer, etc.
+  instrument?: string; // primary instrument
+  is_lead_for_role?: boolean; // lead guitarist, lead vocalist, etc.
+  backup_roles?: string[]; // additional roles this person can fill
+  
+  // External sharing capabilities (NEW)
+  external_access_level?: string; // full, limited, view_only, none
+  can_download_files?: boolean;
+  can_view_contact_info?: boolean;
+  external_notes?: string; // notes for external collaborators
+  
+  // Performance preparation (NEW)
+  preparation_tasks?: string[]; // assigned preparation task IDs
+  task_completion_status?: Record<string, boolean>; // task_id -> completion status
+  
   invited_by: string;
   invited_at: string;
   accepted_at?: string;
@@ -383,4 +400,155 @@ export interface EnergyPoint {
   position: number;
   energy: number; // 1-10 scale
   factor: string; // What contributes to energy level
+}
+
+// NEW: Comment and annotation system
+export interface SetlistComment {
+  id: string;
+  setlist_id: string;
+  setlist_song_id?: string; // null for general comments
+  user_id: string;
+  parent_comment_id?: string; // for threaded comments
+  
+  // Comment content
+  content: string;
+  comment_type: 'general' | 'suggestion' | 'arrangement' | 'technical' | 'performance';
+  priority: 'low' | 'normal' | 'high' | 'urgent';
+  
+  // Status tracking
+  is_resolved: boolean;
+  resolved_by?: string;
+  resolved_at?: string;
+  
+  // Positioning for inline comments
+  target_element?: string; // song_title, section, lyrics, chords, etc.
+  element_position?: number; // line number, character position, etc.
+  
+  // Visibility and permissions
+  is_private: boolean;
+  visible_to_roles: string[]; // specific roles that can see this comment
+  
+  created_at: string;
+  updated_at: string;
+  
+  // Populated fields
+  author?: {
+    id: string;
+    email: string;
+    display_name?: string;
+  };
+  replies?: SetlistComment[];
+}
+
+// NEW: Performance preparation tasks
+export interface SetlistTask {
+  id: string;
+  setlist_id: string;
+  setlist_song_id?: string; // null for general tasks
+  assigned_to?: string; // null for unassigned
+  created_by: string;
+  
+  // Task details
+  title: string;
+  description?: string;
+  task_type: 'general' | 'practice' | 'setup' | 'coordination' | 'technical' | 'review';
+  priority: 'low' | 'normal' | 'high' | 'urgent';
+  
+  // Status and tracking
+  status: 'todo' | 'in_progress' | 'completed' | 'cancelled';
+  progress_percentage: number;
+  estimated_duration?: number; // minutes
+  actual_duration?: number; // minutes
+  
+  // Scheduling
+  due_date?: string;
+  started_at?: string;
+  completed_at?: string;
+  
+  // Dependencies and coordination
+  depends_on_tasks: string[]; // task IDs this depends on
+  role_requirements: string[]; // roles needed for this task
+  
+  // Notes and updates
+  notes?: string;
+  completion_notes?: string;
+  
+  created_at: string;
+  updated_at: string;
+  
+  // Populated fields
+  assignee?: {
+    id: string;
+    email: string;
+    display_name?: string;
+  };
+  creator?: {
+    id: string;
+    email: string;
+    display_name?: string;
+  };
+}
+
+// NEW: External sharing types
+export interface ExternalShare {
+  id: string;
+  setlist_id: string;
+  share_type: 'venue' | 'sound_engineer' | 'guest_musician' | 'manager' | 'other';
+  share_url: string;
+  access_level: 'view_only' | 'limited' | 'full';
+  expires_at?: string;
+  password_protected: boolean;
+  
+  // Contact information
+  recipient_name?: string;
+  recipient_email?: string;
+  recipient_organization?: string;
+  
+  // Access controls
+  can_download_setlist: boolean;
+  can_view_contact_info: boolean;
+  can_leave_comments: boolean;
+  allowed_sections: string[]; // sections they can access
+  
+  created_at: string;
+  created_by: string;
+  last_accessed?: string;
+  access_count: number;
+}
+
+// NEW: Mobile coordination types
+export interface MobileCoordinationState {
+  setlist_id: string;
+  current_song?: string; // currently playing/rehearsing song ID
+  is_live: boolean; // is this a live performance or rehearsal
+  tempo_adjustments: Record<string, number>; // song_id -> tempo adjustment
+  key_changes: Record<string, string>; // song_id -> new key
+  skipped_songs: string[]; // song IDs that were skipped
+  coordinator_user_id?: string; // who is leading the coordination
+}
+
+// NEW: Band role types
+export type BandRole = 
+  | 'lead_guitar' 
+  | 'rhythm_guitar' 
+  | 'bass' 
+  | 'drums' 
+  | 'keys' 
+  | 'lead_vocals' 
+  | 'backing_vocals' 
+  | 'sound_engineer' 
+  | 'stage_manager' 
+  | 'music_director' 
+  | 'other';
+
+export interface BandMember {
+  user_id: string;
+  name: string;
+  email: string;
+  primary_role: BandRole;
+  backup_roles: BandRole[];
+  instruments: string[];
+  is_lead: boolean;
+  availability_status: 'available' | 'limited' | 'unavailable';
+  preparation_status: 'ready' | 'preparing' | 'needs_practice';
 }
