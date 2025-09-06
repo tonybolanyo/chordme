@@ -1,0 +1,179 @@
+/* SetlistDemo.css - Styles for the setlist demo page */
+
+.setlist-demo-intro {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  color: white;
+}
+
+.demo-container {
+  max-width: 800px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 3rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.demo-container h1 {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  background: linear-gradient(45deg, #fff, #f0f8ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+}
+
+.demo-container p {
+  font-size: 1.125rem;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  opacity: 0.9;
+}
+
+.demo-features {
+  text-align: left;
+  margin: 2rem 0;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1.5rem;
+  border-radius: 10px;
+}
+
+.demo-features h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: #f0f8ff;
+}
+
+.demo-features ul {
+  list-style: none;
+  padding: 0;
+}
+
+.demo-features li {
+  padding: 0.5rem 0;
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+.demo-instructions {
+  text-align: left;
+  margin: 2rem 0;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1.5rem;
+  border-radius: 10px;
+}
+
+.demo-instructions h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: #f0f8ff;
+}
+
+.demo-instructions ol {
+  padding-left: 1.5rem;
+}
+
+.demo-instructions li {
+  padding: 0.5rem 0;
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+.demo-start-btn {
+  background: linear-gradient(45deg, #4CAF50, #45a049);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 1rem;
+}
+
+.demo-start-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+  background: linear-gradient(45deg, #45a049, #4CAF50);
+}
+
+.demo-start-btn:active {
+  transform: translateY(0);
+}
+
+.setlist-demo {
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .demo-container {
+    padding: 2rem;
+    margin: 1rem;
+  }
+
+  .demo-container h1 {
+    font-size: 2rem;
+  }
+
+  .demo-container p {
+    font-size: 1rem;
+  }
+
+  .demo-features,
+  .demo-instructions {
+    text-align: center;
+    padding: 1rem;
+  }
+
+  .demo-features ul,
+  .demo-instructions ol {
+    text-align: left;
+  }
+}
+
+@media (max-width: 480px) {
+  .setlist-demo-intro {
+    padding: 1rem;
+  }
+
+  .demo-container {
+    padding: 1.5rem;
+  }
+
+  .demo-container h1 {
+    font-size: 1.75rem;
+  }
+}
+
+/* Dark mode compatibility */
+@media (prefers-color-scheme: dark) {
+  .setlist-demo-intro {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .demo-start-btn {
+    transition: none;
+  }
+
+  .demo-start-btn:hover {
+    transform: none;
+  }
+}

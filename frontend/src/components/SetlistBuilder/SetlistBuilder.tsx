@@ -68,6 +68,67 @@ export const SetlistBuilder: React.FC<SetlistBuilderProps> = ({
         setLoading(true);
         setError(null);
 
+        // Check if we're in demo mode
+        const isDemoMode = window.location.hash.includes('setlist-demo');
+        
+        if (isDemoMode) {
+          // Use mock data for demo
+          const mockSetlist = {
+            id: 'demo-setlist',
+            name: 'Sunday Morning Worship - Demo',
+            description: 'A sample setlist showcasing the drag-and-drop interface',
+            user_id: 'demo-user',
+            event_type: 'worship' as const,
+            venue: 'Main Sanctuary',
+            event_date: '2024-01-21T10:00:00Z',
+            estimated_duration: 45,
+            is_template: false,
+            is_public: false,
+            is_recurring: false,
+            status: 'draft' as const,
+            is_deleted: false,
+            is_archived: false,
+            tags: ['contemporary', 'worship'],
+            view_count: 0,
+            usage_count: 0,
+            created_at: '2024-01-01T00:00:00Z',
+            updated_at: '2024-01-15T00:00:00Z',
+            songs: [
+              {
+                id: 'demo-setlist-song-1',
+                setlist_id: 'demo-setlist',
+                song_id: 'demo-song-1',
+                sort_order: 1,
+                section: 'opening',
+                performance_key: 'G',
+                performance_tempo: 120,
+                is_optional: false,
+                is_highlight: true,
+                requires_preparation: false,
+                created_at: '2024-01-01T00:00:00Z',
+                updated_at: '2024-01-01T00:00:00Z'
+              },
+              {
+                id: 'demo-setlist-song-2',
+                setlist_id: 'demo-setlist',
+                song_id: 'demo-song-2',
+                sort_order: 2,
+                section: 'main',
+                performance_key: 'C',
+                performance_tempo: 130,
+                is_optional: false,
+                is_highlight: false,
+                requires_preparation: false,
+                created_at: '2024-01-01T00:00:00Z',
+                updated_at: '2024-01-01T00:00:00Z'
+              }
+            ]
+          };
+          setSetlist(mockSetlist);
+          setLoading(false);
+          return;
+        }
+
         if (setlistId) {
           // Load existing setlist
           const data = await setlistService.getSetlist(setlistId, {
@@ -105,6 +166,62 @@ export const SetlistBuilder: React.FC<SetlistBuilderProps> = ({
   useEffect(() => {
     const loadSongs = async () => {
       try {
+        // Check if we're in demo mode
+        const isDemoMode = window.location.hash.includes('setlist-demo');
+        
+        if (isDemoMode) {
+          // Use mock songs for demo
+          const mockSongs = [
+            {
+              id: 'demo-song-1',
+              title: 'Amazing Grace',
+              artist: 'Traditional',
+              key: 'G',
+              tempo: 120,
+              duration: 240,
+              tags: ['hymn', 'traditional']
+            },
+            {
+              id: 'demo-song-2',
+              title: 'How Great Is Our God',
+              artist: 'Chris Tomlin',
+              key: 'C',
+              tempo: 130,
+              duration: 300,
+              tags: ['contemporary', 'praise']
+            },
+            {
+              id: 'demo-song-3',
+              title: '10,000 Reasons',
+              artist: 'Matt Redman',
+              key: 'A',
+              tempo: 110,
+              duration: 280,
+              tags: ['contemporary', 'worship']
+            },
+            {
+              id: 'demo-song-4',
+              title: 'Blessed Be Your Name',
+              artist: 'Tree63',
+              key: 'D',
+              tempo: 140,
+              duration: 320,
+              tags: ['contemporary', 'praise']
+            },
+            {
+              id: 'demo-song-5',
+              title: 'Holy Holy Holy',
+              artist: 'Traditional',
+              key: 'F',
+              tempo: 90,
+              duration: 200,
+              tags: ['hymn', 'traditional']
+            }
+          ];
+          setAvailableSongs(mockSongs);
+          return;
+        }
+        
         const songs = await setlistService.searchSongs('', { limit: 100 });
         setAvailableSongs(songs);
       } catch (err) {
@@ -234,6 +351,18 @@ export const SetlistBuilder: React.FC<SetlistBuilderProps> = ({
       
       if (!songId || !setlist) return;
 
+      // Check if we're in demo mode
+      const isDemoMode = window.location.hash.includes('setlist-demo');
+      
+      if (isDemoMode) {
+        // For demo, just show an alert and simulate the action
+        const song = availableSongs.find(s => s.id === songId);
+        if (song) {
+          alert(`Demo: Added "${song.title}" to ${section} section!\n\nIn the real app, this would save to the database.`);
+        }
+        return;
+      }
+
       // Add song to setlist
       await setlistService.addSongToSetlist(setlist.id, {
         song_id: songId,
@@ -253,11 +382,76 @@ export const SetlistBuilder: React.FC<SetlistBuilderProps> = ({
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to add song to setlist');
     }
-  }, [readOnly, setlist]);
+  }, [readOnly, setlist, availableSongs]);
 
   // Search functionality
   const handleSongSearch = useCallback(async (query: string) => {
     try {
+      // Check if we're in demo mode
+      const isDemoMode = window.location.hash.includes('setlist-demo');
+      
+      if (isDemoMode) {
+        // Filter mock songs for demo
+        const mockSongs = [
+          {
+            id: 'demo-song-1',
+            title: 'Amazing Grace',
+            artist: 'Traditional',
+            key: 'G',
+            tempo: 120,
+            duration: 240,
+            tags: ['hymn', 'traditional']
+          },
+          {
+            id: 'demo-song-2',
+            title: 'How Great Is Our God',
+            artist: 'Chris Tomlin',
+            key: 'C',
+            tempo: 130,
+            duration: 300,
+            tags: ['contemporary', 'praise']
+          },
+          {
+            id: 'demo-song-3',
+            title: '10,000 Reasons',
+            artist: 'Matt Redman',
+            key: 'A',
+            tempo: 110,
+            duration: 280,
+            tags: ['contemporary', 'worship']
+          },
+          {
+            id: 'demo-song-4',
+            title: 'Blessed Be Your Name',
+            artist: 'Tree63',
+            key: 'D',
+            tempo: 140,
+            duration: 320,
+            tags: ['contemporary', 'praise']
+          },
+          {
+            id: 'demo-song-5',
+            title: 'Holy Holy Holy',
+            artist: 'Traditional',
+            key: 'F',
+            tempo: 90,
+            duration: 200,
+            tags: ['hymn', 'traditional']
+          }
+        ];
+        
+        const filteredSongs = query 
+          ? mockSongs.filter(song => 
+              song.title.toLowerCase().includes(query.toLowerCase()) ||
+              song.artist.toLowerCase().includes(query.toLowerCase())
+            )
+          : mockSongs;
+          
+        setAvailableSongs(filteredSongs);
+        setBuilderState(prev => ({ ...prev, searchQuery: query }));
+        return;
+      }
+      
       const songs = await setlistService.searchSongs(query, { limit: 50 });
       setAvailableSongs(songs);
       setBuilderState(prev => ({ ...prev, searchQuery: query }));
