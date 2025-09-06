@@ -413,3 +413,147 @@ class Chord(db.Model):
     
     def __repr__(self):
         return f'<Chord {self.name}>'
+
+
+class PDFExportJob(db.Model):
+    """
+    Model for tracking asynchronous PDF generation jobs.
+    Provides progress tracking, error handling, and file management for PDF exports.
+    """
+    __tablename__ = 'pdf_export_jobs'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    job_type = db.Column(db.String(50), nullable=False)  # 'single', 'batch', 'multi_song'
+    status = db.Column(db.String(20), nullable=False, default='pending')  # pending, processing, completed, failed, cancelled
+    progress = db.Column(db.Integer, default=0)  # 0-100 percentage
+    
+    # Job configuration
+    song_ids = db.Column(db.JSON)  # List of song IDs to export
+    export_options = db.Column(db.JSON)  # Export configuration (paper size, template, etc.)
+    
+    # Results and files
+    output_file_path = db.Column(db.String(500))  # Path to generated file(s)
+    output_filename = db.Column(db.String(255))  # Original filename for download
+    file_size = db.Column(db.Integer)  # File size in bytes
+    
+    # Progress and error tracking
+    processed_count = db.Column(db.Integer, default=0)
+    total_count = db.Column(db.Integer, default=0)
+    error_message = db.Column(db.Text)
+    error_details = db.Column(db.JSON)  # Detailed error information
+    
+    # Timing and lifecycle
+    created_at = db.Column(db.DateTime, default=utc_now, nullable=False)
+    started_at = db.Column(db.DateTime)
+    completed_at = db.Column(db.DateTime)
+    expires_at = db.Column(db.DateTime)  # When temporary files should be cleaned up
+    
+    # Relationship to user
+    user = db.relationship('User', backref='pdf_export_jobs', lazy=True)
+    
+    def __init__(self, user_id, job_type, song_ids=None, export_options=None):
+        self.user_id = user_id
+        self.job_type = job_type
+        self.song_ids = song_ids or []
+        self.export_options = export_options or {}
+        self.total_count = len(song_ids) if song_ids else 1
+        
+        # Set expiration time (24 hours from creation)
+        from datetime import timedelta
+        self.expires_at = utc_now() + timedelta(hours=24)
+    
+    def update_progress(self, processed_count=None, progress=None, status=None):
+        """Update job progress and status."""
+        if processed_count is not None:
+            self.processed_count = processed_count
+            if self.total_count > 0:
+                self.progress = min(100, int((processed_count / self.total_count) * 100))
+        
+        if progress is not None:
+            self.progress = min(100, max(0, progress))
+        
+        if status is not None:
+            self.status = status
+            if status == 'processing' and not self.started_at:
+                self.started_at = utc_now()
+            elif status in ['completed', 'failed', 'cancelled'] and not self.completed_at:
+                self.completed_at = utc_now()
+    
+    def mark_error(self, error_message, error_details=None):
+        """Mark job as failed with error information."""
+        self.status = 'failed'
+        self.error_message = error_message
+        self.error_details = error_details
+        self.completed_at = utc_now()
+    
+    def mark_completed(self, output_file_path, output_filename, file_size=None):
+        """Mark job as completed with output file information."""
+        self.status = 'completed'
+        self.progress = 100
+        self.output_file_path = output_file_path
+        self.output_filename = output_filename
+        self.file_size = file_size
+        self.completed_at = utc_now()
+    
+    def is_expired(self):
+        """Check if the job has expired and should be cleaned up."""
+        if not self.expires_at:
+            return False
+        
+        # Ensure both datetimes are timezone-aware for comparison
+        now = utc_now()
+        expires = self.expires_at
+        
+        # If expires_at is timezone-naive, assume UTC
+        if expires.tzinfo is None:
+            from datetime import timezone
+            expires = expires.replace(tzinfo=timezone.utc)
+        
+        return now > expires
+    
+    def is_finished(self):
+        """Check if the job is in a finished state."""
+        return self.status in ['completed', 'failed', 'cancelled']
+    
+    def can_be_cancelled(self):
+        """Check if the job can be cancelled."""
+        return self.status in ['pending', 'processing']
+    
+    def get_duration(self):
+        """Get job duration in seconds, if completed."""
+        if self.started_at and self.completed_at:
+            return (self.completed_at - self.started_at).total_seconds()
+        return None
+    
+    def to_dict(self, include_details=True):
+        """Convert job to dictionary."""
+        result = {
+            'id': self.id,
+            'user_id': self.user_id,
+            'job_type': self.job_type,
+            'status': self.status,
+            'progress': self.progress,
+            'processed_count': self.processed_count,
+            'total_count': self.total_count,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'started_at': self.started_at.isoformat() if self.started_at else None,
+            'completed_at': self.completed_at.isoformat() if self.completed_at else None,
+            'expires_at': self.expires_at.isoformat() if self.expires_at else None,
+        }
+        
+        if include_details:
+            result.update({
+                'song_ids': self.song_ids,
+                'export_options': self.export_options,
+                'output_filename': self.output_filename,
+                'file_size': self.file_size,
+                'error_message': self.error_message,
+                'error_details': self.error_details,
+                'duration': self.get_duration()
+            })
+        
+        return result
+    
+    def __repr__(self):
+        return f'<PDFExportJob {self.id} ({self.job_type}, {self.status})>'

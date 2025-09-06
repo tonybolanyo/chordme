@@ -5232,6 +5232,949 @@ def google_drive_backup_songs():
         )
 
 
+# Async PDF Export Endpoints
+
+@app.route('/api/v1/pdf/export/async/single', methods=['POST'])
+@auth_required
+@validate_request_size(max_content_length=10*1024)  # 10KB max for request
+@rate_limit(max_requests=10, window_seconds=300)  # 10 async exports per 5 minutes
+@csrf_protect(require_token=False)  # CSRF optional for API endpoints
+@security_headers
+def async_export_single_song():
+    """
+    Start asynchronous PDF export for a single song
+    ---
+    tags:
+      - PDF Export (Async)
+    summary: Start async single song PDF export
+    description: Create an asynchronous job to export a single song as PDF with progress tracking
+    security:
+      - Bearer: []
+    parameters:
+      - in: body
+        name: body
+        description: Export configuration
+        required: true
+        schema:
+          type: object
+          required:
+            - song_id
+          properties:
+            song_id:
+              type: integer
+              description: ID of the song to export
+              example: 123
+            options:
+              type: object
+              description: Export options
+              properties:
+                paper_size:
+                  type: string
+                  enum: [a4, letter, legal]
+                  default: a4
+                orientation:
+                  type: string
+                  enum: [portrait, landscape]
+                  default: portrait
+                template:
+                  type: string
+                  enum: [classic, modern, minimal]
+                  default: classic
+                title:
+                  type: string
+                  description: Override song title
+                artist:
+                  type: string
+                  description: Override song artist
+                chord_diagrams:
+                  type: boolean
+                  default: false
+                instrument:
+                  type: string
+                  enum: [guitar, ukulele]
+                  default: guitar
+                font_size:
+                  type: integer
+                  minimum: 8
+                  maximum: 20
+                  default: 11
+                quality:
+                  type: string
+                  enum: [draft, standard, high]
+                  default: standard
+                header:
+                  type: string
+                  description: Custom header text
+                footer:
+                  type: string
+                  description: Custom footer text
+                margins:
+                  type: object
+                  properties:
+                    top:
+                      type: number
+                      minimum: 0.25
+                      maximum: 3.0
+                    bottom:
+                      type: number
+                      minimum: 0.25
+                      maximum: 3.0
+                    left:
+                      type: number
+                      minimum: 0.25
+                      maximum: 3.0
+                    right:
+                      type: number
+                      minimum: 0.25
+                      maximum: 3.0
+                colors:
+                  type: object
+                  properties:
+                    title:
+                      type: string
+                      pattern: "^#[0-9A-Fa-f]{6}$"
+                    artist:
+                      type: string
+                      pattern: "^#[0-9A-Fa-f]{6}$"
+                    chords:
+                      type: string
+                      pattern: "^#[0-9A-Fa-f]{6}$"
+                    lyrics:
+                      type: string
+                      pattern: "^#[0-9A-Fa-f]{6}$"
+    responses:
+      202:
+        description: Export job created and started
+        schema:
+          allOf:
+            - $ref: '#/definitions/Success'
+            - type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    job_id:
+                      type: integer
+                      description: Job ID for tracking progress
+                    status:
+                      type: string
+                      description: Initial job status
+                    progress:
+                      type: integer
+                      description: Initial progress percentage
+                    estimated_duration:
+                      type: string
+                      description: Estimated completion time
+      400:
+        description: Invalid request parameters
+        schema:
+          $ref: '#/definitions/Error'
+      401:
+        description: Authentication required
+        schema:
+          $ref: '#/definitions/Error'
+      404:
+        description: Song not found or access denied
+        schema:
+          $ref: '#/definitions/Error'
+      429:
+        description: Too many requests
+        schema:
+          $ref: '#/definitions/Error'
+      500:
+        description: Internal server error
+        schema:
+          $ref: '#/definitions/Error'
+    """
+    try:
+        from .pdf_job_manager import pdf_job_manager
+        from .permission_helpers import check_song_permission
+        
+        data = request.get_json()
+        if not data:
+            return create_error_response("Request body is required", 400)
+        
+        song_id = data.get('song_id')
+        options = data.get('options', {})
+        
+        # Validate required fields
+        if not song_id:
+            return create_error_response("song_id is required", 400)
+        
+        # Validate song exists and user has access
+        song, has_permission = check_song_permission(song_id, g.current_user_id, 'read')
+        if not song or not has_permission:
+            return create_error_response("Song not found or access denied", 404)
+        
+        # Validate export options (basic validation)
+        valid_paper_sizes = ['a4', 'letter', 'legal']
+        valid_orientations = ['portrait', 'landscape']
+        valid_templates = ['classic', 'modern', 'minimal']
+        
+        paper_size = options.get('paper_size', 'a4')
+        if paper_size not in valid_paper_sizes:
+            return create_error_response(f"Invalid paper_size. Must be one of: {', '.join(valid_paper_sizes)}", 400)
+        
+        orientation = options.get('orientation', 'portrait')
+        if orientation not in valid_orientations:
+            return create_error_response(f"Invalid orientation. Must be one of: {', '.join(valid_orientations)}", 400)
+        
+        template = options.get('template', 'classic')
+        if template not in valid_templates:
+            return create_error_response(f"Invalid template. Must be one of: {', '.join(valid_templates)}", 400)
+        
+        # Create and start job
+        job = pdf_job_manager.create_job(
+            user_id=g.current_user_id,
+            job_type='single',
+            song_ids=[song_id],
+            export_options=options
+        )
+        
+        # Start job asynchronously
+        pdf_job_manager.start_job_async(job.id)
+        
+        app.logger.info(f"Started async PDF export job {job.id} for song {song_id} by user {g.current_user_id}")
+        
+        return create_success_response(
+            data={
+                'job_id': job.id,
+                'status': job.status,
+                'progress': job.progress,
+                'estimated_duration': '30-60 seconds'
+            },
+            message="PDF export job started successfully",
+            status_code=202
+        )
+        
+    except Exception as e:
+        return security_error_handler.handle_server_error(
+            "An error occurred while starting PDF export",
+            exception=e,
+            ip_address=request.remote_addr
+        )
+
+
+@app.route('/api/v1/pdf/export/async/batch', methods=['POST'])
+@auth_required
+@validate_request_size(max_content_length=50*1024)  # 50KB max for batch request
+@rate_limit(max_requests=5, window_seconds=300)  # 5 batch exports per 5 minutes
+@csrf_protect(require_token=False)  # CSRF optional for API endpoints
+@security_headers
+def async_export_batch_songs():
+    """
+    Start asynchronous batch PDF export for multiple songs
+    ---
+    tags:
+      - PDF Export (Async)
+    summary: Start async batch PDF export
+    description: Create an asynchronous job to export multiple songs as separate PDFs in a ZIP archive
+    security:
+      - Bearer: []
+    parameters:
+      - in: body
+        name: body
+        description: Batch export configuration
+        required: true
+        schema:
+          type: object
+          required:
+            - song_ids
+          properties:
+            song_ids:
+              type: array
+              items:
+                type: integer
+              minItems: 1
+              maxItems: 50
+              description: List of song IDs to export
+              example: [1, 2, 3, 4, 5]
+            options:
+              type: object
+              description: Export options (same as single export)
+    responses:
+      202:
+        description: Batch export job created and started
+        schema:
+          allOf:
+            - $ref: '#/definitions/Success'
+            - type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    job_id:
+                      type: integer
+                      description: Job ID for tracking progress
+                    status:
+                      type: string
+                      description: Initial job status
+                    progress:
+                      type: integer
+                      description: Initial progress percentage
+                    total_songs:
+                      type: integer
+                      description: Total number of songs to export
+                    estimated_duration:
+                      type: string
+                      description: Estimated completion time
+      400:
+        description: Invalid request parameters
+        schema:
+          $ref: '#/definitions/Error'
+      401:
+        description: Authentication required
+        schema:
+          $ref: '#/definitions/Error'
+      404:
+        description: One or more songs not found or access denied
+        schema:
+          $ref: '#/definitions/Error'
+      429:
+        description: Too many requests
+        schema:
+          $ref: '#/definitions/Error'
+      500:
+        description: Internal server error
+        schema:
+          $ref: '#/definitions/Error'
+    """
+    try:
+        from .pdf_job_manager import pdf_job_manager
+        from .permission_helpers import check_song_permission
+        
+        data = request.get_json()
+        if not data:
+            return create_error_response("Request body is required", 400)
+        
+        song_ids = data.get('song_ids', [])
+        options = data.get('options', {})
+        
+        # Validate required fields
+        if not song_ids:
+            return create_error_response("song_ids is required", 400)
+        
+        if len(song_ids) > 50:
+            return create_error_response("Cannot export more than 50 songs at once", 400)
+        
+        # Validate all songs exist and user has access
+        for song_id in song_ids:
+            song, has_permission = check_song_permission(song_id, g.current_user_id, 'read')
+            if not song or not has_permission:
+                return create_error_response(f"Song {song_id} not found or access denied", 404)
+        
+        # Create and start job
+        job = pdf_job_manager.create_job(
+            user_id=g.current_user_id,
+            job_type='batch',
+            song_ids=song_ids,
+            export_options=options
+        )
+        
+        # Start job asynchronously
+        pdf_job_manager.start_job_async(job.id)
+        
+        # Estimate duration based on number of songs
+        estimated_minutes = max(1, len(song_ids) // 2)
+        estimated_duration = f"{estimated_minutes}-{estimated_minutes * 2} minutes"
+        
+        app.logger.info(f"Started async batch PDF export job {job.id} for {len(song_ids)} songs by user {g.current_user_id}")
+        
+        return create_success_response(
+            data={
+                'job_id': job.id,
+                'status': job.status,
+                'progress': job.progress,
+                'total_songs': len(song_ids),
+                'estimated_duration': estimated_duration
+            },
+            message="Batch PDF export job started successfully",
+            status_code=202
+        )
+        
+    except Exception as e:
+        return security_error_handler.handle_server_error(
+            "An error occurred while starting batch PDF export",
+            exception=e,
+            ip_address=request.remote_addr
+        )
+
+
+@app.route('/api/v1/pdf/export/async/multi-song', methods=['POST'])
+@auth_required
+@validate_request_size(max_content_length=50*1024)  # 50KB max for multi-song request
+@rate_limit(max_requests=3, window_seconds=300)  # 3 multi-song exports per 5 minutes
+@csrf_protect(require_token=False)  # CSRF optional for API endpoints
+@security_headers
+def async_export_multi_song():
+    """
+    Start asynchronous multi-song PDF export
+    ---
+    tags:
+      - PDF Export (Async)
+    summary: Start async multi-song PDF export
+    description: Create an asynchronous job to export multiple songs as a single PDF document with table of contents
+    security:
+      - Bearer: []
+    parameters:
+      - in: body
+        name: body
+        description: Multi-song export configuration
+        required: true
+        schema:
+          type: object
+          required:
+            - song_ids
+          properties:
+            song_ids:
+              type: array
+              items:
+                type: integer
+              minItems: 2
+              maxItems: 30
+              description: List of song IDs to include in the songbook
+              example: [1, 2, 3, 4, 5]
+            options:
+              type: object
+              description: Export options
+              properties:
+                include_toc:
+                  type: boolean
+                  default: true
+                  description: Include table of contents
+    responses:
+      202:
+        description: Multi-song export job created and started
+        schema:
+          allOf:
+            - $ref: '#/definitions/Success'
+            - type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    job_id:
+                      type: integer
+                      description: Job ID for tracking progress
+                    status:
+                      type: string
+                      description: Initial job status
+                    progress:
+                      type: integer
+                      description: Initial progress percentage
+                    total_songs:
+                      type: integer
+                      description: Total number of songs to include
+                    estimated_duration:
+                      type: string
+                      description: Estimated completion time
+      400:
+        description: Invalid request parameters
+        schema:
+          $ref: '#/definitions/Error'
+      401:
+        description: Authentication required
+        schema:
+          $ref: '#/definitions/Error'
+      404:
+        description: One or more songs not found or access denied
+        schema:
+          $ref: '#/definitions/Error'
+      429:
+        description: Too many requests
+        schema:
+          $ref: '#/definitions/Error'
+      500:
+        description: Internal server error
+        schema:
+          $ref: '#/definitions/Error'
+    """
+    try:
+        from .pdf_job_manager import pdf_job_manager
+        from .permission_helpers import check_song_permission
+        
+        data = request.get_json()
+        if not data:
+            return create_error_response("Request body is required", 400)
+        
+        song_ids = data.get('song_ids', [])
+        options = data.get('options', {})
+        
+        # Validate required fields
+        if not song_ids:
+            return create_error_response("song_ids is required", 400)
+        
+        if len(song_ids) < 2:
+            return create_error_response("Multi-song export requires at least 2 songs", 400)
+        
+        if len(song_ids) > 30:
+            return create_error_response("Cannot export more than 30 songs in a single PDF", 400)
+        
+        # Validate all songs exist and user has access
+        for song_id in song_ids:
+            song, has_permission = check_song_permission(song_id, g.current_user_id, 'read')
+            if not song or not has_permission:
+                return create_error_response(f"Song {song_id} not found or access denied", 404)
+        
+        # Create and start job
+        job = pdf_job_manager.create_job(
+            user_id=g.current_user_id,
+            job_type='multi_song',
+            song_ids=song_ids,
+            export_options=options
+        )
+        
+        # Start job asynchronously
+        pdf_job_manager.start_job_async(job.id)
+        
+        # Estimate duration based on number of songs
+        estimated_minutes = max(2, len(song_ids) // 3)
+        estimated_duration = f"{estimated_minutes}-{estimated_minutes * 2} minutes"
+        
+        app.logger.info(f"Started async multi-song PDF export job {job.id} for {len(song_ids)} songs by user {g.current_user_id}")
+        
+        return create_success_response(
+            data={
+                'job_id': job.id,
+                'status': job.status,
+                'progress': job.progress,
+                'total_songs': len(song_ids),
+                'estimated_duration': estimated_duration
+            },
+            message="Multi-song PDF export job started successfully",
+            status_code=202
+        )
+        
+    except Exception as e:
+        return security_error_handler.handle_server_error(
+            "An error occurred while starting multi-song PDF export",
+            exception=e,
+            ip_address=request.remote_addr
+        )
+
+
+# Progress Tracking and Job Management Endpoints
+
+@app.route('/api/v1/pdf/jobs/<int:job_id>', methods=['GET'])
+@auth_required
+@validate_positive_integer('job_id')
+@rate_limit(max_requests=60, window_seconds=60)  # 60 status checks per minute
+@security_headers
+def get_pdf_job_status(job_id):
+    """
+    Get PDF export job status and progress
+    ---
+    tags:
+      - PDF Export (Async)
+    summary: Get job status
+    description: Get current status and progress of a PDF export job
+    security:
+      - Bearer: []
+    parameters:
+      - in: path
+        name: job_id
+        description: Job ID
+        required: true
+        type: integer
+        minimum: 1
+    responses:
+      200:
+        description: Job status retrieved successfully
+        schema:
+          allOf:
+            - $ref: '#/definitions/Success'
+            - type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      description: Job ID
+                    status:
+                      type: string
+                      enum: [pending, processing, completed, failed, cancelled]
+                      description: Current job status
+                    progress:
+                      type: integer
+                      minimum: 0
+                      maximum: 100
+                      description: Progress percentage
+                    processed_count:
+                      type: integer
+                      description: Number of songs processed
+                    total_count:
+                      type: integer
+                      description: Total number of songs to process
+                    created_at:
+                      type: string
+                      format: date-time
+                      description: Job creation time
+                    started_at:
+                      type: string
+                      format: date-time
+                      description: Job start time
+                    completed_at:
+                      type: string
+                      format: date-time
+                      description: Job completion time
+                    expires_at:
+                      type: string
+                      format: date-time
+                      description: File expiration time
+                    error_message:
+                      type: string
+                      description: Error message if job failed
+                    duration:
+                      type: number
+                      description: Job duration in seconds (if completed)
+                    output_filename:
+                      type: string
+                      description: Output filename (if completed)
+                    file_size:
+                      type: integer
+                      description: File size in bytes (if completed)
+      401:
+        description: Authentication required
+        schema:
+          $ref: '#/definitions/Error'
+      403:
+        description: Access denied - job belongs to another user
+        schema:
+          $ref: '#/definitions/Error'
+      404:
+        description: Job not found
+        schema:
+          $ref: '#/definitions/Error'
+      500:
+        description: Internal server error
+        schema:
+          $ref: '#/definitions/Error'
+    """
+    try:
+        from .pdf_job_manager import pdf_job_manager
+        
+        job = pdf_job_manager.get_job(job_id)
+        if not job:
+            return create_error_response("Job not found", 404)
+        
+        # Ensure user can only access their own jobs
+        if job.user_id != g.current_user_id:
+            return create_error_response("Access denied", 403)
+        
+        return create_success_response(
+            data=job.to_dict(include_details=True),
+            message="Job status retrieved successfully"
+        )
+        
+    except Exception as e:
+        return security_error_handler.handle_server_error(
+            "An error occurred while retrieving job status",
+            exception=e,
+            ip_address=request.remote_addr
+        )
+
+
+@app.route('/api/v1/pdf/jobs', methods=['GET'])
+@auth_required
+@rate_limit(max_requests=30, window_seconds=60)  # 30 requests per minute
+@security_headers
+def list_pdf_jobs():
+    """
+    List PDF export jobs for the authenticated user
+    ---
+    tags:
+      - PDF Export (Async)
+    summary: List user's PDF export jobs
+    description: Get list of PDF export jobs for the authenticated user with optional filtering
+    security:
+      - Bearer: []
+    parameters:
+      - in: query
+        name: status
+        description: Filter by job status
+        required: false
+        type: string
+        enum: [pending, processing, completed, failed, cancelled]
+      - in: query
+        name: limit
+        description: Maximum number of jobs to return
+        required: false
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    responses:
+      200:
+        description: Jobs retrieved successfully
+        schema:
+          allOf:
+            - $ref: '#/definitions/Success'
+            - type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    jobs:
+                      type: array
+                      items:
+                        type: object
+                        description: Job status object (detailed)
+                    total:
+                      type: integer
+                      description: Total number of jobs
+      401:
+        description: Authentication required
+        schema:
+          $ref: '#/definitions/Error'
+      500:
+        description: Internal server error
+        schema:
+          $ref: '#/definitions/Error'
+    """
+    try:
+        from .pdf_job_manager import pdf_job_manager
+        
+        # Get query parameters
+        status_filter = request.args.get('status')
+        limit = min(int(request.args.get('limit', 20)), 100)
+        
+        # Get jobs for user
+        query = PDFExportJob.query.filter_by(user_id=g.current_user_id)
+        
+        if status_filter:
+            query = query.filter_by(status=status_filter)
+        
+        jobs = query.order_by(PDFExportJob.created_at.desc()).limit(limit).all()
+        
+        jobs_data = [job.to_dict(include_details=False) for job in jobs]
+        
+        return create_success_response(
+            data={
+                'jobs': jobs_data,
+                'total': len(jobs_data)
+            },
+            message=f"Retrieved {len(jobs_data)} jobs"
+        )
+        
+    except Exception as e:
+        return security_error_handler.handle_server_error(
+            "An error occurred while listing jobs",
+            exception=e,
+            ip_address=request.remote_addr
+        )
+
+
+@app.route('/api/v1/pdf/jobs/<int:job_id>/cancel', methods=['POST'])
+@auth_required
+@validate_positive_integer('job_id')
+@rate_limit(max_requests=10, window_seconds=60)  # 10 cancellations per minute
+@csrf_protect(require_token=False)  # CSRF optional for API endpoints
+@security_headers
+def cancel_pdf_job(job_id):
+    """
+    Cancel a PDF export job
+    ---
+    tags:
+      - PDF Export (Async)
+    summary: Cancel PDF export job
+    description: Cancel a pending or processing PDF export job
+    security:
+      - Bearer: []
+    parameters:
+      - in: path
+        name: job_id
+        description: Job ID
+        required: true
+        type: integer
+        minimum: 1
+    responses:
+      200:
+        description: Job cancelled successfully
+        schema:
+          allOf:
+            - $ref: '#/definitions/Success'
+            - type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    job_id:
+                      type: integer
+                      description: Cancelled job ID
+                    status:
+                      type: string
+                      description: New job status (cancelled)
+      400:
+        description: Job cannot be cancelled (already completed/failed)
+        schema:
+          $ref: '#/definitions/Error'
+      401:
+        description: Authentication required
+        schema:
+          $ref: '#/definitions/Error'
+      403:
+        description: Access denied - job belongs to another user
+        schema:
+          $ref: '#/definitions/Error'
+      404:
+        description: Job not found
+        schema:
+          $ref: '#/definitions/Error'
+      500:
+        description: Internal server error
+        schema:
+          $ref: '#/definitions/Error'
+    """
+    try:
+        from .pdf_job_manager import pdf_job_manager
+        
+        job = pdf_job_manager.get_job(job_id)
+        if not job:
+            return create_error_response("Job not found", 404)
+        
+        # Ensure user can only cancel their own jobs
+        if job.user_id != g.current_user_id:
+            return create_error_response("Access denied", 403)
+        
+        # Check if job can be cancelled
+        if not job.can_be_cancelled():
+            return create_error_response(f"Job cannot be cancelled (status: {job.status})", 400)
+        
+        # Cancel the job
+        success = pdf_job_manager.cancel_job(job_id)
+        if not success:
+            return create_error_response("Failed to cancel job", 500)
+        
+        app.logger.info(f"Cancelled PDF export job {job_id} by user {g.current_user_id}")
+        
+        return create_success_response(
+            data={
+                'job_id': job_id,
+                'status': 'cancelled'
+            },
+            message="Job cancelled successfully"
+        )
+        
+    except Exception as e:
+        return security_error_handler.handle_server_error(
+            "An error occurred while cancelling job",
+            exception=e,
+            ip_address=request.remote_addr
+        )
+
+
+@app.route('/api/v1/pdf/jobs/<int:job_id>/download', methods=['GET'])
+@auth_required
+@validate_positive_integer('job_id')
+@rate_limit(max_requests=20, window_seconds=60)  # 20 downloads per minute
+@security_headers
+def download_pdf_job_result(job_id):
+    """
+    Download the result file from a completed PDF export job
+    ---
+    tags:
+      - PDF Export (Async)
+    summary: Download PDF export result
+    description: Download the generated PDF or ZIP file from a completed export job
+    security:
+      - Bearer: []
+    parameters:
+      - in: path
+        name: job_id
+        description: Job ID
+        required: true
+        type: integer
+        minimum: 1
+    produces:
+      - application/pdf
+      - application/zip
+    responses:
+      200:
+        description: File downloaded successfully
+        headers:
+          Content-Disposition:
+            type: string
+            description: attachment; filename="filename.pdf" or "filename.zip"
+          Content-Type:
+            type: string
+            description: application/pdf or application/zip
+        schema:
+          type: string
+          format: binary
+          description: PDF or ZIP file content
+      401:
+        description: Authentication required
+        schema:
+          $ref: '#/definitions/Error'
+      403:
+        description: Access denied - job belongs to another user
+        schema:
+          $ref: '#/definitions/Error'
+      404:
+        description: Job not found or file not available
+        schema:
+          $ref: '#/definitions/Error'
+      410:
+        description: File has expired and is no longer available
+        schema:
+          $ref: '#/definitions/Error'
+      500:
+        description: Internal server error
+        schema:
+          $ref: '#/definitions/Error'
+    """
+    try:
+        from .pdf_job_manager import pdf_job_manager
+        
+        job = pdf_job_manager.get_job(job_id)
+        if not job:
+            return create_error_response("Job not found", 404)
+        
+        # Ensure user can only download their own job results
+        if job.user_id != g.current_user_id:
+            return create_error_response("Access denied", 403)
+        
+        # Check if job is completed
+        if job.status != 'completed':
+            return create_error_response(f"Job not completed (status: {job.status})", 404)
+        
+        # Check if file is expired
+        if job.is_expired():
+            return create_error_response("File has expired and is no longer available", 410)
+        
+        # Get file path
+        file_path = pdf_job_manager.get_file_path(job_id)
+        if not file_path:
+            return create_error_response("File not found or no longer available", 404)
+        
+        # Determine MIME type based on file extension
+        if file_path.endswith('.zip'):
+            mimetype = 'application/zip'
+        else:
+            mimetype = 'application/pdf'
+        
+        # Create response with file
+        response = Response(
+            open(file_path, 'rb').read(),
+            mimetype=mimetype,
+            headers={
+                'Content-Disposition': f'attachment; filename="{job.output_filename}"'
+            }
+        )
+        
+        app.logger.info(f"Downloaded PDF job result {job_id} by user {g.current_user_id}")
+        
+        return response
+        
+    except Exception as e:
+        return security_error_handler.handle_server_error(
+            "An error occurred while downloading file",
+            exception=e,
+            ip_address=request.remote_addr
+        )
+
+
 @app.route('/')
 def index():
     """
