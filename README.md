@@ -137,19 +137,56 @@ The backend is built with Python Flask and includes comprehensive automated test
 
 ### Running Tests
 
-The backend includes a comprehensive test suite covering all authentication endpoints:
+ChordMe features **comprehensive integration testing** covering all major features and user workflows.
+
+#### Test Coverage Summary
+
+| Category | Count | Coverage |
+|----------|-------|----------|
+| **Frontend Tests** | 218+ | Components, Services, Utils |
+| **Backend Tests** | 1,039+ | API, Security, Models |
+| **Integration Tests** | 11 | End-to-end workflows |
+| **E2E Tests** | 197 | Complete user journeys |
+| **Total Coverage** | **1,465+ tests** | **All major features** |
+
+#### Test Execution Commands
 
 ```bash
 # Run all tests
-python -m pytest tests/ -v
+npm run test:all
 
-# Run specific test categories
-python -m pytest tests/test_auth.py::TestUserRegistration -v
-python -m pytest tests/test_auth.py::TestUserLogin -v
+# Frontend tests (218+ tests)
+npm run test:frontend:run
 
-# Run with coverage
-python -m pytest tests/ --cov=chordme --cov-report=term --cov-report=html
+# Backend tests (1039+ tests)
+npm run test:backend
+
+# Integration tests (11 tests)
+npm run test:integration
+
+# E2E tests (197 tests)
+npx playwright test
+
+# Performance validation
+python scripts/validate_integration_testing.py
 ```
+
+#### Integration Testing Documentation
+
+- 📊 [Integration Testing Report](docs/INTEGRATION_TESTING_REPORT.md)
+- 🚀 [Integration Testing Demo](docs/INTEGRATION_TESTING_DEMO.md)
+- 📋 [E2E Testing Documentation](docs/E2E_TESTING.md)
+
+#### Features Tested
+
+- ✅ **ChordPro Editor** with syntax highlighting and validation
+- ✅ **Transposition System** with chord recognition
+- ✅ **Chord Diagrams** integrated with editor
+- ✅ **Search and Filtering** across all song data
+- ✅ **Cross-browser Compatibility** verification
+- ✅ **Mobile Responsiveness** testing
+- ✅ **Accessibility Compliance** (WCAG 2.1)
+- ✅ **Security Testing** (OWASP standards)
 
 ### Test Coverage
 

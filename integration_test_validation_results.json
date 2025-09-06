@@ -1,0 +1,55 @@
+{
+  "timestamp": "2025-09-06 12:13:25",
+  "metrics": {
+    "build": {
+      "build_time": 3.425732374191284,
+      "status": "success",
+      "bundle_info": {
+        "exists": true,
+        "files": [
+          {
+            "name": "default-avatar.svg",
+            "size_kb": 0.25
+          },
+          {
+            "name": "vite.svg",
+            "size_kb": 1.46
+          },
+          {
+            "name": "index.html",
+            "size_kb": 0.44
+          },
+          {
+            "name": "assets/index-C6PWKRGB.css",
+            "size_kb": 122.91
+          },
+          {
+            "name": "assets/index-D_zsRZ_u.js",
+            "size_kb": 940.12
+          }
+        ],
+        "total_size_kb": 1065.18
+      },
+      "return_code": 0
+    }
+  },
+  "test_results": {
+    "integration": {
+      "execution_time": 2.705272912979126,
+      "status": "failed",
+      "test_summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "return_code": 1
+    },
+    "frontend": {
+      "execution_time": 120.00399351119995,
+      "status": "timeout",
+      "test_count": 102,
+      "error": "Tests timed out after 120 seconds"
+    }
+  },
+  "status": "partial"
+}
