@@ -183,6 +183,26 @@ export type {
   ChordDiagramSearchCriteria,
 } from './chordDiagram';
 
+// Re-export search results types
+export type {
+  SearchResultsViewMode,
+  SearchSortOption,
+  SortDirection,
+  PageSize,
+  ResultAction,
+  BulkOperation,
+  ExportFormat,
+  SearchAnalytics,
+  SearchResultsConfig,
+  ResultItemState,
+  BulkActionContext,
+  ExportConfig,
+  ResultStatistics,
+  PaginationInfo,
+  SearchResultsState,
+  SearchResultsActions,
+} from './searchResults';
+
 export {
   INSTRUMENT_CONFIGS,
   CHORD_INTERVALS,
