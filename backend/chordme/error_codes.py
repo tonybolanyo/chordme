@@ -163,6 +163,38 @@ ERROR_CODES = {
         'retryable': True
     },
     
+    # YouTube API errors
+    'YOUTUBE_API_ERROR': {
+        'code': 'YOUTUBE_API_ERROR',
+        'category': ERROR_CATEGORIES['VALIDATION'],
+        'message': 'YouTube API error. Please check your request and try again',
+        'http_status': 400,
+        'retryable': False
+    },
+    'YOUTUBE_API_UNAVAILABLE': {
+        'code': 'YOUTUBE_API_UNAVAILABLE',
+        'category': ERROR_CATEGORIES['SERVER_ERROR'],
+        'message': 'YouTube service temporarily unavailable. Please try again',
+        'http_status': 503,
+        'retryable': True
+    },
+    'YOUTUBE_QUOTA_EXCEEDED': {
+        'code': 'YOUTUBE_QUOTA_EXCEEDED',
+        'category': ERROR_CATEGORIES['RATE_LIMIT'],
+        'message': 'YouTube API quota exceeded. Please try again later',
+        'http_status': 429,
+        'retryable': True
+    },
+    
+    # Validation errors continued
+    'INVALID_INPUT': {
+        'code': 'INVALID_INPUT',
+        'category': ERROR_CATEGORIES['VALIDATION'],
+        'message': 'Invalid input provided',
+        'http_status': 400,
+        'retryable': False
+    },
+    
     # Network errors (client-side)
     'NETWORK_ERROR': {
         'code': 'NETWORK_ERROR',
@@ -179,6 +211,51 @@ ERROR_CODES = {
         'retryable': True
     }
 }
+
+class ErrorCode:
+    """Error code constants for easier imports"""
+    # Validation errors
+    INVALID_EMAIL = 'INVALID_EMAIL'
+    INVALID_PASSWORD = 'INVALID_PASSWORD'
+    MISSING_REQUIRED_FIELD = 'MISSING_REQUIRED_FIELD'
+    INVALID_INPUT_FORMAT = 'INVALID_INPUT_FORMAT'
+    INVALID_INPUT = 'INVALID_INPUT'
+    
+    # Authentication errors
+    INVALID_CREDENTIALS = 'INVALID_CREDENTIALS'
+    TOKEN_EXPIRED = 'TOKEN_EXPIRED'
+    TOKEN_INVALID = 'TOKEN_INVALID'
+    TOKEN_MISSING = 'TOKEN_MISSING'
+    
+    # Authorization errors
+    ACCESS_DENIED = 'ACCESS_DENIED'
+    INSUFFICIENT_PERMISSIONS = 'INSUFFICIENT_PERMISSIONS'
+    
+    # Not found errors
+    RESOURCE_NOT_FOUND = 'RESOURCE_NOT_FOUND'
+    USER_NOT_FOUND = 'USER_NOT_FOUND'
+    SONG_NOT_FOUND = 'SONG_NOT_FOUND'
+    
+    # Conflict errors
+    EMAIL_ALREADY_EXISTS = 'EMAIL_ALREADY_EXISTS'
+    RESOURCE_CONFLICT = 'RESOURCE_CONFLICT'
+    
+    # Rate limiting
+    RATE_LIMIT_EXCEEDED = 'RATE_LIMIT_EXCEEDED'
+    
+    # Server errors
+    INTERNAL_SERVER_ERROR = 'INTERNAL_SERVER_ERROR'
+    DATABASE_ERROR = 'DATABASE_ERROR'
+    SERVICE_UNAVAILABLE = 'SERVICE_UNAVAILABLE'
+    
+    # YouTube errors
+    YOUTUBE_API_ERROR = 'YOUTUBE_API_ERROR'
+    YOUTUBE_API_UNAVAILABLE = 'YOUTUBE_API_UNAVAILABLE'
+    YOUTUBE_QUOTA_EXCEEDED = 'YOUTUBE_QUOTA_EXCEEDED'
+    
+    # Network errors
+    NETWORK_ERROR = 'NETWORK_ERROR'
+    TIMEOUT_ERROR = 'TIMEOUT_ERROR'
 
 def get_error_details(error_code: str) -> dict:
     """Get error details for a given error code."""

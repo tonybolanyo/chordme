@@ -20,6 +20,12 @@ export { default as UndoRedoControls } from './UndoRedoControls';
 export { default as PDFExportModal } from './PDFExportModal';
 export type { PDFExportOptions } from './PDFExportModal';
 
+// Audio and YouTube components
+export { AudioPlayer } from './AudioPlayer';
+export { YouTubePlayer } from './YouTubePlayer/YouTubePlayer';
+export { YouTubeSearch } from './YouTubePlayer/YouTubeSearch';
+export { YouTubeIntegration } from './YouTubeIntegration/YouTubeIntegration';
+
 // Split-screen preview components
 export { default as SplitViewLayout } from './SplitViewLayout';
 export { default as ViewModeSelector } from './ViewModeSelector';
