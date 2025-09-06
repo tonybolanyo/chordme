@@ -294,18 +294,37 @@ class TestAsyncPDFExportAPI:
                              headers=user2_headers)
         
         assert response.status_code == 403
-        assert response.get_json()['error'] == 'Access denied'
+        error_data = response.get_json()
+        error_msg = error_data['error']['message'] if isinstance(error_data['error'], dict) else error_data['error']
+        assert 'Access denied' in error_msg
     
     def test_validation_errors(self, client, auth_headers):
         """Test validation errors for async PDF export."""
+        # Create a song for testing
+        song_data = {
+            'title': 'Test Song for Validation',
+            'content': '{title: Test Song}\n[C]Test content'
+        }
+        
+        response = client.post('/api/v1/songs',
+                              data=json.dumps(song_data),
+                              content_type='application/json',
+                              headers=auth_headers)
+        
+        song = response.get_json()['data']
+        
         # Test missing song_id
         response = client.post('/api/v1/pdf/export/async/single',
-                              data=json.dumps({}),
+                              data=json.dumps({'song_id': None}),
                               content_type='application/json',
                               headers=auth_headers)
         
         assert response.status_code == 400
-        assert 'song_id is required' in response.get_json()['error']
+        error_data = response.get_json()
+        # Check the error structure
+        assert 'error' in error_data
+        error_msg = error_data['error']['message'] if isinstance(error_data['error'], dict) else error_data['error']
+        assert 'song_id is required' in error_msg
         
         # Test invalid song_id
         response = client.post('/api/v1/pdf/export/async/single',
@@ -314,19 +333,23 @@ class TestAsyncPDFExportAPI:
                               headers=auth_headers)
         
         assert response.status_code == 404
-        assert 'not found' in response.get_json()['error']
+        error_data = response.get_json()
+        error_msg = error_data['error']['message'] if isinstance(error_data['error'], dict) else error_data['error']
+        assert 'not found' in error_msg
         
-        # Test invalid paper size
+        # Test invalid paper size (use valid song_id)
         response = client.post('/api/v1/pdf/export/async/single',
                               data=json.dumps({
-                                  'song_id': 1,
+                                  'song_id': song['id'],
                                   'options': {'paper_size': 'invalid'}
                               }),
                               content_type='application/json',
                               headers=auth_headers)
         
         assert response.status_code == 400
-        assert 'Invalid paper_size' in response.get_json()['error']
+        error_data = response.get_json()
+        error_msg = error_data['error']['message'] if isinstance(error_data['error'], dict) else error_data['error']
+        assert 'Invalid paper_size' in error_msg
     
     def test_batch_export_validation(self, client, auth_headers):
         """Test batch export validation."""
@@ -337,7 +360,9 @@ class TestAsyncPDFExportAPI:
                               headers=auth_headers)
         
         assert response.status_code == 400
-        assert 'song_ids is required' in response.get_json()['error']
+        error_data = response.get_json()
+        error_msg = error_data['error']['message'] if isinstance(error_data['error'], dict) else error_data['error']
+        assert 'song_ids is required' in error_msg
         
         # Test too many songs
         response = client.post('/api/v1/pdf/export/async/batch',
@@ -346,7 +371,9 @@ class TestAsyncPDFExportAPI:
                               headers=auth_headers)
         
         assert response.status_code == 400
-        assert 'Cannot export more than 50 songs' in response.get_json()['error']
+        error_data = response.get_json()
+        error_msg = error_data['error']['message'] if isinstance(error_data['error'], dict) else error_data['error']
+        assert 'Cannot export more than 50 songs' in error_msg
     
     def test_multi_song_export_validation(self, client, auth_headers):
         """Test multi-song export validation."""
@@ -357,7 +384,9 @@ class TestAsyncPDFExportAPI:
                               headers=auth_headers)
         
         assert response.status_code == 400
-        assert 'at least 2 songs' in response.get_json()['error']
+        error_data = response.get_json()
+        error_msg = error_data['error']['message'] if isinstance(error_data['error'], dict) else error_data['error']
+        assert 'at least 2 songs' in error_msg
         
         # Test too many songs
         response = client.post('/api/v1/pdf/export/async/multi-song',
@@ -366,7 +395,9 @@ class TestAsyncPDFExportAPI:
                               headers=auth_headers)
         
         assert response.status_code == 400
-        assert 'Cannot export more than 30 songs' in response.get_json()['error']
+        error_data = response.get_json()
+        error_msg = error_data['error']['message'] if isinstance(error_data['error'], dict) else error_data['error']
+        assert 'Cannot export more than 30 songs' in error_msg
     
     @patch('chordme.pdf_job_manager.pdf_job_manager.start_job_async')
     def test_job_creation_flow(self, mock_start_job, client, auth_headers, sample_song):

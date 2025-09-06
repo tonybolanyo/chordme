@@ -5934,6 +5934,7 @@ def list_pdf_jobs():
     """
     try:
         from .pdf_job_manager import pdf_job_manager
+        from .models import PDFExportJob
         
         # Get query parameters
         status_filter = request.args.get('status')
