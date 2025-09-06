@@ -259,6 +259,7 @@ from . import api
 from . import search_routes
 from . import filter_preset_routes
 from . import favorites_routes
+from . import session_routes
 
 # Register search blueprint
 app.register_blueprint(search_routes.search_bp)
