@@ -1,0 +1,595 @@
+/* Practice Mode Component Styles */
+
+.practice-mode {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  max-width: 1000px;
+  margin: 0 auto;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Header */
+.practice-mode__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #f3f4f6;
+}
+
+.practice-mode__title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.practice-mode__title::before {
+  content: '🎯';
+  font-size: 1.5rem;
+}
+
+.practice-mode__close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #6b7280;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.practice-mode__close-btn:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+/* Achievement Notification */
+.achievement-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  animation: slideInRight 0.3s ease-out;
+}
+
+.achievement-notification__content {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: white;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 300px;
+  border: 2px solid #fcd34d;
+}
+
+.achievement-notification__icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.achievement-notification__title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+}
+
+.achievement-notification__description {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin: 0 0 2px 0;
+}
+
+.achievement-notification__detail {
+  font-size: 0.75rem;
+  opacity: 0.9;
+  margin: 0;
+}
+
+.achievement-notification__close {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.achievement-notification__close:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Content Layout */
+.practice-mode__content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 768px) {
+  .practice-mode__content {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Section Styles */
+.practice-mode__stats,
+.practice-mode__metronome,
+.practice-mode__goals,
+.practice-mode__session,
+.practice-mode__feedback {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.practice-mode__stats h3,
+.practice-mode__metronome h3,
+.practice-mode__goals h3,
+.practice-mode__session h3,
+.practice-mode__feedback h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 16px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Statistics */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.stat-item {
+  background: white;
+  padding: 12px;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  border: 1px solid #e5e7eb;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.stat-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.text-green-600 { color: #059669; }
+.text-yellow-600 { color: #d97706; }
+.text-red-600 { color: #dc2626; }
+
+/* Metronome */
+.metronome-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.metronome-toggle {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 1rem;
+}
+
+.metronome-toggle:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+
+.metronome-toggle.active {
+  background: #dc2626;
+}
+
+.metronome-toggle.active:hover {
+  background: #b91c1c;
+}
+
+.metronome-settings {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.setting-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 120px;
+}
+
+.setting-group label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.setting-group input[type="range"] {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: #e5e7eb;
+  outline: none;
+  cursor: pointer;
+}
+
+.setting-group input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #3b82f6;
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.setting-group select {
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: white;
+  font-size: 0.875rem;
+}
+
+.setting-group span {
+  font-weight: 600;
+  color: #3b82f6;
+  text-align: center;
+}
+
+/* Beat Indicator */
+.beat-indicator {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.beat-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #d1d5db;
+  transition: all 0.1s ease;
+}
+
+.beat-dot.active {
+  background: #3b82f6;
+  transform: scale(1.3);
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.5);
+}
+
+.beat-dot.accent.active {
+  background: #dc2626;
+  box-shadow: 0 0 12px rgba(220, 38, 38, 0.5);
+}
+
+/* Practice Goals */
+.goals-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.goal-item {
+  background: white;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.goal-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.goal-description {
+  font-size: 0.875rem;
+  color: #374151;
+  font-weight: 500;
+}
+
+.goal-progress {
+  background: #e5e7eb;
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.goal-progress-bar {
+  background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.goal-percentage {
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.goal-remove {
+  background: #fee2e2;
+  color: #dc2626;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.goal-remove:hover {
+  background: #fecaca;
+}
+
+.add-goal-btn {
+  background: #dbeafe;
+  color: #3b82f6;
+  border: 2px dashed #93c5fd;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.add-goal-btn:hover {
+  background: #bfdbfe;
+  border-color: #3b82f6;
+}
+
+/* Session Controls */
+.session-settings {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.session-settings .setting-group {
+  min-width: auto;
+}
+
+.session-settings label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.session-controls {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.session-btn {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+}
+
+.session-btn.start {
+  background: #059669;
+  color: white;
+}
+
+.session-btn.start:hover {
+  background: #047857;
+  transform: translateY(-1px);
+}
+
+.session-btn.pause {
+  background: #f59e0b;
+  color: white;
+}
+
+.session-btn.pause:hover {
+  background: #d97706;
+}
+
+.session-btn.resume {
+  background: #3b82f6;
+  color: white;
+}
+
+.session-btn.resume:hover {
+  background: #2563eb;
+}
+
+.session-btn.end {
+  background: #dc2626;
+  color: white;
+}
+
+.session-btn.end:hover {
+  background: #b91c1c;
+}
+
+.active-session-controls {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.session-info {
+  margin-top: 16px;
+  padding: 12px;
+  background: #ecfdf5;
+  border-radius: 6px;
+  border: 1px solid #a7f3d0;
+}
+
+.session-info p {
+  margin: 4px 0;
+  font-size: 0.875rem;
+  color: #047857;
+  font-weight: 500;
+}
+
+/* Timing Feedback */
+.feedback-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.feedback-item {
+  background: white;
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  display: grid;
+  grid-template-columns: 1fr auto auto 2fr;
+  gap: 12px;
+  align-items: center;
+  font-size: 0.875rem;
+}
+
+.feedback-chord {
+  font-weight: 600;
+  color: #374151;
+}
+
+.feedback-timing {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.feedback-timing.perfect {
+  background: #d1fae5;
+  color: #047857;
+}
+
+.feedback-timing.early {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.feedback-timing.late {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.feedback-accuracy {
+  font-weight: 600;
+}
+
+.feedback-message {
+  color: #6b7280;
+  font-style: italic;
+}
+
+/* Animations */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.metronome-toggle.active {
+  animation: pulse 2s infinite;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .practice-mode {
+    background: #1f2937;
+    border-color: #374151;
+    color: #f9fafb;
+  }
+
+  .practice-mode__stats,
+  .practice-mode__metronome,
+  .practice-mode__goals,
+  .practice-mode__session,
+  .practice-mode__feedback {
+    background: #374151;
+    border-color: #4b5563;
+  }
+
+  .stat-item,
+  .goal-item,
+  .feedback-item {
+    background: #1f2937;
+    border-color: #4b5563;
+  }
+
+  .practice-mode__title,
+  .stat-value {
+    color: #f9fafb;
+  }
+
+  .setting-group select {
+    background: #374151;
+    border-color: #4b5563;
+    color: #f9fafb;
+  }
+}

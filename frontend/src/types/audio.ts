@@ -421,6 +421,24 @@ export type {
   AutoDetectionConfig,
   AudioAnalysisResult,
   SyncError,
+  // Practice Mode types
+  PracticeSession,
+  PracticeGoal,
+  PracticeStatistics,
+  Achievement,
+  MetronomeConfig,
+  TimeSignature,
+  MetronomeSubdivision,
+  MetronomeSound,
+  DifficultyLevel,
+  ChordTimingFeedback,
+  PracticeRecording,
+  MetronomeEvent,
+  IPracticeModeService,
+  PracticeSessionConfig,
+  PracticeModeEventMap,
+  IMetronomeService,
+  MetronomeEventMap,
 };
 
 // YouTube Player configuration
@@ -613,6 +631,200 @@ export interface AudioAnalysisResult {
     tempo?: number;
     key?: string;
   };
+}
+
+// Practice Mode Types
+export interface PracticeSession {
+  id: string;
+  startTime: Date;
+  endTime?: Date;
+  duration: number; // seconds
+  songId?: string;
+  practiceGoals: PracticeGoal[];
+  statistics: PracticeStatistics;
+  achievements: Achievement[];
+  loopSections: LoopSection[];
+  metronomeSettings: MetronomeConfig;
+  difficultyLevel: DifficultyLevel;
+  recordingEnabled: boolean;
+  recordingData?: PracticeRecording;
+}
+
+export interface PracticeGoal {
+  id: string;
+  type: 'chord_changes' | 'tempo' | 'accuracy' | 'endurance' | 'section_mastery';
+  target: number;
+  current: number;
+  completed: boolean;
+  description: string;
+  deadline?: Date;
+}
+
+export interface PracticeStatistics {
+  totalPracticeTime: number; // seconds
+  sessionsCount: number;
+  averageAccuracy: number; // 0-1
+  chordChangeAccuracy: number; // 0-1
+  tempoConsistency: number; // 0-1
+  sectionsCompleted: number;
+  streak: number; // consecutive days
+  lastPracticeDate: Date;
+  improvementRate: number; // weekly percentage
+}
+
+export interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  type: 'practice_time' | 'accuracy' | 'streak' | 'speed' | 'challenge';
+  level: 'bronze' | 'silver' | 'gold' | 'platinum';
+  unlockedAt?: Date;
+  progress: number; // 0-1
+  requirement: number;
+  icon: string;
+  reward?: string;
+}
+
+export interface MetronomeConfig {
+  enabled: boolean;
+  bpm: number;
+  timeSignature: TimeSignature;
+  subdivision: MetronomeSubdivision;
+  volume: number; // 0-1
+  sound: MetronomeSound;
+  visualCue: boolean;
+  countIn: number; // bars before starting
+  accentBeats: boolean;
+}
+
+export interface TimeSignature {
+  numerator: number;
+  denominator: number;
+}
+
+export type MetronomeSubdivision = 'quarter' | 'eighth' | 'sixteenth' | 'triplet';
+export type MetronomeSound = 'click' | 'beep' | 'wood' | 'rim' | 'cowbell';
+export type DifficultyLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert';
+
+export interface ChordTimingFeedback {
+  chordName: string;
+  expectedTime: number;
+  actualTime: number;
+  accuracy: number; // 0-1
+  timing: 'early' | 'late' | 'perfect';
+  feedback: string;
+  suggestion?: string;
+}
+
+export interface PracticeRecording {
+  id: string;
+  sessionId: string;
+  audioData?: ArrayBuffer;
+  timingData: ChordTimingFeedback[];
+  metronomeData: MetronomeEvent[];
+  startTime: Date;
+  duration: number;
+  quality: 'low' | 'medium' | 'high';
+  fileSize?: number;
+}
+
+export interface MetronomeEvent {
+  beat: number;
+  subdivision: number;
+  time: number;
+  accent: boolean;
+  played: boolean; // if user played along correctly
+}
+
+export interface IPracticeModeService {
+  // Session management
+  startPracticeSession(config: PracticeSessionConfig): Promise<PracticeSession>;
+  endPracticeSession(): Promise<void>;
+  pausePracticeSession(): void;
+  resumePracticeSession(): void;
+  getCurrentSession(): PracticeSession | null;
+  
+  // Goals and progress
+  setGoals(goals: PracticeGoal[]): void;
+  updateProgress(statistics: Partial<PracticeStatistics>): void;
+  getProgress(): PracticeStatistics;
+  checkAchievements(): Achievement[];
+  
+  // Timing feedback
+  analyzeChordTiming(mapping: ChordTimeMapping, actualTime: number): ChordTimingFeedback;
+  getTimingHistory(): ChordTimingFeedback[];
+  
+  // Recording
+  startRecording(): Promise<void>;
+  stopRecording(): Promise<PracticeRecording>;
+  getRecordings(): PracticeRecording[];
+  
+  // Difficulty adjustment
+  adjustDifficulty(level: DifficultyLevel): void;
+  getSimplifiedChords(chords: string[]): string[];
+  
+  // Events
+  addEventListener<K extends keyof PracticeModeEventMap>(
+    type: K,
+    listener: (event: PracticeModeEventMap[K]) => void
+  ): void;
+}
+
+export interface PracticeSessionConfig {
+  songId?: string;
+  duration?: number; // seconds
+  goals: PracticeGoal[];
+  metronome: MetronomeConfig;
+  difficulty: DifficultyLevel;
+  enableRecording: boolean;
+  loopSections?: LoopSection[];
+}
+
+export interface PracticeModeEventMap {
+  'practice:session_started': { session: PracticeSession };
+  'practice:session_ended': { session: PracticeSession; statistics: PracticeStatistics };
+  'practice:goal_completed': { goal: PracticeGoal };
+  'practice:achievement_unlocked': { achievement: Achievement };
+  'practice:timing_feedback': { feedback: ChordTimingFeedback };
+  'practice:progress_updated': { statistics: PracticeStatistics };
+  'metronome:beat': { beat: number; accent: boolean };
+  'metronome:measure': { measure: number };
+}
+
+export interface IMetronomeService {
+  // Basic controls
+  start(): void;
+  stop(): void;
+  pause(): void;
+  resume(): void;
+  
+  // Configuration
+  setBPM(bpm: number): void;
+  setTimeSignature(timeSignature: TimeSignature): void;
+  setSubdivision(subdivision: MetronomeSubdivision): void;
+  setVolume(volume: number): void;
+  setSound(sound: MetronomeSound): void;
+  
+  // State
+  isRunning(): boolean;
+  getCurrentBeat(): number;
+  getCurrentMeasure(): number;
+  getConfig(): MetronomeConfig;
+  
+  // Events
+  addEventListener<K extends keyof MetronomeEventMap>(
+    type: K,
+    listener: (event: MetronomeEventMap[K]) => void
+  ): void;
+}
+
+export interface MetronomeEventMap {
+  'beat': { beat: number; measure: number; accent: boolean; time: number };
+  'measure': { measure: number; time: number };
+  'started': { config: MetronomeConfig };
+  'stopped': { totalBeats: number; duration: number };
+  'bpm_changed': { bpm: number };
+  'time_signature_changed': { timeSignature: TimeSignature };
 }
 
 // YouTube service interface

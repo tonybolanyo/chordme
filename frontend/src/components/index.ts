@@ -26,6 +26,9 @@ export { YouTubePlayer } from './YouTubePlayer/YouTubePlayer';
 export { YouTubeSearch } from './YouTubePlayer/YouTubeSearch';
 export { YouTubeIntegration } from './YouTubeIntegration/YouTubeIntegration';
 
+// Practice Mode components
+export { PracticeMode } from './PracticeMode';
+
 // Split-screen preview components
 export { default as SplitViewLayout } from './SplitViewLayout';
 export { default as ViewModeSelector } from './ViewModeSelector';
