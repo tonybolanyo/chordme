@@ -22,6 +22,8 @@ import ResultViewSelector from '../ResultViewSelector/ResultViewSelector';
 import ResultSortSelector from '../ResultSortSelector/ResultSortSelector';
 import ResultCard from '../ResultCard/ResultCard';
 import BulkActionsToolbar from '../BulkActionsToolbar/BulkActionsToolbar';
+import ExportResultsModal from '../ExportResultsModal/ExportResultsModal';
+import SearchAnalytics from '../SearchAnalytics/SearchAnalytics';
 import './SongSearch.css';
 
 interface SongSearchProps {
@@ -75,9 +77,52 @@ const SongSearch: React.FC<SongSearchProps> = ({
   const [selectedResults, setSelectedResults] = useState<Set<string>>(new Set());
   const [favoriteResults, setFavoriteResults] = useState<Set<string>>(new Set());
   const [showBulkActions, setShowBulkActions] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [showAnalytics, setShowAnalytics] = useState(false);
 
   // Available actions for results
   const availableActions: ResultAction[] = ['preview', 'edit', 'favorite', 'share', 'delete'];
+
+  // Mock analytics data (in a real app, this would come from the API)
+  const mockAnalytics = useMemo(() => ({
+    totalQueries: 1234,
+    averageSearchTime: 125,
+    popularTerms: [
+      { term: 'amazing grace', count: 45 },
+      { term: 'worship songs', count: 32 },
+      { term: 'guitar chords', count: 28 },
+      { term: 'hymns', count: 24 },
+      { term: 'christmas', count: 19 },
+    ],
+    resultsDistribution: {
+      withResults: 1100,
+      noResults: 134,
+    },
+    timeRange: 'Last 30 days',
+  }), []);
+
+  // Calculate result statistics from current results
+  const resultStatistics = useMemo(() => {
+    if (searchResults.length === 0) return null;
+    
+    const genreCount: Record<string, number> = {};
+    const difficultyCount: Record<string, number> = {};
+    let totalRelevance = 0;
+
+    searchResults.forEach(result => {
+      genreCount[result.genre] = (genreCount[result.genre] || 0) + 1;
+      difficultyCount[result.difficulty] = (difficultyCount[result.difficulty] || 0) + 1;
+      totalRelevance += result.relevance_score;
+    });
+
+    return {
+      totalResults,
+      searchTime,
+      resultsByGenre: genreCount,
+      resultsByDifficulty: difficultyCount,
+      averageRelevanceScore: totalRelevance / searchResults.length,
+    };
+  }, [searchResults, totalResults, searchTime]);
 
   // Filters state
   const [filters, setFilters] = useState<SearchFilters>({
@@ -311,8 +356,7 @@ const SongSearch: React.FC<SongSearchProps> = ({
   const handleBulkAction = useCallback((operation: BulkOperation) => {
     switch (operation) {
       case 'export':
-        // TODO: Implement export modal
-        console.log('Export selected:', Array.from(selectedResults));
+        setShowExportModal(true);
         break;
       case 'addToPlaylist':
         // TODO: Implement playlist modal
@@ -328,6 +372,23 @@ const SongSearch: React.FC<SongSearchProps> = ({
         break;
     }
   }, [selectedResults]);
+
+  // Handle export
+  const handleExport = useCallback((config: ExportConfig) => {
+    console.log('Exporting:', {
+      selectedResults: Array.from(selectedResults),
+      config
+    });
+    // TODO: Implement actual export functionality
+    // This would typically make an API call to generate and download the file
+  }, [selectedResults]);
+
+  // Get selected song titles for export modal
+  const selectedTitles = useMemo(() => {
+    return searchResults
+      .filter(result => selectedResults.has(result.id))
+      .map(result => `${result.title} - ${result.artist}`);
+  }, [searchResults, selectedResults]);
 
   // Trigger search when query or filters change
   useEffect(() => {
@@ -824,6 +885,21 @@ const SongSearch: React.FC<SongSearchProps> = ({
 
       {renderAdvancedFilters()}
       {renderSearchResults()}
+      
+      <SearchAnalytics
+        analytics={mockAnalytics}
+        statistics={resultStatistics}
+        isVisible={showAnalytics}
+        onToggle={setShowAnalytics}
+      />
+
+      <ExportResultsModal
+        isOpen={showExportModal}
+        onClose={() => setShowExportModal(false)}
+        onExport={handleExport}
+        selectedCount={selectedResults.size}
+        selectedTitles={selectedTitles}
+      />
     </div>
   );
 };

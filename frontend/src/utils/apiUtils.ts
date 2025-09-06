@@ -297,3 +297,28 @@ export function waitForOnline(timeout: number = 30000): Promise<void> {
     window.addEventListener('online', handleOnline);
   });
 }
+
+/**
+ * Simple API request function for compatibility
+ */
+export async function apiRequest<T>(
+  url: string,
+  options: RequestInit = {}
+): Promise<T> {
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1';
+  const fullUrl = `${baseUrl}${url}`;
+
+  const response = await fetch(fullUrl, {
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+    ...options,
+  });
+
+  if (!response.ok) {
+    throw parseApiError(response, await response.text());
+  }
+
+  return response.json();
+}
