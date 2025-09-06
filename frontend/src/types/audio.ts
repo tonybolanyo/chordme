@@ -4,7 +4,7 @@
  */
 
 // Supported audio formats
-export type AudioFormat = 'mp3' | 'wav' | 'ogg' | 'aac' | 'm4a' | 'flac';
+export type AudioFormat = 'mp3' | 'wav' | 'ogg' | 'aac' | 'm4a' | 'flac' | 'youtube';
 
 // Audio playback states
 export type PlaybackState = 'idle' | 'loading' | 'playing' | 'paused' | 'stopped' | 'error';
@@ -29,6 +29,41 @@ export interface AudioSource {
   quality: AudioQuality;
   fileSize?: number;
   metadata?: AudioMetadata;
+  youtubeData?: YouTubeVideoData;
+}
+
+// YouTube-specific video data
+export interface YouTubeVideoData {
+  videoId: string;
+  title: string;
+  channelTitle?: string;
+  description?: string;
+  thumbnails?: YouTubeThumbnails;
+  publishedAt?: string;
+  duration?: string; // ISO 8601 duration format
+  viewCount?: number;
+  likeCount?: number;
+  tags?: string[];
+  categoryId?: string;
+  defaultLanguage?: string;
+  defaultAudioLanguage?: string;
+  startTime?: number; // Start offset in seconds for synchronization
+  endTime?: number; // End offset in seconds
+}
+
+// YouTube thumbnail data
+export interface YouTubeThumbnails {
+  default?: YouTubeThumbnail;
+  medium?: YouTubeThumbnail;
+  high?: YouTubeThumbnail;
+  standard?: YouTubeThumbnail;
+  maxres?: YouTubeThumbnail;
+}
+
+export interface YouTubeThumbnail {
+  url: string;
+  width: number;
+  height: number;
 }
 
 // Audio metadata
@@ -120,6 +155,20 @@ export interface AudioEngineState {
   error?: AudioError;
   isSupported: boolean;
   usingFallback: boolean;
+  youtubePlayerState?: YouTubePlayerState;
+}
+
+// YouTube Player API state
+export interface YouTubePlayerState {
+  isReady: boolean;
+  playerState: number; // YouTube player state constants
+  currentTime: number;
+  duration: number;
+  volume: number;
+  isMuted: boolean;
+  playbackQuality: string;
+  availableQualityLevels: string[];
+  videoLoadedFraction: number;
 }
 
 // Audio error types
@@ -305,4 +354,131 @@ export type {
   IAudioEngine,
   AudioKeyboardShortcuts,
   AudioPlayerProps,
+  YouTubeVideoData,
+  YouTubeThumbnails,
+  YouTubeThumbnail,
+  YouTubePlayerState,
+  YouTubePlayerConfig,
+  YouTubeSearchParams,
+  YouTubeSearchResult,
+  YouTubeSyncConfig,
+  IYouTubeService,
 };
+
+// YouTube Player configuration
+export interface YouTubePlayerConfig {
+  apiKey: string;
+  playbackQuality?: string; // 'small', 'medium', 'large', 'hd720', 'hd1080', 'highres'
+  autoplay?: boolean;
+  loop?: boolean;
+  controls?: number; // 0, 1, or 2
+  showinfo?: number; // 0 or 1
+  rel?: number; // 0 or 1
+  modestbranding?: number; // 0 or 1
+  cc_load_policy?: number; // 0 or 1
+  iv_load_policy?: number; // 1 or 3
+  fs?: number; // 0 or 1
+  disablekb?: number; // 0 or 1
+  enablejsapi?: number; // 0 or 1
+  origin?: string;
+  widget_referrer?: string;
+  start?: number; // Start time in seconds
+  end?: number; // End time in seconds
+  playlist?: string; // Comma-separated list of video IDs
+}
+
+// YouTube search parameters
+export interface YouTubeSearchParams {
+  query: string;
+  maxResults?: number;
+  order?: 'date' | 'rating' | 'relevance' | 'title' | 'videoCount' | 'viewCount';
+  videoDuration?: 'any' | 'long' | 'medium' | 'short';
+  videoDefinition?: 'any' | 'high' | 'standard';
+  videoCategoryId?: string;
+  regionCode?: string;
+  relevanceLanguage?: string;
+  publishedAfter?: string;
+  publishedBefore?: string;
+}
+
+// YouTube search result
+export interface YouTubeSearchResult {
+  videoId: string;
+  title: string;
+  description: string;
+  channelTitle: string;
+  thumbnails: YouTubeThumbnails;
+  publishedAt: string;
+  duration: string;
+  viewCount?: number;
+  likeCount?: number;
+  relevanceScore?: number;
+}
+
+// YouTube synchronization configuration
+export interface YouTubeSyncConfig {
+  enabled: boolean;
+  chordProgression?: ChordTimeMapping[];
+  syncTolerance: number; // Synchronization tolerance in milliseconds
+  autoSync: boolean;
+  syncMode: 'manual' | 'automatic' | 'chord-based';
+  beatDetection?: boolean;
+  tempoMapping?: TempoMapping[];
+}
+
+// Chord timing mapping for synchronization
+export interface ChordTimeMapping {
+  chordName: string;
+  startTime: number; // Time in seconds when chord starts
+  endTime: number; // Time in seconds when chord ends
+  barNumber?: number;
+  beatPosition?: number;
+}
+
+// Tempo mapping for synchronization
+export interface TempoMapping {
+  time: number; // Time in seconds
+  bpm: number; // Beats per minute
+  timeSignature?: string; // e.g., "4/4", "3/4"
+}
+
+// YouTube service interface
+export interface IYouTubeService {
+  // Initialization
+  initialize(apiKey: string): Promise<void>;
+  isInitialized(): boolean;
+  
+  // Player management
+  createPlayer(containerId: string, config: YouTubePlayerConfig): Promise<any>;
+  destroyPlayer(playerId: string): void;
+  
+  // Search functionality
+  searchVideos(params: YouTubeSearchParams): Promise<YouTubeSearchResult[]>;
+  getVideoDetails(videoId: string): Promise<YouTubeVideoData>;
+  
+  // Playback control
+  playVideo(playerId: string): void;
+  pauseVideo(playerId: string): void;
+  seekTo(playerId: string, seconds: number): void;
+  setVolume(playerId: string, volume: number): void;
+  mute(playerId: string): void;
+  unMute(playerId: string): void;
+  
+  // State queries
+  getPlayerState(playerId: string): number;
+  getCurrentTime(playerId: string): number;
+  getDuration(playerId: string): number;
+  getVolume(playerId: string): number;
+  isMuted(playerId: string): boolean;
+  
+  // Event handling
+  addEventListener(playerId: string, event: string, handler: Function): void;
+  removeEventListener(playerId: string, event: string, handler: Function): void;
+  
+  // Synchronization
+  syncWithChords(playerId: string, syncConfig: YouTubeSyncConfig): void;
+  updateSyncMapping(playerId: string, mapping: ChordTimeMapping[]): void;
+  
+  // Cleanup
+  cleanup(): void;
+}
