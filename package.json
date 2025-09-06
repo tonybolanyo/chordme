@@ -34,6 +34,8 @@
     "docker:status": "./scripts/docker/docker-setup.sh status",
     "docker:logs": "./scripts/docker/docker-setup.sh logs",
     "docker:cleanup": "./scripts/docker/docker-setup.sh cleanup",
+    "docker:dev": "docker compose -f docker-compose.dev.yml up -d",
+    "docker:dev:stop": "docker compose -f docker-compose.dev.yml down",
     "k8s:setup": "./scripts/docker/minikube-setup.sh full-setup",
     "k8s:start": "./scripts/docker/minikube-setup.sh start",
     "k8s:deploy": "./scripts/docker/minikube-setup.sh deploy",

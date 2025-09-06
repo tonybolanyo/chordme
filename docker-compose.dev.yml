@@ -1,0 +1,42 @@
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: chordme-db-dev
+    environment:
+      POSTGRES_DB: chordme
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - chordme-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d chordme"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache (Optional - for future enhancements)
+  redis:
+    image: redis:7-alpine
+    container_name: chordme-redis-dev
+    ports:
+      - "6379:6379"
+    networks:
+      - chordme-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  chordme-network:
+    driver: bridge

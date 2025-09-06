@@ -51,7 +51,28 @@ Then open http://localhost:5173 in your browser.
 
 For a complete containerized development environment, use Docker Compose or Minikube:
 
-### Docker Compose (Easiest)
+### Development Database (Easiest)
+
+Start just the database and Redis services, run your app locally:
+
+```bash
+# Start database and Redis in containers
+npm run docker:dev
+
+# In separate terminals, run the app locally:
+npm run dev:backend    # Terminal 1 (Flask API - Port 5000)
+npm run dev:frontend   # Terminal 2 (React App - Port 5173)
+
+# Access the application:
+# Frontend: http://localhost:5173
+# Backend API: http://localhost:5000
+# Database: localhost:5432 (PostgreSQL)
+
+# Stop services when done
+npm run docker:dev:stop
+```
+
+### Full Docker Compose
 
 ```bash
 # Start all services (database, backend, frontend)
@@ -59,11 +80,6 @@ npm run docker:start
 
 # Check status
 npm run docker:status
-
-# Access the application
-# Frontend: http://localhost:5173
-# Backend API: http://localhost:5000
-# Database: localhost:5432
 
 # Stop services
 npm run docker:stop
