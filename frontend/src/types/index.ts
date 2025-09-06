@@ -187,3 +187,45 @@ export {
   INSTRUMENT_CONFIGS,
   CHORD_INTERVALS,
 } from './chordDiagram';
+
+// PDF Template types
+export interface PDFTemplate {
+  name: string;
+  description: string;
+  version: string;
+  author: string;
+  predefined: boolean;
+}
+
+export interface PDFPreviewRequest {
+  content?: string;
+  title?: string;
+  artist?: string;
+}
+
+// Batch export types
+export interface BatchExportRequest {
+  songIds: string[];
+  options: {
+    paperSize?: 'a4' | 'letter' | 'legal';
+    orientation?: 'portrait' | 'landscape';
+    template?: string;
+    fontSize?: number;
+    chordDiagrams?: boolean;
+    quality?: 'draft' | 'standard' | 'high';
+    margins?: {
+      top: number;
+      bottom: number;
+      left: number;
+      right: number;
+    };
+    header?: string;
+    footer?: string;
+    colors?: {
+      title?: string;
+      artist?: string;
+      chords?: string;
+      lyrics?: string;
+    };
+  };
+}

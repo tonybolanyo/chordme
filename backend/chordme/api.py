@@ -1750,14 +1750,33 @@ def export_song_pdf(song_id):
         template_name = request.args.get('template', 'classic').lower()
         title_override = request.args.get('title')
         artist_override = request.args.get('artist')
-        include_chord_diagrams = request.args.get('chord_diagrams', 'false').lower() == 'true'
+        include_chord_diagrams = request.args.get('chord_diagrams', 'true').lower() == 'true'
         diagram_instrument = request.args.get('instrument', 'guitar').lower()
+        
+        # New customization options
+        font_size = int(request.args.get('font_size', 11))
+        quality = request.args.get('quality', 'standard').lower()
+        header = request.args.get('header', '')
+        footer = request.args.get('footer', '')
+        
+        # Margin options (in inches)
+        margin_top = float(request.args.get('margin_top', 1.0))
+        margin_bottom = float(request.args.get('margin_bottom', 1.0))
+        margin_left = float(request.args.get('margin_left', 1.0))
+        margin_right = float(request.args.get('margin_right', 1.0))
+        
+        # Color options
+        color_title = request.args.get('color_title', '#000000')
+        color_artist = request.args.get('color_artist', '#555555')
+        color_chords = request.args.get('color_chords', '#333333')
+        color_lyrics = request.args.get('color_lyrics', '#000000')
         
         # Validate parameters
         valid_paper_sizes = ['a4', 'letter', 'legal']
         valid_orientations = ['portrait', 'landscape']
         valid_templates = ['classic', 'modern', 'minimal']
         valid_instruments = ['guitar', 'ukulele']
+        valid_qualities = ['draft', 'standard', 'high']
         
         if paper_size not in valid_paper_sizes:
             return create_error_response(f"Invalid paper size. Must be one of: {', '.join(valid_paper_sizes)}", 400)
@@ -1770,6 +1789,42 @@ def export_song_pdf(song_id):
         
         if diagram_instrument not in valid_instruments:
             return create_error_response(f"Invalid instrument. Must be one of: {', '.join(valid_instruments)}", 400)
+        
+        if quality not in valid_qualities:
+            return create_error_response(f"Invalid quality. Must be one of: {', '.join(valid_qualities)}", 400)
+        
+        # Validate numeric parameters
+        if not (8 <= font_size <= 20):
+            return create_error_response("Font size must be between 8 and 20", 400)
+        
+        if not (0.25 <= margin_top <= 3):
+            return create_error_response("Top margin must be between 0.25 and 3 inches", 400)
+        
+        if not (0.25 <= margin_bottom <= 3):
+            return create_error_response("Bottom margin must be between 0.25 and 3 inches", 400)
+        
+        if not (0.25 <= margin_left <= 3):
+            return create_error_response("Left margin must be between 0.25 and 3 inches", 400)
+        
+        if not (0.25 <= margin_right <= 3):
+            return create_error_response("Right margin must be between 0.25 and 3 inches", 400)
+        
+        # Validate color format (simple hex validation)
+        def is_valid_hex_color(color):
+            import re
+            return re.match(r'^#[0-9A-Fa-f]{6}$', color) is not None
+        
+        if not is_valid_hex_color(color_title):
+            return create_error_response("Invalid title color format. Use #RRGGBB format", 400)
+        
+        if not is_valid_hex_color(color_artist):
+            return create_error_response("Invalid artist color format. Use #RRGGBB format", 400)
+        
+        if not is_valid_hex_color(color_chords):
+            return create_error_response("Invalid chords color format. Use #RRGGBB format", 400)
+        
+        if not is_valid_hex_color(color_lyrics):
+            return create_error_response("Invalid lyrics color format. Use #RRGGBB format", 400)
         
         # Generate PDF
         content = song.content
@@ -1784,7 +1839,23 @@ def export_song_pdf(song_id):
             orientation=orientation,
             template_name=template_name,
             include_chord_diagrams=include_chord_diagrams,
-            diagram_instrument=diagram_instrument
+            diagram_instrument=diagram_instrument,
+            font_size=font_size,
+            quality=quality,
+            header=header,
+            footer=footer,
+            margins={
+                'top': margin_top,
+                'bottom': margin_bottom,
+                'left': margin_left,
+                'right': margin_right,
+            },
+            colors={
+                'title': color_title,
+                'artist': color_artist,
+                'chords': color_chords,
+                'lyrics': color_lyrics,
+            }
         )
         
         # Create safe filename
@@ -1812,6 +1883,294 @@ def export_song_pdf(song_id):
     except Exception as e:
         return security_error_handler.handle_server_error(
             "An error occurred while exporting the song as PDF",
+            exception=e,
+            ip_address=request.remote_addr
+        )
+
+
+@app.route('/api/v1/songs/export/pdf/batch', methods=['POST'])
+@auth_required
+@validate_request_size(max_content_length=1024)  # 1KB max for batch request
+@rate_limit(max_requests=5, window_seconds=300)  # 5 batch exports per 5 minutes
+@security_headers
+def batch_export_songs_pdf():
+    """
+    Batch export multiple songs as PDF files in a ZIP archive
+    ---
+    tags:
+      - Songs
+    summary: Batch export songs as PDF
+    description: Export multiple songs as PDF files packaged in a ZIP archive
+    security:
+      - Bearer: []
+    parameters:
+      - in: body
+        name: batch_request
+        description: Batch export configuration
+        required: true
+        schema:
+          type: object
+          properties:
+            songIds:
+              type: array
+              items:
+                type: integer
+              example: [1, 2, 3]
+            options:
+              type: object
+              properties:
+                paperSize:
+                  type: string
+                  enum: [a4, letter, legal]
+                  example: "a4"
+                orientation:
+                  type: string
+                  enum: [portrait, landscape]
+                  example: "portrait"
+                template:
+                  type: string
+                  example: "classic"
+                fontSize:
+                  type: integer
+                  example: 11
+                chordDiagrams:
+                  type: boolean
+                  example: true
+                quality:
+                  type: string
+                  enum: [draft, standard, high]
+                  example: "standard"
+                header:
+                  type: string
+                  example: "Custom header"
+                footer:
+                  type: string
+                  example: "Custom footer"
+                margins:
+                  type: object
+                  properties:
+                    top:
+                      type: number
+                      example: 1.0
+                    bottom:
+                      type: number
+                      example: 1.0
+                    left:
+                      type: number
+                      example: 1.0
+                    right:
+                      type: number
+                      example: 1.0
+                colors:
+                  type: object
+                  properties:
+                    title:
+                      type: string
+                      example: "#000000"
+                    artist:
+                      type: string
+                      example: "#555555"
+                    chords:
+                      type: string
+                      example: "#333333"
+                    lyrics:
+                      type: string
+                      example: "#000000"
+    produces:
+      - application/zip
+    responses:
+      200:
+        description: ZIP file with PDF exports
+        headers:
+          Content-Type:
+            type: string
+            description: application/zip
+          Content-Disposition:
+            type: string
+            description: attachment; filename="songs-export.zip"
+        schema:
+          type: string
+          format: binary
+          description: ZIP archive containing PDF files
+      400:
+        description: Invalid request parameters
+        schema:
+          $ref: '#/definitions/Error'
+      401:
+        description: Authentication required
+        schema:
+          $ref: '#/definitions/Error'
+      404:
+        description: One or more songs not found
+        schema:
+          $ref: '#/definitions/Error'
+      500:
+        description: Internal server error
+        schema:
+          $ref: '#/definitions/Error'
+    """
+    try:
+        data = request.get_json()
+        if not data:
+            return create_error_response("Request body is required", 400)
+        
+        song_ids = data.get('songIds', [])
+        options = data.get('options', {})
+        
+        if not song_ids:
+            return create_error_response("At least one song ID is required", 400)
+        
+        if len(song_ids) > 50:  # Limit batch size
+            return create_error_response("Cannot export more than 50 songs at once", 400)
+        
+        # Extract and validate options (same validation as single export)
+        paper_size = options.get('paperSize', 'a4').lower()
+        orientation = options.get('orientation', 'portrait').lower()
+        template_name = options.get('template', 'classic').lower()
+        font_size = int(options.get('fontSize', 11))
+        include_chord_diagrams = options.get('chordDiagrams', True)
+        quality = options.get('quality', 'standard').lower()
+        header = options.get('header', '')
+        footer = options.get('footer', '')
+        
+        # Margin options (in inches)
+        margins = options.get('margins', {})
+        margin_top = float(margins.get('top', 1.0))
+        margin_bottom = float(margins.get('bottom', 1.0))
+        margin_left = float(margins.get('left', 1.0))
+        margin_right = float(margins.get('right', 1.0))
+        
+        # Color options
+        colors = options.get('colors', {})
+        color_title = colors.get('title', '#000000')
+        color_artist = colors.get('artist', '#555555')
+        color_chords = colors.get('chords', '#333333')
+        color_lyrics = colors.get('lyrics', '#000000')
+        
+        # Validate parameters (same validation as single export)
+        valid_paper_sizes = ['a4', 'letter', 'legal']
+        valid_orientations = ['portrait', 'landscape']
+        valid_templates = ['classic', 'modern', 'minimal']
+        valid_qualities = ['draft', 'standard', 'high']
+        
+        if paper_size not in valid_paper_sizes:
+            return create_error_response(f"Invalid paper size. Must be one of: {', '.join(valid_paper_sizes)}", 400)
+        
+        if orientation not in valid_orientations:
+            return create_error_response(f"Invalid orientation. Must be one of: {', '.join(valid_orientations)}", 400)
+        
+        if template_name not in valid_templates:
+            return create_error_response(f"Invalid template. Must be one of: {', '.join(valid_templates)}", 400)
+        
+        if quality not in valid_qualities:
+            return create_error_response(f"Invalid quality. Must be one of: {', '.join(valid_qualities)}", 400)
+        
+        # Validate numeric parameters
+        if not (8 <= font_size <= 20):
+            return create_error_response("Font size must be between 8 and 20", 400)
+        
+        # Validate margins
+        for margin_name, margin_value in [
+            ('top', margin_top), ('bottom', margin_bottom), 
+            ('left', margin_left), ('right', margin_right)
+        ]:
+            if not (0.25 <= margin_value <= 3):
+                return create_error_response(f"{margin_name.title()} margin must be between 0.25 and 3 inches", 400)
+        
+        # Validate colors
+        def is_valid_hex_color(color):
+            import re
+            return re.match(r'^#[0-9A-Fa-f]{6}$', color) is not None
+        
+        for color_name, color_value in [
+            ('title', color_title), ('artist', color_artist),
+            ('chords', color_chords), ('lyrics', color_lyrics)
+        ]:
+            if not is_valid_hex_color(color_value):
+                return create_error_response(f"Invalid {color_name} color format. Use #RRGGBB format", 400)
+        
+        # Verify all songs exist and user has access
+        songs = []
+        for song_id in song_ids:
+            song, has_permission = check_song_permission(song_id, g.current_user_id, 'read')
+            if not song or not has_permission:
+                return create_error_response(f"Song with ID {song_id} not found or access denied", 404)
+            songs.append(song)
+        
+        # Generate PDFs and create ZIP
+        from .pdf_generator import generate_song_pdf
+        import zipfile
+        from io import BytesIO
+        
+        zip_buffer = BytesIO()
+        
+        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+            for song in songs:
+                try:
+                    # Generate PDF for this song
+                    pdf_bytes = generate_song_pdf(
+                        content=song.content,
+                        title=song.title,
+                        artist=getattr(song, 'artist', None),
+                        paper_size=paper_size,
+                        orientation=orientation,
+                        template_name=template_name,
+                        include_chord_diagrams=include_chord_diagrams,
+                        diagram_instrument='guitar',
+                        font_size=font_size,
+                        quality=quality,
+                        header=header,
+                        footer=footer,
+                        margins={
+                            'top': margin_top,
+                            'bottom': margin_bottom,
+                            'left': margin_left,
+                            'right': margin_right,
+                        },
+                        colors={
+                            'title': color_title,
+                            'artist': color_artist,
+                            'chords': color_chords,
+                            'lyrics': color_lyrics,
+                        }
+                    )
+                    
+                    # Create safe filename for this song
+                    safe_title = re.sub(r'[^\w\s-]', '', song.title or 'song')
+                    safe_title = re.sub(r'[-\s]+', '-', safe_title).strip('-')
+                    safe_filename = f"{safe_title[:50]}.pdf"
+                    
+                    # Add to ZIP
+                    zip_file.writestr(safe_filename, pdf_bytes)
+                    
+                except Exception as e:
+                    app.logger.error(f"Failed to generate PDF for song {song.id}: {str(e)}")
+                    # Continue with other songs, add error note
+                    error_content = f"Error generating PDF for '{song.title}': {str(e)}"
+                    zip_file.writestr(f"ERROR-{song.title[:30]}.txt", error_content.encode('utf-8'))
+        
+        zip_buffer.seek(0)
+        
+        # Create response with ZIP
+        response = Response(
+            zip_buffer.getvalue(),
+            mimetype='application/zip',
+            headers={
+                'Content-Disposition': 'attachment; filename="songs-export.zip"'
+            }
+        )
+        
+        # Log batch export activity
+        app.logger.info(f"Batch PDF export: {len(songs)} songs exported by user {g.current_user_id} from IP {request.remote_addr}")
+        
+        return response
+        
+    except ImportError as e:
+        app.logger.error(f"PDF generation library not available: {str(e)}")
+        return create_error_response("PDF export functionality not available", 500)
+    except Exception as e:
+        return security_error_handler.handle_server_error(
+            "An error occurred during batch PDF export",
             exception=e,
             ip_address=request.remote_addr
         )
