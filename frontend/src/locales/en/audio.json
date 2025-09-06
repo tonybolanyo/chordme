@@ -1,0 +1,138 @@
+{
+  "audioPlayer": {
+    "controls": {
+      "play": "Play",
+      "pause": "Pause",
+      "stop": "Stop",
+      "previous": "Previous Track",
+      "next": "Next Track",
+      "seek": "Seek",
+      "volume": "Volume",
+      "mute": "Mute",
+      "unmute": "Unmute",
+      "speed": "Playback Speed",
+      "shuffle": "Shuffle",
+      "repeat": "Repeat",
+      "loading": "Loading..."
+    },
+    "playlist": {
+      "title": "Playlist",
+      "empty": "No tracks in playlist",
+      "addTrack": "Add Track",
+      "removeTrack": "Remove Track",
+      "createPlaylist": "Create Playlist",
+      "deletePlaylist": "Delete Playlist",
+      "playlistName": "Playlist Name",
+      "playlistDescription": "Description",
+      "trackCount_one": "{{count}} track",
+      "trackCount_other": "{{count}} tracks",
+      "duration": "Duration: {{duration}}",
+      "currentTrack": "Now Playing"
+    },
+    "visualization": {
+      "show": "Show Visualization",
+      "hide": "Hide Visualization",
+      "waveform": "Waveform",
+      "spectrum": "Spectrum",
+      "oscilloscope": "Oscilloscope"
+    },
+    "formats": {
+      "mp3": "MP3 Audio",
+      "wav": "WAV Audio",
+      "ogg": "OGG Audio",
+      "aac": "AAC Audio",
+      "m4a": "M4A Audio",
+      "flac": "FLAC Audio"
+    },
+    "quality": {
+      "low": "Low Quality",
+      "medium": "Medium Quality",
+      "high": "High Quality"
+    },
+    "repeat": {
+      "none": "No Repeat",
+      "all": "Repeat All",
+      "one": "Repeat One"
+    },
+    "errors": {
+      "networkError": "Network error while loading audio",
+      "decodeError": "Error decoding audio data",
+      "notSupported": "Audio format not supported",
+      "permissionDenied": "Audio permission denied",
+      "invalidSource": "Invalid audio source",
+      "playbackFailed": "Audio playback failed",
+      "bufferUnderrun": "Audio buffer underrun",
+      "deviceBusy": "Audio device busy",
+      "quotaExceeded": "Storage quota exceeded",
+      "crossfadeFailed": "Crossfade failed",
+      "generic": "An audio error occurred"
+    },
+    "shortcuts": {
+      "title": "Keyboard Shortcuts",
+      "playPause": "Play/Pause",
+      "stop": "Stop",
+      "previousTrack": "Previous Track",
+      "nextTrack": "Next Track",
+      "seekBackward": "Seek Backward 10s",
+      "seekForward": "Seek Forward 10s",
+      "volumeUp": "Volume Up",
+      "volumeDown": "Volume Down",
+      "toggleMute": "Toggle Mute",
+      "clearError": "Clear Error"
+    },
+    "accessibility": {
+      "audioPlayer": "Audio Player",
+      "playbackProgress": "Playback progress: {{current}} of {{total}}",
+      "volumeLevel": "Volume level: {{volume}}%",
+      "playbackRate": "Playback speed: {{rate}}x",
+      "trackInfo": "{{title}} by {{artist}}",
+      "playlistPosition": "Track {{current}} of {{total}}",
+      "bufferingProgress": "Buffering: {{progress}}%",
+      "errorAlert": "Audio Error",
+      "visualizationCanvas": "Audio visualization"
+    },
+    "status": {
+      "idle": "Ready",
+      "loading": "Loading",
+      "playing": "Playing",
+      "paused": "Paused",
+      "stopped": "Stopped",
+      "error": "Error",
+      "buffering": "Buffering",
+      "usingFallback": "Using HTML5 Audio fallback"
+    },
+    "cache": {
+      "preloading": "Preloading audio...",
+      "cached": "Audio cached",
+      "clearCache": "Clear Cache",
+      "cacheSize": "Cache size: {{size}}",
+      "cacheEntries": "{{count}} cached tracks"
+    },
+    "theme": {
+      "light": "Light Theme",
+      "dark": "Dark Theme",
+      "auto": "Auto Theme"
+    },
+    "demo": {
+      "title": "Audio Playback Engine Demo",
+      "description": "Experience ChordMe's comprehensive audio playback capabilities",
+      "features": {
+        "multiFormat": "Multi-Format Support",
+        "advancedControls": "Advanced Controls", 
+        "visualization": "Audio Visualization",
+        "keyboardShortcuts": "Keyboard Shortcuts",
+        "responsive": "Responsive Design",
+        "accessibility": "Accessibility",
+        "themeable": "Themeable",
+        "fallback": "Fallback Support"
+      },
+      "configuration": "Player Configuration",
+      "showVisualization": "Show Audio Visualization",
+      "compactMode": "Compact Mode",
+      "showPlaylist": "Show Playlist",
+      "activityLog": "Activity Log",
+      "clearLog": "Clear",
+      "technicalNotes": "Technical Implementation"
+    }
+  }
+}
