@@ -220,6 +220,10 @@ setup_monitoring(app)
 
 # Import API routes (must come after db initialization)
 from . import api
+from . import search_routes
+
+# Register search blueprint
+app.register_blueprint(search_routes.search_bp)
 
 # Initialize CLI commands for chord management
 from . import chord_cli
