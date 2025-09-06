@@ -1,3 +1,8 @@
+---
+layout: default
+title: Chord Diagram Data Structure
+---
+
 # Chord Diagram Data Structure - Technical Documentation
 
 ## Overview

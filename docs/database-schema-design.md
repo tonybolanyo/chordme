@@ -1,3 +1,8 @@
+---
+layout: default
+title: Database Schema Design
+---
+
 # Song Database Schema Design Documentation
 
 ## Overview

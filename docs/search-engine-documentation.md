@@ -1,3 +1,8 @@
+---
+layout: default
+title: Search Engine Documentation
+---
+
 # ChordMe Full-Text Search Engine Documentation
 
 ## Overview

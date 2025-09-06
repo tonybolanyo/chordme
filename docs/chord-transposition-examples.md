@@ -1,3 +1,8 @@
+---
+layout: default
+title: Chord Transposition Examples
+---
+
 # Chord Transposition Examples
 
 This document provides practical examples of the enhanced chord transposition algorithm in ChordMe, demonstrating various features and use cases.

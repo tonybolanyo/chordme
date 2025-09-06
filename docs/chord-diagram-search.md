@@ -1,3 +1,8 @@
+---
+layout: default
+title: Chord Diagram Search System
+---
+
 # Enhanced Chord Diagram Search and Filtering
 
 This document describes the enhanced chord diagram search functionality implemented for ChordMe, providing comprehensive search, filtering, and sorting capabilities for chord diagrams.

@@ -1,3 +1,8 @@
+---
+layout: default
+title: Chord Diagram Developer Guide
+---
+
 # Developer Guide: Adding New Chord Diagrams
 
 This guide explains how to create, validate, and integrate new chord diagrams into the ChordMe application using the comprehensive chord diagram data structure.

@@ -1,3 +1,8 @@
+---
+layout: default
+title: Transposition UI Components
+---
+
 # Transposition UI Components Documentation
 
 ## Overview

@@ -1,3 +1,8 @@
+---
+layout: default
+title: ChordMe Integration Testing Report
+---
+
 # ChordMe Integration Testing Report
 
 ## Executive Summary

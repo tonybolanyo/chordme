@@ -1,3 +1,8 @@
+---
+layout: default
+title: Search User Guide
+---
+
 # ChordMe Search User Guide
 
 ## Getting Started with Search
