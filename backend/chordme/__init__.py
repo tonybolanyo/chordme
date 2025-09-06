@@ -222,12 +222,16 @@ setup_monitoring(app)
 from . import api
 from . import search_routes
 from . import filter_preset_routes
+from . import favorites_routes
 
 # Register search blueprint
 app.register_blueprint(search_routes.search_bp)
 
 # Register filter preset blueprint
 app.register_blueprint(filter_preset_routes.filter_preset_bp, url_prefix='/api/v1')
+
+# Register favorites blueprint
+app.register_blueprint(favorites_routes.favorites_bp)
 
 # Initialize CLI commands for chord management
 from . import chord_cli
