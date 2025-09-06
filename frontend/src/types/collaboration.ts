@@ -34,6 +34,39 @@ export interface TextOperation {
   position?: number; // For delete operations
 }
 
+// Extended operation types for ChordPro-specific editing
+export interface ChordProOperation {
+  type: 'chord-insert' | 'chord-modify' | 'directive-insert' | 'directive-modify' | 'directive-delete';
+  position: number;
+  content?: string;
+  chordData?: {
+    original: string;
+    normalized: string;
+    position: number;
+  };
+  directiveData?: {
+    type: string; // title, artist, key, etc.
+    value: string;
+    position: number;
+  };
+  length?: number;
+}
+
+// Vector clock for operation ordering
+export interface VectorClock {
+  [userId: string]: number;
+}
+
+// Enhanced operation with ordering information
+export interface OrderedOperation {
+  id: string;
+  operation: TextOperation | ChordProOperation;
+  vectorClock: VectorClock;
+  userId: string;
+  timestamp: string;
+  dependencies?: string[]; // Operation IDs this depends on
+}
+
 export interface EditOperation {
   id: string;
   songId: string;
@@ -45,6 +78,46 @@ export interface EditOperation {
     userId: string;
     timestamp: string;
   };
+  // Enhanced with ordering and history
+  vectorClock?: VectorClock;
+  dependencies?: string[];
+  isUndo?: boolean;
+  undoOperationId?: string;
+}
+
+// Operation history for undo/redo
+export interface OperationHistory {
+  operations: OrderedOperation[];
+  undoStack: string[]; // Operation IDs
+  redoStack: string[]; // Operation IDs
+  currentIndex: number;
+  maxHistorySize: number;
+}
+
+// Change tracking
+export interface ChangeTracker {
+  changes: Map<string, OrderedOperation[]>; // userId -> operations
+  since: string; // timestamp
+  until: string; // timestamp
+}
+
+// Recovery mechanisms
+export interface OperationFailure {
+  operationId: string;
+  error: string;
+  timestamp: string;
+  retryCount: number;
+  canRecover: boolean;
+}
+
+export interface RecoveryState {
+  failedOperations: OperationFailure[];
+  recoveryStrategy: 'retry' | 'skip' | 'manual';
+  rollbackPoint?: {
+    content: string;
+    version: number;
+    operationId: string;
+  };
 }
 
 export interface DocumentState {
@@ -52,6 +125,18 @@ export interface DocumentState {
   version: number;
   lastModified: string;
   lastModifiedBy: string;
+  // Enhanced with vector clocks and recovery
+  vectorClock?: VectorClock;
+  checkpoints?: DocumentCheckpoint[];
+}
+
+export interface DocumentCheckpoint {
+  id: string;
+  content: string;
+  version: number;
+  vectorClock: VectorClock;
+  timestamp: string;
+  operationId: string;
 }
 
 export interface ConflictResolution {
@@ -100,6 +185,10 @@ export interface CollaborationSession {
   optimisticUpdates: OptimisticUpdate[];
   networkStatus: NetworkStatus;
   permissions: Record<string, 'read' | 'edit' | 'admin' | 'owner'>;
+  // Enhanced with operation history and recovery
+  operationHistory?: OperationHistory;
+  recoveryState?: RecoveryState;
+  changeTracker?: ChangeTracker;
 }
 
 export interface PermissionChange {
@@ -120,7 +209,9 @@ export interface CollaborationEvent {
     | 'edit-operation'
     | 'permission-changed'
     | 'network-status'
-    | 'conflict-detected';
+    | 'conflict-detected'
+    | 'operation-failed'
+    | 'recovery-initiated';
   payload: any;
   timestamp: string;
   userId?: string;
