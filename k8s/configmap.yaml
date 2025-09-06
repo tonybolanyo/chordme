@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: chordme
+  labels:
+    name: chordme
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: chordme-config
+  namespace: chordme
+data:
+  # Database configuration
+  POSTGRES_DB: "chordme"
+  POSTGRES_USER: "postgres"
+  
+  # Backend configuration
+  FLASK_ENV: "development"
+  FLASK_DEBUG: "1"
+  HTTPS_ENFORCED: "False"
+  
+  # Frontend configuration
+  VITE_APP_ENV: "development"
+  VITE_APP_TITLE: "ChordMe"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: chordme-secrets
+  namespace: chordme
+type: Opaque
+data:
+  # Base64 encoded values (echo -n 'value' | base64)
+  postgres-password: cGFzc3dvcmQ=  # password
+  jwt-secret-key: ZGV2ZWxvcG1lbnQtand0LXNlY3JldC1rZXk=  # development-jwt-secret-key
+  secret-key: ZGV2ZWxvcG1lbnQtc2VjcmV0LWtleQ==  # development-secret-key

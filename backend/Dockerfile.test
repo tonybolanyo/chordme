@@ -1,0 +1,21 @@
+# Basic test Dockerfile for ChordMe Backend
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy a simple test file
+COPY run.py .
+
+# Create a minimal test config
+RUN echo "SECRET_KEY = 'test'" > config.py
+
+# Expose port
+EXPOSE 5000
+
+# Simple test command
+CMD ["python", "-c", "print('ChordMe Backend Test Container Ready')"]

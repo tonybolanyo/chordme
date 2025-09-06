@@ -1,0 +1,58 @@
+# ChordMe Backend Docker ignore file
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# Environment files
+.env
+.env.local
+.env.development
+.env.production
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+logs/
+*.log
+
+# Security reports
+security_reports/
+
+# Upload directories
+uploads/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+
+# Documentation build
+docs/_build/
