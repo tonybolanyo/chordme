@@ -1,0 +1,281 @@
+.analytics-toggle-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  color: #6b7280;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.analytics-toggle-button:hover {
+  background: #e5e7eb;
+  border-color: #9ca3af;
+  color: #374151;
+}
+
+.analytics-toggle-button.collapsed {
+  margin-top: 1rem;
+}
+
+.search-analytics {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  margin-top: 1rem;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.analytics-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  background: #f8fafc;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.analytics-header h3 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.analytics-content {
+  padding: 1.5rem;
+}
+
+.analytics-section {
+  margin-bottom: 2rem;
+}
+
+.analytics-section:last-child {
+  margin-bottom: 0;
+}
+
+.analytics-section h4 {
+  margin: 0 0 1rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.analytics-section h5 {
+  margin: 0 0 0.75rem 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.analytics-metric {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+  background: #f9fafb;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.metric-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 0.25rem;
+}
+
+.metric-label {
+  font-size: 0.75rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.distribution-charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.distribution-chart {
+  background: #f9fafb;
+  border-radius: 6px;
+  padding: 1rem;
+}
+
+.chart-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.chart-bar {
+  display: grid;
+  grid-template-columns: 80px 1fr 40px;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+}
+
+.bar-label {
+  color: #374151;
+  font-weight: 500;
+  text-transform: capitalize;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bar-container {
+  height: 16px;
+  background: #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+  border-radius: 8px;
+  transition: width 0.3s ease;
+}
+
+.bar-value {
+  color: #6b7280;
+  font-weight: 600;
+  text-align: right;
+}
+
+.popular-terms {
+  background: #f9fafb;
+  border-radius: 6px;
+  padding: 1rem;
+}
+
+.terms-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.term-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  background: #fff;
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+
+.term-rank {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: #3b82f6;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.term-text {
+  flex: 1;
+  color: #374151;
+  font-weight: 500;
+}
+
+.term-count {
+  color: #6b7280;
+  font-size: 0.75rem;
+}
+
+.no-analytics {
+  text-align: center;
+  padding: 2rem;
+  color: #6b7280;
+}
+
+.no-analytics p {
+  margin: 0;
+  font-style: italic;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .analytics-content {
+    padding: 1rem;
+  }
+  
+  .analytics-grid {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 0.75rem;
+  }
+  
+  .analytics-metric {
+    padding: 0.75rem;
+  }
+  
+  .metric-value {
+    font-size: 1.25rem;
+  }
+  
+  .distribution-charts {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .chart-bar {
+    grid-template-columns: 60px 1fr 30px;
+    gap: 0.375rem;
+    font-size: 0.6875rem;
+  }
+  
+  .bar-container {
+    height: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .analytics-header {
+    padding: 0.75rem 1rem;
+  }
+  
+  .analytics-header h3 {
+    font-size: 1rem;
+  }
+  
+  .analytics-content {
+    padding: 0.75rem;
+  }
+  
+  .analytics-section {
+    margin-bottom: 1.5rem;
+  }
+  
+  .term-item {
+    gap: 0.5rem;
+    padding: 0.375rem;
+  }
+  
+  .term-rank {
+    width: 20px;
+    height: 20px;
+    font-size: 0.625rem;
+  }
+}

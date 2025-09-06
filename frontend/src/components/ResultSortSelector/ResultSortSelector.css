@@ -1,0 +1,120 @@
+.result-sort-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sort-selector-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+.sort-options {
+  display: flex;
+  gap: 4px;
+}
+
+.sort-option-button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  color: #6b7280;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.sort-option-button:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+  color: #374151;
+}
+
+.sort-option-button:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: -2px;
+}
+
+.sort-option-button.active {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: #fff;
+}
+
+.sort-option-button.active:hover {
+  background: #2563eb;
+  border-color: #2563eb;
+}
+
+.sort-option-text {
+  font-weight: 500;
+}
+
+.sort-direction-icon {
+  font-size: 12px;
+  line-height: 1;
+  margin-left: 2px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .result-sort-selector {
+    gap: 6px;
+  }
+  
+  .sort-options {
+    flex-wrap: wrap;
+    gap: 3px;
+  }
+  
+  .sort-option-button {
+    padding: 6px 8px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .sort-selector-label {
+    display: none;
+  }
+  
+  .sort-option-button {
+    padding: 8px 6px;
+    font-size: 12px;
+  }
+  
+  .sort-option-text {
+    display: none;
+  }
+  
+  .sort-option-button::before {
+    content: attr(data-sort-type);
+    font-size: 16px;
+  }
+}
+
+/* Special styling for mobile icons */
+@media (max-width: 480px) {
+  .sort-option-button[aria-label*="Relevance"]::before {
+    content: "⭐";
+  }
+  
+  .sort-option-button[aria-label*="Alphabetical"]::before {
+    content: "🔤";
+  }
+  
+  .sort-option-button[aria-label*="Date"]::before {
+    content: "📅";
+  }
+  
+  .sort-option-button[aria-label*="Popularity"]::before {
+    content: "📈";
+  }
+}

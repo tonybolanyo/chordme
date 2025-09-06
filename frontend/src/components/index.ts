@@ -24,6 +24,13 @@ export type { PDFExportOptions } from './PDFExportModal';
 export { default as SplitViewLayout } from './SplitViewLayout';
 export { default as ViewModeSelector } from './ViewModeSelector';
 
+// Search Results Interface components
+export { default as ResultViewSelector } from './ResultViewSelector';
+export { default as ResultSortSelector } from './ResultSortSelector';
+export { default as ResultCard } from './ResultCard';
+export { default as BulkActionsToolbar } from './BulkActionsToolbar';
+export { default as SongSearch } from './SongSearch';
+
 // Google Auth components
 export * from './GoogleAuth';
 

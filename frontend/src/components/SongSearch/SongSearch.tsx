@@ -8,6 +8,22 @@ import {
   SearchQueryParser,
   SearchResultUtils
 } from '../../services/songSearchService';
+import { 
+  SearchResultsViewMode, 
+  SearchSortOption, 
+  SortDirection, 
+  PageSize, 
+  ResultAction,
+  BulkOperation,
+  SearchResultsConfig,
+  BulkActionContext
+} from '../../types';
+import ResultViewSelector from '../ResultViewSelector/ResultViewSelector';
+import ResultSortSelector from '../ResultSortSelector/ResultSortSelector';
+import ResultCard from '../ResultCard/ResultCard';
+import BulkActionsToolbar from '../BulkActionsToolbar/BulkActionsToolbar';
+import ExportResultsModal from '../ExportResultsModal/ExportResultsModal';
+import SearchAnalytics from '../SearchAnalytics/SearchAnalytics';
 import './SongSearch.css';
 
 interface SongSearchProps {
@@ -52,6 +68,61 @@ const SongSearch: React.FC<SongSearchProps> = ({
   const [totalResults, setTotalResults] = useState(0);
   const [searchTime, setSearchTime] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
+
+  // Search Results Interface state
+  const [viewMode, setViewMode] = useState<SearchResultsViewMode>('list');
+  const [sortBy, setSortBy] = useState<SearchSortOption>('relevance');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [pageSize, setPageSize] = useState<PageSize>(50);
+  const [selectedResults, setSelectedResults] = useState<Set<string>>(new Set());
+  const [favoriteResults, setFavoriteResults] = useState<Set<string>>(new Set());
+  const [showBulkActions, setShowBulkActions] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [showAnalytics, setShowAnalytics] = useState(false);
+
+  // Available actions for results
+  const availableActions: ResultAction[] = ['preview', 'edit', 'favorite', 'share', 'delete'];
+
+  // Mock analytics data (in a real app, this would come from the API)
+  const mockAnalytics = useMemo(() => ({
+    totalQueries: 1234,
+    averageSearchTime: 125,
+    popularTerms: [
+      { term: 'amazing grace', count: 45 },
+      { term: 'worship songs', count: 32 },
+      { term: 'guitar chords', count: 28 },
+      { term: 'hymns', count: 24 },
+      { term: 'christmas', count: 19 },
+    ],
+    resultsDistribution: {
+      withResults: 1100,
+      noResults: 134,
+    },
+    timeRange: 'Last 30 days',
+  }), []);
+
+  // Calculate result statistics from current results
+  const resultStatistics = useMemo(() => {
+    if (searchResults.length === 0) return null;
+    
+    const genreCount: Record<string, number> = {};
+    const difficultyCount: Record<string, number> = {};
+    let totalRelevance = 0;
+
+    searchResults.forEach(result => {
+      genreCount[result.genre] = (genreCount[result.genre] || 0) + 1;
+      difficultyCount[result.difficulty] = (difficultyCount[result.difficulty] || 0) + 1;
+      totalRelevance += result.relevance_score;
+    });
+
+    return {
+      totalResults,
+      searchTime,
+      resultsByGenre: genreCount,
+      resultsByDifficulty: difficultyCount,
+      averageRelevanceScore: totalRelevance / searchResults.length,
+    };
+  }, [searchResults, totalResults, searchTime]);
 
   // Filters state
   const [filters, setFilters] = useState<SearchFilters>({
@@ -134,8 +205,8 @@ const SongSearch: React.FC<SongSearchProps> = ({
         minTempo: filters.minTempo ? parseInt(filters.minTempo) : undefined,
         maxTempo: filters.maxTempo ? parseInt(filters.maxTempo) : undefined,
         includePublic: true,
-        limit: maxResults,
-        offset: page * maxResults,
+        limit: pageSize,
+        offset: page * pageSize,
         enableCache: true
       };
 
@@ -164,7 +235,160 @@ const SongSearch: React.FC<SongSearchProps> = ({
       setLoading(false);
       if (onLoadingChange) onLoadingChange(false);
     }
-  }, [filters, maxResults, onResultsChange, onLoadingChange]);
+  }, [filters, pageSize, onResultsChange, onLoadingChange]);
+
+  // Bulk action context
+  const bulkActionContext: BulkActionContext = useMemo(() => ({
+    selectedIds: Array.from(selectedResults),
+    totalSelected: selectedResults.size,
+    availableOperations: ['export', 'addToPlaylist', 'share', 'delete']
+  }), [selectedResults]);
+
+  // Handle view mode change
+  const handleViewModeChange = useCallback((mode: SearchResultsViewMode) => {
+    setViewMode(mode);
+  }, []);
+
+  // Handle sort change
+  const handleSortChange = useCallback((newSortBy: SearchSortOption, direction?: SortDirection) => {
+    setSortBy(newSortBy);
+    if (direction) {
+      setSortDirection(direction);
+    }
+    // Re-sort current results client-side for immediate feedback
+    setSearchResults(prev => {
+      const sorted = [...prev];
+      sorted.sort((a, b) => {
+        const dir = direction || sortDirection;
+        const multiplier = dir === 'asc' ? 1 : -1;
+        
+        switch (newSortBy) {
+          case 'alphabetical':
+            return multiplier * a.title.localeCompare(b.title);
+          case 'date':
+            return multiplier * (new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+          case 'popularity':
+            return multiplier * (a.view_count - b.view_count);
+          case 'relevance':
+          default:
+            return multiplier * (b.relevance_score - a.relevance_score);
+        }
+      });
+      return sorted;
+    });
+  }, [sortDirection]);
+
+  // Handle page size change
+  const handlePageSizeChange = useCallback((size: PageSize) => {
+    setPageSize(size);
+    setCurrentPage(0); // Reset to first page
+    if (query || Object.values(filters).some(f => Array.isArray(f) ? f.length > 0 : f !== '')) {
+      performSearch(query, 0);
+    }
+  }, [query, filters, performSearch]);
+
+  // Handle item selection
+  const handleItemSelect = useCallback((id: string, selected: boolean) => {
+    setSelectedResults(prev => {
+      const newSet = new Set(prev);
+      if (selected) {
+        newSet.add(id);
+      } else {
+        newSet.delete(id);
+      }
+      setShowBulkActions(newSet.size > 0);
+      return newSet;
+    });
+  }, []);
+
+  // Handle select all
+  const handleSelectAll = useCallback((selected: boolean) => {
+    if (selected) {
+      const allIds = new Set(searchResults.map(result => result.id));
+      setSelectedResults(allIds);
+      setShowBulkActions(true);
+    } else {
+      setSelectedResults(new Set());
+      setShowBulkActions(false);
+    }
+  }, [searchResults]);
+
+  // Handle clear selection
+  const handleClearSelection = useCallback(() => {
+    setSelectedResults(new Set());
+    setShowBulkActions(false);
+  }, []);
+
+  // Handle result actions
+  const handleResultAction = useCallback((id: string, action: ResultAction) => {
+    switch (action) {
+      case 'favorite':
+        setFavoriteResults(prev => {
+          const newSet = new Set(prev);
+          if (newSet.has(id)) {
+            newSet.delete(id);
+          } else {
+            newSet.add(id);
+          }
+          return newSet;
+        });
+        break;
+      case 'preview':
+        // TODO: Implement preview modal
+        console.log('Preview result:', id);
+        break;
+      case 'edit':
+        // TODO: Navigate to edit page
+        console.log('Edit result:', id);
+        break;
+      case 'share':
+        // TODO: Implement share functionality
+        console.log('Share result:', id);
+        break;
+      case 'delete':
+        // TODO: Implement delete confirmation
+        console.log('Delete result:', id);
+        break;
+    }
+  }, []);
+
+  // Handle bulk actions
+  const handleBulkAction = useCallback((operation: BulkOperation) => {
+    switch (operation) {
+      case 'export':
+        setShowExportModal(true);
+        break;
+      case 'addToPlaylist':
+        // TODO: Implement playlist modal
+        console.log('Add to playlist:', Array.from(selectedResults));
+        break;
+      case 'share':
+        // TODO: Implement bulk share
+        console.log('Share selected:', Array.from(selectedResults));
+        break;
+      case 'delete':
+        // TODO: Implement bulk delete confirmation
+        console.log('Delete selected:', Array.from(selectedResults));
+        break;
+    }
+  }, [selectedResults]);
+
+  // Handle export
+  const handleExport = useCallback((config: ExportConfig) => {
+    console.log('Exporting:', {
+      selectedResults: Array.from(selectedResults),
+      config
+    });
+    // TODO: Implement actual export functionality
+    // This would typically make an API call to generate and download the file
+  }, [selectedResults]);
+
+  // Get selected song titles for export modal
+  const selectedTitles = useMemo(() => {
+    return searchResults
+      .filter(result => selectedResults.has(result.id))
+      .map(result => `${result.title} - ${result.artist}`);
+  }, [searchResults, selectedResults]);
 
   // Trigger search when query or filters change
   useEffect(() => {
@@ -537,7 +761,34 @@ const SongSearch: React.FC<SongSearchProps> = ({
             </span>
           </div>
           
-          {totalResults > maxResults && (
+          <div className="results-controls">
+            <ResultViewSelector
+              viewMode={viewMode}
+              onViewModeChange={handleViewModeChange}
+            />
+            
+            <ResultSortSelector
+              sortBy={sortBy}
+              sortDirection={sortDirection}
+              onSortChange={handleSortChange}
+            />
+            
+            <div className="page-size-selector">
+              <label htmlFor="pageSize">Show:</label>
+              <select
+                id="pageSize"
+                value={pageSize}
+                onChange={(e) => handlePageSizeChange(parseInt(e.target.value) as PageSize)}
+              >
+                <option value={10}>10</option>
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+            </div>
+          </div>
+          
+          {totalResults > pageSize && (
             <div className="pagination">
               <button
                 disabled={currentPage === 0}
@@ -546,10 +797,10 @@ const SongSearch: React.FC<SongSearchProps> = ({
                 Previous
               </button>
               <span>
-                Page {currentPage + 1} of {Math.ceil(totalResults / maxResults)}
+                Page {currentPage + 1} of {Math.ceil(totalResults / pageSize)}
               </span>
               <button
-                disabled={(currentPage + 1) * maxResults >= totalResults}
+                disabled={(currentPage + 1) * pageSize >= totalResults}
                 onClick={() => handlePageChange(currentPage + 1)}
               >
                 Next
@@ -558,56 +809,30 @@ const SongSearch: React.FC<SongSearchProps> = ({
           )}
         </div>
 
-        <div className="results-list">
+        {showBulkActions && (
+          <BulkActionsToolbar
+            context={bulkActionContext}
+            onBulkAction={handleBulkAction}
+            onSelectAll={handleSelectAll}
+            onClearSelection={handleClearSelection}
+            isVisible={showBulkActions}
+            totalResults={searchResults.length}
+          />
+        )}
+
+        <div className={`results-container ${viewMode}`}>
           {searchResults.map((result) => (
-            <div key={result.id} className="result-item">
-              <div className="result-main">
-                <h3 className="result-title">
-                  {result.highlights?.title ? (
-                    <span dangerouslySetInnerHTML={{ __html: result.highlights.title }} />
-                  ) : (
-                    result.title
-                  )}
-                </h3>
-                
-                <div className="result-artist">
-                  {result.highlights?.artist ? (
-                    <span dangerouslySetInnerHTML={{ __html: result.highlights.artist }} />
-                  ) : (
-                    result.artist
-                  )}
-                </div>
-
-                {result.highlights?.lyrics && (
-                  <div className="result-lyrics">
-                    <span dangerouslySetInnerHTML={{ __html: result.highlights.lyrics }} />
-                  </div>
-                )}
-              </div>
-
-              <div className="result-meta">
-                <div className="result-summary">
-                  {SearchResultUtils.createSummary(result)}
-                </div>
-                
-                <div className="result-stats">
-                  <span className="relevance-score">
-                    {SearchResultUtils.formatRelevanceScore(result.relevance_score)}
-                  </span>
-                  <span className="match-type">
-                    {SearchResultUtils.getMatchTypeDescription(result.match_type)}
-                  </span>
-                </div>
-
-                <div className="result-badges">
-                  {result.matched_fields.map(field => (
-                    <span key={field} className={`field-badge badge-${field}`}>
-                      {field}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
+            <ResultCard
+              key={result.id}
+              result={result}
+              viewMode={viewMode}
+              selected={selectedResults.has(result.id)}
+              favorited={favoriteResults.has(result.id)}
+              availableActions={availableActions}
+              onSelect={(selected) => handleItemSelect(result.id, selected)}
+              onAction={(action) => handleResultAction(result.id, action)}
+              showCheckbox={true}
+            />
           ))}
         </div>
       </div>
@@ -660,6 +885,21 @@ const SongSearch: React.FC<SongSearchProps> = ({
 
       {renderAdvancedFilters()}
       {renderSearchResults()}
+      
+      <SearchAnalytics
+        analytics={mockAnalytics}
+        statistics={resultStatistics}
+        isVisible={showAnalytics}
+        onToggle={setShowAnalytics}
+      />
+
+      <ExportResultsModal
+        isOpen={showExportModal}
+        onClose={() => setShowExportModal(false)}
+        onExport={handleExport}
+        selectedCount={selectedResults.size}
+        selectedTitles={selectedTitles}
+      />
     </div>
   );
 };
