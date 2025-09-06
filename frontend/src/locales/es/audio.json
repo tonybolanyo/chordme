@@ -1,0 +1,138 @@
+{
+  "audioPlayer": {
+    "controls": {
+      "play": "Reproducir",
+      "pause": "Pausar",
+      "stop": "Detener",
+      "previous": "Pista Anterior",
+      "next": "Siguiente Pista",
+      "seek": "Buscar",
+      "volume": "Volumen",
+      "mute": "Silenciar",
+      "unmute": "Quitar Silencio",
+      "speed": "Velocidad de Reproducción",
+      "shuffle": "Aleatorio",
+      "repeat": "Repetir",
+      "loading": "Cargando..."
+    },
+    "playlist": {
+      "title": "Lista de Reproducción",
+      "empty": "No hay pistas en la lista",
+      "addTrack": "Agregar Pista",
+      "removeTrack": "Eliminar Pista",
+      "createPlaylist": "Crear Lista",
+      "deletePlaylist": "Eliminar Lista",
+      "playlistName": "Nombre de la Lista",
+      "playlistDescription": "Descripción",
+      "trackCount_one": "{{count}} pista",
+      "trackCount_other": "{{count}} pistas",
+      "duration": "Duración: {{duration}}",
+      "currentTrack": "Reproduciendo Ahora"
+    },
+    "visualization": {
+      "show": "Mostrar Visualización",
+      "hide": "Ocultar Visualización",
+      "waveform": "Forma de Onda",
+      "spectrum": "Espectro",
+      "oscilloscope": "Osciloscopio"
+    },
+    "formats": {
+      "mp3": "Audio MP3",
+      "wav": "Audio WAV",
+      "ogg": "Audio OGG",
+      "aac": "Audio AAC",
+      "m4a": "Audio M4A",
+      "flac": "Audio FLAC"
+    },
+    "quality": {
+      "low": "Calidad Baja",
+      "medium": "Calidad Media",
+      "high": "Calidad Alta"
+    },
+    "repeat": {
+      "none": "Sin Repetir",
+      "all": "Repetir Todo",
+      "one": "Repetir Una"
+    },
+    "errors": {
+      "networkError": "Error de red al cargar audio",
+      "decodeError": "Error al decodificar datos de audio",
+      "notSupported": "Formato de audio no compatible",
+      "permissionDenied": "Permiso de audio denegado",
+      "invalidSource": "Fuente de audio no válida",
+      "playbackFailed": "Falló la reproducción de audio",
+      "bufferUnderrun": "Subrun del búfer de audio",
+      "deviceBusy": "Dispositivo de audio ocupado",
+      "quotaExceeded": "Cuota de almacenamiento excedida",
+      "crossfadeFailed": "Falló el crossfade",
+      "generic": "Ocurrió un error de audio"
+    },
+    "shortcuts": {
+      "title": "Atajos de Teclado",
+      "playPause": "Reproducir/Pausar",
+      "stop": "Detener",
+      "previousTrack": "Pista Anterior",
+      "nextTrack": "Siguiente Pista",
+      "seekBackward": "Retroceder 10s",
+      "seekForward": "Avanzar 10s",
+      "volumeUp": "Subir Volumen",
+      "volumeDown": "Bajar Volumen",
+      "toggleMute": "Alternar Silencio",
+      "clearError": "Limpiar Error"
+    },
+    "accessibility": {
+      "audioPlayer": "Reproductor de Audio",
+      "playbackProgress": "Progreso de reproducción: {{current}} de {{total}}",
+      "volumeLevel": "Nivel de volumen: {{volume}}%",
+      "playbackRate": "Velocidad de reproducción: {{rate}}x",
+      "trackInfo": "{{title}} por {{artist}}",
+      "playlistPosition": "Pista {{current}} de {{total}}",
+      "bufferingProgress": "Almacenando en búfer: {{progress}}%",
+      "errorAlert": "Error de Audio",
+      "visualizationCanvas": "Visualización de audio"
+    },
+    "status": {
+      "idle": "Listo",
+      "loading": "Cargando",
+      "playing": "Reproduciendo",
+      "paused": "Pausado",
+      "stopped": "Detenido",
+      "error": "Error",
+      "buffering": "Almacenando",
+      "usingFallback": "Usando respaldo HTML5 Audio"
+    },
+    "cache": {
+      "preloading": "Precargando audio...",
+      "cached": "Audio en caché",
+      "clearCache": "Limpiar Caché",
+      "cacheSize": "Tamaño de caché: {{size}}",
+      "cacheEntries": "{{count}} pistas en caché"
+    },
+    "theme": {
+      "light": "Tema Claro",
+      "dark": "Tema Oscuro",
+      "auto": "Tema Automático"
+    },
+    "demo": {
+      "title": "Demostración del Motor de Reproducción de Audio",
+      "description": "Experimenta las capacidades completas de reproducción de audio de ChordMe",
+      "features": {
+        "multiFormat": "Soporte Multi-Formato",
+        "advancedControls": "Controles Avanzados",
+        "visualization": "Visualización de Audio",
+        "keyboardShortcuts": "Atajos de Teclado",
+        "responsive": "Diseño Responsivo",
+        "accessibility": "Accesibilidad",
+        "themeable": "Con Temas",
+        "fallback": "Soporte de Respaldo"
+      },
+      "configuration": "Configuración del Reproductor",
+      "showVisualization": "Mostrar Visualización de Audio",
+      "compactMode": "Modo Compacto",
+      "showPlaylist": "Mostrar Lista de Reproducción",
+      "activityLog": "Registro de Actividad",
+      "clearLog": "Limpiar",
+      "technicalNotes": "Implementación Técnica"
+    }
+  }
+}
