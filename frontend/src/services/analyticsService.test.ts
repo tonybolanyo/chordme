@@ -14,7 +14,7 @@ import {
   PopularSongsData,
   SetlistComparison,
   AnalyticsExportData,
-} from '../../types/analytics';
+} from '../types/analytics';
 
 // Mock fetch globally
 const mockFetch = vi.fn();
@@ -529,7 +529,7 @@ describe('AnalyticsService', () => {
       const unsafeData = {
         song_id: 1,
         title: 'Test Song',
-        user_email: 'test@example.com'  // Sensitive field
+        email: 'test@example.com'  // Sensitive field
       };
 
       expect(analyticsService.validateDataPrivacy(unsafeData)).toBe(false);
