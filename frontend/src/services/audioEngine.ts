@@ -17,7 +17,18 @@ import {
   VisualizationData,
   Playlist,
   PlaylistItem,
+  // Synchronization imports
+  SyncTimeline,
+  ChordTimeMapping,
+  PlaybackMarker,
+  LoopSection,
+  AudioSyncConfig,
+  SyncState,
+  AutoDetectionConfig,
+  AudioAnalysisResult,
 } from '../types/audio';
+
+import { audioSyncService } from './audioSynchronization';
 
 type EventListener<K extends keyof AudioEventMap> = (event: AudioEventMap[K]) => void;
 
@@ -63,6 +74,7 @@ export class AudioEngine implements IAudioEngine {
   
   constructor() {
     this.initialize();
+    this.setupSynchronization();
   }
   
   private async initialize(): Promise<void> {
@@ -553,6 +565,10 @@ export class AudioEngine implements IAudioEngine {
     if (this.audioElement) {
       const currentTime = this.audioElement.currentTime;
       this.updateState({ currentTime });
+      
+      // Update synchronization position
+      audioSyncService.updateSyncPosition(currentTime);
+      
       this.emit('timeupdate', {
         currentTime,
         duration: this.state.duration,
@@ -588,6 +604,174 @@ export class AudioEngine implements IAudioEngine {
       nyquist: (this.audioContext?.sampleRate || 44100) / 2,
     };
   }
+
+  // Synchronization methods implementation
+  private setupSynchronization(): void {
+    // Forward sync events to audio engine listeners
+    audioSyncService.addEventListener('sync:chordchange', (data) => {
+      this.emit('sync:chordchange', data);
+    });
+
+    audioSyncService.addEventListener('sync:markerreached', (data) => {
+      this.emit('sync:markerreached', data);
+    });
+
+    audioSyncService.addEventListener('sync:loopstart', (data) => {
+      this.emit('sync:loopstart', data);
+      // Handle loop restart
+      if (data.loop.enabled) {
+        this.seek(data.loop.startTime);
+      }
+    });
+
+    audioSyncService.addEventListener('sync:loopend', (data) => {
+      this.emit('sync:loopend', data);
+    });
+
+    audioSyncService.addEventListener('sync:timelineloaded', (data) => {
+      this.emit('sync:timelineloaded', data);
+    });
+
+    audioSyncService.addEventListener('sync:annotationadded', (data) => {
+      this.emit('sync:annotationadded', data);
+    });
+
+    audioSyncService.addEventListener('sync:annotationupdated', (data) => {
+      this.emit('sync:annotationupdated', data);
+    });
+
+    audioSyncService.addEventListener('sync:annotationremoved', (data) => {
+      this.emit('sync:annotationremoved', data);
+    });
+
+    audioSyncService.addEventListener('sync:analysiscomplete', (data) => {
+      this.emit('sync:analysiscomplete', data);
+    });
+
+    audioSyncService.addEventListener('sync:error', (data) => {
+      this.emit('sync:error', data);
+    });
+  }
+
+  async loadSyncTimeline(timeline: SyncTimeline): Promise<void> {
+    try {
+      audioSyncService.loadTimeline(timeline);
+    } catch (error) {
+      this.handleError({
+        code: AudioErrorCode.SYNC_TIMELINE_INVALID,
+        message: 'Failed to load synchronization timeline',
+        details: error,
+        timestamp: new Date(),
+        recoverable: true,
+      });
+      throw error;
+    }
+  }
+
+  addChordMapping(mapping: ChordTimeMapping): void {
+    try {
+      audioSyncService.addChordAnnotation(
+        mapping.chordName,
+        mapping.startTime,
+        mapping.endTime
+      );
+    } catch (error) {
+      this.handleError({
+        code: AudioErrorCode.SYNC_ANNOTATION_FAILED,
+        message: 'Failed to add chord mapping',
+        details: error,
+        timestamp: new Date(),
+        recoverable: true,
+      });
+    }
+  }
+
+  updateChordMapping(mapping: ChordTimeMapping): void {
+    audioSyncService.updateChordAnnotation(mapping);
+  }
+
+  removeChordMapping(id: string): void {
+    audioSyncService.removeChordAnnotation(id);
+  }
+
+  addPlaybackMarker(marker: PlaybackMarker): void {
+    audioSyncService.addMarker(marker);
+  }
+
+  removePlaybackMarker(id: string): void {
+    audioSyncService.removeMarker(id);
+  }
+
+  setLoopSection(loop: LoopSection): void {
+    audioSyncService.setLoopSection(loop);
+  }
+
+  clearLoopSection(): void {
+    audioSyncService.clearLoopSection();
+  }
+
+  enableSync(config: AudioSyncConfig): void {
+    audioSyncService.updateConfig({ ...config, enabled: true });
+  }
+
+  disableSync(): void {
+    audioSyncService.updateConfig({ enabled: false });
+  }
+
+  getSyncState(): SyncState {
+    return audioSyncService.getSyncState();
+  }
+
+  startChordAnnotation(): void {
+    audioSyncService.startAnnotation();
+  }
+
+  stopChordAnnotation(): void {
+    audioSyncService.stopAnnotation();
+  }
+
+  async analyzeAudioForChords(config: AutoDetectionConfig): Promise<AudioAnalysisResult> {
+    try {
+      // Get current audio buffer for analysis
+      if (!this.currentAudioBuffer) {
+        throw new Error('No audio loaded for analysis');
+      }
+
+      return await audioSyncService.analyzeAudio(this.currentAudioBuffer, config);
+    } catch (error) {
+      this.handleError({
+        code: AudioErrorCode.SYNC_ANALYSIS_FAILED,
+        message: 'Failed to analyze audio for chord detection',
+        details: error,
+        timestamp: new Date(),
+        recoverable: true,
+      });
+      throw error;
+    }
+  }
+
+  exportSyncData(): SyncTimeline {
+    const timeline = audioSyncService.exportTimeline();
+    if (!timeline) {
+      throw new Error('No synchronization data to export');
+    }
+    return timeline;
+  }
+
+  async importSyncData(timeline: SyncTimeline): Promise<void> {
+    try {
+      audioSyncService.importTimeline(timeline);
+    } catch (error) {
+      this.handleError({
+        code: AudioErrorCode.SYNC_IMPORT_FAILED,
+        message: 'Failed to import synchronization data',
+        details: error,
+        timestamp: new Date(),
+        recoverable: true,
+      });
+      throw error;
+    }
+  }
   
   destroy(): void {
     // Clear intervals
@@ -601,6 +785,9 @@ export class AudioEngine implements IAudioEngine {
     
     // Stop playback
     this.stop();
+    
+    // Cleanup synchronization service
+    audioSyncService.destroy();
     
     // Disconnect Web Audio nodes
     if (this.sourceNode) {

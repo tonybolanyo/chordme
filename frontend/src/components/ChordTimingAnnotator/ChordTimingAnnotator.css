@@ -1,0 +1,491 @@
+/* Chord Timing Annotator Styles */
+
+.chord-timing-annotator {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+/* Header */
+.annotator-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.annotator-header h3 {
+  margin: 0;
+  color: #333;
+  font-size: 1.2rem;
+}
+
+.audio-info {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+/* Controls */
+.annotation-controls {
+  display: flex;
+  gap: 1rem;
+  align-items: end;
+  flex-wrap: wrap;
+}
+
+.chord-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.chord-input-group label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #555;
+}
+
+.chord-input {
+  padding: 0.5rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 1rem;
+  width: 120px;
+  background: white;
+}
+
+.chord-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.control-buttons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background: white;
+  color: #333;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.btn:hover:not(:disabled) {
+  background: #f8f9fa;
+  border-color: #adb5bd;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-start {
+  background: #28a745;
+  color: white;
+  border-color: #28a745;
+}
+
+.btn-start:hover:not(:disabled) {
+  background: #218838;
+}
+
+.btn-stop {
+  background: #dc3545;
+  color: white;
+  border-color: #dc3545;
+}
+
+.btn-stop:hover:not(:disabled) {
+  background: #c82333;
+}
+
+.btn-cancel {
+  background: #6c757d;
+  color: white;
+  border-color: #6c757d;
+}
+
+.btn-cancel:hover:not(:disabled) {
+  background: #5a6268;
+}
+
+.btn-marker {
+  background: #17a2b8;
+  color: white;
+  border-color: #17a2b8;
+}
+
+.btn-marker:hover:not(:disabled) {
+  background: #138496;
+}
+
+/* Status */
+.annotation-status {
+  background: white;
+  padding: 0.75rem;
+  border-radius: 4px;
+  border: 1px solid #dee2e6;
+}
+
+.status-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.status-row:last-child {
+  margin-bottom: 0;
+}
+
+.current-chord {
+  color: #007bff;
+  font-weight: 500;
+}
+
+.annotation-active {
+  background: #fff3cd;
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #ffeaa7;
+}
+
+/* Annotations List */
+.annotations-list {
+  background: white;
+  border-radius: 4px;
+  border: 1px solid #dee2e6;
+  overflow: hidden;
+}
+
+.annotations-list h4 {
+  margin: 0;
+  padding: 0.75rem;
+  background: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  font-size: 1rem;
+  color: #333;
+}
+
+.empty-state {
+  padding: 2rem;
+  text-align: center;
+  color: #666;
+}
+
+.empty-state p {
+  margin: 0.5rem 0;
+}
+
+.annotations-container {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.annotation-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  border-bottom: 1px solid #f1f3f4;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  position: relative;
+}
+
+.annotation-item:hover {
+  background: #f8f9fa;
+}
+
+.annotation-item.selected {
+  background: #e3f2fd;
+  border-color: #2196f3;
+}
+
+.annotation-item.current {
+  background: #e8f5e8;
+  border-left: 4px solid #28a745;
+}
+
+.annotation-item:last-child {
+  border-bottom: none;
+}
+
+.annotation-chord {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.1rem;
+}
+
+.confidence {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.annotation-timing {
+  font-family: monospace;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.duration {
+  color: #999;
+  font-size: 0.8rem;
+}
+
+.annotation-source {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.source-badge {
+  padding: 0.2rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.source-badge.manual {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.source-badge.automatic {
+  background: #fff3e0;
+  color: #f57c00;
+}
+
+.source-badge.imported {
+  background: #f3e5f5;
+  color: #7b1fa2;
+}
+
+.verified-badge {
+  color: #28a745;
+  font-weight: bold;
+}
+
+.delete-btn {
+  background: none;
+  border: none;
+  color: #dc3545;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  transition: all 0.2s;
+}
+
+.delete-btn:hover {
+  opacity: 1;
+  background: #f8d7da;
+}
+
+/* Markers List */
+.markers-list {
+  background: white;
+  border-radius: 4px;
+  border: 1px solid #dee2e6;
+  overflow: hidden;
+}
+
+.markers-list h4 {
+  margin: 0;
+  padding: 0.75rem;
+  background: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  font-size: 1rem;
+  color: #333;
+}
+
+.markers-container {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.marker-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid #f1f3f4;
+}
+
+.marker-item:last-child {
+  border-bottom: none;
+}
+
+.marker-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.marker-type {
+  padding: 0.1rem 0.4rem;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  background: #e9ecef;
+  color: #495057;
+}
+
+.marker-time {
+  font-family: monospace;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+/* Keyboard Shortcuts */
+.keyboard-shortcuts {
+  margin-top: 1rem;
+}
+
+.keyboard-shortcuts summary {
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #666;
+  padding: 0.5rem 0;
+}
+
+.shortcuts-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  background: #f8f9fa;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.shortcuts-list kbd {
+  background: #e9ecef;
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 0.8rem;
+  margin-right: 0.5rem;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.marker-modal {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  min-width: 300px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.marker-modal h4 {
+  margin: 0 0 1rem 0;
+  color: #333;
+}
+
+.marker-modal p {
+  margin: 0 0 1rem 0;
+  color: #666;
+  font-family: monospace;
+}
+
+.marker-modal input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  box-sizing: border-box;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.modal-buttons button {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.modal-buttons button:first-child {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.modal-buttons button:first-child:hover {
+  background: #0056b3;
+}
+
+.modal-buttons button:last-child:hover {
+  background: #f8f9fa;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .chord-timing-annotator {
+    padding: 0.5rem;
+  }
+  
+  .annotation-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .control-buttons {
+    justify-content: center;
+  }
+  
+  .annotation-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .shortcuts-list {
+    grid-template-columns: 1fr;
+  }
+}
