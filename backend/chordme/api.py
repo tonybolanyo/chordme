@@ -6199,7 +6199,9 @@ def serve_static(path):
 
 # Register chord routes blueprint
 from .chord_routes import chord_bp
+from .analytics_routes import analytics_bp
 app.register_blueprint(chord_bp)
+app.register_blueprint(analytics_bp)
 
 # Initialize database tables
 with app.app_context():

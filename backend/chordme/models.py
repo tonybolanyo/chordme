@@ -21,6 +21,7 @@ class User(db.Model):
     display_name = db.Column(db.String(100), nullable=True)
     bio = db.Column(db.Text, nullable=True)
     profile_image_url = db.Column(db.String(500), nullable=True)
+    analytics_privacy_settings = db.Column(db.JSON, default=dict)  # Privacy settings for analytics
     created_at = db.Column(db.DateTime, default=utc_now)
     updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
     
