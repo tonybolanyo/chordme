@@ -12,6 +12,15 @@ export interface CursorPosition {
   column: number;
   selectionStart?: number;
   selectionEnd?: number;
+  // Enhanced selection tracking
+  hasSelection: boolean;
+  selectionDirection?: 'forward' | 'backward' | 'none';
+  // Touch/mobile support
+  touchPosition?: {
+    x: number;
+    y: number;
+    timestamp: string;
+  };
 }
 
 export interface UserCursor {
@@ -22,9 +31,30 @@ export interface UserCursor {
 
 export interface UserPresence {
   userId: string;
-  status: 'active' | 'idle' | 'offline';
+  status: 'active' | 'idle' | 'offline' | 'typing' | 'away';
   lastActivity: string;
   currentSong?: string; // Song ID they're currently viewing/editing
+  activityDetails?: {
+    isTyping: boolean;
+    typingStarted?: string;
+    lastInteraction?: string;
+    idleTimeout?: number; // in ms
+  };
+  avatar?: {
+    url?: string;
+    initials?: string;
+    backgroundColor?: string;
+  };
+  privacySettings?: {
+    showStatus: boolean;
+    showActivity: boolean;
+    showLocation: boolean;
+  };
+  deviceInfo?: {
+    type: 'desktop' | 'mobile' | 'tablet';
+    isTouchDevice: boolean;
+    userAgent?: string;
+  };
 }
 
 export interface TextOperation {
@@ -211,8 +241,45 @@ export interface CollaborationEvent {
     | 'network-status'
     | 'conflict-detected'
     | 'operation-failed'
-    | 'recovery-initiated';
+    | 'recovery-initiated'
+    | 'user-typing-started'
+    | 'user-typing-stopped'
+    | 'user-idle'
+    | 'user-away'
+    | 'selection-changed';
   payload: any;
   timestamp: string;
   userId?: string;
+}
+
+// Notification system for user join/leave events
+export interface PresenceNotification {
+  id: string;
+  type: 'user-joined' | 'user-left' | 'user-reconnected' | 'user-disconnected';
+  userId: string;
+  userName: string;
+  timestamp: string;
+  autoHide?: boolean;
+  hideAfter?: number; // in ms
+}
+
+// Privacy controls for presence visibility
+export interface PresencePrivacySettings {
+  showOnlineStatus: boolean;
+  showActivityStatus: boolean; // typing, idle indicators
+  showCursorPosition: boolean;
+  showCurrentLocation: boolean; // which song/section
+  allowDirectMessages: boolean;
+  visibleToUsers: 'all' | 'collaborators-only' | 'friends-only';
+  invisibleMode: boolean; // appear offline to others
+}
+
+// Activity detection configuration
+export interface ActivityDetectionConfig {
+  typingIndicatorTimeout: number; // ms before showing "typing"
+  idleTimeout: number; // ms before showing "idle"
+  awayTimeout: number; // ms before showing "away"
+  enableTypingIndicators: boolean;
+  enableIdleDetection: boolean;
+  enableActivityTracking: boolean;
 }
