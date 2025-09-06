@@ -1,0 +1,526 @@
+/* Audio Synchronization Demo Styles */
+
+.audio-sync-demo {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', roboto, sans-serif;
+}
+
+/* Header */
+.demo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.demo-title h1 {
+  margin: 0 0 0.5rem 0;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.demo-title p {
+  margin: 0;
+  opacity: 0.9;
+  font-size: 1.1rem;
+}
+
+.demo-status {
+  text-align: right;
+}
+
+.current-chord-display {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+}
+
+.current-chord-display .label {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.current-chord-display .chord {
+  font-size: 1.5rem;
+  font-weight: bold;
+  background: rgba(255, 255, 255, 0.3);
+  padding: 0.25rem 0.75rem;
+  border-radius: 6px;
+}
+
+.current-chord-display .time {
+  font-family: monospace;
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+.sync-ready {
+  background: rgba(40, 167, 69, 0.3);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(40, 167, 69, 0.5);
+}
+
+/* Controls */
+.demo-controls {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  flex-wrap: wrap;
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.control-group label {
+  font-weight: 500;
+  color: #495057;
+  white-space: nowrap;
+}
+
+.view-mode-select {
+  padding: 0.5rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background: white;
+  font-size: 0.9rem;
+}
+
+.tolerance-slider {
+  width: 100px;
+}
+
+.control-buttons {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  background: white;
+  color: #495057;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn:hover:not(:disabled) {
+  background: #f8f9fa;
+  border-color: #adb5bd;
+  transform: translateY(-1px);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-analyze {
+  background: #28a745;
+  color: white;
+  border-color: #28a745;
+}
+
+.btn-analyze:hover:not(:disabled) {
+  background: #218838;
+}
+
+.btn-export {
+  background: #17a2b8;
+  color: white;
+  border-color: #17a2b8;
+}
+
+.btn-export:hover:not(:disabled) {
+  background: #138496;
+}
+
+.btn-import {
+  background: #6f42c1;
+  color: white;
+  border-color: #6f42c1;
+  cursor: pointer;
+}
+
+.btn-import:hover {
+  background: #5a32a3;
+}
+
+/* Statistics */
+.demo-stats {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: white;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.stat-label {
+  color: #6c757d;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.stat-value {
+  color: #495057;
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+/* Main Content */
+.demo-content {
+  display: grid;
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+.demo-content.split {
+  grid-template-columns: 1fr 1fr;
+}
+
+.demo-content.annotator {
+  grid-template-columns: 1fr;
+}
+
+.demo-content.viewer {
+  grid-template-columns: 1fr;
+}
+
+.annotator-section,
+.viewer-section {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: 1px solid #dee2e6;
+}
+
+.annotator-section h3,
+.viewer-section h3 {
+  margin: 0 0 1rem 0;
+  color: #495057;
+  font-size: 1.3rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.demo-annotator {
+  height: 600px;
+}
+
+.content-editor {
+  margin-bottom: 1rem;
+}
+
+.content-editor label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #495057;
+}
+
+.chordpro-editor {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  resize: vertical;
+  background: #f8f9fa;
+}
+
+.chordpro-editor:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.demo-viewer {
+  height: 400px;
+}
+
+/* Features Grid */
+.demo-features {
+  margin-bottom: 3rem;
+}
+
+.demo-features h3 {
+  margin-bottom: 1.5rem;
+  color: #495057;
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 1.5rem;
+}
+
+.feature-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid #dee2e6;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.feature-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.feature-card h4 {
+  margin: 0 0 0.75rem 0;
+  color: #495057;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.feature-card p {
+  margin: 0 0 1rem 0;
+  color: #6c757d;
+  line-height: 1.5;
+}
+
+.feature-card ul {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.feature-card li {
+  color: #495057;
+  margin-bottom: 0.25rem;
+  font-size: 0.9rem;
+}
+
+/* Implementation Notes */
+.demo-notes {
+  background: #f8f9fa;
+  padding: 2rem;
+  border-radius: 12px;
+  border: 1px solid #dee2e6;
+}
+
+.demo-notes h3 {
+  margin: 0 0 1.5rem 0;
+  color: #495057;
+  font-size: 1.4rem;
+}
+
+.notes-content h4 {
+  margin: 1.5rem 0 0.75rem 0;
+  color: #495057;
+  font-size: 1.1rem;
+}
+
+.notes-content h4:first-child {
+  margin-top: 0;
+}
+
+.notes-content ul {
+  margin: 0 0 1rem 0;
+  padding-left: 1.25rem;
+}
+
+.notes-content li {
+  margin-bottom: 0.5rem;
+  line-height: 1.5;
+}
+
+.notes-content strong {
+  color: #495057;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .demo-content.split {
+    grid-template-columns: 1fr;
+  }
+
+  .features-grid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .audio-sync-demo {
+    padding: 0.5rem;
+  }
+
+  .demo-header {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+
+  .demo-title h1 {
+    font-size: 1.5rem;
+  }
+
+  .demo-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .control-buttons {
+    margin-left: 0;
+    justify-content: center;
+  }
+
+  .demo-stats {
+    justify-content: center;
+  }
+
+  .current-chord-display {
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .demo-annotator,
+  .demo-viewer {
+    height: auto;
+    min-height: 400px;
+  }
+}
+
+@media (max-width: 480px) {
+  .demo-title h1 {
+    font-size: 1.3rem;
+  }
+
+  .demo-title p {
+    font-size: 1rem;
+  }
+
+  .feature-card,
+  .annotator-section,
+  .viewer-section {
+    padding: 1rem;
+  }
+
+  .stat-item {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .audio-sync-demo {
+    color: #e9ecef;
+  }
+
+  .demo-controls {
+    background: #343a40;
+  }
+
+  .control-group label {
+    color: #e9ecef;
+  }
+
+  .view-mode-select {
+    background: #495057;
+    color: #e9ecef;
+    border-color: #6c757d;
+  }
+
+  .btn {
+    background: #495057;
+    color: #e9ecef;
+    border-color: #6c757d;
+  }
+
+  .btn:hover:not(:disabled) {
+    background: #5a6268;
+  }
+
+  .stat-item,
+  .feature-card,
+  .annotator-section,
+  .viewer-section {
+    background: #495057;
+    border-color: #6c757d;
+  }
+
+  .stat-label,
+  .feature-card p {
+    color: #adb5bd;
+  }
+
+  .stat-value,
+  .feature-card h4,
+  .annotator-section h3,
+  .viewer-section h3 {
+    color: #e9ecef;
+  }
+
+  .chordpro-editor {
+    background: #343a40;
+    color: #e9ecef;
+    border-color: #6c757d;
+  }
+
+  .demo-notes {
+    background: #343a40;
+    border-color: #6c757d;
+  }
+
+  .notes-content h4 {
+    color: #e9ecef;
+  }
+
+  .notes-content strong {
+    color: #f8f9fa;
+  }
+}

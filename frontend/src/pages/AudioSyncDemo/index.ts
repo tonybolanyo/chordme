@@ -1,0 +1,1 @@
+export { AudioSyncDemo } from './AudioSyncDemo';
