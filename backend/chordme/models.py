@@ -25,7 +25,7 @@ class User(db.Model):
     updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
     
     # Relationship to songs
-    songs = db.relationship('Song', backref='author', lazy=True, cascade='all, delete-orphan')
+    songs = db.relationship('Song', foreign_keys='Song.user_id', backref='author', lazy=True, cascade='all, delete-orphan')
     
     # Relationship to custom chords
     chords = db.relationship('Chord', backref='owner', lazy=True, cascade='all, delete-orphan')
@@ -131,24 +131,76 @@ class Song(db.Model):
     __tablename__ = 'songs'
     
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(200), nullable=False)
-    author_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    title = db.Column(db.String(255), nullable=False)
+    artist = db.Column(db.String(255))
     content = db.Column(db.Text, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)  # Changed from author_id
+    is_public = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=utc_now)
     updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
     
-    # Sharing model fields
+    # Enhanced metadata fields from PostgreSQL migration
+    genre = db.Column(db.String(100))
+    song_key = db.Column(db.String(10))  # Musical key (C, Am, etc.)
+    tempo = db.Column(db.Integer)  # BPM
+    capo = db.Column(db.Integer, default=0)
+    difficulty = db.Column(db.String(20), default='medium')  # beginner, intermediate, advanced, expert
+    duration = db.Column(db.Integer)  # Duration in seconds
+    language = db.Column(db.String(10), default='en')  # ISO language code
+    lyrics = db.Column(db.Text)  # Extracted lyrics for search
+    chords_used = db.Column(db.JSON)  # Array of chords used in song
+    
+    # Soft delete and archival system
+    is_deleted = db.Column(db.Boolean, default=False)
+    is_archived = db.Column(db.Boolean, default=False)
+    deleted_at = db.Column(db.DateTime)
+    archived_at = db.Column(db.DateTime)
+    
+    # Metadata for search and organization
+    view_count = db.Column(db.Integer, default=0)
+    favorite_count = db.Column(db.Integer, default=0)
+    last_accessed = db.Column(db.DateTime)
+    
+    # Legacy sharing model fields (for compatibility)
     shared_with = db.Column(db.JSON, default=list)  # Array of user IDs or email addresses
     permissions = db.Column(db.JSON, default=dict)  # Object mapping user IDs to permission levels
     share_settings = db.Column(db.String(20), default='private')  # 'private', 'public', 'link-shared'
     
-    # Relationship to song sections
+    # Relationships
     sections = db.relationship('SongSection', backref='song', lazy=True, cascade='all, delete-orphan', order_by='SongSection.order_index')
+    tags = db.relationship('Tag', secondary='song_tags', back_populates='songs')
+    categories = db.relationship('Category', secondary='song_categories', back_populates='songs')
+    favorites = db.relationship('UserFavorite', backref='song', lazy=True, cascade='all, delete-orphan')
     
-    def __init__(self, title, author_id, content, shared_with=None, permissions=None, share_settings='private'):
+    # Relationship to author (user) - removed explicit backref to avoid conflict
+    # author = db.relationship('User', foreign_keys=[user_id])
+    
+    # Backward compatibility property
+    @property
+    def author_id(self):
+        """Backward compatibility: alias for user_id."""
+        return self.user_id
+    
+    @author_id.setter
+    def author_id(self, value):
+        """Backward compatibility: alias for user_id."""
+        self.user_id = value
+    
+    def __init__(self, title, user_id=None, content=None, artist=None, genre=None, song_key=None, 
+                 tempo=None, capo=0, difficulty='medium', duration=None, language='en',
+                 shared_with=None, permissions=None, share_settings='private', author_id=None):
         self.title = title
-        self.author_id = author_id
+        # Support both user_id and author_id for backward compatibility
+        self.user_id = user_id or author_id
         self.content = content
+        self.artist = artist
+        self.genre = genre
+        self.song_key = song_key
+        self.tempo = tempo
+        self.capo = capo
+        self.difficulty = difficulty
+        self.duration = duration
+        self.language = language
         self.shared_with = shared_with or []
         self.permissions = permissions or {}
         self.share_settings = share_settings
@@ -158,13 +210,32 @@ class Song(db.Model):
         return {
             'id': self.id,
             'title': self.title,
-            'author_id': self.author_id,
+            'artist': self.artist,
+            'user_id': self.user_id,
+            'author_id': self.user_id,  # Backward compatibility
             'content': self.content,
+            'genre': self.genre,
+            'song_key': self.song_key,
+            'tempo': self.tempo,
+            'capo': self.capo,
+            'difficulty': self.difficulty,
+            'duration': self.duration,
+            'language': self.language,
+            'lyrics': self.lyrics,
+            'chords_used': self.chords_used,
+            'is_public': self.is_public,
+            'is_deleted': self.is_deleted,
+            'is_archived': self.is_archived,
+            'view_count': self.view_count,
+            'favorite_count': self.favorite_count,
+            'last_accessed': self.last_accessed.isoformat() if self.last_accessed else None,
             'shared_with': self.shared_with,
             'permissions': self.permissions,
             'share_settings': self.share_settings,
             'created_at': self.created_at.isoformat() if self.created_at else None,
-            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'deleted_at': self.deleted_at.isoformat() if self.deleted_at else None,
+            'archived_at': self.archived_at.isoformat() if self.archived_at else None
         }
     
     def add_shared_user(self, user_id, permission_level='read'):
@@ -248,7 +319,7 @@ class Song(db.Model):
             bool: True if user can access (author, shared, or public), False otherwise
         """
         # Author always has access
-        if self.author_id == user_id:
+        if self.user_id == user_id:
             return True
         
         # Public songs are accessible to all
@@ -268,7 +339,7 @@ class Song(db.Model):
             bool: True if user can edit (author, edit permission, or admin permission), False otherwise
         """
         # Author always has edit access
-        if self.author_id == user_id:
+        if self.user_id == user_id:
             return True
         
         # Check permission level
@@ -285,15 +356,279 @@ class Song(db.Model):
             bool: True if user can manage (author or admin permission), False otherwise
         """
         # Author always has management access
-        if self.author_id == user_id:
+        if self.user_id == user_id:
             return True
         
         # Check for admin permission
         permission = self.get_user_permission(user_id)
         return permission == 'admin'
     
+    def soft_delete(self):
+        """Soft delete the song."""
+        self.is_deleted = True
+        self.deleted_at = utc_now()
+    
+    def restore(self):
+        """Restore a soft-deleted song."""
+        self.is_deleted = False
+        self.deleted_at = None
+    
+    def archive(self):
+        """Archive the song."""
+        self.is_archived = True
+        self.archived_at = utc_now()
+    
+    def unarchive(self):
+        """Unarchive the song."""
+        self.is_archived = False
+        self.archived_at = None
+    
+    def increment_view_count(self):
+        """Increment the view count and update last accessed time."""
+        self.view_count = (self.view_count or 0) + 1
+        self.last_accessed = utc_now()
+    
+    def add_tag(self, tag):
+        """Add a tag to this song."""
+        if tag not in self.tags:
+            self.tags.append(tag)
+    
+    def remove_tag(self, tag):
+        """Remove a tag from this song."""
+        if tag in self.tags:
+            self.tags.remove(tag)
+    
+    def add_category(self, category):
+        """Add a category to this song."""
+        if category not in self.categories:
+            self.categories.append(category)
+    
+    def remove_category(self, category):
+        """Remove a category from this song."""
+        if category in self.categories:
+            self.categories.remove(category)
+    
+    @classmethod
+    def search(cls, query=None, genre=None, song_key=None, difficulty=None, 
+               language='en', tags=None, categories=None, min_tempo=None, 
+               max_tempo=None, user_id=None, include_public=True, 
+               include_deleted=False, include_archived=False, limit=50, offset=0):
+        """
+        Search for songs with various filters.
+        
+        Args:
+            query (str): Text search query
+            genre (str): Filter by genre
+            song_key (str): Filter by musical key
+            difficulty (str): Filter by difficulty level
+            language (str): Filter by language
+            tags (list): Filter by tag names
+            categories (list): Filter by category names
+            min_tempo (int): Minimum tempo BPM
+            max_tempo (int): Maximum tempo BPM
+            user_id (int): Filter by specific user
+            include_public (bool): Include public songs
+            include_deleted (bool): Include soft-deleted songs
+            include_archived (bool): Include archived songs
+            limit (int): Maximum number of results
+            offset (int): Offset for pagination
+            
+        Returns:
+            Query: SQLAlchemy query object
+        """
+        base_query = cls.query
+        
+        # Basic filters
+        if not include_deleted:
+            base_query = base_query.filter(cls.is_deleted == False)
+        if not include_archived:
+            base_query = base_query.filter(cls.is_archived == False)
+        
+        # User and visibility filters
+        if user_id:
+            if include_public:
+                base_query = base_query.filter(
+                    db.or_(cls.user_id == user_id, cls.is_public == True)
+                )
+            else:
+                base_query = base_query.filter(cls.user_id == user_id)
+        elif include_public:
+            base_query = base_query.filter(cls.is_public == True)
+        
+        # Text search
+        if query:
+            search_filter = db.or_(
+                cls.title.ilike(f'%{query}%'),
+                cls.artist.ilike(f'%{query}%'),
+                cls.lyrics.ilike(f'%{query}%'),
+                cls.content.ilike(f'%{query}%')
+            )
+            base_query = base_query.filter(search_filter)
+        
+        # Metadata filters
+        if genre:
+            base_query = base_query.filter(cls.genre.ilike(f'%{genre}%'))
+        if song_key:
+            base_query = base_query.filter(cls.song_key == song_key)
+        if difficulty:
+            base_query = base_query.filter(cls.difficulty == difficulty)
+        if language:
+            base_query = base_query.filter(cls.language == language)
+        if min_tempo:
+            base_query = base_query.filter(cls.tempo >= min_tempo)
+        if max_tempo:
+            base_query = base_query.filter(cls.tempo <= max_tempo)
+        
+        # Tag filters
+        if tags:
+            base_query = base_query.join(cls.tags).filter(Tag.name.in_(tags))
+        
+        # Category filters
+        if categories:
+            base_query = base_query.join(cls.categories).filter(Category.name.in_(categories))
+        
+        # Order by relevance, view count, and creation date
+        base_query = base_query.order_by(
+            cls.view_count.desc(),
+            cls.created_at.desc()
+        )
+        
+        # Apply pagination
+        if limit:
+            base_query = base_query.limit(limit)
+        if offset:
+            base_query = base_query.offset(offset)
+        
+        return base_query
+    
     def __repr__(self):
         return f'<Song {self.title}>'
+
+
+class Tag(db.Model):
+    __tablename__ = 'tags'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False, unique=True)
+    description = db.Column(db.Text)
+    color = db.Column(db.String(7))  # Hex color code
+    is_system = db.Column(db.Boolean, default=False)  # System vs user-created tags
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+    
+    # Relationships
+    songs = db.relationship('Song', secondary='song_tags', back_populates='tags')
+    creator = db.relationship('User', foreign_keys=[created_by], backref='created_tags')
+    
+    def __init__(self, name, description=None, color=None, is_system=False, created_by=None):
+        self.name = name
+        self.description = description
+        self.color = color
+        self.is_system = is_system
+        self.created_by = created_by
+    
+    def to_dict(self):
+        """Convert tag to dictionary."""
+        return {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+            'color': self.color,
+            'is_system': self.is_system,
+            'created_by': self.created_by,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+    
+    def __repr__(self):
+        return f'<Tag {self.name}>'
+
+
+class Category(db.Model):
+    __tablename__ = 'categories'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False, unique=True)
+    description = db.Column(db.Text)
+    parent_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=True)
+    is_system = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+    
+    # Relationships
+    songs = db.relationship('Song', secondary='song_categories', back_populates='categories')
+    children = db.relationship('Category', backref=db.backref('parent', remote_side=[id]))
+    
+    def __init__(self, name, description=None, parent_id=None, is_system=False):
+        self.name = name
+        self.description = description
+        self.parent_id = parent_id
+        self.is_system = is_system
+    
+    def to_dict(self):
+        """Convert category to dictionary."""
+        return {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+            'parent_id': self.parent_id,
+            'is_system': self.is_system,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+    
+    def __repr__(self):
+        return f'<Category {self.name}>'
+
+
+class UserFavorite(db.Model):
+    __tablename__ = 'user_favorites'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    song_id = db.Column(db.Integer, db.ForeignKey('songs.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=utc_now)
+    
+    # Unique constraint
+    __table_args__ = (db.UniqueConstraint('user_id', 'song_id', name='unique_user_song_favorite'),)
+    
+    # Relationships
+    user = db.relationship('User', backref='favorites')
+    
+    def __init__(self, user_id, song_id):
+        self.user_id = user_id
+        self.song_id = song_id
+    
+    def to_dict(self):
+        """Convert favorite to dictionary."""
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'song_id': self.song_id,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+    
+    def __repr__(self):
+        return f'<UserFavorite user:{self.user_id} song:{self.song_id}>'
+
+
+# Junction tables for many-to-many relationships
+song_tags = db.Table('song_tags',
+    db.Column('id', db.Integer, primary_key=True),
+    db.Column('song_id', db.Integer, db.ForeignKey('songs.id'), nullable=False),
+    db.Column('tag_id', db.Integer, db.ForeignKey('tags.id'), nullable=False),
+    db.Column('created_at', db.DateTime, default=utc_now),
+    db.UniqueConstraint('song_id', 'tag_id', name='unique_song_tag')
+)
+
+song_categories = db.Table('song_categories',
+    db.Column('id', db.Integer, primary_key=True),
+    db.Column('song_id', db.Integer, db.ForeignKey('songs.id'), nullable=False),
+    db.Column('category_id', db.Integer, db.ForeignKey('categories.id'), nullable=False),
+    db.Column('created_at', db.DateTime, default=utc_now),
+    db.UniqueConstraint('song_id', 'category_id', name='unique_song_category')
+)
 
 
 class SongVersion(db.Model):
@@ -302,24 +637,33 @@ class SongVersion(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     song_id = db.Column(db.Integer, db.ForeignKey('songs.id'), nullable=False)
     version_number = db.Column(db.Integer, nullable=False)
-    title = db.Column(db.String(200), nullable=False)
+    title = db.Column(db.String(255), nullable=False)
+    artist = db.Column(db.String(255))
     content = db.Column(db.Text, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    lyrics = db.Column(db.Text)  # Extracted lyrics
+    chords_used = db.Column(db.JSON)  # Array of chords used
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)  # Changed from user_id
+    version_note = db.Column(db.Text)  # Optional note about what changed
+    is_major_version = db.Column(db.Boolean, default=False)  # Flag for significant changes
     created_at = db.Column(db.DateTime, default=utc_now)
     
     # Relationships
     song = db.relationship('Song', backref=db.backref('versions', lazy=True, order_by='SongVersion.created_at.desc()'))
-    user = db.relationship('User', backref='song_versions')
+    creator = db.relationship('User', foreign_keys=[created_by], backref='created_song_versions')
     
     # Composite unique constraint to ensure version numbers are unique per song
     __table_args__ = (db.UniqueConstraint('song_id', 'version_number', name='unique_song_version'),)
     
-    def __init__(self, song_id, version_number, title, content, user_id):
+    def __init__(self, song_id, version_number, title, content, created_by, 
+                 artist=None, version_note=None, is_major_version=False):
         self.song_id = song_id
         self.version_number = version_number
         self.title = title
+        self.artist = artist
         self.content = content
-        self.user_id = user_id
+        self.created_by = created_by
+        self.version_note = version_note
+        self.is_major_version = is_major_version
     
     def to_dict(self):
         """Convert song version to dictionary."""
@@ -328,8 +672,13 @@ class SongVersion(db.Model):
             'song_id': self.song_id,
             'version_number': self.version_number,
             'title': self.title,
+            'artist': self.artist,
             'content': self.content,
-            'user_id': self.user_id,
+            'lyrics': self.lyrics,
+            'chords_used': self.chords_used,
+            'created_by': self.created_by,
+            'version_note': self.version_note,
+            'is_major_version': self.is_major_version,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
     
@@ -337,9 +686,22 @@ class SongVersion(db.Model):
         return f'<SongVersion {self.song_id}v{self.version_number}>'
 
 
-# Create indexes for efficient permission queries
-db.Index('idx_songs_author_id', Song.author_id)
+# Create indexes for efficient queries
+db.Index('idx_songs_user_id', Song.user_id)
 db.Index('idx_songs_share_settings', Song.share_settings)
+db.Index('idx_songs_genre', Song.genre)
+db.Index('idx_songs_key', Song.song_key)
+db.Index('idx_songs_difficulty', Song.difficulty)
+db.Index('idx_songs_language', Song.language)
+db.Index('idx_songs_is_deleted', Song.is_deleted)
+db.Index('idx_songs_is_archived', Song.is_archived)
+db.Index('idx_songs_is_public', Song.is_public)
+db.Index('idx_songs_view_count', Song.view_count)
+db.Index('idx_tags_name', Tag.name)
+db.Index('idx_tags_is_system', Tag.is_system)
+db.Index('idx_categories_name', Category.name)
+db.Index('idx_categories_is_system', Category.is_system)
+db.Index('idx_user_favorites_user_song', UserFavorite.user_id, UserFavorite.song_id)
 # Note: JSON field indexing may vary by database. SQLite has limited JSON index support.
 
 
