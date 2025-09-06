@@ -42,3 +42,8 @@ supabase==2.18.1
 # Monitoring and logging
 sentry-sdk[flask]==2.20.0
 structlog==25.4.0
+
+# WebSocket support
+python-socketio==5.11.4
+flask-socketio==5.4.1
+redis==5.2.1  # For scaling Socket.IO across multiple instances
