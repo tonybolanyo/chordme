@@ -18,10 +18,16 @@ export interface SearchQuery {
   key?: string;
   difficulty?: 'beginner' | 'intermediate' | 'advanced' | 'expert';
   language?: string;
+  timeSignature?: string;
   tags?: string[];
+  categories?: string[];
   minTempo?: number;
   maxTempo?: number;
+  dateFrom?: string;  // ISO date string
+  dateTo?: string;    // ISO date string
+  dateField?: 'created_at' | 'updated_at';
   includePublic?: boolean;
+  combineMode?: 'AND' | 'OR';  // How to combine multiple filters
   limit?: number;
   offset?: number;
   enableCache?: boolean;
@@ -34,11 +40,13 @@ export interface SearchResult {
   genre: string;
   song_key: string;
   tempo: number;
+  time_signature?: string;
   difficulty: string;
   language: string;
   view_count: number;
   favorite_count: number;
   created_at: string;
+  updated_at?: string;
   relevance_score: number;
   match_type: string;
   matched_fields: string[];
@@ -80,6 +88,49 @@ export interface SearchSuggestion {
 export interface SuggestionsResponse {
   suggestions: SearchSuggestion[];
   query: string;
+}
+
+// Filter preset types
+export interface FilterPreset {
+  id: number;
+  name: string;
+  description?: string;
+  filter_config: SearchQuery;
+  is_public: boolean;
+  is_shared: boolean;
+  usage_count: number;
+  last_used?: string;
+  created_at: string;
+  updated_at: string;
+  user_id: number;
+  shared_with?: number[];
+}
+
+export interface CreateFilterPresetRequest {
+  name: string;
+  description?: string;
+  filter_config: SearchQuery;
+  is_public?: boolean;
+  is_shared?: boolean;
+}
+
+export interface UpdateFilterPresetRequest {
+  name?: string;
+  description?: string;
+  filter_config?: SearchQuery;
+  is_public?: boolean;
+  is_shared?: boolean;
+}
+
+export interface ShareFilterPresetRequest {
+  user_email: string;
+}
+
+export interface FilterPresetResponse {
+  status: string;
+  message?: string;
+  data?: FilterPreset | FilterPreset[];
+  error?: string;
 }
 
 // Search history management
@@ -282,11 +333,18 @@ export class SongSearchService {
       if (searchQuery.key) params.append('key', searchQuery.key);
       if (searchQuery.difficulty) params.append('difficulty', searchQuery.difficulty);
       if (searchQuery.language) params.append('language', searchQuery.language);
+      if (searchQuery.timeSignature) params.append('time_signature', searchQuery.timeSignature);
       if (searchQuery.tags && searchQuery.tags.length > 0) {
         params.append('tags', searchQuery.tags.join(','));
       }
+      if (searchQuery.categories && searchQuery.categories.length > 0) {
+        params.append('categories', searchQuery.categories.join(','));
+      }
       if (searchQuery.minTempo !== undefined) params.append('min_tempo', searchQuery.minTempo.toString());
       if (searchQuery.maxTempo !== undefined) params.append('max_tempo', searchQuery.maxTempo.toString());
+      if (searchQuery.dateFrom) params.append('date_from', searchQuery.dateFrom);
+      if (searchQuery.dateTo) params.append('date_to', searchQuery.dateTo);
+      if (searchQuery.dateField) params.append('date_field', searchQuery.dateField);
       if (searchQuery.includePublic !== undefined) params.append('include_public', searchQuery.includePublic.toString());
       if (searchQuery.limit) params.append('limit', searchQuery.limit.toString());
       if (searchQuery.offset) params.append('offset', searchQuery.offset.toString());
@@ -456,9 +514,14 @@ export class SongSearchService {
     if (params.has('key')) query.key = params.get('key') || undefined;
     if (params.has('difficulty')) query.difficulty = params.get('difficulty') as any;
     if (params.has('language')) query.language = params.get('language') || undefined;
+    if (params.has('timeSignature')) query.timeSignature = params.get('timeSignature') || undefined;
     if (params.has('tags')) {
       const tagsString = params.get('tags');
       query.tags = tagsString ? tagsString.split(',').map(tag => tag.trim()) : undefined;
+    }
+    if (params.has('categories')) {
+      const categoriesString = params.get('categories');
+      query.categories = categoriesString ? categoriesString.split(',').map(cat => cat.trim()) : undefined;
     }
     if (params.has('minTempo')) {
       const minTempo = parseInt(params.get('minTempo') || '0');
@@ -468,8 +531,141 @@ export class SongSearchService {
       const maxTempo = parseInt(params.get('maxTempo') || '0');
       if (!isNaN(maxTempo)) query.maxTempo = maxTempo;
     }
+    if (params.has('dateFrom')) query.dateFrom = params.get('dateFrom') || undefined;
+    if (params.has('dateTo')) query.dateTo = params.get('dateTo') || undefined;
+    if (params.has('dateField')) query.dateField = params.get('dateField') as any;
 
     return query;
+  }
+
+  // Filter Preset Management Methods
+  
+  /**
+   * Get all accessible filter presets
+   */
+  async getFilterPresets(includePublic: boolean = true, limit: number = 50): Promise<FilterPreset[]> {
+    try {
+      const params = new URLSearchParams({
+        include_public: includePublic.toString(),
+        limit: limit.toString()
+      });
+
+      const response = await apiRequest<FilterPresetResponse>(
+        `/filter-presets?${params.toString()}`,
+        { method: 'GET' }
+      );
+
+      return Array.isArray(response.data) ? response.data : [];
+    } catch (error) {
+      console.error('Failed to get filter presets:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Create a new filter preset
+   */
+  async createFilterPreset(preset: CreateFilterPresetRequest): Promise<FilterPreset> {
+    const response = await apiRequest<FilterPresetResponse>(
+      '/filter-presets',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(preset)
+      }
+    );
+
+    if (response.status !== 'success' || !response.data) {
+      throw new Error(response.message || 'Failed to create filter preset');
+    }
+
+    return response.data as FilterPreset;
+  }
+
+  /**
+   * Get a specific filter preset
+   */
+  async getFilterPreset(presetId: number): Promise<FilterPreset> {
+    const response = await apiRequest<FilterPresetResponse>(
+      `/filter-presets/${presetId}`,
+      { method: 'GET' }
+    );
+
+    if (response.status !== 'success' || !response.data) {
+      throw new Error(response.message || 'Failed to get filter preset');
+    }
+
+    return response.data as FilterPreset;
+  }
+
+  /**
+   * Update an existing filter preset
+   */
+  async updateFilterPreset(presetId: number, updates: UpdateFilterPresetRequest): Promise<FilterPreset> {
+    const response = await apiRequest<FilterPresetResponse>(
+      `/filter-presets/${presetId}`,
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates)
+      }
+    );
+
+    if (response.status !== 'success' || !response.data) {
+      throw new Error(response.message || 'Failed to update filter preset');
+    }
+
+    return response.data as FilterPreset;
+  }
+
+  /**
+   * Delete a filter preset
+   */
+  async deleteFilterPreset(presetId: number): Promise<void> {
+    const response = await apiRequest<FilterPresetResponse>(
+      `/filter-presets/${presetId}`,
+      { method: 'DELETE' }
+    );
+
+    if (response.status !== 'success') {
+      throw new Error(response.message || 'Failed to delete filter preset');
+    }
+  }
+
+  /**
+   * Share a filter preset with another user
+   */
+  async shareFilterPreset(presetId: number, userEmail: string): Promise<void> {
+    const response = await apiRequest<FilterPresetResponse>(
+      `/filter-presets/${presetId}/share`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_email: userEmail })
+      }
+    );
+
+    if (response.status !== 'success') {
+      throw new Error(response.message || 'Failed to share filter preset');
+    }
+  }
+
+  /**
+   * Unshare a filter preset
+   */
+  async unshareFilterPreset(presetId: number, userEmail: string): Promise<void> {
+    const response = await apiRequest<FilterPresetResponse>(
+      `/filter-presets/${presetId}/unshare`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_email: userEmail })
+      }
+    );
+
+    if (response.status !== 'success') {
+      throw new Error(response.message || 'Failed to unshare filter preset');
+    }
   }
 }
 
