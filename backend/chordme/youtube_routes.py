@@ -145,8 +145,8 @@ class YouTubeService:
 
 @app.route('/api/v1/youtube/search', methods=['POST'])
 @security_headers
-@rate_limit(calls=30, period=60)  # 30 calls per minute
-@validate_request_size(max_size=1024)  # 1KB max
+@rate_limit(max_requests=30, window_seconds=60)  # 30 calls per minute
+@validate_request_size(max_content_length=1024)  # 1KB max
 @auth_required
 def search_youtube_videos():
     """
@@ -307,7 +307,7 @@ def search_youtube_videos():
 
 @app.route('/api/v1/youtube/video/<video_id>', methods=['GET'])
 @security_headers
-@rate_limit(calls=60, period=60)  # 60 calls per minute
+@rate_limit(max_requests=60, window_seconds=60)  # 60 calls per minute
 @auth_required
 def get_youtube_video_details(video_id):
     """
@@ -403,8 +403,8 @@ def get_youtube_video_details(video_id):
 
 @app.route('/api/v1/songs/<int:song_id>/youtube', methods=['POST'])
 @security_headers
-@rate_limit(calls=10, period=60)  # 10 calls per minute
-@validate_request_size(max_size=2048)  # 2KB max
+@rate_limit(max_requests=10, window_seconds=60)  # 10 calls per minute
+@validate_request_size(max_content_length=2048)  # 2KB max
 @auth_required
 def link_youtube_video_to_song(song_id):
     """
@@ -615,7 +615,7 @@ def link_youtube_video_to_song(song_id):
 
 @app.route('/api/v1/songs/<int:song_id>/youtube', methods=['GET'])
 @security_headers
-@rate_limit(calls=60, period=60)  # 60 calls per minute
+@rate_limit(max_requests=60, window_seconds=60)  # 60 calls per minute
 @auth_required
 def get_song_youtube_data(song_id):
     """
@@ -704,7 +704,7 @@ def get_song_youtube_data(song_id):
 
 @app.route('/api/v1/songs/<int:song_id>/youtube', methods=['DELETE'])
 @security_headers
-@rate_limit(calls=10, period=60)  # 10 calls per minute
+@rate_limit(max_requests=10, window_seconds=60)  # 10 calls per minute
 @auth_required
 def unlink_youtube_video_from_song(song_id):
     """
@@ -781,7 +781,7 @@ def unlink_youtube_video_from_song(song_id):
 
 @app.route('/api/v1/youtube/suggest/<int:song_id>', methods=['GET'])
 @security_headers
-@rate_limit(calls=20, period=60)  # 20 calls per minute
+@rate_limit(max_requests=20, window_seconds=60)  # 20 calls per minute
 @auth_required
 def suggest_youtube_videos_for_song(song_id):
     """
