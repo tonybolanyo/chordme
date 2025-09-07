@@ -1,0 +1,265 @@
+/* Interactive Fretboard Styles */
+
+.interactive-fretboard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.fretboard-instructions {
+  text-align: center;
+  padding: 8px 16px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+}
+
+.fretboard-instructions p {
+  margin: 0;
+  font-size: 14px;
+  color: #495057;
+  font-weight: 500;
+}
+
+.fretboard-svg {
+  cursor: crosshair;
+  transition: all 0.2s ease;
+  background: #fdfdfd;
+  border-radius: 4px;
+}
+
+/* Edit mode specific cursors */
+.fretboard-svg.finger-mode {
+  cursor: pointer;
+}
+
+.fretboard-svg.barre-mode {
+  cursor: crosshair;
+}
+
+.fretboard-svg.mute-mode {
+  cursor: not-allowed;
+}
+
+.fretboard-svg.creating-barre {
+  cursor: crosshair;
+}
+
+/* Fretboard elements */
+.fret-line {
+  transition: stroke 0.2s ease;
+}
+
+.fret-line.nut {
+  stroke: #2c3e50;
+  stroke-width: 3;
+}
+
+.string-line {
+  transition: stroke 0.2s ease;
+}
+
+.fretboard-svg:hover .fret-line,
+.fretboard-svg:hover .string-line {
+  stroke: #666;
+}
+
+/* Finger positions */
+.finger-position {
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.finger-position:hover {
+  transform: scale(1.1);
+  filter: brightness(1.1);
+}
+
+.finger-position.error {
+  stroke: #dc3545 !important;
+  stroke-width: 3;
+  animation: pulse-error 1s infinite;
+}
+
+.finger-position.barre {
+  opacity: 0.9;
+}
+
+.finger-number {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-weight: bold;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Barre chord styling */
+.barre-line {
+  transition: all 0.2s ease;
+}
+
+.barre-preview {
+  pointer-events: none;
+}
+
+/* String indicators */
+.open-indicator {
+  transition: all 0.2s ease;
+}
+
+.muted-indicator {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-weight: bold;
+  user-select: none;
+  transition: fill 0.2s ease;
+}
+
+/* Hover previews */
+.hover-preview {
+  pointer-events: none;
+  transition: opacity 0.1s ease;
+}
+
+.hover-preview.finger {
+  stroke: #333;
+  stroke-width: 2;
+}
+
+.hover-preview.open {
+  stroke: #28a745;
+  stroke-width: 2;
+}
+
+/* Labels */
+.string-label {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  user-select: none;
+  transition: fill 0.2s ease;
+}
+
+.fret-label {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  user-select: none;
+  transition: fill 0.2s ease;
+}
+
+/* Animations */
+@keyframes pulse-error {
+  0% {
+    stroke-width: 3;
+  }
+  50% {
+    stroke-width: 4;
+  }
+  100% {
+    stroke-width: 3;
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .interactive-fretboard {
+    padding: 12px;
+  }
+  
+  .fretboard-instructions {
+    padding: 6px 12px;
+  }
+  
+  .fretboard-instructions p {
+    font-size: 13px;
+  }
+  
+  .finger-number {
+    font-size: 10px;
+  }
+  
+  .string-label,
+  .fret-label {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .interactive-fretboard {
+    padding: 8px;
+    gap: 12px;
+  }
+  
+  .fretboard-instructions {
+    padding: 4px 8px;
+  }
+  
+  .fretboard-instructions p {
+    font-size: 12px;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .interactive-fretboard {
+    border: 2px solid #000;
+    background: #fff;
+  }
+  
+  .fretboard-instructions {
+    background: #f0f0f0;
+    border: 1px solid #000;
+  }
+  
+  .fretboard-svg {
+    background: #fff;
+  }
+  
+  .fret-line,
+  .string-line {
+    stroke: #000;
+  }
+  
+  .finger-position {
+    stroke: #000;
+    stroke-width: 2;
+  }
+}
+
+/* Accessibility */
+.fretboard-svg:focus {
+  outline: 2px solid #007acc;
+  outline-offset: 2px;
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .finger-position {
+    stroke-width: 2;
+  }
+  
+  .finger-position:hover {
+    transform: none;
+    filter: none;
+  }
+  
+  .fretboard-svg {
+    cursor: default;
+  }
+}
+
+/* Print styles */
+@media print {
+  .interactive-fretboard {
+    border: 1px solid #000;
+    background: #fff;
+  }
+  
+  .fretboard-instructions {
+    display: none;
+  }
+  
+  .hover-preview {
+    display: none;
+  }
+}

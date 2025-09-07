@@ -1,0 +1,364 @@
+/* Chord Diagram Editor Demo Page Styles */
+
+.chord-editor-demo {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.demo-header {
+  text-align: center;
+  color: white;
+  margin-bottom: 30px;
+}
+
+.demo-header h1 {
+  font-size: 2.5rem;
+  margin: 0 0 10px 0;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.demo-header p {
+  font-size: 1.2rem;
+  margin: 0;
+  opacity: 0.9;
+  font-weight: 300;
+}
+
+.demo-content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Start section */
+.start-section {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.intro-card,
+.controls-card,
+.saved-chords-card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.intro-card h2,
+.controls-card h3,
+.saved-chords-card h3 {
+  margin: 0 0 16px 0;
+  color: #2d3748;
+  font-weight: 600;
+}
+
+.intro-card p {
+  color: #4a5568;
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
+.intro-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.intro-card li {
+  padding: 6px 0;
+  color: #4a5568;
+  line-height: 1.5;
+}
+
+/* Controls card */
+.controls-card {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.instrument-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.instrument-selector label {
+  font-weight: 500;
+  color: #4a5568;
+}
+
+.instrument-selector select {
+  padding: 10px;
+  border: 2px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 14px;
+  background: white;
+  color: #2d3748;
+  transition: border-color 0.2s ease;
+}
+
+.instrument-selector select:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.open-editor-btn {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.open-editor-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+/* Saved chords */
+.saved-chords-card {
+  grid-column: 1 / -1;
+  margin-top: 20px;
+}
+
+.saved-chords-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.saved-chord-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: #f7fafc;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+.chord-info {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.chord-name {
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.chord-instrument {
+  font-size: 12px;
+  color: #718096;
+  background: #edf2f7;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: capitalize;
+}
+
+.chord-date {
+  font-size: 12px;
+  color: #a0aec0;
+}
+
+/* Editor section */
+.editor-section {
+  background: white;
+  border-radius: 12px;
+  padding: 0;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* Export section */
+.export-section {
+  margin-top: 20px;
+}
+
+.export-card {
+  background: white;
+  border-radius: 12px;
+  padding: 0;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.export-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: #f7fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.export-header h3 {
+  margin: 0;
+  color: #2d3748;
+  font-weight: 600;
+}
+
+.download-btn {
+  padding: 8px 16px;
+  background: #48bb78;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.download-btn:hover {
+  background: #38a169;
+}
+
+.export-content {
+  padding: 20px;
+  margin: 0;
+  background: #f8f9fa;
+  color: #2d3748;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 1.4;
+  overflow-x: auto;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+/* Demo footer */
+.demo-footer {
+  text-align: center;
+  margin-top: 30px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+}
+
+.demo-footer p {
+  margin: 0;
+  color: white;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.demo-footer strong {
+  color: #ffd700;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .chord-editor-demo {
+    padding: 10px;
+  }
+  
+  .demo-header h1 {
+    font-size: 2rem;
+  }
+  
+  .demo-header p {
+    font-size: 1rem;
+  }
+  
+  .start-section {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .intro-card,
+  .controls-card,
+  .saved-chords-card {
+    padding: 16px;
+  }
+  
+  .saved-chord-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .chord-info {
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .chord-editor-demo {
+    padding: 8px;
+  }
+  
+  .demo-header h1 {
+    font-size: 1.8rem;
+  }
+  
+  .intro-card,
+  .controls-card,
+  .saved-chords-card {
+    padding: 12px;
+  }
+  
+  .export-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  
+  .export-content {
+    padding: 12px;
+    font-size: 11px;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .intro-card,
+  .controls-card,
+  .saved-chords-card,
+  .editor-section,
+  .export-card {
+    border: 2px solid #000;
+  }
+  
+  .instrument-selector select {
+    border: 2px solid #000;
+  }
+  
+  .saved-chord-item {
+    border: 1px solid #000;
+  }
+}
+
+/* Print styles */
+@media print {
+  .chord-editor-demo {
+    background: white !important;
+    color: black !important;
+  }
+  
+  .demo-header {
+    color: black !important;
+  }
+  
+  .open-editor-btn,
+  .download-btn {
+    display: none;
+  }
+  
+  .demo-footer {
+    background: transparent !important;
+    color: black !important;
+  }
+}
