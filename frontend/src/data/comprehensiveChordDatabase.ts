@@ -128,8 +128,8 @@ function generateChordDiagrams(root: string, quality: keyof typeof CHORD_QUALITI
   const chordInfo = CHORD_QUALITIES[quality];
   const chordName = root + chordInfo.symbol;
   
-  // Generate multiple fingering positions
-  for (let rootFret = 0; rootFret <= maxFret; rootFret++) {
+  // Generate multiple fingering positions using different patterns
+  for (let rootFret = 0; rootFret <= Math.min(maxFret, 7); rootFret++) {
     // Try different chord patterns
     CHORD_PATTERNS.openMajor.forEach((pattern, patternIndex) => {
       const positions: StringPosition[] = [];
@@ -161,6 +161,18 @@ function generateChordDiagrams(root: string, quality: keyof typeof CHORD_QUALITI
         try {
           const diagram = createChordDiagram(chordName, 'guitar', positions);
           diagram.difficulty = getDifficulty(positions, rootFret);
+          diagram.id = `${chordName.toLowerCase()}_${rootFret}_${patternIndex}`; // Ensure unique ID
+          
+          // Add alternative fingering for some chords
+          if (rootFret === 0 && patternIndex === 0) {
+            diagram.alternatives = [{
+              id: `${chordName.toLowerCase()}_alt_1`,
+              description: 'Alternative fingering',
+              difficulty: diagram.difficulty,
+              positions: positions.map(p => ({ ...p, finger: Math.min(p.finger + 1, 4) }))
+            }];
+          }
+          
           diagram.metadata = {
             ...diagram.metadata,
             tags: getChordTags(quality, rootFret),
@@ -174,9 +186,69 @@ function generateChordDiagrams(root: string, quality: keyof typeof CHORD_QUALITI
         }
       }
     });
+    
+    // Also try barre chord patterns for higher positions
+    if (rootFret > 0) {
+      CHORD_PATTERNS.barrePatterns.forEach((pattern, patternIndex) => {
+        const positions: StringPosition[] = [];
+        let isValid = true;
+        
+        pattern.pattern.forEach((fret, stringIndex) => {
+          if (fret === -1) {
+            positions.push({
+              stringNumber: stringIndex + 1,
+              fret: -1,
+              finger: -1
+            });
+          } else {
+            const actualFret = rootFret + fret;
+            if (actualFret > maxFret) {
+              isValid = false;
+              return;
+            }
+            positions.push({
+              stringNumber: stringIndex + 1,
+              fret: actualFret,
+              finger: pattern.fingers[stringIndex],
+              isBarre: pattern.fingers[stringIndex] === 1
+            });
+          }
+        });
+        
+        if (isValid && positions.length === 6) {
+          try {
+            const diagram = createChordDiagram(chordName, 'guitar', positions);
+            diagram.difficulty = getDifficulty(positions, rootFret);
+            diagram.id = `${chordName.toLowerCase()}_barre_${rootFret}_${patternIndex}`;
+            
+            // Add barre chord information
+            const barrePositions = positions.filter(p => p.isBarre);
+            if (barrePositions.length > 1) {
+              diagram.barre = createBarreChord(
+                rootFret + 1,
+                1,
+                Math.min(...barrePositions.map(p => p.stringNumber)),
+                Math.max(...barrePositions.map(p => p.stringNumber))
+              );
+            }
+            
+            diagram.metadata = {
+              ...diagram.metadata,
+              tags: [...getChordTags(quality, rootFret), 'barre-chord'],
+              source: 'generated-chord-database',
+              isVerified: true,
+              popularityScore: getPopularityScore(quality, rootFret)
+            };
+            diagrams.push(diagram);
+          } catch (error) {
+            // Skip invalid chord diagrams
+          }
+        }
+      });
+    }
   }
   
-  return diagrams.slice(0, 3); // Limit to 3 variations per chord
+  return diagrams.slice(0, 5); // Limit to 5 variations per chord to manage size
 }
 
 /**
@@ -190,10 +262,16 @@ function getDifficulty(positions: StringPosition[], rootFret: number): Difficult
   const frets = frettedPositions.map(p => p.fret);
   const stretch = Math.max(...frets) - Math.min(...frets);
   const hasBarre = positions.some(p => p.isBarre);
+  const highestFret = Math.max(...frets);
   
-  if (rootFret > 7) return 'advanced';
-  if (hasBarre || stretch > 3) return 'intermediate';
-  if (stretch > 2) return 'intermediate';
+  // Expert level criteria
+  if (highestFret > 12 || stretch > 4) return 'expert';
+  
+  // Advanced level criteria
+  if (rootFret > 7 || highestFret > 7 || stretch > 3) return 'advanced';
+  
+  // Intermediate level criteria
+  if (hasBarre || stretch > 2 || frettedPositions.length > 3) return 'intermediate';
   
   return 'beginner';
 }
@@ -396,7 +474,7 @@ export function generateComprehensiveChordDatabase(): ChordDiagramCollection[] {
         name: formatCategoryName(categoryName),
         description: getCategoryDescription(categoryName),
         instrument: 'guitar',
-        diagrams: diagrams.slice(0, 100), // Limit to prevent overwhelming size
+        diagrams: diagrams.slice(0, 150), // Allow more chords per category
         metadata: {
           version: '1.0.0',
           createdAt: new Date().toISOString(),
