@@ -109,7 +109,7 @@ export interface SearchResultsActions {
   onItemSelect: (id: string, selected: boolean) => void;
   onSelectAll: (selected: boolean) => void;
   onItemAction: (id: string, action: ResultAction) => void;
-  onBulkAction: (operation: BulkOperation, config?: any) => void;
+  onBulkAction: (operation: BulkOperation, config?: Record<string, unknown>) => void;
   onExport: (config: ExportConfig) => void;
   onAnalyticsToggle: (show: boolean) => void;
 }

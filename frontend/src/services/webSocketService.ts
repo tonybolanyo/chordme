@@ -38,7 +38,7 @@ export interface RoomInfo {
 
 export interface WebSocketMessage {
   type: string;
-  data: any;
+  data: Record<string, unknown>;
   timestamp: number;
   userId?: string;
 }
@@ -204,7 +204,7 @@ export class WebSocketService {
   /**
    * Send a message to the current room
    */
-  sendMessage(message: any): void {
+  sendMessage(message: Record<string, unknown>): void {
     if (!this.socket?.connected || !this.currentRoom || !this.connectionStatus.authenticated) {
       this.emitError('Cannot send message: not connected, authenticated, or in room');
       return;

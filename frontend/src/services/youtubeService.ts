@@ -16,7 +16,7 @@ import {
 // YouTube Player API types (from YouTube IFrame API)
 declare global {
   interface Window {
-    YT: any;
+    YT: typeof YT;
     onYouTubeIframeAPIReady: () => void;
   }
 }
@@ -25,8 +25,8 @@ export class YouTubeService implements IYouTubeService {
   private apiKey: string = '';
   private isApiReady: boolean = false;
   private isApiLoaded: boolean = false;
-  private players: Map<string, any> = new Map();
-  private eventListeners: Map<string, Map<string, Function[]>> = new Map();
+  private players: Map<string, YT.Player> = new Map();
+  private eventListeners: Map<string, Map<string, ((...args: unknown[]) => void)[]>> = new Map();
   private syncConfigs: Map<string, YouTubeSyncConfig> = new Map();
   private pendingInitPromise: Promise<void> | null = null;
 
@@ -133,16 +133,16 @@ export class YouTubeService implements IYouTubeService {
             playlist: config.playlist,
           },
           events: {
-            onReady: (event: any) => {
+            onReady: (event: YT.PlayerEvent) => {
               const player = event.target;
               this.players.set(containerId, player);
               this.eventListeners.set(containerId, new Map());
               resolve(player);
             },
-            onStateChange: (event: any) => {
+            onStateChange: (event: YT.OnStateChangeEvent) => {
               this.handlePlayerStateChange(containerId, event);
             },
-            onError: (event: any) => {
+            onError: (event: YT.OnErrorEvent) => {
               this.handlePlayerError(containerId, event);
               reject(new Error(`YouTube player error: ${event.data}`));
             },
@@ -212,7 +212,7 @@ export class YouTubeService implements IYouTubeService {
         throw new Error(`YouTube API error: ${data.error.message}`);
       }
 
-      return data.items?.map((item: any) => ({
+      return data.items?.map((item: { id: { videoId: string }; snippet: { title: string; description: string; channelTitle: string; thumbnails: Record<string, unknown>; publishedAt: string; tags: string[] } }) => ({
         videoId: item.id.videoId,
         title: item.snippet.title,
         description: item.snippet.description,
@@ -358,7 +358,7 @@ export class YouTubeService implements IYouTubeService {
   /**
    * Event handling
    */
-  addEventListener(playerId: string, event: string, handler: Function): void {
+  addEventListener(playerId: string, event: string, handler: (...args: unknown[]) => void): void {
     const playerListeners = this.eventListeners.get(playerId);
     if (playerListeners) {
       if (!playerListeners.has(event)) {
@@ -368,7 +368,7 @@ export class YouTubeService implements IYouTubeService {
     }
   }
 
-  removeEventListener(playerId: string, event: string, handler: Function): void {
+  removeEventListener(playerId: string, event: string, handler: (...args: unknown[]) => void): void {
     const playerListeners = this.eventListeners.get(playerId);
     if (playerListeners && playerListeners.has(event)) {
       const handlers = playerListeners.get(event)!;
@@ -401,7 +401,7 @@ export class YouTubeService implements IYouTubeService {
   /**
    * Private helper methods
    */
-  private handlePlayerStateChange(playerId: string, event: any): void {
+  private handlePlayerStateChange(playerId: string, event: YT.OnStateChangeEvent): void {
     const listeners = this.eventListeners.get(playerId)?.get('stateChange');
     if (listeners) {
       listeners.forEach(handler => handler(event));
@@ -411,7 +411,7 @@ export class YouTubeService implements IYouTubeService {
     this.handleSynchronization(playerId, event);
   }
 
-  private handlePlayerError(playerId: string, event: any): void {
+  private handlePlayerError(playerId: string, event: YT.OnErrorEvent): void {
     const listeners = this.eventListeners.get(playerId)?.get('error');
     if (listeners) {
       listeners.forEach(handler => handler(event));
@@ -437,7 +437,7 @@ export class YouTubeService implements IYouTubeService {
     this.eventListeners.get(playerId)?.set('syncInterval', [syncInterval]);
   }
 
-  private handleSynchronization(playerId: string, event: any): void {
+  private handleSynchronization(playerId: string, event: YT.OnStateChangeEvent): void {
     const syncConfig = this.syncConfigs.get(playerId);
     if (!syncConfig || !syncConfig.enabled) return;
 
@@ -455,13 +455,13 @@ export class YouTubeService implements IYouTubeService {
     }
   }
 
-  private handleAutomaticSync(playerId: string, event: any): void {
+  private handleAutomaticSync(playerId: string, _event: YT.OnStateChangeEvent): void {
     // Implement automatic synchronization logic
     const currentTime = this.getCurrentTime(playerId);
     this.updateChordHighlight(playerId, currentTime);
   }
 
-  private handleChordBasedSync(playerId: string, event: any): void {
+  private handleChordBasedSync(playerId: string, _event: YT.OnStateChangeEvent): void {
     // Implement chord-based synchronization logic
     const syncConfig = this.syncConfigs.get(playerId);
     if (!syncConfig?.chordProgression) return;
@@ -501,7 +501,7 @@ export class YouTubeService implements IYouTubeService {
    */
   cleanup(): void {
     // Clear all sync intervals
-    this.eventListeners.forEach((listeners, playerId) => {
+    this.eventListeners.forEach((listeners, _playerId) => {
       const syncInterval = listeners.get('syncInterval')?.[0];
       if (syncInterval) {
         clearInterval(syncInterval);

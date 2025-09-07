@@ -347,7 +347,7 @@ export interface BulkAddSongsRequest {
 export interface BulkOperation {
   type: 'add' | 'remove' | 'reorder' | 'update';
   songs: string[]; // setlist_song_ids or song_ids
-  data?: any;
+  data?: Record<string, unknown>;
 }
 
 // UI state types
