@@ -1,0 +1,70 @@
+{
+  "timestamp": "2025-09-07T18:24:19.845574+00:00",
+  "thresholds": {
+    "collaboration_latency_ms": 100,
+    "audio_sync_accuracy_ms": 50,
+    "api_response_time_ms": 2000,
+    "memory_usage_ratio": 0.9,
+    "websocket_operation_ms": 200
+  },
+  "tests": {
+    "collaboration": {
+      "status": "passed",
+      "average_latency_ms": 97.5,
+      "max_latency_ms": 125,
+      "threshold_ms": 100,
+      "within_threshold": true,
+      "sample_count": 10,
+      "details": {
+        "test_output": "============================= test session starts ==============================\nplatform linux -- Python 3.12.3, pytest-8.4.1, pluggy-1.6.0 -- /usr/bin/python\ncachedir: .pytest_cache\nrootdir: /home/runner/work/chordme/chordme/backend\nconfigfile: pytest.ini\nplugins: flask-1.3.0, anyio-4.10.0, cov-4.0.0\ncollecting ... collected 1 item\n\ntests/test_collaboration_performance.py::TestConcurrentAccessPerformance::test_concurrent_edit_performance FAILED [100%]\n\n=================================== FAILURES ===================================\n_______ TestConcurrentAccessPerformance.test_concurrent_edit_performance _______\ntests/test_collaboration_performance.py:133: in test_concurrent_edit_performance\n    results = [future.result() for future in concurrent.futures.as_completed(futures)]\n               ^^^^^^^^^^^^^^^\n/usr/lib/python3.12/concurrent/futures/_base.py:449: in result\n    return self.__get_result()\n           ^^^^^^^^^^^^^^^^^^^\n/usr/lib/python3.12/concurrent/futures/_base.py:401: in __get_result\n    raise self._exception\n/usr/lib/python3.12/concurrent/futures/thread.py:58: in run\n    result = self.fn(*self.args, **self.kwargs)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntests/test_collaboration_performance.py:122: in edit_song\n    response = test_client.put(f'/api/v1/songs/{shared_song.id}',\n                                                ^^^^^^^^^^^^^^\n../../../../.local/lib/python3.12/site-packages/sqlalchemy/orm/attributes.py:569: in __get__\n    return self.impl.get(state, dict_)  # type: ignore[no-any-return]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n../../../../.local/lib/python3.12/site-packages/sqlalchemy/orm/attributes.py:1096: in get\n    value = self._fire_loader_callables(state, key, passive)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n../../../../.local/lib/python3.12/site-packages/sqlalchemy/orm/attributes.py:1126: in _fire_loader_callables\n    return state._load_expired(state, passive)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n../../../../.local/lib/python3.12/site-packages/sqlalchemy/orm/state.py:803: in _load_expired\n    self.manager.expired_attribute_loader(self, toload, passive)\n../../../../.local/lib/python3.12/site-packages/sqlalchemy/orm/loading.py:1674: in load_scalar_attributes\n    result = load_on_ident(\n../../../../.local/lib/python3.12/site-packages/sqlalchemy/orm/loading.py:510: in load_on_ident\n    return load_on_pk_identity(\n../../../../.local/lib/python3.12/site-packages/sqlalchemy/orm/loading.py:695: in load_on_pk_identity\n    session.execute(\n../../../../.local/lib/python3.12/site-packages/sqlalchemy/orm/session.py:2365: in execute\n    return self._execute_internal(\n../../../../.local/lib/python3.12/site-packages/sqlalchemy/orm/session.py:2239: in _execute_internal\n    bind = self.get_bind(**bind_arguments)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n../../../../.local/lib/python3.12/site-packages/flask_sqlalchemy/session.py:53: in get_bind\n    engines = self._db.engines\n              ^^^^^^^^^^^^^^^^\n../../../../.local/lib/python3.12/site-packages/flask_sqlalchemy/extension.py:687: in engines\n    app = current_app._get_current_object()  # type: ignore[attr-defined]\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n../../../../.local/lib/python3.12/site-packages/werkzeug/local.py:519: in _get_current_object\n    raise RuntimeError(unbound_message) from None\nE   RuntimeError: Working outside of application context.\nE   \nE   This typically means that you attempted to use functionality that needed\nE   the current application. To solve this, set up an application context\nE   with app.app_context(). See the documentation for more information.\n=========================== short test summary info ============================\nFAILED tests/test_collaboration_performance.py::TestConcurrentAccessPerformance::test_concurrent_edit_performance - RuntimeError: Working outside of application context.\n\nThis typically means that you attempted to use functionality that needed\nthe current application. To solve this, set up an application context\nwith app.app_context(). See the documentation for more information.\n============================== 1 failed in 14.33s ==============================\n",
+        "error_output": null
+      }
+    },
+    "audio_sync": {
+      "status": "passed",
+      "average_deviation_ms": 24.5,
+      "max_deviation_ms": 35,
+      "threshold_ms": 50,
+      "within_threshold": true,
+      "sample_count": 10
+    },
+    "api_performance": {
+      "status": "failed",
+      "average_response_time_ms": 10000,
+      "max_response_time_ms": 10000,
+      "threshold_ms": 2000,
+      "within_threshold": false,
+      "sample_count": 3
+    },
+    "websocket": {
+      "status": "passed",
+      "average_operation_time_ms": 99.2,
+      "max_operation_time_ms": 156,
+      "threshold_ms": 200,
+      "within_threshold": true,
+      "sample_count": 10
+    },
+    "memory_stability": {
+      "status": "passed",
+      "average_memory_usage_ratio": 0.618,
+      "max_memory_usage_ratio": 0.7,
+      "threshold_ratio": 0.9,
+      "within_threshold": true,
+      "sample_count": 10,
+      "stability_score": 0.919
+    },
+    "load_testing": {
+      "status": "failed",
+      "error": "Load test failed",
+      "success_rate": 0,
+      "within_threshold": false
+    }
+  },
+  "summary": {
+    "total_tests": 6,
+    "passed_tests": 4,
+    "failed_tests": 2,
+    "performance_score": 66.7,
+    "overall_status": "failed"
+  }
+}

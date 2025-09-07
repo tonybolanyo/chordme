@@ -1,0 +1,35 @@
+{
+  "email": {
+    "smtp_host": "smtp.gmail.com",
+    "smtp_port": 587,
+    "from_email": "alerts@yourcompany.com",
+    "to_emails": [
+      "admin@yourcompany.com",
+      "devops@yourcompany.com"
+    ],
+    "username": "your_email@gmail.com",
+    "password": "your_app_password",
+    "use_tls": true
+  },
+  "webhook": {
+    "url": "https://your-webhook-endpoint.com/alerts",
+    "auth_header": "Bearer your_auth_token"
+  },
+  "slack": {
+    "webhook_url": "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK"
+  },
+  "alert_thresholds": {
+    "collaboration_latency": {
+      "warning": 80,
+      "critical": 100
+    },
+    "audio_sync_accuracy": {
+      "warning": 40,
+      "critical": 50
+    },
+    "memory_usage": {
+      "warning": 0.8,
+      "critical": 0.9
+    }
+  }
+}
