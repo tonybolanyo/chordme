@@ -77,6 +77,10 @@ AD_DOMAIN_SUFFIX = os.environ.get('AD_DOMAIN_SUFFIX', '')
 # Multi-Factor Authentication
 MFA_ENABLED = os.environ.get('MFA_ENABLED', 'False').lower() == 'true'
 MFA_ISSUER_NAME = os.environ.get('MFA_ISSUER_NAME', 'ChordMe')
+MFA_BACKUP_CODES_COUNT = int(os.environ.get('MFA_BACKUP_CODES_COUNT', 10))
+MFA_REQUIRED_FOR_ALL = os.environ.get('MFA_REQUIRED_FOR_ALL', 'False').lower() == 'true'
+MFA_REQUIRED_FOR_SSO = os.environ.get('MFA_REQUIRED_FOR_SSO', 'False').lower() == 'true'
+MFA_REQUIRED_DOMAINS = os.environ.get('MFA_REQUIRED_DOMAINS', '').split(',') if os.environ.get('MFA_REQUIRED_DOMAINS') else []
 
 # Redis Configuration (for session storage)
 REDIS_URL = os.environ.get('REDIS_URL', None)

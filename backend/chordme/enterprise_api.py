@@ -29,6 +29,7 @@ from .enterprise_auth import (
 )
 from .saml_auth import saml_authenticator
 from .ldap_auth import ldap_provider, LDAPUserProvisioner
+from .mfa_auth import mfa_manager
 
 logger = logging.getLogger(__name__)
 
@@ -560,3 +561,294 @@ def validate_enterprise_policy():
     except Exception as e:
         logger.error(f"Policy validation failed: {e}")
         return create_error_response("Policy validation failed", 500)
+
+
+@app.route('/api/v1/auth/mfa/setup', methods=['POST'])
+@auth_required
+@security_headers
+def setup_mfa():
+    """
+    Set up MFA for current user
+    ---
+    tags:
+      - Multi-Factor Authentication
+    summary: Initialize MFA setup for user
+    security:
+      - jwt: []
+    responses:
+      200:
+        description: MFA setup data (QR code and backup codes)
+        schema:
+          type: object
+          properties:
+            qr_code:
+              type: string
+              description: Base64 encoded QR code image
+            backup_codes:
+              type: array
+              items:
+                type: string
+              description: Backup codes for account recovery
+      400:
+        description: MFA not available or already enabled
+    """
+    try:
+        if not mfa_manager:
+            return create_error_response("MFA is not available", 400)
+        
+        user = request.current_user
+        
+        if user.mfa_enabled:
+            return create_error_response("MFA is already enabled for this user", 400)
+        
+        # Set up MFA
+        setup_data = mfa_manager.setup_mfa_for_user(user)
+        
+        # Don't return the secret in the response for security
+        response_data = {
+            'qr_code': setup_data['qr_code'],
+            'backup_codes': setup_data['backup_codes']
+        }
+        
+        return create_success_response(
+            data=response_data,
+            message="MFA setup initiated. Complete setup by verifying with your authenticator app."
+        )
+        
+    except Exception as e:
+        logger.error(f"MFA setup failed: {e}")
+        return create_error_response("MFA setup failed", 500)
+
+
+@app.route('/api/v1/auth/mfa/enable', methods=['POST'])
+@auth_required
+@security_headers
+def enable_mfa():
+    """
+    Enable MFA after verification
+    ---
+    tags:
+      - Multi-Factor Authentication
+    summary: Enable MFA for user after token verification
+    security:
+      - jwt: []
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - token
+          properties:
+            token:
+              type: string
+              description: TOTP token from authenticator app
+    responses:
+      200:
+        description: MFA enabled successfully
+      400:
+        description: Invalid request or token
+    """
+    try:
+        if not mfa_manager:
+            return create_error_response("MFA is not available", 400)
+        
+        data = request.get_json()
+        if not data or not data.get('token'):
+            return create_error_response("Token is required", 400)
+        
+        user = request.current_user
+        token = data['token'].strip()
+        
+        if user.mfa_enabled:
+            return create_error_response("MFA is already enabled", 400)
+        
+        # Enable MFA
+        success = mfa_manager.enable_mfa_for_user(user, token)
+        if not success:
+            return create_error_response("Invalid token or MFA enablement failed", 400)
+        
+        return create_success_response(message="MFA has been enabled successfully")
+        
+    except Exception as e:
+        logger.error(f"MFA enablement failed: {e}")
+        return create_error_response("MFA enablement failed", 500)
+
+
+@app.route('/api/v1/auth/mfa/disable', methods=['POST'])
+@auth_required
+@security_headers
+def disable_mfa():
+    """
+    Disable MFA for current user
+    ---
+    tags:
+      - Multi-Factor Authentication
+    summary: Disable MFA after verification
+    security:
+      - jwt: []
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - token
+          properties:
+            token:
+              type: string
+              description: TOTP token or backup code
+    responses:
+      200:
+        description: MFA disabled successfully
+      400:
+        description: Invalid request or token
+    """
+    try:
+        if not mfa_manager:
+            return create_error_response("MFA is not available", 400)
+        
+        data = request.get_json()
+        if not data or not data.get('token'):
+            return create_error_response("Token is required", 400)
+        
+        user = request.current_user
+        token = data['token'].strip()
+        
+        if not user.mfa_enabled:
+            return create_error_response("MFA is not enabled", 400)
+        
+        # Disable MFA
+        success = mfa_manager.disable_mfa_for_user(user, token)
+        if not success:
+            return create_error_response("Invalid token or MFA disablement failed", 400)
+        
+        return create_success_response(message="MFA has been disabled successfully")
+        
+    except Exception as e:
+        logger.error(f"MFA disablement failed: {e}")
+        return create_error_response("MFA disablement failed", 500)
+
+
+@app.route('/api/v1/auth/mfa/verify', methods=['POST'])
+@auth_required
+@security_headers
+def verify_mfa():
+    """
+    Verify MFA token
+    ---
+    tags:
+      - Multi-Factor Authentication
+    summary: Verify MFA token for current session
+    security:
+      - jwt: []
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - token
+          properties:
+            token:
+              type: string
+              description: TOTP token or backup code
+    responses:
+      200:
+        description: Token verified successfully
+      400:
+        description: Invalid token
+    """
+    try:
+        if not mfa_manager:
+            return create_error_response("MFA is not available", 400)
+        
+        data = request.get_json()
+        if not data or not data.get('token'):
+            return create_error_response("Token is required", 400)
+        
+        user = request.current_user
+        token = data['token'].strip()
+        
+        if not user.mfa_enabled:
+            return create_error_response("MFA is not enabled for this user", 400)
+        
+        # Verify MFA token
+        success = mfa_manager.verify_mfa_token(user, token)
+        if not success:
+            return create_error_response("Invalid token", 400)
+        
+        return create_success_response(message="MFA token verified successfully")
+        
+    except Exception as e:
+        logger.error(f"MFA verification failed: {e}")
+        return create_error_response("MFA verification failed", 500)
+
+
+@app.route('/api/v1/auth/mfa/backup-codes/regenerate', methods=['POST'])
+@auth_required
+@security_headers
+def regenerate_backup_codes():
+    """
+    Regenerate MFA backup codes
+    ---
+    tags:
+      - Multi-Factor Authentication
+    summary: Generate new backup codes for MFA
+    security:
+      - jwt: []
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - token
+          properties:
+            token:
+              type: string
+              description: TOTP token for verification
+    responses:
+      200:
+        description: New backup codes generated
+        schema:
+          type: object
+          properties:
+            backup_codes:
+              type: array
+              items:
+                type: string
+      400:
+        description: Invalid token or MFA not enabled
+    """
+    try:
+        if not mfa_manager:
+            return create_error_response("MFA is not available", 400)
+        
+        data = request.get_json()
+        if not data or not data.get('token'):
+            return create_error_response("Token is required", 400)
+        
+        user = request.current_user
+        token = data['token'].strip()
+        
+        if not user.mfa_enabled:
+            return create_error_response("MFA is not enabled", 400)
+        
+        # Generate new backup codes
+        new_codes = mfa_manager.generate_new_backup_codes(user, token)
+        if not new_codes:
+            return create_error_response("Invalid token or backup code generation failed", 400)
+        
+        return create_success_response(
+            data={'backup_codes': new_codes},
+            message="New backup codes generated successfully"
+        )
+        
+    except Exception as e:
+        logger.error(f"Backup codes regeneration failed: {e}")
+        return create_error_response("Backup codes regeneration failed", 500)

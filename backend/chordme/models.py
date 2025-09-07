@@ -30,6 +30,7 @@ class User(db.Model):
     ldap_dn = db.Column(db.String(500), nullable=True)  # LDAP Distinguished Name
     mfa_enabled = db.Column(db.Boolean, default=False)  # Multi-factor authentication
     mfa_secret = db.Column(db.String(128), nullable=True)  # MFA secret key
+    mfa_backup_codes = db.Column(db.JSON, default=list)  # Hashed backup codes
     last_mfa_verification = db.Column(db.DateTime, nullable=True)  # Last MFA verification
     login_attempts = db.Column(db.Integer, default=0)  # Failed login attempts
     locked_until = db.Column(db.DateTime, nullable=True)  # Account lock expiration
