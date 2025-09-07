@@ -271,6 +271,10 @@ app.register_blueprint(filter_preset_routes.filter_preset_bp, url_prefix='/api/v
 # Register favorites blueprint
 app.register_blueprint(favorites_routes.favorites_bp)
 
+# Register practice mode API
+from .practice_api import practice_bp
+app.register_blueprint(practice_bp)
+
 # Initialize CLI commands for chord management
 from . import chord_cli
 chord_cli.init_app(app)
