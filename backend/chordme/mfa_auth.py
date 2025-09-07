@@ -454,5 +454,20 @@ def create_mfa_manager() -> Optional[MFAManager]:
     return MFAManager()
 
 
-# Global instance (will be None if MFA not available)
-mfa_manager = create_mfa_manager() if MFA_AVAILABLE else None
+# Global instance (will be None if MFA not available or deferred initialization)
+mfa_manager = None
+
+def get_mfa_manager():
+    """Get MFA manager instance, creating it if necessary."""
+    global mfa_manager
+    if not MFA_AVAILABLE:
+        return None
+    
+    if mfa_manager is None:
+        try:
+            mfa_manager = create_mfa_manager()
+        except RuntimeError:
+            # Application context not available yet
+            return None
+    
+    return mfa_manager
