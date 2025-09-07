@@ -943,6 +943,217 @@ If collaboration features completely fail:
 4. **Version control**: Keep manual backups of important changes
 5. **Contact support**: Report critical issues immediately for priority assistance
 
+## Advanced Features Troubleshooting
+
+### Setlist Management Issues
+
+#### Setlist Won't Load or Display
+**Symptoms**: Setlists don't appear, loading errors, blank setlist pages
+**Solutions**:
+1. Check browser cache and clear if necessary
+2. Verify setlist permissions and access rights
+3. Check for conflicting browser extensions
+4. Try loading setlist in incognito/private mode
+5. Verify internet connection for cloud-based setlists
+
+#### Performance Mode Problems
+**Symptoms**: Performance mode won't activate, display issues, navigation problems
+**Solutions**:
+1. Ensure browser supports fullscreen API
+2. Check device orientation lock settings
+3. Verify sufficient memory for performance mode
+4. Test with simplified display settings
+5. Use keyboard shortcuts as alternative navigation
+
+#### Auto-Scroll Issues
+**Symptoms**: Auto-scroll too fast/slow, jerky movement, stops unexpectedly
+**Solutions**:
+1. Calibrate scroll speed for song tempo
+2. Check system performance and available memory
+3. Disable unnecessary browser animations
+4. Use manual navigation as backup
+5. Test with different scroll timing settings
+
+### Audio Integration Problems
+
+#### Audio Sync Issues
+**Symptoms**: Audio not aligned with chords, timing drift, sync loss
+**Solutions**:
+1. Recalibrate audio sync markers manually
+2. Check for variable tempo in source audio
+3. Use higher quality audio files
+4. Test network latency for streaming audio
+5. Switch to local audio files for critical performances
+
+#### Audio Won't Play
+**Symptoms**: No audio output, silent playback, error messages
+**Solutions**:
+1. Check browser audio permissions
+2. Verify audio file format compatibility
+3. Test with different audio sources
+4. Check system audio settings and output device
+5. Clear browser cache and reload
+
+#### Audio Quality Problems
+**Symptoms**: Poor sound quality, dropouts, distortion
+**Solutions**:
+1. Use higher bitrate audio files
+2. Check internet bandwidth for streaming
+3. Close bandwidth-intensive applications
+4. Use wired internet connection
+5. Test with local audio files
+
+### Performance Optimization Issues
+
+#### Slow Performance
+**Symptoms**: Lag in interface, slow loading, delayed responses
+**Solutions**:
+1. Close unnecessary browser tabs and applications
+2. Clear browser cache and restart
+3. Check available system memory
+4. Disable browser extensions temporarily
+5. Use performance mode for better efficiency
+
+#### Memory Issues
+**Symptoms**: Browser freezing, out of memory errors, system slowdown
+**Solutions**:
+1. Restart browser to free memory
+2. Limit number of open songs and setlists
+3. Clear cache and browsing data
+4. Close other memory-intensive applications
+5. Use 64-bit browser for better memory handling
+
+#### Battery Drain (Mobile)
+**Symptoms**: Rapid battery loss during use
+**Solutions**:
+1. Enable power saving mode
+2. Reduce screen brightness
+3. Disable unnecessary features
+4. Use airplane mode with Wi-Fi
+5. Connect to power source for extended sessions
+
+### Collaborative Performance Issues
+
+#### Multi-User Sync Problems
+**Symptoms**: Users see different content, delayed updates, conflicts
+**Solutions**:
+1. Verify all users have current ChordMe version
+2. Check network connectivity for all participants
+3. Restart collaboration session
+4. Use session leader for primary navigation
+5. Implement manual sync checkpoints
+
+#### Session Connection Issues
+**Symptoms**: Can't join sessions, frequent disconnections, access denied
+**Solutions**:
+1. Verify session permissions and invitations
+2. Check firewall settings for WebSocket connections
+3. Try different network or connection method
+4. Clear browser cookies and session data
+5. Contact session owner to verify settings
+
+#### Performance Mode Coordination
+**Symptoms**: Devices out of sync during performance, navigation conflicts
+**Solutions**:
+1. Designate single device as master navigator
+2. Use consistent network for all devices
+3. Test coordination before performance
+4. Have backup navigation methods ready
+5. Practice emergency procedures
+
+### Advanced Feature Recovery
+
+#### Emergency Procedures
+
+**Complete Feature Failure**:
+1. **Immediate Actions**:
+   - Switch to backup device or method
+   - Export current work immediately
+   - Notify collaborators of technical issues
+   - Document failure for later analysis
+
+2. **Recovery Steps**:
+   - Restart browser or application
+   - Clear all cache and session data
+   - Test basic functionality before resuming
+   - Gradually re-enable advanced features
+
+3. **Prevention Measures**:
+   - Regular backups of important content
+   - Maintain offline copies of critical setlists
+   - Practice emergency procedures
+   - Have multiple device backup options
+
+#### Data Recovery
+
+**Lost Content or Changes**:
+1. Check browser history and cache
+2. Look for auto-saved versions
+3. Check collaboration history for recent versions
+4. Contact other collaborators for backups
+5. Use export/import features to recover data
+
+**Corrupted Sessions**:
+1. Clear browser data and restart
+2. Create new session with same participants
+3. Import content from backups
+4. Test functionality before resuming work
+5. Document corruption for support team
+
+### Getting Help
+
+#### Self-Diagnosis Steps
+
+**Advanced Features Checklist**:
+- [ ] Verify account has access to advanced features
+- [ ] Check browser compatibility and version
+- [ ] Test with simplified settings first
+- [ ] Verify network requirements are met
+- [ ] Clear cache and test in incognito mode
+- [ ] Try alternative devices or browsers
+- [ ] Check for known issues in documentation
+
+#### Reporting Advanced Feature Issues
+
+**Information to Include**:
+1. **Feature Context**: Which advanced feature was being used
+2. **User Configuration**: Account type, permissions, settings
+3. **Technical Environment**: Device, browser, network setup
+4. **Steps to Reproduce**: Exact sequence leading to issue
+5. **Expected vs Actual**: What should happen vs what occurred
+6. **Error Messages**: Screenshots of any error dialogs
+7. **Performance Data**: Network speed, device specifications
+8. **Collaboration Context**: Number of users, session type, roles
+
+#### Priority Support
+
+**Critical Issues** (Immediate response needed):
+- Performance-affecting bugs during live shows
+- Data loss or corruption issues
+- Security vulnerabilities
+- Complete feature failures
+
+**High Priority** (Response within 24 hours):
+- Collaboration session failures
+- Performance mode issues
+- Audio integration problems
+- Setlist management failures
+
+**Standard Priority** (Response within 72 hours):
+- Feature enhancement requests
+- Non-critical bugs
+- Usage questions
+- Configuration assistance
+
+---
+
+## Related Troubleshooting Resources
+
+- [Performance Optimization Guide](performance-optimization-guide.md)
+- [Collaboration User Guide](collaboration-user-guide.md)
+- [Audio Integration User Guide](audio-integration-user-guide.md)
+- [Video Tutorials](video-tutorials.md)
+
 ---
 
 *If you can't find a solution here, please open an issue on [GitHub](https://github.com/tonybolanyo/chordme/issues) with detailed information about your problem.*

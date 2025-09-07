@@ -39,8 +39,23 @@ This directory contains the comprehensive user manual for ChordMe, automatically
 - **[HTTPS Enforcement](https-enforcement.html)** - HTTPS enforcement documentation
 - **[Backend Security Audit](backend-security-audit.html)** - Backend security audit report
 
-### Collaboration Features
+### Advanced Features Documentation
+- **[Real-time Collaboration User Guide](collaboration-user-guide.html)** - Complete guide to collaborative features
+- **[Setlist Management User Guide](setlist-user-guide.html)** - Professional setlist creation and management
+- **[Audio Integration User Guide](audio-integration-user-guide.html)** - Audio playback and synchronization
+- **[Performance Mode User Guide](performance-mode-user-guide.html)** - Live performance optimization
+- **[Video Tutorials](video-tutorials.html)** - Comprehensive video learning resources
+
+### Best Practices & Guidelines
+- **[Collaboration Best Practices](collaboration-best-practices.html)** - Professional collaboration strategies
+- **[Community Guidelines](community-guidelines.html)** - Community standards and conduct
+- **[Performance Optimization Guide](performance-optimization-guide.html)** - System and workflow optimization
+
+### Technical Architecture
 - **[Collaborative Editing Architecture](collaborative-editing-architecture.html)** - Real-time collaboration technical details
+- **[Setlist Architecture](setlist-architecture.html)** - Setlist data architecture documentation
+- **[Audio Playback Engine](audio-playback-engine.html)** - Audio system architecture
+- **[Session Management](session-management.html)** - Collaborative session management
 - **[Firebase Integration](firebase-integration.html)** - Firebase setup and configuration
 - **[Google OAuth Integration](google-oauth-integration.html)** - Authentication setup
 
