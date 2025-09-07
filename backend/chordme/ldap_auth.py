@@ -427,5 +427,20 @@ def create_ldap_provider() -> Optional[LDAPAuthProvider]:
         return LDAPAuthProvider()
 
 
-# Global instance (will be None if LDAP not available)
-ldap_provider = create_ldap_provider() if LDAP_AVAILABLE else None
+# Global instance (will be None if LDAP not available or deferred initialization)
+ldap_provider = None
+
+def get_ldap_provider():
+    """Get LDAP provider instance, creating it if necessary."""
+    global ldap_provider
+    if not LDAP_AVAILABLE:
+        return None
+    
+    if ldap_provider is None:
+        try:
+            ldap_provider = create_ldap_provider()
+        except RuntimeError:
+            # Application context not available yet
+            return None
+    
+    return ldap_provider

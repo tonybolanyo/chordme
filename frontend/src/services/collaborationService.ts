@@ -238,6 +238,7 @@ export class CollaborationService {
         true
       );
 
+      try {
         // Apply operations locally
         const newContent = OperationalTransform.applyOperations(
           session.documentState.content,
@@ -247,9 +248,9 @@ export class CollaborationService {
         session.documentState.content = newContent;
         session.documentState.version++;
         session.optimisticUpdates.push(optimisticUpdate);
+      } catch (error) {
+        console.error('Error in optimistic update:', error);
       }
-    } catch (error) {
-      console.error('Error in optimistic update:', error);
     }
 
     try {

@@ -15,7 +15,23 @@ import type {
   CalendarIntegration,
   ProfessionalTemplate,
   ProjectProgress,
-  ActivityDashboard
+  ActivityDashboard,
+  Project,
+  ProjectTask,
+  ProjectMilestone,
+  TimeEntry,
+  ProjectTemplate,
+  TimelineData,
+  GanttChartData,
+  GanttTask,
+  GanttMilestone,
+  ResourceAllocation,
+  WorkloadReport,
+  CreateProjectRequest,
+  CreateTaskRequest,
+  CreateTimeEntryRequest,
+  ProjectFilters,
+  TaskFilters
 } from '../types/professionalCollaboration';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
@@ -611,6 +627,358 @@ class ProfessionalCollaborationService {
     }
     
     return response.blob();
+  }
+
+  // Advanced Project Management Methods
+
+  // Project Management
+  async createProject(projectData: CreateProjectRequest): Promise<Project> {
+    const response = await this.makeRequest<Project>(
+      '/api/v1/projects',
+      {
+        method: 'POST',
+        body: JSON.stringify(projectData),
+      }
+    );
+    
+    if (response.status !== 'success' || !response.data) {
+      throw new Error(response.message || 'Failed to create project');
+    }
+    
+    return response.data;
+  }
+
+  async listProjects(filters: ProjectFilters = {}): Promise<{ projects: Project[]; pagination: any }> {
+    const params = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined) {
+        params.append(key, String(value));
+      }
+    });
+
+    const response = await this.makeRequest<{ projects: Project[]; pagination: any }>(
+      `/api/v1/projects?${params.toString()}`
+    );
+    
+    if (response.status !== 'success' || !response.data) {
+      throw new Error(response.message || 'Failed to fetch projects');
+    }
+    
+    return response.data;
+  }
+
+  async getProject(projectId: number): Promise<Project> {
+    const response = await this.makeRequest<Project>(
+      `/api/v1/projects/${projectId}`
+    );
+    
+    if (response.status !== 'success' || !response.data) {
+      throw new Error(response.message || 'Failed to fetch project');
+    }
+    
+    return response.data;
+  }
+
+  async updateProject(projectId: number, updateData: Partial<CreateProjectRequest>): Promise<Project> {
+    const response = await this.makeRequest<Project>(
+      `/api/v1/projects/${projectId}`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify(updateData),
+      }
+    );
+    
+    if (response.status !== 'success' || !response.data) {
+      throw new Error(response.message || 'Failed to update project');
+    }
+    
+    return response.data;
+  }
+
+  async deleteProject(projectId: number): Promise<void> {
+    const response = await this.makeRequest(
+      `/api/v1/projects/${projectId}`,
+      {
+        method: 'DELETE',
+      }
+    );
+    
+    if (response.status !== 'success') {
+      throw new Error(response.message || 'Failed to delete project');
+    }
+  }
+
+  // Task Management
+  async createProjectTask(projectId: number, taskData: CreateTaskRequest): Promise<ProjectTask> {
+    const response = await this.makeRequest<ProjectTask>(
+      `/api/v1/projects/${projectId}/tasks`,
+      {
+        method: 'POST',
+        body: JSON.stringify(taskData),
+      }
+    );
+    
+    if (response.status !== 'success' || !response.data) {
+      throw new Error(response.message || 'Failed to create task');
+    }
+    
+    return response.data;
+  }
+
+  async listProjectTasks(projectId: number, filters: TaskFilters = {}): Promise<ProjectTask[]> {
+    const params = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined) {
+        params.append(key, String(value));
+      }
+    });
+
+    const response = await this.makeRequest<{ tasks: ProjectTask[] }>(
+      `/api/v1/projects/${projectId}/tasks?${params.toString()}`
+    );
+    
+    if (response.status !== 'success' || !response.data) {
+      throw new Error(response.message || 'Failed to fetch tasks');
+    }
+    
+    return response.data.tasks;
+  }
+
+  async updateProjectTask(projectId: number, taskId: number, updateData: Partial<CreateTaskRequest>): Promise<ProjectTask> {
+    const response = await this.makeRequest<ProjectTask>(
+      `/api/v1/projects/${projectId}/tasks/${taskId}`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify(updateData),
+      }
+    );
+    
+    if (response.status !== 'success' || !response.data) {
+      throw new Error(response.message || 'Failed to update task');
+    }
+    
+    return response.data;
+  }
+
+  async deleteProjectTask(projectId: number, taskId: number): Promise<void> {
+    const response = await this.makeRequest(
+      `/api/v1/projects/${projectId}/tasks/${taskId}`,
+      {
+        method: 'DELETE',
+      }
+    );
+    
+    if (response.status !== 'success') {
+      throw new Error(response.message || 'Failed to delete task');
+    }
+  }
+
+  // Timeline and Gantt Chart
+  async getProjectTimeline(projectId: number): Promise<TimelineData> {
+    const response = await this.makeRequest<TimelineData>(
+      `/api/v1/projects/${projectId}/timeline`
+    );
+    
+    if (response.status !== 'success' || !response.data) {
+      throw new Error(response.message || 'Failed to fetch timeline data');
+    }
+    
+    return response.data;
+  }
+
+  // Milestone Management
+  async createProjectMilestone(projectId: number, milestoneData: Omit<ProjectMilestone, 'id' | 'project_id' | 'created_at' | 'updated_at'>): Promise<ProjectMilestone> {
+    const response = await this.makeRequest<ProjectMilestone>(
+      `/api/v1/projects/${projectId}/milestones`,
+      {
+        method: 'POST',
+        body: JSON.stringify(milestoneData),
+      }
+    );
+    
+    if (response.status !== 'success' || !response.data) {
+      throw new Error(response.message || 'Failed to create milestone');
+    }
+    
+    return response.data;
+  }
+
+  async listProjectMilestones(projectId: number): Promise<ProjectMilestone[]> {
+    const response = await this.makeRequest<{ milestones: ProjectMilestone[] }>(
+      `/api/v1/projects/${projectId}/milestones`
+    );
+    
+    if (response.status !== 'success' || !response.data) {
+      throw new Error(response.message || 'Failed to fetch milestones');
+    }
+    
+    return response.data.milestones;
+  }
+
+  // Time Tracking
+  async startTimeTracking(projectId: number, timeData: CreateTimeEntryRequest = {}): Promise<TimeEntry> {
+    const response = await this.makeRequest<TimeEntry>(
+      `/api/v1/projects/${projectId}/time-entries`,
+      {
+        method: 'POST',
+        body: JSON.stringify(timeData),
+      }
+    );
+    
+    if (response.status !== 'success' || !response.data) {
+      throw new Error(response.message || 'Failed to start time tracking');
+    }
+    
+    return response.data;
+  }
+
+  async stopTimeTracking(projectId: number): Promise<TimeEntry> {
+    const response = await this.makeRequest<TimeEntry>(
+      `/api/v1/projects/${projectId}/time-entries`,
+      {
+        method: 'POST',
+        body: JSON.stringify({}),
+      }
+    );
+    
+    if (response.status !== 'success' || !response.data) {
+      throw new Error(response.message || 'Failed to stop time tracking');
+    }
+    
+    return response.data;
+  }
+
+  async getTimeEntries(projectId: number, filters: { task_id?: number; user_id?: number; start_date?: string; end_date?: string } = {}): Promise<TimeEntry[]> {
+    const params = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined) {
+        params.append(key, String(value));
+      }
+    });
+
+    const response = await this.makeRequest<{ time_entries: TimeEntry[] }>(
+      `/api/v1/projects/${projectId}/time-entries?${params.toString()}`
+    );
+    
+    if (response.status !== 'success' || !response.data) {
+      throw new Error(response.message || 'Failed to fetch time entries');
+    }
+    
+    return response.data.time_entries;
+  }
+
+  // Project Templates
+  async getProjectTemplates(filters: { template_type?: string; category?: string; locale?: string } = {}): Promise<ProjectTemplate[]> {
+    const params = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined) {
+        params.append(key, String(value));
+      }
+    });
+
+    const response = await this.makeRequest<{ templates: ProjectTemplate[] }>(
+      `/api/v1/project-templates?${params.toString()}`
+    );
+    
+    if (response.status !== 'success' || !response.data) {
+      throw new Error(response.message || 'Failed to fetch project templates');
+    }
+    
+    return response.data.templates;
+  }
+
+  // Resource Allocation and Workload
+  async getResourceAllocation(projectId: number): Promise<ResourceAllocation[]> {
+    const response = await this.makeRequest<{ allocations: ResourceAllocation[] }>(
+      `/api/v1/projects/${projectId}/resource-allocation`
+    );
+    
+    if (response.status !== 'success' || !response.data) {
+      throw new Error(response.message || 'Failed to fetch resource allocation');
+    }
+    
+    return response.data.allocations;
+  }
+
+  async getWorkloadReport(projectId?: number, startDate?: string, endDate?: string): Promise<WorkloadReport> {
+    const params = new URLSearchParams();
+    if (projectId) params.append('project_id', String(projectId));
+    if (startDate) params.append('start_date', startDate);
+    if (endDate) params.append('end_date', endDate);
+
+    const response = await this.makeRequest<WorkloadReport>(
+      `/api/v1/workload-report?${params.toString()}`
+    );
+    
+    if (response.status !== 'success' || !response.data) {
+      throw new Error(response.message || 'Failed to fetch workload report');
+    }
+    
+    return response.data;
+  }
+
+  // Utility Methods for Timeline Calculations
+  calculateGanttData(timelineData: TimelineData): GanttChartData {
+    const ganttTasks: GanttTask[] = timelineData.tasks.map(task => ({
+      id: task.id,
+      name: task.title,
+      start: task.start_date || new Date().toISOString(),
+      end: task.due_date || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      progress: task.progress_percentage,
+      dependencies: task.depends_on_tasks,
+      resource: task.assigned_to ? `User ${task.assigned_to}` : undefined,
+      type: 'task',
+      custom_class: task.is_overdue ? 'overdue' : task.status
+    }));
+
+    const ganttMilestones: GanttMilestone[] = timelineData.milestones.map(milestone => ({
+      id: milestone.id,
+      name: milestone.name,
+      date: milestone.target_date,
+      type: 'milestone',
+      custom_class: milestone.is_overdue ? 'overdue' : milestone.status
+    }));
+
+    // Calculate timeline bounds
+    const allDates = [
+      ...ganttTasks.map(t => t.start),
+      ...ganttTasks.map(t => t.end),
+      ...ganttMilestones.map(m => m.date)
+    ];
+    
+    const startDate = new Date(Math.min(...allDates.map(d => new Date(d).getTime())));
+    const endDate = new Date(Math.max(...allDates.map(d => new Date(d).getTime())));
+
+    return {
+      tasks: ganttTasks,
+      milestones: ganttMilestones,
+      timeline: {
+        start_date: startDate.toISOString(),
+        end_date: endDate.toISOString(),
+        view_mode: 'week'
+      }
+    };
+  }
+
+  calculateCriticalPath(timelineData: TimelineData): number[] {
+    // Simplified critical path calculation
+    // Returns array of task IDs on the critical path
+    const tasks = timelineData.tasks;
+    const criticalTasks: number[] = [];
+    
+    // Find tasks with no dependencies and latest end dates
+    tasks.forEach(task => {
+      if (task.depends_on_tasks.length === 0 && task.due_date) {
+        const dependentTasks = tasks.filter(t => 
+          t.depends_on_tasks.includes(task.id)
+        );
+        if (dependentTasks.length > 0) {
+          criticalTasks.push(task.id);
+        }
+      }
+    });
+    
+    return criticalTasks;
   }
 }
 

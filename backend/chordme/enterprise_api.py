@@ -28,8 +28,8 @@ from .enterprise_auth import (
     EnterprisePolicyEnforcer
 )
 from .saml_auth import saml_authenticator
-from .ldap_auth import ldap_provider, LDAPUserProvisioner
-from .mfa_auth import mfa_manager
+from .ldap_auth import get_ldap_provider, LDAPUserProvisioner
+from .mfa_auth import get_mfa_manager
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +63,7 @@ def get_enterprise_auth_config():
     """
     config = {
         'saml_enabled': bool(current_app.config.get('SAML_ENABLED', False)),
-        'ldap_enabled': bool(ldap_provider is not None),
+        'ldap_enabled': bool(get_ldap_provider() is not None),
         'mfa_enabled': bool(current_app.config.get('MFA_ENABLED', False)),
         'domain_whitelist_enabled': bool(current_app.config.get('ENTERPRISE_DOMAIN_WHITELIST')),
         'sso_providers': list(current_app.config.get('SAML_IDENTITY_PROVIDERS', {}).keys())
@@ -256,6 +256,7 @@ def ldap_login():
         description: Authentication failed
     """
     try:
+        ldap_provider = get_ldap_provider()
         if not ldap_provider:
             return create_error_response("LDAP authentication is not available", 400)
         
@@ -329,6 +330,7 @@ def test_ldap_connection():
     """
     try:
         # TODO: Add admin role check
+        ldap_provider = get_ldap_provider()
         if not ldap_provider:
             return create_error_response("LDAP is not configured", 400)
         
