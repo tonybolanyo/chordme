@@ -3365,3 +3365,341 @@ class PerformanceAnalytics(db.Model):
     
     def __repr__(self):
         return f'<PerformanceAnalytics {self.analytics_period} for {self.period_start.date()}>'
+
+
+class Project(db.Model):
+    """Project management for grouping setlists, tasks, and milestones."""
+    __tablename__ = 'projects'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text)
+    project_type = db.Column(db.String(50), default='album')  # album, tour, lesson_plan, general
+    owner_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    collaboration_room_id = db.Column(db.Integer, db.ForeignKey('collaboration_rooms.id'), nullable=True)
+    
+    # Project timeline
+    start_date = db.Column(db.DateTime)
+    target_end_date = db.Column(db.DateTime)
+    actual_end_date = db.Column(db.DateTime)
+    
+    # Status and progress
+    status = db.Column(db.String(20), default='planning')  # planning, active, on_hold, completed, cancelled
+    overall_progress = db.Column(db.Integer, default=0)  # 0-100
+    
+    # Project settings
+    is_template = db.Column(db.Boolean, default=False)
+    template_id = db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=True)  # project template reference
+    is_public = db.Column(db.Boolean, default=False)
+    
+    # Metadata
+    tags = db.Column(db.JSON, default=list)
+    custom_fields = db.Column(db.JSON, default=dict)
+    
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+    
+    # Relationships
+    owner = db.relationship('User', foreign_keys=[owner_id], backref='owned_projects')
+    collaboration_room = db.relationship('CollaborationRoom', backref='project')
+    template = db.relationship('Project', remote_side=[id], backref='instances')
+    
+    def __repr__(self):
+        return f'<Project {self.name}>'
+    
+    def to_dict(self, include_stats=False):
+        """Convert project to dictionary."""
+        result = {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+            'project_type': self.project_type,
+            'owner_id': self.owner_id,
+            'collaboration_room_id': self.collaboration_room_id,
+            'start_date': self.start_date.isoformat() if self.start_date else None,
+            'target_end_date': self.target_end_date.isoformat() if self.target_end_date else None,
+            'actual_end_date': self.actual_end_date.isoformat() if self.actual_end_date else None,
+            'status': self.status,
+            'overall_progress': self.overall_progress,
+            'is_template': self.is_template,
+            'template_id': self.template_id,
+            'is_public': self.is_public,
+            'tags': self.tags,
+            'custom_fields': self.custom_fields,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+        
+        if include_stats:
+            # Add calculated statistics
+            total_tasks = ProjectTask.query.filter_by(project_id=self.id).count()
+            completed_tasks = ProjectTask.query.filter_by(project_id=self.id, status='completed').count()
+            overdue_tasks = ProjectTask.query.filter(
+                ProjectTask.project_id == self.id,
+                ProjectTask.due_date < utc_now(),
+                ProjectTask.status.in_(['todo', 'in_progress'])
+            ).count()
+            
+            result['stats'] = {
+                'total_tasks': total_tasks,
+                'completed_tasks': completed_tasks,
+                'overdue_tasks': overdue_tasks,
+                'completion_rate': (completed_tasks / total_tasks * 100) if total_tasks > 0 else 0
+            }
+        
+        return result
+
+
+class ProjectTask(db.Model):
+    """Project-level tasks that can span multiple setlists."""
+    __tablename__ = 'project_tasks'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    project_id = db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=False)
+    parent_task_id = db.Column(db.Integer, db.ForeignKey('project_tasks.id'), nullable=True)  # for subtasks
+    setlist_id = db.Column(db.Integer, db.ForeignKey('setlists.id'), nullable=True)  # optional setlist link
+    milestone_id = db.Column(db.Integer, db.ForeignKey('project_milestones.id'), nullable=True)
+    assigned_to = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    
+    # Task details
+    title = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text)
+    task_type = db.Column(db.String(30), default='general')  # songwriting, arrangement, recording, rehearsal, performance, administrative
+    priority = db.Column(db.String(10), default='normal')  # low, normal, high, urgent
+    
+    # Status and tracking
+    status = db.Column(db.String(20), default='todo')  # todo, in_progress, completed, cancelled, blocked
+    progress_percentage = db.Column(db.Integer, default=0)
+    estimated_hours = db.Column(db.Float)  # estimated hours for completion
+    actual_hours = db.Column(db.Float, default=0)  # tracked hours
+    
+    # Scheduling
+    start_date = db.Column(db.DateTime)
+    due_date = db.Column(db.DateTime)
+    completed_at = db.Column(db.DateTime)
+    
+    # Dependencies and workflow
+    depends_on_tasks = db.Column(db.JSON, default=list)  # task IDs this depends on
+    blocks_tasks = db.Column(db.JSON, default=list)  # task IDs this blocks
+    
+    # Collaboration
+    watchers = db.Column(db.JSON, default=list)  # user IDs watching this task
+    tags = db.Column(db.JSON, default=list)
+    
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+    
+    # Relationships
+    project = db.relationship('Project', backref='tasks')
+    parent_task = db.relationship('ProjectTask', remote_side=[id], backref='subtasks')
+    setlist = db.relationship('Setlist', backref='project_tasks')
+    milestone = db.relationship('ProjectMilestone', backref='tasks')
+    assignee = db.relationship('User', foreign_keys=[assigned_to], backref='assigned_project_tasks')
+    creator = db.relationship('User', foreign_keys=[created_by])
+    
+    def __repr__(self):
+        return f'<ProjectTask {self.title}>'
+    
+    def to_dict(self, include_time_entries=False):
+        """Convert task to dictionary."""
+        result = {
+            'id': self.id,
+            'project_id': self.project_id,
+            'parent_task_id': self.parent_task_id,
+            'setlist_id': self.setlist_id,
+            'milestone_id': self.milestone_id,
+            'assigned_to': self.assigned_to,
+            'created_by': self.created_by,
+            'title': self.title,
+            'description': self.description,
+            'task_type': self.task_type,
+            'priority': self.priority,
+            'status': self.status,
+            'progress_percentage': self.progress_percentage,
+            'estimated_hours': self.estimated_hours,
+            'actual_hours': self.actual_hours,
+            'start_date': self.start_date.isoformat() if self.start_date else None,
+            'due_date': self.due_date.isoformat() if self.due_date else None,
+            'completed_at': self.completed_at.isoformat() if self.completed_at else None,
+            'depends_on_tasks': self.depends_on_tasks,
+            'blocks_tasks': self.blocks_tasks,
+            'watchers': self.watchers,
+            'tags': self.tags,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+        
+        if include_time_entries:
+            result['time_entries'] = [entry.to_dict() for entry in self.time_entries]
+        
+        return result
+
+
+class ProjectMilestone(db.Model):
+    """Project milestones for tracking major deliverables."""
+    __tablename__ = 'project_milestones'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    project_id = db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=False)
+    
+    # Milestone details
+    name = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text)
+    milestone_type = db.Column(db.String(30), default='deliverable')  # deliverable, checkpoint, deadline, release
+    
+    # Timeline
+    target_date = db.Column(db.DateTime, nullable=False)
+    actual_date = db.Column(db.DateTime)
+    
+    # Status and progress
+    status = db.Column(db.String(20), default='upcoming')  # upcoming, on_track, at_risk, completed, overdue
+    completion_percentage = db.Column(db.Integer, default=0)
+    
+    # Dependencies
+    depends_on_milestones = db.Column(db.JSON, default=list)  # milestone IDs this depends on
+    
+    # Metadata
+    priority = db.Column(db.String(10), default='normal')  # low, normal, high, critical
+    tags = db.Column(db.JSON, default=list)
+    deliverables = db.Column(db.JSON, default=list)  # list of expected deliverables
+    
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+    
+    # Relationships
+    project = db.relationship('Project', backref='milestones')
+    
+    def __repr__(self):
+        return f'<ProjectMilestone {self.name}>'
+    
+    def to_dict(self):
+        """Convert milestone to dictionary."""
+        return {
+            'id': self.id,
+            'project_id': self.project_id,
+            'name': self.name,
+            'description': self.description,
+            'milestone_type': self.milestone_type,
+            'target_date': self.target_date.isoformat() if self.target_date else None,
+            'actual_date': self.actual_date.isoformat() if self.actual_date else None,
+            'status': self.status,
+            'completion_percentage': self.completion_percentage,
+            'depends_on_milestones': self.depends_on_milestones,
+            'priority': self.priority,
+            'tags': self.tags,
+            'deliverables': self.deliverables,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+
+
+class TimeEntry(db.Model):
+    """Time tracking for project tasks."""
+    __tablename__ = 'time_entries'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    project_id = db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=False)
+    task_id = db.Column(db.Integer, db.ForeignKey('project_tasks.id'), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    
+    # Time tracking
+    start_time = db.Column(db.DateTime, nullable=False)
+    end_time = db.Column(db.DateTime)
+    duration_minutes = db.Column(db.Integer)  # calculated duration in minutes
+    
+    # Entry details
+    description = db.Column(db.Text)
+    activity_type = db.Column(db.String(30), default='work')  # work, meeting, research, practice, review
+    is_billable = db.Column(db.Boolean, default=True)
+    
+    # Manual vs automatic
+    is_manual_entry = db.Column(db.Boolean, default=False)
+    is_running = db.Column(db.Boolean, default=False)  # for active timers
+    
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+    
+    # Relationships
+    project = db.relationship('Project', backref='time_entries')
+    task = db.relationship('ProjectTask', backref='time_entries')
+    user = db.relationship('User', backref='time_entries')
+    
+    def __repr__(self):
+        return f'<TimeEntry {self.duration_minutes}min by user {self.user_id}>'
+    
+    def to_dict(self):
+        """Convert time entry to dictionary."""
+        return {
+            'id': self.id,
+            'project_id': self.project_id,
+            'task_id': self.task_id,
+            'user_id': self.user_id,
+            'start_time': self.start_time.isoformat() if self.start_time else None,
+            'end_time': self.end_time.isoformat() if self.end_time else None,
+            'duration_minutes': self.duration_minutes,
+            'description': self.description,
+            'activity_type': self.activity_type,
+            'is_billable': self.is_billable,
+            'is_manual_entry': self.is_manual_entry,
+            'is_running': self.is_running,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+
+
+class ProjectTemplate(db.Model):
+    """Predefined project templates for common music scenarios."""
+    __tablename__ = 'project_templates'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text)
+    template_type = db.Column(db.String(50), nullable=False)  # album_production, tour_management, lesson_plan
+    category = db.Column(db.String(50), default='music')  # music, education, business
+    
+    # Template definition
+    stages = db.Column(db.JSON, nullable=False)  # predefined workflow stages
+    default_tasks = db.Column(db.JSON, default=list)  # template tasks
+    default_milestones = db.Column(db.JSON, default=list)  # template milestones
+    estimated_duration_days = db.Column(db.Integer)
+    
+    # Usage and metadata
+    is_public = db.Column(db.Boolean, default=True)
+    usage_count = db.Column(db.Integer, default=0)
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    
+    # Internationalization
+    localized_names = db.Column(db.JSON, default=dict)  # {locale: name}
+    localized_descriptions = db.Column(db.JSON, default=dict)  # {locale: description}
+    
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+    
+    # Relationships
+    creator = db.relationship('User', backref='created_project_templates')
+    
+    def __repr__(self):
+        return f'<ProjectTemplate {self.name}>'
+    
+    def to_dict(self, locale='en'):
+        """Convert template to dictionary with localization."""
+        name = self.localized_names.get(locale, self.name)
+        description = self.localized_descriptions.get(locale, self.description)
+        
+        return {
+            'id': self.id,
+            'name': name,
+            'description': description,
+            'template_type': self.template_type,
+            'category': self.category,
+            'stages': self.stages,
+            'default_tasks': self.default_tasks,
+            'default_milestones': self.default_milestones,
+            'estimated_duration_days': self.estimated_duration_days,
+            'is_public': self.is_public,
+            'usage_count': self.usage_count,
+            'created_by': self.created_by,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }

@@ -263,6 +263,7 @@ from . import session_routes
 from . import youtube_routes
 from . import enhanced_analytics_routes
 from . import enterprise_api  # Enterprise authentication endpoints
+from . import project_management_routes  # Project management endpoints
 
 # Register search blueprint
 app.register_blueprint(search_routes.search_bp)
