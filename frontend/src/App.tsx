@@ -8,6 +8,7 @@ import Register from './pages/Register';
 import Profile from './pages/Profile';
 import ChordProDemo from './pages/ChordProDemo';
 import ChordDiagramDemo from './pages/ChordDiagramDemo';
+import PerformanceModeDemo from './pages/PerformanceModeDemo';
 import AuthCallback from './pages/AuthCallback';
 import { SetlistPage } from './pages/Setlist';
 import { SetlistDemo } from './pages/SetlistDemo';
@@ -83,6 +84,9 @@ function AppContent() {
         return <SetlistDemo />;
       case 'demo':
         return <ChordProDemo />;
+      case 'performance-demo':
+        // Performance mode should not be wrapped in Layout
+        return <PerformanceModeDemo />;
       case 'chord-diagrams':
         return <ChordDiagramDemo />;
       case 'auth/google/callback':
@@ -96,6 +100,11 @@ function AppContent() {
         return <Home />;
     }
   };
+
+  // Special handling for performance mode - don't wrap in Layout
+  if (currentPage === 'performance-demo') {
+    return renderPage();
+  }
 
   return <Layout>{renderPage()}</Layout>;
 }

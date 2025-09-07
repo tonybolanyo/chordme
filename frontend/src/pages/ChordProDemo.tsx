@@ -196,6 +196,14 @@ The [Em]hour I [D]first be[G]lieved
             <strong>Split-Screen Mode:</strong> Toggle between edit-only, preview-only, 
             and split views with synchronized scrolling
           </li>
+          <li>
+            <strong>Performance Mode:</strong> <a 
+              href="#performance-demo" 
+              style={{ color: '#3b82f6', textDecoration: 'underline' }}
+            >
+              Full-screen performance interface
+            </a> optimized for live presentations with large text, keyboard shortcuts, and theme options
+          </li>
         </ul>
       </div>
 
