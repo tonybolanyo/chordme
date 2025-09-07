@@ -1,0 +1,535 @@
+/* Performance Mode Component Styles */
+
+/* Base Container */
+.performance-mode {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  background: var(--performance-bg, #ffffff);
+  color: var(--performance-text, #000000);
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+}
+
+/* Fullscreen Styles */
+.performance-mode--fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  cursor: none;
+}
+
+.performance-mode--fullscreen.performance-mode--controls-hidden {
+  cursor: none;
+}
+
+.performance-mode--fullscreen:not(.performance-mode--controls-hidden) {
+  cursor: default;
+}
+
+/* Controls Bar */
+.performance-mode__controls {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  color: white;
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 100;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.performance-mode__controls.hidden {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.performance-mode__controls.visible {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: all;
+}
+
+.performance-mode__controls-left,
+.performance-mode__controls-center,
+.performance-mode__controls-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.performance-mode__controls-center {
+  flex: 1;
+  justify-content: center;
+}
+
+/* Control Buttons */
+.performance-mode__control-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  font-weight: 500;
+  min-width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.performance-mode__control-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.performance-mode__control-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.performance-mode__close-btn {
+  background: rgba(220, 38, 38, 0.8);
+  border-color: rgba(220, 38, 38, 1);
+}
+
+.performance-mode__close-btn:hover {
+  background: rgba(220, 38, 38, 1);
+}
+
+/* Theme Selector */
+.performance-mode__theme-selector {
+  display: flex;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.theme-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.theme-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.theme-btn.active {
+  background: rgba(59, 130, 246, 0.8);
+  color: white;
+}
+
+/* Font Size Controls */
+.performance-mode__font-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 6px;
+  padding: 4px 8px;
+}
+
+.font-size-display {
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+  min-width: 40px;
+  text-align: center;
+}
+
+/* Transposition Controls in Performance Mode */
+.performance-mode__transposition {
+  background: rgba(0, 0, 0, 0.3) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 6px !important;
+  padding: 8px 12px !important;
+}
+
+.performance-mode__transposition .transposition-label,
+.performance-mode__transposition .transposition-amount {
+  color: white !important;
+}
+
+.performance-mode__transposition .transpose-button {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+}
+
+.performance-mode__transposition .transpose-button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Main Content */
+.performance-mode__content {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
+.performance-mode--fullscreen .performance-mode__content {
+  padding-top: 80px; /* Account for controls bar */
+}
+
+.performance-mode--controls-hidden .performance-mode__content {
+  padding-top: 20px;
+}
+
+/* Performance Viewer */
+.performance-mode__viewer {
+  height: 100%;
+  border: none !important;
+  background: transparent !important;
+}
+
+.performance-mode__viewer .viewer-header {
+  display: none !important; /* Hide header in performance mode */
+}
+
+.performance-mode__viewer .viewer-legend {
+  display: none !important; /* Hide legend in performance mode */
+}
+
+.performance-mode__viewer .content-viewer {
+  font-size: var(--performance-font-size, 20px) !important;
+  line-height: 1.6 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  font-weight: 500 !important;
+}
+
+/* Enhanced Chord Markers for Performance */
+.performance-mode .chord-marker {
+  font-size: 1.1em !important;
+  font-weight: 700 !important;
+  padding: 4px 8px !important;
+  border-radius: 6px !important;
+  border: 2px solid transparent !important;
+  background: var(--performance-chord-bg, rgba(59, 130, 246, 0.2)) !important;
+  color: var(--performance-chord-text, #1e40af) !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+  margin: 0 2px !important;
+}
+
+.performance-mode .chord-marker:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+.performance-mode .chord-marker.current-chord {
+  background: var(--performance-current-chord-bg, #fbbf24) !important;
+  color: var(--performance-current-chord-text, #92400e) !important;
+  border-color: var(--performance-current-chord-border, #f59e0b) !important;
+  box-shadow: 0 0 16px var(--performance-current-chord-glow, rgba(251, 191, 36, 0.5)) !important;
+  animation: pulse-glow 2s infinite !important;
+}
+
+/* Directive Lines Enhanced */
+.performance-mode .directive-line {
+  font-weight: 600 !important;
+  color: var(--performance-directive-text, #6b7280) !important;
+  border-left: 4px solid var(--performance-directive-border, #d1d5db) !important;
+  padding-left: 12px !important;
+  margin: 8px 0 !important;
+  font-style: italic !important;
+}
+
+/* Chord and Lyric Lines */
+.performance-mode .chord-line,
+.performance-mode .lyric-line {
+  margin: 6px 0 !important;
+  word-wrap: break-word !important;
+}
+
+/* Help Panel */
+.performance-mode__help {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  color: white;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.4;
+  max-width: 200px;
+  z-index: 90;
+  transition: opacity 0.3s ease;
+}
+
+.performance-mode--controls-hidden .performance-mode__help {
+  opacity: 0.3;
+}
+
+.help-item {
+  margin: 2px 0;
+  white-space: nowrap;
+}
+
+/* THEME VARIATIONS */
+
+/* Practice Theme (Default) */
+.performance-mode--practice {
+  --performance-bg: #ffffff;
+  --performance-text: #1f2937;
+  --performance-chord-bg: rgba(59, 130, 246, 0.15);
+  --performance-chord-text: #1e40af;
+  --performance-current-chord-bg: #fbbf24;
+  --performance-current-chord-text: #92400e;
+  --performance-current-chord-border: #f59e0b;
+  --performance-current-chord-glow: rgba(251, 191, 36, 0.4);
+  --performance-directive-text: #6b7280;
+  --performance-directive-border: #d1d5db;
+}
+
+/* Stage Bright Theme */
+.performance-mode--stage-bright {
+  --performance-bg: #f8fafc;
+  --performance-text: #0f172a;
+  --performance-chord-bg: rgba(16, 185, 129, 0.2);
+  --performance-chord-text: #047857;
+  --performance-current-chord-bg: #fbbf24;
+  --performance-current-chord-text: #78350f;
+  --performance-current-chord-border: #f59e0b;
+  --performance-current-chord-glow: rgba(251, 191, 36, 0.6);
+  --performance-directive-text: #475569;
+  --performance-directive-border: #cbd5e1;
+}
+
+.performance-mode--stage-bright .performance-mode__content {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+}
+
+/* Stage Dark Theme */
+.performance-mode--stage-dark {
+  --performance-bg: #0f172a;
+  --performance-text: #f1f5f9;
+  --performance-chord-bg: rgba(34, 197, 94, 0.2);
+  --performance-chord-text: #4ade80;
+  --performance-current-chord-bg: #fbbf24;
+  --performance-current-chord-text: #1e3a8a;
+  --performance-current-chord-border: #f59e0b;
+  --performance-current-chord-glow: rgba(251, 191, 36, 0.8);
+  --performance-directive-text: #94a3b8;
+  --performance-directive-border: #475569;
+}
+
+.performance-mode--stage-dark .performance-mode__content {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+
+/* High Contrast Theme */
+.performance-mode--high-contrast {
+  --performance-bg: #000000;
+  --performance-text: #ffffff;
+  --performance-chord-bg: #ffffff;
+  --performance-chord-text: #000000;
+  --performance-current-chord-bg: #ffff00;
+  --performance-current-chord-text: #000000;
+  --performance-current-chord-border: #ffff00;
+  --performance-current-chord-glow: rgba(255, 255, 0, 0.8);
+  --performance-directive-text: #ffffff;
+  --performance-directive-border: #ffffff;
+}
+
+.performance-mode--high-contrast .chord-marker {
+  border: 3px solid #ffffff !important;
+  font-weight: 900 !important;
+}
+
+.performance-mode--high-contrast .directive-line {
+  border-left-width: 6px !important;
+}
+
+/* Animations */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 16px var(--performance-current-chord-glow);
+  }
+  50% {
+    box-shadow: 0 0 24px var(--performance-current-chord-glow);
+  }
+}
+
+/* Scrollbar Styling for Performance Mode */
+.performance-mode .content-viewer::-webkit-scrollbar {
+  width: 12px;
+}
+
+.performance-mode .content-viewer::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+}
+
+.performance-mode .content-viewer::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 6px;
+}
+
+.performance-mode .content-viewer::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+/* Dark themes scrollbar */
+.performance-mode--stage-dark .content-viewer::-webkit-scrollbar-track,
+.performance-mode--high-contrast .content-viewer::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.performance-mode--stage-dark .content-viewer::-webkit-scrollbar-thumb,
+.performance-mode--high-contrast .content-viewer::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.performance-mode--stage-dark .content-viewer::-webkit-scrollbar-thumb:hover,
+.performance-mode--high-contrast .content-viewer::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .performance-mode__controls {
+    padding: 8px 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .performance-mode__controls-left,
+  .performance-mode__controls-center,
+  .performance-mode__controls-right {
+    gap: 8px;
+  }
+  
+  .performance-mode__theme-selector {
+    order: 3;
+    flex-basis: 100%;
+    justify-content: center;
+  }
+  
+  .theme-btn {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+  
+  .performance-mode__content {
+    padding: 12px;
+  }
+  
+  .performance-mode--fullscreen .performance-mode__content {
+    padding-top: 100px; /* Account for wrapped controls */
+  }
+  
+  .performance-mode__help {
+    bottom: 12px;
+    right: 12px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .performance-mode__font-controls {
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .font-size-display {
+    font-size: 10px;
+  }
+  
+  .performance-mode__control-btn {
+    padding: 6px 8px;
+    font-size: 12px;
+    min-width: 32px;
+  }
+}
+
+/* Accessibility Enhancements */
+@media (prefers-reduced-motion: reduce) {
+  .performance-mode,
+  .performance-mode__controls,
+  .performance-mode__control-btn,
+  .chord-marker,
+  .theme-btn {
+    transition: none !important;
+    animation: none !important;
+  }
+  
+  .chord-marker.current-chord {
+    animation: none !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .performance-mode:not(.performance-mode--high-contrast) {
+    --performance-chord-bg: rgba(0, 0, 0, 0.8);
+    --performance-chord-text: #ffffff;
+    --performance-current-chord-bg: #ffff00;
+    --performance-current-chord-text: #000000;
+  }
+  
+  .performance-mode__control-btn {
+    border-width: 2px;
+  }
+  
+  .chord-marker {
+    border-width: 3px !important;
+  }
+}
+
+/* Focus management for keyboard navigation */
+.performance-mode__control-btn:focus,
+.theme-btn:focus {
+  outline: 3px solid #2563eb;
+  outline-offset: 2px;
+}
+
+/* Print styles - disable performance mode for printing */
+@media print {
+  .performance-mode {
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
+    background: white !important;
+    color: black !important;
+  }
+  
+  .performance-mode__controls,
+  .performance-mode__help {
+    display: none !important;
+  }
+  
+  .performance-mode__content {
+    padding: 0 !important;
+  }
+}
