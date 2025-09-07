@@ -239,15 +239,18 @@ export class CollaborationService {
           true
         );
 
-      // Apply operations locally
-      const newContent = OperationalTransform.applyOperations(
-        session.documentState.content,
-        operations
-      );
+        // Apply operations locally
+        const newContent = OperationalTransform.applyOperations(
+          session.documentState.content,
+          operations
+        );
 
-      session.documentState.content = newContent;
-      session.documentState.version++;
-      session.optimisticUpdates.push(optimisticUpdate);
+        session.documentState.content = newContent;
+        session.documentState.version++;
+        session.optimisticUpdates.push(optimisticUpdate);
+      }
+    } catch (error) {
+      console.error('Error in optimistic update:', error);
     }
 
     try {

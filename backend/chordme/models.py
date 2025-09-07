@@ -1307,12 +1307,26 @@ class SessionTemplate(db.Model):
         """Get default permissions based on template category."""
         base_permissions = {
             'owner': ['read', 'edit', 'manage_participants', 'manage_session', 'delete'],
+            'band_leader': ['read', 'edit', 'comment', 'manage_participants', 'manage_resources', 'schedule_meetings'],
+            'member': ['read', 'edit', 'comment', 'view_resources'],
+            'guest': ['read', 'comment', 'view_resources'],
+            'observer': ['read'],
             'editor': ['read', 'edit', 'comment'],
             'viewer': ['read', 'comment'],
             'commenter': ['read', 'comment']
         }
         
-        if category == 'lesson':
+        # Professional collaboration template permissions
+        if category == 'album':
+            base_permissions['band_leader'].extend(['approve_recordings', 'manage_schedule'])
+            base_permissions['member'].extend(['submit_recordings', 'view_schedule'])
+        elif category == 'tour':
+            base_permissions['band_leader'].extend(['manage_venues', 'manage_setlists'])
+            base_permissions['member'].extend(['view_venues', 'view_setlists'])
+        elif category == 'lesson_plan':
+            base_permissions['band_leader'] = ['read', 'edit', 'manage_participants', 'manage_resources', 'create_assignments']
+            base_permissions['member'] = ['read', 'comment', 'submit_assignments', 'view_resources']
+        elif category == 'lesson':
             # More restrictive for lessons
             base_permissions['editor'] = ['read', 'comment']
             base_permissions['viewer'] = ['read']
@@ -1523,6 +1537,580 @@ class SessionActivity(db.Model):
     
     def __repr__(self):
         return f'<SessionActivity {self.activity_type} by {self.user_id} in {self.session_id}>'
+
+
+# Professional Collaboration Workspace Models
+
+class CollaborationRoom(db.Model):
+    """Professional collaboration rooms with persistent state and enhanced features."""
+    __tablename__ = 'collaboration_rooms'
+    
+    id = db.Column(db.String(36), primary_key=True)  # UUID
+    name = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    room_type = db.Column(db.String(50), nullable=False)  # 'album', 'tour', 'lesson_plan', 'general'
+    creator_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    
+    # Room configuration
+    access_mode = db.Column(db.String(20), default='invite-only')  # 'invite-only', 'link-access', 'public'
+    max_participants = db.Column(db.Integer, default=50)
+    invitation_code = db.Column(db.String(12), unique=True, nullable=True)
+    
+    # Professional features
+    has_resource_library = db.Column(db.Boolean, default=True)
+    has_meeting_scheduler = db.Column(db.Boolean, default=True)
+    has_calendar_integration = db.Column(db.Boolean, default=False)
+    has_progress_tracking = db.Column(db.Boolean, default=True)
+    has_chat_enabled = db.Column(db.Boolean, default=True)
+    
+    # Room state
+    status = db.Column(db.String(20), default='active')  # 'active', 'archived', 'suspended'
+    is_persistent = db.Column(db.Boolean, default=True)
+    last_activity = db.Column(db.DateTime, default=utc_now)
+    
+    # Settings and metadata
+    settings = db.Column(db.JSON, default=dict)
+    metadata = db.Column(db.JSON, default=dict)
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+    
+    # Relationships
+    creator = db.relationship('User', foreign_keys=[creator_id], backref='created_rooms')
+    participants = db.relationship('RoomParticipant', backref='room', cascade='all, delete-orphan')
+    resources = db.relationship('RoomResource', backref='room', cascade='all, delete-orphan')
+    meetings = db.relationship('RoomMeeting', backref='room', cascade='all, delete-orphan')
+    chat_messages = db.relationship('RoomChatMessage', backref='room', cascade='all, delete-orphan')
+    
+    def __init__(self, room_id, name, room_type, creator_id, **kwargs):
+        self.id = room_id
+        self.name = name
+        self.room_type = room_type
+        self.creator_id = creator_id
+        
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+        
+        if kwargs.get('access_mode') == 'link-access':
+            import secrets
+            self.invitation_code = secrets.token_urlsafe(8)
+    
+    def to_dict(self, include_participants=False, include_resources=False):
+        """Convert room to dictionary."""
+        result = {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+            'room_type': self.room_type,
+            'creator_id': self.creator_id,
+            'access_mode': self.access_mode,
+            'max_participants': self.max_participants,
+            'invitation_code': self.invitation_code,
+            'has_resource_library': self.has_resource_library,
+            'has_meeting_scheduler': self.has_meeting_scheduler,
+            'has_calendar_integration': self.has_calendar_integration,
+            'has_progress_tracking': self.has_progress_tracking,
+            'has_chat_enabled': self.has_chat_enabled,
+            'status': self.status,
+            'is_persistent': self.is_persistent,
+            'last_activity': self.last_activity.isoformat() if self.last_activity else None,
+            'settings': self.settings,
+            'metadata': self.metadata,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+        
+        if include_participants:
+            result['participants'] = [p.to_dict() for p in self.participants]
+        
+        if include_resources:
+            result['resources'] = [r.to_dict() for r in self.resources]
+        
+        return result
+    
+    def add_participant(self, user_id, role='member', invited_by=None):
+        """Add participant to room."""
+        existing = RoomParticipant.query.filter_by(
+            room_id=self.id, user_id=user_id
+        ).first()
+        
+        if existing:
+            return existing
+        
+        participant = RoomParticipant(
+            room_id=self.id,
+            user_id=user_id,
+            role=role,
+            invited_by=invited_by
+        )
+        
+        db.session.add(participant)
+        self.last_activity = utc_now()
+        
+        return participant
+    
+    def can_access(self, user_id):
+        """Check if user can access this room."""
+        if self.creator_id == user_id:
+            return True
+        
+        participant = RoomParticipant.query.filter_by(
+            room_id=self.id, user_id=user_id
+        ).first()
+        
+        return participant is not None
+    
+    def get_user_role(self, user_id):
+        """Get user's role in this room."""
+        if self.creator_id == user_id:
+            return 'owner'
+        
+        participant = RoomParticipant.query.filter_by(
+            room_id=self.id, user_id=user_id
+        ).first()
+        
+        return participant.role if participant else None
+    
+    def __repr__(self):
+        return f'<CollaborationRoom {self.name} ({self.room_type})>'
+
+
+class RoomParticipant(db.Model):
+    """Participants in professional collaboration rooms."""
+    __tablename__ = 'room_participants'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    room_id = db.Column(db.String(36), db.ForeignKey('collaboration_rooms.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    
+    # Professional role hierarchy
+    role = db.Column(db.String(20), default='member')  # 'band_leader', 'member', 'guest', 'observer'
+    status = db.Column(db.String(20), default='active')  # 'active', 'inactive', 'suspended'
+    invited_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    
+    # Participation tracking
+    joined_at = db.Column(db.DateTime, default=utc_now)
+    last_seen = db.Column(db.DateTime, default=utc_now)
+    total_time = db.Column(db.Integer, default=0)  # Total time in room (seconds)
+    contribution_score = db.Column(db.Integer, default=0)  # Professional contribution metric
+    
+    # Professional settings
+    title = db.Column(db.String(100), nullable=True)  # e.g., "Lead Guitarist", "Vocalist"
+    department = db.Column(db.String(100), nullable=True)  # For enterprise users
+    notifications_enabled = db.Column(db.Boolean, default=True)
+    calendar_integration_enabled = db.Column(db.Boolean, default=False)
+    
+    # Unique constraint
+    __table_args__ = (db.UniqueConstraint('room_id', 'user_id', name='unique_room_participant'),)
+    
+    # Relationships
+    user = db.relationship('User', foreign_keys=[user_id], backref='room_participations')
+    inviter = db.relationship('User', foreign_keys=[invited_by])
+    
+    def __init__(self, room_id, user_id, role='member', invited_by=None):
+        self.room_id = room_id
+        self.user_id = user_id
+        self.role = role
+        self.invited_by = invited_by
+    
+    def to_dict(self, include_user=False):
+        """Convert participant to dictionary."""
+        result = {
+            'id': self.id,
+            'room_id': self.room_id,
+            'user_id': self.user_id,
+            'role': self.role,
+            'status': self.status,
+            'invited_by': self.invited_by,
+            'title': self.title,
+            'department': self.department,
+            'joined_at': self.joined_at.isoformat() if self.joined_at else None,
+            'last_seen': self.last_seen.isoformat() if self.last_seen else None,
+            'total_time': self.total_time,
+            'contribution_score': self.contribution_score,
+            'notifications_enabled': self.notifications_enabled,
+            'calendar_integration_enabled': self.calendar_integration_enabled
+        }
+        
+        if include_user and self.user:
+            result['user'] = {
+                'id': self.user.id,
+                'email': self.user.email,
+                'display_name': self.user.display_name
+            }
+        
+        return result
+    
+    def has_permission(self, permission):
+        """Check if participant has specific permission based on professional role."""
+        permissions = {
+            'band_leader': [
+                'read', 'edit', 'comment', 'manage_participants', 'manage_resources',
+                'schedule_meetings', 'manage_calendar', 'manage_room'
+            ],
+            'member': [
+                'read', 'edit', 'comment', 'view_resources', 'join_meetings',
+                'use_calendar', 'create_content'
+            ],
+            'guest': [
+                'read', 'comment', 'view_resources', 'join_meetings'
+            ],
+            'observer': [
+                'read', 'view_resources'
+            ]
+        }
+        
+        role_permissions = permissions.get(self.role, [])
+        return permission in role_permissions
+    
+    def __repr__(self):
+        return f'<RoomParticipant {self.user_id} in {self.room_id} ({self.role})>'
+
+
+class RoomResource(db.Model):
+    """Resource library within collaboration rooms."""
+    __tablename__ = 'room_resources'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    room_id = db.Column(db.String(36), db.ForeignKey('collaboration_rooms.id'), nullable=False)
+    name = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    resource_type = db.Column(db.String(50), nullable=False)  # 'document', 'audio', 'video', 'chord_chart', 'setlist'
+    
+    # Resource content
+    content_url = db.Column(db.String(500), nullable=True)  # URL for external resources
+    content_data = db.Column(db.JSON, nullable=True)  # For embedded content
+    file_size = db.Column(db.Integer, nullable=True)  # Size in bytes
+    mime_type = db.Column(db.String(100), nullable=True)
+    
+    # Organization
+    category = db.Column(db.String(100), nullable=True)  # e.g., "Sheet Music", "Recordings", "Reference"
+    tags = db.Column(db.JSON, default=list)
+    
+    # Access control
+    access_level = db.Column(db.String(20), default='room')  # 'room', 'band_leader_only', 'member_plus'
+    is_shared_externally = db.Column(db.Boolean, default=False)
+    
+    # Metadata
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    version = db.Column(db.Integer, default=1)
+    view_count = db.Column(db.Integer, default=0)
+    download_count = db.Column(db.Integer, default=0)
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+    
+    # Relationships
+    creator = db.relationship('User', backref='created_resources')
+    
+    def __init__(self, room_id, name, resource_type, created_by, **kwargs):
+        self.room_id = room_id
+        self.name = name
+        self.resource_type = resource_type
+        self.created_by = created_by
+        
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+    
+    def to_dict(self):
+        """Convert resource to dictionary."""
+        return {
+            'id': self.id,
+            'room_id': self.room_id,
+            'name': self.name,
+            'description': self.description,
+            'resource_type': self.resource_type,
+            'content_url': self.content_url,
+            'content_data': self.content_data,
+            'file_size': self.file_size,
+            'mime_type': self.mime_type,
+            'category': self.category,
+            'tags': self.tags,
+            'access_level': self.access_level,
+            'is_shared_externally': self.is_shared_externally,
+            'created_by': self.created_by,
+            'version': self.version,
+            'view_count': self.view_count,
+            'download_count': self.download_count,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+    
+    def can_access(self, user_role):
+        """Check if user role can access this resource."""
+        access_permissions = {
+            'room': ['band_leader', 'member', 'guest', 'observer'],
+            'band_leader_only': ['band_leader'],
+            'member_plus': ['band_leader', 'member']
+        }
+        
+        allowed_roles = access_permissions.get(self.access_level, [])
+        return user_role in allowed_roles
+    
+    def __repr__(self):
+        return f'<RoomResource {self.name} ({self.resource_type})>'
+
+
+class RoomMeeting(db.Model):
+    """Meeting scheduler and agenda management for collaboration rooms."""
+    __tablename__ = 'room_meetings'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    room_id = db.Column(db.String(36), db.ForeignKey('collaboration_rooms.id'), nullable=False)
+    title = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    
+    # Scheduling
+    scheduled_at = db.Column(db.DateTime, nullable=False)
+    duration_minutes = db.Column(db.Integer, default=60)
+    timezone = db.Column(db.String(50), default='UTC')
+    is_recurring = db.Column(db.Boolean, default=False)
+    recurrence_pattern = db.Column(db.String(100), nullable=True)  # e.g., "weekly", "monthly"
+    
+    # Meeting details
+    agenda = db.Column(db.JSON, default=list)  # List of agenda items
+    location = db.Column(db.String(255), nullable=True)  # Physical or virtual location
+    meeting_url = db.Column(db.String(500), nullable=True)  # Video conference URL
+    
+    # Status and management
+    status = db.Column(db.String(20), default='scheduled')  # 'scheduled', 'in_progress', 'completed', 'cancelled'
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    max_attendees = db.Column(db.Integer, nullable=True)
+    
+    # Calendar integration
+    google_calendar_event_id = db.Column(db.String(255), nullable=True)
+    outlook_calendar_event_id = db.Column(db.String(255), nullable=True)
+    ical_uid = db.Column(db.String(255), nullable=True)
+    
+    # Meeting outcomes
+    meeting_notes = db.Column(db.Text, nullable=True)
+    action_items = db.Column(db.JSON, default=list)
+    decisions_made = db.Column(db.JSON, default=list)
+    next_meeting_date = db.Column(db.DateTime, nullable=True)
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+    
+    # Relationships
+    creator = db.relationship('User', backref='created_meetings')
+    attendees = db.relationship('MeetingAttendee', backref='meeting', cascade='all, delete-orphan')
+    
+    def __init__(self, room_id, title, scheduled_at, created_by, **kwargs):
+        self.room_id = room_id
+        self.title = title
+        self.scheduled_at = scheduled_at
+        self.created_by = created_by
+        
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+    
+    def to_dict(self, include_attendees=False):
+        """Convert meeting to dictionary."""
+        result = {
+            'id': self.id,
+            'room_id': self.room_id,
+            'title': self.title,
+            'description': self.description,
+            'scheduled_at': self.scheduled_at.isoformat() if self.scheduled_at else None,
+            'duration_minutes': self.duration_minutes,
+            'timezone': self.timezone,
+            'is_recurring': self.is_recurring,
+            'recurrence_pattern': self.recurrence_pattern,
+            'agenda': self.agenda,
+            'location': self.location,
+            'meeting_url': self.meeting_url,
+            'status': self.status,
+            'created_by': self.created_by,
+            'max_attendees': self.max_attendees,
+            'google_calendar_event_id': self.google_calendar_event_id,
+            'outlook_calendar_event_id': self.outlook_calendar_event_id,
+            'ical_uid': self.ical_uid,
+            'meeting_notes': self.meeting_notes,
+            'action_items': self.action_items,
+            'decisions_made': self.decisions_made,
+            'next_meeting_date': self.next_meeting_date.isoformat() if self.next_meeting_date else None,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+        
+        if include_attendees:
+            result['attendees'] = [a.to_dict() for a in self.attendees]
+        
+        return result
+    
+    def add_attendee(self, user_id, is_required=False):
+        """Add attendee to meeting."""
+        existing = MeetingAttendee.query.filter_by(
+            meeting_id=self.id, user_id=user_id
+        ).first()
+        
+        if existing:
+            return existing
+        
+        attendee = MeetingAttendee(
+            meeting_id=self.id,
+            user_id=user_id,
+            is_required=is_required
+        )
+        
+        db.session.add(attendee)
+        return attendee
+    
+    def __repr__(self):
+        return f'<RoomMeeting {self.title} at {self.scheduled_at}>'
+
+
+class MeetingAttendee(db.Model):
+    """Meeting attendees with RSVP and participation tracking."""
+    __tablename__ = 'meeting_attendees'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    meeting_id = db.Column(db.Integer, db.ForeignKey('room_meetings.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    
+    # RSVP and participation
+    rsvp_status = db.Column(db.String(20), default='pending')  # 'pending', 'accepted', 'declined', 'tentative'
+    is_required = db.Column(db.Boolean, default=False)
+    attended = db.Column(db.Boolean, nullable=True)  # Null until meeting completion
+    join_time = db.Column(db.DateTime, nullable=True)
+    leave_time = db.Column(db.DateTime, nullable=True)
+    
+    # Calendar integration
+    calendar_reminder_sent = db.Column(db.Boolean, default=False)
+    calendar_updated = db.Column(db.Boolean, default=False)
+    
+    # Timestamps
+    invited_at = db.Column(db.DateTime, default=utc_now)
+    responded_at = db.Column(db.DateTime, nullable=True)
+    
+    # Unique constraint
+    __table_args__ = (db.UniqueConstraint('meeting_id', 'user_id', name='unique_meeting_attendee'),)
+    
+    # Relationships
+    user = db.relationship('User', backref='meeting_attendances')
+    
+    def __init__(self, meeting_id, user_id, is_required=False):
+        self.meeting_id = meeting_id
+        self.user_id = user_id
+        self.is_required = is_required
+    
+    def to_dict(self):
+        """Convert attendee to dictionary."""
+        return {
+            'id': self.id,
+            'meeting_id': self.meeting_id,
+            'user_id': self.user_id,
+            'rsvp_status': self.rsvp_status,
+            'is_required': self.is_required,
+            'attended': self.attended,
+            'join_time': self.join_time.isoformat() if self.join_time else None,
+            'leave_time': self.leave_time.isoformat() if self.leave_time else None,
+            'calendar_reminder_sent': self.calendar_reminder_sent,
+            'calendar_updated': self.calendar_updated,
+            'invited_at': self.invited_at.isoformat() if self.invited_at else None,
+            'responded_at': self.responded_at.isoformat() if self.responded_at else None
+        }
+    
+    def __repr__(self):
+        return f'<MeetingAttendee {self.user_id} for meeting {self.meeting_id}>'
+
+
+class RoomChatMessage(db.Model):
+    """Room-specific chat and communication tools."""
+    __tablename__ = 'room_chat_messages'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    room_id = db.Column(db.String(36), db.ForeignKey('collaboration_rooms.id'), nullable=False)
+    sender_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    
+    # Message content
+    message_type = db.Column(db.String(20), default='text')  # 'text', 'file', 'link', 'system', 'announcement'
+    content = db.Column(db.Text, nullable=False)
+    formatted_content = db.Column(db.Text, nullable=True)  # HTML formatted content
+    
+    # Threading and replies
+    parent_message_id = db.Column(db.Integer, db.ForeignKey('room_chat_messages.id'), nullable=True)
+    thread_id = db.Column(db.String(36), nullable=True)  # For message threading
+    
+    # Attachments and metadata
+    attachments = db.Column(db.JSON, default=list)  # File attachments
+    mentions = db.Column(db.JSON, default=list)  # User mentions
+    reactions = db.Column(db.JSON, default=dict)  # Message reactions/emoji
+    
+    # Message status
+    is_pinned = db.Column(db.Boolean, default=False)
+    is_edited = db.Column(db.Boolean, default=False)
+    is_deleted = db.Column(db.Boolean, default=False)
+    deleted_at = db.Column(db.DateTime, nullable=True)
+    edited_at = db.Column(db.DateTime, nullable=True)
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=utc_now)
+    
+    # Relationships
+    sender = db.relationship('User', backref='chat_messages')
+    parent = db.relationship('RoomChatMessage', remote_side=[id], backref='replies')
+    
+    def __init__(self, room_id, sender_id, content, message_type='text'):
+        self.room_id = room_id
+        self.sender_id = sender_id
+        self.content = content
+        self.message_type = message_type
+    
+    def to_dict(self, include_replies=False):
+        """Convert message to dictionary."""
+        result = {
+            'id': self.id,
+            'room_id': self.room_id,
+            'sender_id': self.sender_id,
+            'message_type': self.message_type,
+            'content': self.content,
+            'formatted_content': self.formatted_content,
+            'parent_message_id': self.parent_message_id,
+            'thread_id': self.thread_id,
+            'attachments': self.attachments,
+            'mentions': self.mentions,
+            'reactions': self.reactions,
+            'is_pinned': self.is_pinned,
+            'is_edited': self.is_edited,
+            'is_deleted': self.is_deleted,
+            'deleted_at': self.deleted_at.isoformat() if self.deleted_at else None,
+            'edited_at': self.edited_at.isoformat() if self.edited_at else None,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+        
+        if include_replies:
+            result['replies'] = [r.to_dict() for r in self.replies]
+        
+        return result
+    
+    def add_reaction(self, user_id, emoji):
+        """Add reaction to message."""
+        if not self.reactions:
+            self.reactions = {}
+        
+        if emoji not in self.reactions:
+            self.reactions[emoji] = []
+        
+        if user_id not in self.reactions[emoji]:
+            self.reactions[emoji].append(user_id)
+    
+    def remove_reaction(self, user_id, emoji):
+        """Remove reaction from message."""
+        if self.reactions and emoji in self.reactions:
+            if user_id in self.reactions[emoji]:
+                self.reactions[emoji].remove(user_id)
+                if not self.reactions[emoji]:
+                    del self.reactions[emoji]
+    
+    def __repr__(self):
+        return f'<RoomChatMessage {self.id} from {self.sender_id}>'
 
 
 # Setlist Management Models
