@@ -1570,7 +1570,7 @@ class CollaborationRoom(db.Model):
     
     # Settings and metadata
     settings = db.Column(db.JSON, default=dict)
-    metadata = db.Column(db.JSON, default=dict)
+    room_metadata = db.Column(db.JSON, default=dict)
     
     # Timestamps
     created_at = db.Column(db.DateTime, default=utc_now)
@@ -1617,7 +1617,7 @@ class CollaborationRoom(db.Model):
             'is_persistent': self.is_persistent,
             'last_activity': self.last_activity.isoformat() if self.last_activity else None,
             'settings': self.settings,
-            'metadata': self.metadata,
+            'room_metadata': self.room_metadata,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
