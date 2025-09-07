@@ -163,9 +163,9 @@ export interface AnalyticsExportData {
   user_id: number;
   generated_at: string;
   data: {
-    performances?: any[];
-    songs?: any[];
-    trends?: any;
+    performances?: Record<string, unknown>[];
+    songs?: Record<string, unknown>[];
+    trends?: Record<string, unknown>;
   };
   gdpr_compliance?: GDPRCompliance;
 }
@@ -312,7 +312,7 @@ export type DeleteType = 'all' | 'performances' | 'songs' | 'personal_data';
 export interface AnalyticsError {
   code: string;
   message: string;
-  details?: any;
+  details?: Record<string, unknown>;
 }
 
 export interface AnalyticsErrorBoundaryState {
@@ -341,7 +341,7 @@ export interface PerformanceSession {
   completion_percentage: number;
   session_rating?: number;
   difficulty_rating?: number;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   created_at: string;
   events?: PerformanceEvent[];
   problem_sections?: ProblemSection[];
@@ -353,7 +353,7 @@ export interface PerformanceEvent {
   event_type: 'pause' | 'play' | 'rewind' | 'fast_forward' | 'tempo_change' | 'seek';
   timestamp: string;
   position_seconds?: number;
-  event_data?: Record<string, any>;
+  event_data?: Record<string, unknown>;
   chord_at_position?: string;
   section_name?: string;
   created_at: string;
@@ -514,9 +514,9 @@ export interface PerformanceAnalyticsSnapshot {
   improvement_score: number;
   ai_recommendations: AIRecommendation[];
   practice_suggestions: string[];
-  difficulty_assessment: Record<string, any>;
-  previous_period_comparison: Record<string, any>;
-  progress_trends: Record<string, any>;
+  difficulty_assessment: Record<string, unknown>;
+  previous_period_comparison: Record<string, unknown>;
+  progress_trends: Record<string, unknown>;
   created_at: string;
   expires_at?: string;
 }

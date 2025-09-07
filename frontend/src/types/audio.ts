@@ -175,7 +175,7 @@ export interface YouTubePlayerState {
 export interface AudioError {
   code: AudioErrorCode;
   message: string;
-  details?: any;
+  details?: Record<string, unknown>;
   timestamp: Date;
   recoverable: boolean;
 }
@@ -203,7 +203,7 @@ export enum AudioErrorCode {
 export interface SyncError {
   code: AudioErrorCode;
   message: string;
-  details?: any;
+  details?: Record<string, unknown>;
   timestamp: Date;
   context: 'timeline' | 'annotation' | 'analysis' | 'export' | 'import';
   recoverable: boolean;
@@ -834,7 +834,7 @@ export interface IYouTubeService {
   isInitialized(): boolean;
   
   // Player management
-  createPlayer(containerId: string, config: YouTubePlayerConfig): Promise<any>;
+  createPlayer(containerId: string, config: YouTubePlayerConfig): Promise<YT.Player>;
   destroyPlayer(playerId: string): void;
   
   // Search functionality
@@ -857,8 +857,8 @@ export interface IYouTubeService {
   isMuted(playerId: string): boolean;
   
   // Event handling
-  addEventListener(playerId: string, event: string, handler: Function): void;
-  removeEventListener(playerId: string, event: string, handler: Function): void;
+  addEventListener(playerId: string, event: string, handler: (...args: unknown[]) => void): void;
+  removeEventListener(playerId: string, event: string, handler: (...args: unknown[]) => void): void;
   
   // Synchronization
   syncWithChords(playerId: string, syncConfig: YouTubeSyncConfig): void;

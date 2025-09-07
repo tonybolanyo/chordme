@@ -15,7 +15,7 @@ import {
   validateChord,
   validateChords
 } from '../services/chordQualityAssurance';
-import { ChordDiagram, ChordDiagramCollection } from '../types/chordDiagram';
+import { ChordDiagram } from '../types/chordDiagram';
 
 describe('Advanced Chord Database', () => {
   let chordDatabase: typeof COMPREHENSIVE_CHORD_DATABASE;
