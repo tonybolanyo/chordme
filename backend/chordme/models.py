@@ -22,6 +22,20 @@ class User(db.Model):
     bio = db.Column(db.Text, nullable=True)
     profile_image_url = db.Column(db.String(500), nullable=True)
     analytics_privacy_settings = db.Column(db.JSON, default=dict)  # Privacy settings for analytics
+    
+    # Enterprise authentication fields
+    is_sso_user = db.Column(db.Boolean, default=False)  # SSO/SAML user
+    is_ldap_user = db.Column(db.Boolean, default=False)  # LDAP/AD user
+    sso_provider = db.Column(db.String(50), nullable=True)  # SSO provider name
+    ldap_dn = db.Column(db.String(500), nullable=True)  # LDAP Distinguished Name
+    mfa_enabled = db.Column(db.Boolean, default=False)  # Multi-factor authentication
+    mfa_secret = db.Column(db.String(128), nullable=True)  # MFA secret key
+    mfa_backup_codes = db.Column(db.JSON, default=list)  # Hashed backup codes
+    last_mfa_verification = db.Column(db.DateTime, nullable=True)  # Last MFA verification
+    login_attempts = db.Column(db.Integer, default=0)  # Failed login attempts
+    locked_until = db.Column(db.DateTime, nullable=True)  # Account lock expiration
+    password_expires_at = db.Column(db.DateTime, nullable=True)  # Password expiration
+    
     created_at = db.Column(db.DateTime, default=utc_now)
     updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
     
@@ -113,13 +127,17 @@ class User(db.Model):
             return False
     
     def to_dict(self):
-        """Convert user to dictionary (excluding password)."""
+        """Convert user to dictionary (excluding password and sensitive auth data)."""
         return {
             'id': self.id,
             'email': self.email,
             'display_name': self.display_name,
             'bio': self.bio,
             'profile_image_url': self.profile_image_url,
+            'is_sso_user': self.is_sso_user,
+            'is_ldap_user': self.is_ldap_user,
+            'sso_provider': self.sso_provider,
+            'mfa_enabled': self.mfa_enabled,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
@@ -1570,7 +1588,7 @@ class CollaborationRoom(db.Model):
     
     # Settings and metadata
     settings = db.Column(db.JSON, default=dict)
-    metadata = db.Column(db.JSON, default=dict)
+    room_metadata = db.Column(db.JSON, default=dict)
     
     # Timestamps
     created_at = db.Column(db.DateTime, default=utc_now)
@@ -1617,7 +1635,7 @@ class CollaborationRoom(db.Model):
             'is_persistent': self.is_persistent,
             'last_activity': self.last_activity.isoformat() if self.last_activity else None,
             'settings': self.settings,
-            'metadata': self.metadata,
+            'room_metadata': self.room_metadata,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }

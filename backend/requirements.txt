@@ -47,3 +47,15 @@ structlog==25.4.0
 python-socketio==5.11.4
 flask-socketio==5.4.1
 redis==5.2.1  # For scaling Socket.IO across multiple instances
+
+# Enterprise Authentication Dependencies
+# LDAP/Active Directory support
+ldap3==2.9.1  # LDAP client library
+
+# SAML SSO support (optional, basic XML parsing included)
+# python-saml==1.15.0  # Full SAML library (optional)
+lxml==5.3.0  # XML parsing for SAML
+
+# Multi-factor authentication
+pyotp==2.9.0  # TOTP/HOTP support for MFA
+qrcode[pil]==7.4.2  # QR code generation for MFA setup

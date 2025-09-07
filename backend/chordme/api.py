@@ -360,7 +360,30 @@ def login():
                 ip_address=request.remote_addr
             )
         
-        # Generate JWT token
+        # Check if MFA is enabled for this user
+        mfa_token = data.get('mfa_token')
+        if user.mfa_enabled:
+            # Import MFA manager here to avoid circular imports
+            from .mfa_auth import mfa_manager
+            
+            if not mfa_token:
+                # First step of MFA login - password is correct but MFA token required
+                return create_success_response(
+                    data={
+                        'mfa_required': True,
+                        'message': 'MFA token required'
+                    },
+                    message="MFA token required for login"
+                )
+            
+            # Verify MFA token
+            if not mfa_manager or not mfa_manager.verify_mfa_token(user, mfa_token.strip()):
+                return security_error_handler.handle_authentication_error(
+                    f"Invalid MFA token for {email}",
+                    ip_address=request.remote_addr
+                )
+        
+        # Generate JWT token (either no MFA or MFA verified)
         token = generate_jwt_token(user.id)
         if not token:
             app.logger.error(f"Login failed: JWT generation error for user {user.id} from IP {request.remote_addr}")
