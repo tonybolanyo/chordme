@@ -2448,3 +2448,314 @@ class SetlistTask(db.Model):
     
     def __repr__(self):
         return f'<SetlistTask {self.title} for setlist {self.setlist_id}>'
+
+
+class PerformanceSession(db.Model):
+    """
+    Detailed performance session tracking for analytics and feedback.
+    Records real-time user interactions during song/setlist performances.
+    """
+    __tablename__ = 'performance_sessions'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    song_id = db.Column(db.Integer, db.ForeignKey('songs.id'), nullable=True)
+    setlist_id = db.Column(db.Integer, db.ForeignKey('setlists.id'), nullable=True)
+    
+    # Session context
+    session_type = db.Column(db.String(50), nullable=False)  # 'practice', 'performance', 'rehearsal'
+    device_type = db.Column(db.String(50))  # 'mobile', 'tablet', 'desktop'
+    
+    # Session timing
+    started_at = db.Column(db.DateTime(timezone=True), nullable=False)
+    ended_at = db.Column(db.DateTime(timezone=True))
+    total_duration = db.Column(db.Integer)  # Total session duration in seconds
+    active_duration = db.Column(db.Integer)  # Time actively engaged (excluding long pauses)
+    
+    # Performance metrics
+    tempo_changes = db.Column(db.Integer, default=0)  # Number of tempo adjustments
+    pause_count = db.Column(db.Integer, default=0)  # Number of pauses
+    rewind_count = db.Column(db.Integer, default=0)  # Number of rewinds/seeks backward
+    fast_forward_count = db.Column(db.Integer, default=0)  # Number of fast forwards
+    completion_percentage = db.Column(db.Float, default=0.0)  # How much of content was completed
+    
+    # Quality metrics
+    session_rating = db.Column(db.Integer)  # User's self-rating 1-5
+    difficulty_rating = db.Column(db.Integer)  # User's difficulty rating 1-5
+    
+    # Privacy and consent
+    analytics_consent = db.Column(db.Boolean, default=False)  # User consented to detailed analytics
+    anonymous_data_only = db.Column(db.Boolean, default=True)  # Only collect anonymous data
+    
+    # Metadata
+    session_metadata = db.Column(db.JSON, default=dict)  # Additional session context
+    
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+    
+    # Relationships
+    user = db.relationship('User', backref='performance_sessions')
+    song = db.relationship('Song', backref='performance_sessions')
+    setlist = db.relationship('Setlist', backref='performance_sessions')
+    events = db.relationship('PerformanceEvent', backref='session', cascade='all, delete-orphan')
+    problem_sections = db.relationship('ProblemSection', backref='session', cascade='all, delete-orphan')
+    
+    def __init__(self, user_id, session_type, **kwargs):
+        self.user_id = user_id
+        self.session_type = session_type
+        self.started_at = datetime.now(UTC)
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+    
+    def end_session(self):
+        """Mark session as ended and calculate metrics."""
+        self.ended_at = datetime.now(UTC)
+        if self.started_at:
+            self.total_duration = int((self.ended_at - self.started_at).total_seconds())
+    
+    def to_dict(self, include_events=False):
+        """Convert session to dictionary."""
+        result = {
+            'id': self.id,
+            'user_id': self.user_id if not self.anonymous_data_only else None,
+            'song_id': self.song_id,
+            'setlist_id': self.setlist_id,
+            'session_type': self.session_type,
+            'device_type': self.device_type,
+            'started_at': self.started_at.isoformat() if self.started_at else None,
+            'ended_at': self.ended_at.isoformat() if self.ended_at else None,
+            'total_duration': self.total_duration,
+            'active_duration': self.active_duration,
+            'tempo_changes': self.tempo_changes,
+            'pause_count': self.pause_count,
+            'rewind_count': self.rewind_count,
+            'fast_forward_count': self.fast_forward_count,
+            'completion_percentage': self.completion_percentage,
+            'session_rating': self.session_rating,
+            'difficulty_rating': self.difficulty_rating,
+            'session_metadata': self.session_metadata,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+        
+        if include_events:
+            result['events'] = [event.to_dict() for event in self.events]
+            result['problem_sections'] = [ps.to_dict() for ps in self.problem_sections]
+        
+        return result
+    
+    def __repr__(self):
+        return f'<PerformanceSession {self.id} by user {self.user_id}>'
+
+
+class PerformanceEvent(db.Model):
+    """
+    Individual events during a performance session (pause, rewind, tempo change, etc.).
+    Used for detailed analysis of user behavior patterns.
+    """
+    __tablename__ = 'performance_events'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    session_id = db.Column(db.Integer, db.ForeignKey('performance_sessions.id'), nullable=False)
+    
+    # Event details
+    event_type = db.Column(db.String(50), nullable=False)  # 'pause', 'play', 'rewind', 'fast_forward', 'tempo_change', 'seek'
+    timestamp = db.Column(db.DateTime(timezone=True), nullable=False)  # When the event occurred
+    position_seconds = db.Column(db.Float)  # Position in the song/content when event occurred
+    
+    # Event-specific data
+    event_data = db.Column(db.JSON, default=dict)  # Additional event context
+    
+    # Context
+    chord_at_position = db.Column(db.String(20))  # Chord being played when event occurred
+    section_name = db.Column(db.String(100))  # Song section (verse, chorus, etc.)
+    
+    created_at = db.Column(db.DateTime, default=utc_now)
+    
+    def __init__(self, session_id, event_type, position_seconds=None, **kwargs):
+        self.session_id = session_id
+        self.event_type = event_type
+        self.position_seconds = position_seconds
+        self.timestamp = datetime.now(UTC)
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+    
+    def to_dict(self):
+        """Convert event to dictionary."""
+        return {
+            'id': self.id,
+            'session_id': self.session_id,
+            'event_type': self.event_type,
+            'timestamp': self.timestamp.isoformat() if self.timestamp else None,
+            'position_seconds': self.position_seconds,
+            'event_data': self.event_data,
+            'chord_at_position': self.chord_at_position,
+            'section_name': self.section_name,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+    
+    def __repr__(self):
+        return f'<PerformanceEvent {self.event_type} at {self.position_seconds}s>'
+
+
+class ProblemSection(db.Model):
+    """
+    Identified problem sections where users frequently pause, rewind, or struggle.
+    Generated by analytics algorithms from performance events.
+    """
+    __tablename__ = 'problem_sections'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    session_id = db.Column(db.Integer, db.ForeignKey('performance_sessions.id'), nullable=False)
+    song_id = db.Column(db.Integer, db.ForeignKey('songs.id'), nullable=True)
+    
+    # Section details
+    start_position = db.Column(db.Float, nullable=False)  # Start position in seconds
+    end_position = db.Column(db.Float, nullable=False)  # End position in seconds
+    section_name = db.Column(db.String(100))  # Identified section name
+    
+    # Problem metrics
+    problem_type = db.Column(db.String(50), nullable=False)  # 'frequent_pauses', 'multiple_rewinds', 'tempo_struggles'
+    severity_score = db.Column(db.Float, default=1.0)  # 1.0 (low) to 5.0 (high)
+    event_count = db.Column(db.Integer, default=1)  # Number of problematic events in this section
+    
+    # Analysis
+    identified_issues = db.Column(db.JSON, default=list)  # List of specific issues found
+    suggested_improvements = db.Column(db.JSON, default=list)  # AI-generated improvement suggestions
+    
+    # Context
+    chord_changes = db.Column(db.JSON, default=list)  # Chord progression in this section
+    tempo_bpm = db.Column(db.Integer)  # Expected tempo for this section
+    difficulty_factors = db.Column(db.JSON, default=list)  # Factors making this section difficult
+    
+    created_at = db.Column(db.DateTime, default=utc_now)
+    
+    # Relationships
+    song = db.relationship('Song', backref='problem_sections')
+    
+    def __init__(self, session_id, start_position, end_position, problem_type, **kwargs):
+        self.session_id = session_id
+        self.start_position = start_position
+        self.end_position = end_position
+        self.problem_type = problem_type
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+    
+    def to_dict(self):
+        """Convert problem section to dictionary."""
+        return {
+            'id': self.id,
+            'session_id': self.session_id,
+            'song_id': self.song_id,
+            'start_position': self.start_position,
+            'end_position': self.end_position,
+            'section_name': self.section_name,
+            'problem_type': self.problem_type,
+            'severity_score': self.severity_score,
+            'event_count': self.event_count,
+            'identified_issues': self.identified_issues,
+            'suggested_improvements': self.suggested_improvements,
+            'chord_changes': self.chord_changes,
+            'tempo_bpm': self.tempo_bpm,
+            'difficulty_factors': self.difficulty_factors,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+    
+    def __repr__(self):
+        return f'<ProblemSection {self.problem_type} at {self.start_position}-{self.end_position}s>'
+
+
+class PerformanceAnalytics(db.Model):
+    """
+    Aggregated analytics data for songs and users.
+    Contains machine learning insights and recommendations.
+    """
+    __tablename__ = 'performance_analytics'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)  # Null for anonymous data
+    song_id = db.Column(db.Integer, db.ForeignKey('songs.id'), nullable=True)
+    setlist_id = db.Column(db.Integer, db.ForeignKey('setlists.id'), nullable=True)
+    
+    # Time period for this analytics snapshot
+    analytics_period = db.Column(db.String(20), nullable=False)  # 'daily', 'weekly', 'monthly'
+    period_start = db.Column(db.DateTime(timezone=True), nullable=False)
+    period_end = db.Column(db.DateTime(timezone=True), nullable=False)
+    
+    # Aggregated metrics
+    total_sessions = db.Column(db.Integer, default=0)
+    total_practice_time = db.Column(db.Integer, default=0)  # Total time in seconds
+    average_session_length = db.Column(db.Float, default=0.0)
+    completion_rate = db.Column(db.Float, default=0.0)  # Average completion percentage
+    
+    # Problem analysis
+    most_common_problems = db.Column(db.JSON, default=list)  # Most frequent problem types
+    problem_sections_count = db.Column(db.Integer, default=0)
+    improvement_score = db.Column(db.Float, default=0.0)  # Overall improvement trend
+    
+    # Recommendations
+    ai_recommendations = db.Column(db.JSON, default=list)  # AI-generated recommendations
+    practice_suggestions = db.Column(db.JSON, default=list)  # Specific practice suggestions
+    difficulty_assessment = db.Column(db.JSON, default=dict)  # Assessment of user's skill level
+    
+    # Progress tracking
+    previous_period_comparison = db.Column(db.JSON, default=dict)  # Comparison with previous period
+    progress_trends = db.Column(db.JSON, default=dict)  # Progress trends over time
+    
+    # Privacy
+    is_anonymous = db.Column(db.Boolean, default=True)
+    data_retention_days = db.Column(db.Integer, default=90)  # How long to keep this data
+    
+    created_at = db.Column(db.DateTime, default=utc_now)
+    expires_at = db.Column(db.DateTime)  # When this analytics data should be deleted
+    
+    # Relationships
+    user = db.relationship('User', backref='analytics_snapshots')
+    song = db.relationship('Song', backref='analytics_snapshots')
+    setlist = db.relationship('Setlist', backref='analytics_snapshots')
+    
+    def __init__(self, analytics_period, period_start, period_end, **kwargs):
+        self.analytics_period = analytics_period
+        self.period_start = period_start
+        self.period_end = period_end
+        # Set expiration based on retention policy
+        if 'data_retention_days' in kwargs:
+            retention_days = kwargs['data_retention_days']
+        else:
+            retention_days = 90
+        self.expires_at = datetime.now(UTC) + timedelta(days=retention_days)
+        
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+    
+    def to_dict(self):
+        """Convert analytics to dictionary."""
+        return {
+            'id': self.id,
+            'user_id': self.user_id if not self.is_anonymous else None,
+            'song_id': self.song_id,
+            'setlist_id': self.setlist_id,
+            'analytics_period': self.analytics_period,
+            'period_start': self.period_start.isoformat() if self.period_start else None,
+            'period_end': self.period_end.isoformat() if self.period_end else None,
+            'total_sessions': self.total_sessions,
+            'total_practice_time': self.total_practice_time,
+            'average_session_length': self.average_session_length,
+            'completion_rate': self.completion_rate,
+            'most_common_problems': self.most_common_problems,
+            'problem_sections_count': self.problem_sections_count,
+            'improvement_score': self.improvement_score,
+            'ai_recommendations': self.ai_recommendations,
+            'practice_suggestions': self.practice_suggestions,
+            'difficulty_assessment': self.difficulty_assessment,
+            'previous_period_comparison': self.previous_period_comparison,
+            'progress_trends': self.progress_trends,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'expires_at': self.expires_at.isoformat() if self.expires_at else None
+        }
+    
+    def __repr__(self):
+        return f'<PerformanceAnalytics {self.analytics_period} for {self.period_start.date()}>'

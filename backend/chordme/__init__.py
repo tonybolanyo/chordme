@@ -261,6 +261,7 @@ from . import filter_preset_routes
 from . import favorites_routes
 from . import session_routes
 from . import youtube_routes
+from . import enhanced_analytics_routes
 
 # Register search blueprint
 app.register_blueprint(search_routes.search_bp)
