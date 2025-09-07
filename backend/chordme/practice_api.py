@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 import json
 import os
 
-from chordme.auth import require_auth
+from chordme.utils import auth_required
 from chordme.models import db, User
 from chordme.session_recording import SessionRecordingManager, record_session_event
 
@@ -22,7 +22,7 @@ practice_statistics = {}
 
 @practice_bp.route('/session', methods=['POST'])
 @cross_origin()
-@require_auth
+@auth_required
 def start_practice_session():
     """Start a new practice session"""
     try:
@@ -62,7 +62,7 @@ def start_practice_session():
 
 @practice_bp.route('/session/<session_id>', methods=['PUT'])
 @cross_origin()
-@require_auth
+@auth_required
 def end_practice_session(session_id):
     """End a practice session"""
     try:
@@ -114,7 +114,7 @@ def end_practice_session(session_id):
 
 @practice_bp.route('/session/<session_id>', methods=['GET'])
 @cross_origin()
-@require_auth
+@auth_required
 def get_practice_session(session_id):
     """Get a specific practice session"""
     try:
@@ -149,7 +149,7 @@ def get_practice_session(session_id):
 
 @practice_bp.route('/sessions', methods=['GET'])
 @cross_origin()
-@require_auth
+@auth_required
 def get_practice_sessions():
     """Get user's practice sessions"""
     try:
@@ -180,7 +180,7 @@ def get_practice_sessions():
 
 @practice_bp.route('/statistics', methods=['GET'])
 @cross_origin()
-@require_auth
+@auth_required
 def get_practice_statistics():
     """Get user's practice statistics"""
     try:
@@ -201,7 +201,7 @@ def get_practice_statistics():
 
 @practice_bp.route('/statistics', methods=['PUT'])
 @cross_origin()
-@require_auth
+@auth_required
 def update_practice_statistics():
     """Update user's practice statistics"""
     try:
@@ -240,7 +240,7 @@ def update_practice_statistics():
 
 @practice_bp.route('/achievements', methods=['GET'])
 @cross_origin()
-@require_auth
+@auth_required
 def get_practice_achievements():
     """Get user's practice achievements"""
     try:
@@ -263,7 +263,7 @@ def get_practice_achievements():
 
 @practice_bp.route('/achievements', methods=['PUT'])
 @cross_origin()
-@require_auth
+@auth_required
 def update_practice_achievements():
     """Update user's practice achievements"""
     try:
@@ -287,7 +287,7 @@ def update_practice_achievements():
 
 @practice_bp.route('/feedback', methods=['POST'])
 @cross_origin()
-@require_auth
+@auth_required
 def record_timing_feedback():
     """Record chord timing feedback"""
     try:
@@ -318,7 +318,7 @@ def record_timing_feedback():
 
 @practice_bp.route('/goals', methods=['POST'])
 @cross_origin()
-@require_auth
+@auth_required
 def create_practice_goal():
     """Create a new practice goal"""
     try:
@@ -354,7 +354,7 @@ def create_practice_goal():
 
 @practice_bp.route('/recordings', methods=['POST'])
 @cross_origin()
-@require_auth
+@auth_required
 def save_practice_recording():
     """Save a practice recording"""
     try:
@@ -389,7 +389,7 @@ def save_practice_recording():
 
 @practice_bp.route('/analytics', methods=['GET'])
 @cross_origin()
-@require_auth
+@auth_required
 def get_practice_analytics():
     """Get practice analytics and insights"""
     try:
