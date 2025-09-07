@@ -201,43 +201,42 @@ export class CollaborationService {
     const session = this.activeSessions.get(songId);
     if (!session) return null;
 
-    try {
-      const editOperation: EditOperation = {
-        id: `${this.currentUserId}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        songId,
+    const editOperation: EditOperation = {
+      id: `${this.currentUserId}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      songId,
+      userId: this.currentUserId,
+      timestamp: new Date().toISOString(),
+      operations,
+      version: session.documentState.version,
+      attribution: {
         userId: this.currentUserId,
         timestamp: new Date().toISOString(),
-        operations,
-        version: session.documentState.version,
-        attribution: {
-          userId: this.currentUserId,
-          timestamp: new Date().toISOString(),
+      },
+    };
+
+    // Apply optimistic update locally
+    let optimisticUpdate: OptimisticUpdate | null = null;
+    if (optimistic) {
+      optimisticUpdate = {
+        id: editOperation.id,
+        operation: editOperation,
+        localState: { ...session.documentState },
+        rollbackData: {
+          previousContent: session.documentState.content,
+          previousVersion: session.documentState.version,
         },
+        status: 'pending',
+        timestamp: new Date().toISOString(),
       };
 
-      // Apply optimistic update locally
-      let optimisticUpdate: OptimisticUpdate | null = null;
-      if (optimistic) {
-        optimisticUpdate = {
-          id: editOperation.id,
-          operation: editOperation,
-          localState: { ...session.documentState },
-          rollbackData: {
-            previousContent: session.documentState.content,
-            previousVersion: session.documentState.version,
-          },
-          status: 'pending',
-          timestamp: new Date().toISOString(),
-        };
-
-        // Record collaboration performance metrics
-        const duration = performance.now() - startTime;
-        performanceMonitoringService.recordCollaborationLatency(
-          duration,
-          'text_operation',
-          this.currentUserId,
-          true
-        );
+      // Record collaboration performance metrics
+      const duration = performance.now() - startTime;
+      performanceMonitoringService.recordCollaborationLatency(
+        duration,
+        'text_operation',
+        this.currentUserId,
+        true
+      );
 
       // Apply operations locally
       const newContent = OperationalTransform.applyOperations(
