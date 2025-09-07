@@ -8,7 +8,7 @@ import os
 from unittest.mock import patch, MagicMock
 from chordme import app, db
 from chordme.models import User, Song
-from chordme.utils import generate_token
+from chordme.utils import generate_jwt_token
 from chordme.spotify_routes import SpotifyService
 
 
@@ -26,13 +26,12 @@ class TestSpotifyRoutes:
             db.create_all()
             
             # Create test user
-            self.test_user = User(email='test@example.com')
-            self.test_user.set_password('testpassword')
+            self.test_user = User(email='test@example.com', password='testpassword')
             db.session.add(self.test_user)
             db.session.commit()
             
             # Generate auth token
-            self.auth_token = generate_token(self.test_user.id)
+            self.auth_token = generate_jwt_token(self.test_user.id)
             self.auth_headers = {'Authorization': f'Bearer {self.auth_token}'}
     
     def teardown_method(self):
@@ -41,10 +40,8 @@ class TestSpotifyRoutes:
             db.session.remove()
             db.drop_all()
 
-    @patch.dict(os.environ, {
-        'SPOTIFY_CLIENT_ID': 'test_client_id',
-        'SPOTIFY_CLIENT_SECRET': 'test_client_secret'
-    })
+    @patch('chordme.spotify_routes.SPOTIFY_CLIENT_ID', 'test_client_id')
+    @patch('chordme.spotify_routes.SPOTIFY_CLIENT_SECRET', 'test_client_secret')
     @patch('chordme.spotify_routes.requests.post')
     def test_spotify_service_get_access_token(self, mock_post):
         """Test Spotify service access token retrieval"""
@@ -68,7 +65,8 @@ class TestSpotifyRoutes:
             assert 'Basic' in call_args[1]['headers']['Authorization']
             assert call_args[1]['data']['grant_type'] == 'client_credentials'
 
-    @patch.dict(os.environ, {})
+    @patch('chordme.spotify_routes.SPOTIFY_CLIENT_ID', None)
+    @patch('chordme.spotify_routes.SPOTIFY_CLIENT_SECRET', None)
     def test_spotify_service_missing_credentials(self):
         """Test Spotify service with missing credentials"""
         with self.app.app_context():

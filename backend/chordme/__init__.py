@@ -275,6 +275,9 @@ app.register_blueprint(filter_preset_routes.filter_preset_bp, url_prefix='/api/v
 # Register favorites blueprint
 app.register_blueprint(favorites_routes.favorites_bp)
 
+# Register Spotify blueprint
+app.register_blueprint(spotify_routes.spotify_bp)
+
 # Register practice mode API
 from .practice_api import practice_bp
 app.register_blueprint(practice_bp)

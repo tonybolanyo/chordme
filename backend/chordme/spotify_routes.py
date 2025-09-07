@@ -4,10 +4,10 @@ Handles Spotify Web API integration endpoints for music metadata enrichment,
 playlist synchronization, and music discovery features.
 """
 
-from flask import request, jsonify, g
+from flask import Blueprint, request, jsonify, g
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
-from . import app, db
+from . import db
 from .models import User, Song, SongVersion
 from .utils import (
     auth_required, 
@@ -31,6 +31,15 @@ import secrets
 import json
 
 logger = logging.getLogger(__name__)
+
+# Create Spotify blueprint
+spotify_bp = Blueprint('spotify', __name__, url_prefix='/api/v1/spotify')
+
+# Spotify API configuration
+SPOTIFY_CLIENT_ID = os.environ.get('SPOTIFY_CLIENT_ID')
+SPOTIFY_CLIENT_SECRET = os.environ.get('SPOTIFY_CLIENT_SECRET')
+SPOTIFY_API_BASE_URL = 'https://api.spotify.com/v1'
+SPOTIFY_ACCOUNTS_BASE_URL = 'https://accounts.spotify.com'
 
 # Spotify API configuration
 SPOTIFY_CLIENT_ID = os.environ.get('SPOTIFY_CLIENT_ID')
@@ -219,11 +228,8 @@ class SpotifyService:
 
 # API Routes
 
-@app.route('/api/v1/spotify/search', methods=['POST'])
+@spotify_bp.route('/search', methods=['POST'])
 @auth_required
-@rate_limit(30, 60)  # 30 requests per 60 seconds
-@validate_request_size
-@security_headers
 def spotify_search():
     """
     Search for tracks on Spotify
@@ -378,10 +384,8 @@ def spotify_search():
             500
         )
 
-@app.route('/api/v1/spotify/track/<track_id>', methods=['GET'])
+@spotify_bp.route('/track/<track_id>', methods=['GET'])
 @auth_required
-@rate_limit(60, 60)  # 60 requests per 60 seconds
-@security_headers
 def get_spotify_track_details(track_id):
     """
     Get detailed information about a Spotify track
@@ -476,10 +480,8 @@ def get_spotify_track_details(track_id):
             500
         )
 
-@app.route('/api/v1/spotify/audio-features/<track_id>', methods=['GET'])
+@spotify_bp.route('/audio-features/<track_id>', methods=['GET'])
 @auth_required
-@rate_limit(60, 60)  # 60 requests per 60 seconds
-@security_headers
 def get_spotify_audio_features_endpoint(track_id):
     """
     Get audio features for a Spotify track
@@ -577,11 +579,8 @@ def get_spotify_audio_features_endpoint(track_id):
             500
         )
 
-@app.route('/api/v1/spotify/recommendations', methods=['POST'])
+@spotify_bp.route('/recommendations', methods=['POST'])
 @auth_required
-@rate_limit(20, 60)  # 20 requests per 60 seconds
-@validate_request_size
-@security_headers
 def get_spotify_recommendations_endpoint():
     """
     Get track recommendations from Spotify
@@ -747,11 +746,12 @@ def get_spotify_recommendations_endpoint():
             500
         )
 
+
+# Song metadata linking route (separate from spotify blueprint)
+from . import app  # Import app here to avoid circular import
+
 @app.route('/api/v1/songs/<int:song_id>/spotify-metadata', methods=['POST'])
 @auth_required
-@rate_limit(10, 60)  # 10 requests per 60 seconds
-@validate_request_size
-@security_headers
 def link_spotify_metadata_endpoint(song_id):
     """
     Link Spotify metadata to a song
