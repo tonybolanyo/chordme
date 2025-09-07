@@ -94,6 +94,12 @@ export interface InstrumentConfig {
   stringCount: number;
   /** Standard tuning (notes from lowest to highest) */
   standardTuning: string[];
+  /** Current tuning if different from standard */
+  currentTuning?: string[];
+  /** Tuning name/description */
+  tuningName?: string;
+  /** Whether the current tuning is standard */
+  isStandardTuning?: boolean;
   /** Typical fret range for this instrument */
   fretRange: {
     min: number;
@@ -183,6 +189,18 @@ export interface ChordDiagram {
   
   /** Visual diagram as SVG string (optional, can be generated) */
   svgDiagram?: string;
+  
+  /** Tuning information for alternative tunings */
+  tuningInfo?: {
+    /** ID of the tuning this chord is optimized for */
+    tuningId?: string;
+    /** Name of the tuning */
+    tuningName?: string;
+    /** Whether this chord requires a specific tuning */
+    requiresAlternativeTuning: boolean;
+    /** Conversion notes for standard tuning players */
+    conversionNotes?: string[];
+  };
 }
 
 /**
