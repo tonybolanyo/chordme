@@ -423,6 +423,14 @@ class PerformanceMetricsStore:
         
         self.metrics.append(metrics_entry)
         self._cleanup_if_needed()
+        
+        # Evaluate metrics for alerts
+        try:
+            from .performance_alerts import alert_manager
+            if 'summary' in data:
+                alert_manager.evaluate_performance_metrics(data['summary'])
+        except Exception as e:
+            monitor_logger.warning(f"Failed to evaluate metrics for alerts: {str(e)}")
     
     def store_individual_metric(self, metric: Dict[str, Any]):
         """Store individual performance metric."""
@@ -549,6 +557,109 @@ def get_websocket_metrics():
         return jsonify({
             'status': 'error',
             'message': 'Failed to get WebSocket metrics'
+        }), 500
+
+
+@monitoring_bp.route('/alerts', methods=['GET'])
+def get_alerts():
+    """Get active performance alerts."""
+    try:
+        from .performance_alerts import alert_manager
+        
+        alerts = alert_manager.get_active_alerts()
+        summary = alert_manager.get_alert_summary()
+        
+        alert_data = []
+        for alert in alerts:
+            alert_data.append({
+                'id': alert.id,
+                'type': alert.type.value,
+                'severity': alert.severity.value,
+                'message': alert.message,
+                'value': alert.value,
+                'threshold': alert.threshold,
+                'timestamp': alert.timestamp.isoformat(),
+                'acknowledged': alert.acknowledged,
+                'resolved': alert.resolved,
+                'metadata': alert.metadata
+            })
+        
+        return jsonify({
+            'status': 'success',
+            'alerts': alert_data,
+            'summary': summary,
+            'timestamp': datetime.now(UTC).isoformat()
+        }), 200
+        
+    except Exception as e:
+        monitor_logger.error(f"Failed to get alerts: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': 'Failed to get alerts'
+        }), 500
+
+
+@monitoring_bp.route('/alerts/<alert_id>/acknowledge', methods=['POST'])
+def acknowledge_alert(alert_id):
+    """Acknowledge a performance alert."""
+    try:
+        from flask import request
+        from .performance_alerts import alert_manager
+        
+        data = request.get_json() or {}
+        user = data.get('user', 'unknown')
+        
+        success = alert_manager.acknowledge_alert(alert_id, user)
+        
+        if success:
+            return jsonify({
+                'status': 'success',
+                'message': f'Alert {alert_id} acknowledged',
+                'timestamp': datetime.now(UTC).isoformat()
+            }), 200
+        else:
+            return jsonify({
+                'status': 'error',
+                'message': 'Alert not found'
+            }), 404
+            
+    except Exception as e:
+        monitor_logger.error(f"Failed to acknowledge alert: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': 'Failed to acknowledge alert'
+        }), 500
+
+
+@monitoring_bp.route('/alerts/<alert_id>/resolve', methods=['POST'])
+def resolve_alert(alert_id):
+    """Resolve a performance alert."""
+    try:
+        from flask import request
+        from .performance_alerts import alert_manager
+        
+        data = request.get_json() or {}
+        user = data.get('user', 'unknown')
+        
+        success = alert_manager.resolve_alert(alert_id, user)
+        
+        if success:
+            return jsonify({
+                'status': 'success',
+                'message': f'Alert {alert_id} resolved',
+                'timestamp': datetime.now(UTC).isoformat()
+            }), 200
+        else:
+            return jsonify({
+                'status': 'error',
+                'message': 'Alert not found'
+            }), 404
+            
+    except Exception as e:
+        monitor_logger.error(f"Failed to resolve alert: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': 'Failed to resolve alert'
         }), 500
 
 
