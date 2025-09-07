@@ -6,6 +6,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { ChordTimeMapping, AudioSource, SyncTimeline } from '../../types/audio';
 import { useAudioSync } from '../../hooks/useAudioSync';
+import { useAutoScrollAndRemoteControl } from '../../hooks/useAutoScrollAndRemoteControl';
 import './SynchronizedChordViewer.css';
 
 interface SynchronizedChordViewerProps {
@@ -14,6 +15,8 @@ interface SynchronizedChordViewerProps {
   timeline?: SyncTimeline;
   className?: string;
   enableAutoScroll?: boolean;
+  enableRemoteControl?: boolean;
+  enableVoiceControl?: boolean;
   highlightColor?: string;
   onChordClick?: (chord: string, timestamp: number) => void;
 }
@@ -35,6 +38,8 @@ export const SynchronizedChordViewer: React.FC<SynchronizedChordViewerProps> = (
   timeline,
   className = '',
   enableAutoScroll = true,
+  enableRemoteControl = false,
+  enableVoiceControl = false,
   highlightColor = '#ffeaa7',
   onChordClick,
 }) => {
@@ -45,6 +50,20 @@ export const SynchronizedChordViewer: React.FC<SynchronizedChordViewerProps> = (
     syncState,
     loadTimeline,
   } = useAudioSync();
+
+  const {
+    isAutoScrollActive,
+    isEmergencyStopped,
+    handleChordChange,
+    setScrollContainer,
+    setTimeline,
+    setAudioSource,
+    autoScrollConfig,
+  } = useAutoScrollAndRemoteControl({
+    enableAutoScroll,
+    enableRemoteControl,
+    enableVoiceControl,
+  });
 
   // Refs
   const viewerRef = useRef<HTMLDivElement>(null);
@@ -58,8 +77,23 @@ export const SynchronizedChordViewer: React.FC<SynchronizedChordViewerProps> = (
   useEffect(() => {
     if (timeline) {
       loadTimeline(timeline);
+      setTimeline(timeline);
     }
-  }, [timeline, loadTimeline]);
+  }, [timeline, loadTimeline, setTimeline]);
+
+  // Set audio source
+  useEffect(() => {
+    if (audioSource) {
+      setAudioSource(audioSource);
+    }
+  }, [audioSource, setAudioSource]);
+
+  // Set scroll container
+  useEffect(() => {
+    if (viewerRef.current) {
+      setScrollContainer(viewerRef.current);
+    }
+  }, [setScrollContainer]);
 
   // Parse ChordPro content
   useEffect(() => {
@@ -100,13 +134,16 @@ export const SynchronizedChordViewer: React.FC<SynchronizedChordViewerProps> = (
         element.classList.add('current-chord');
         highlightedElementRef.current = element;
 
-        // Auto-scroll to highlighted chord
-        if (enableAutoScroll) {
+        // Use enhanced auto-scroll when available
+        if (enableAutoScroll && autoScrollConfig.enabled && !isEmergencyStopped) {
+          handleChordChange(currentChord, element, syncState?.syncPosition || 0);
+        } else if (enableAutoScroll) {
+          // Fallback to simple scroll for compatibility
           scrollToChord(element);
         }
       }
     }
-  }, [currentChord, chordElements, highlightColor, enableAutoScroll]);
+  }, [currentChord, chordElements, highlightColor, enableAutoScroll, autoScrollConfig.enabled, isEmergencyStopped, handleChordChange, syncState?.syncPosition]);
 
   // Parse ChordPro content into structured data
   const parseChordProContent = useCallback((chordProText: string): ParsedChordProLine[] => {
@@ -181,7 +218,7 @@ export const SynchronizedChordViewer: React.FC<SynchronizedChordViewerProps> = (
     return parsed;
   }, [timeline]);
 
-  // Scroll to highlighted chord
+  // Scroll to highlighted chord using enhanced auto-scroll service
   const scrollToChord = useCallback((element: HTMLElement) => {
     if (!viewerRef.current) return;
 
@@ -195,7 +232,7 @@ export const SynchronizedChordViewer: React.FC<SynchronizedChordViewerProps> = (
     );
 
     if (!isVisible) {
-      // Scroll to center the element
+      // Simple fallback scroll to center the element (for basic mode)
       const scrollTop = 
         element.offsetTop - 
         viewerRef.current.offsetTop - 
