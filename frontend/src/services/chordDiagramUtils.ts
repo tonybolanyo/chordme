@@ -194,7 +194,8 @@ export function applyBarreToPositions(
  */
 export function calculateNotesFromPositions(
   positions: StringPosition[],
-  tuning: string[]
+  tuning: string[],
+  instrument?: InstrumentType
 ): ChordNotes {
   const notes: string[] = [];
   
@@ -217,11 +218,16 @@ export function calculateNotesFromPositions(
     calculateInterval(root, note)
   );
 
+  // Determine if this is standard tuning
+  const isStandardTuning = instrument ? 
+    isStandardTuningForInstrument(tuning, instrument) : 
+    true;
+
   return {
     root,
     notes: uniqueNotes,
     intervals,
-    isStandardTuning: true // Could be determined by comparing to standard tuning
+    isStandardTuning
   };
 }
 
@@ -761,6 +767,127 @@ function transposeChordName(chordName: string, semitones: number): string {
   const suffix = chordName.replace(rootNote, '');
   const transposedRoot = transposeNote(rootNote, semitones);
   return transposedRoot + suffix;
+}
+
+/**
+ * Check if a tuning matches the standard tuning for an instrument
+ */
+function isStandardTuningForInstrument(tuning: string[], instrument: InstrumentType): boolean {
+  const standardTuning = INSTRUMENT_CONFIGS[instrument].standardTuning;
+  if (tuning.length !== standardTuning.length) return false;
+  
+  return tuning.every((note, index) => {
+    const standardNote = standardTuning[index];
+    return normalizeNote(note) === normalizeNote(standardNote);
+  });
+}
+
+/**
+ * Normalize note (convert flats to sharps for comparison)
+ */
+function normalizeNote(note: string): string {
+  const flatToSharp: { [key: string]: string } = {
+    'Db': 'C#', 'Eb': 'D#', 'Gb': 'F#', 'Ab': 'G#', 'Bb': 'A#'
+  };
+  return flatToSharp[note] || note;
+}
+
+/**
+ * Create chord diagram with custom tuning
+ */
+export function createChordDiagramWithTuning(
+  name: string,
+  instrument: InstrumentType,
+  positions: StringPosition[],
+  tuning: string[],
+  difficulty: DifficultyLevel = 'intermediate'
+): ChordDiagram {
+  const diagram = createChordDiagram(name, instrument, positions);
+  
+  // Update instrument config with custom tuning
+  diagram.instrument = {
+    ...diagram.instrument,
+    standardTuning: tuning
+  };
+  
+  // Recalculate notes with the custom tuning
+  diagram.notes = calculateNotesFromPositions(positions, tuning, instrument);
+  diagram.difficulty = difficulty;
+  
+  return diagram;
+}
+
+/**
+ * Convert chord diagram to different tuning
+ */
+export function transposeChordDiagramToTuning(
+  diagram: ChordDiagram,
+  targetTuning: string[],
+  options: {
+    allowCapo?: boolean;
+    maxCapoPosition?: number;
+  } = {}
+): ChordDiagram | null {
+  const { allowCapo = true, maxCapoPosition = 7 } = options;
+  
+  // Get the current tuning
+  const currentTuning = diagram.instrument.standardTuning;
+  
+  // Calculate tuning differences
+  const tuningDifferences = currentTuning.map((note, index) => {
+    return calculateSemitoneDifference(note, targetTuning[index]);
+  });
+
+  // Convert positions
+  const newPositions: StringPosition[] = diagram.positions.map((pos, index) => {
+    if (pos.fret < 0) return pos; // Keep muted strings
+    
+    const adjustment = tuningDifferences[index];
+    let newFret = pos.fret - adjustment;
+    
+    if (newFret < 0) {
+      // Try with capo if allowed
+      if (allowCapo && Math.abs(newFret) <= maxCapoPosition) {
+        return { ...pos, fret: 0 }; // Will become open string with capo
+      }
+      return { ...pos, fret: -1, finger: -1 }; // Mute string
+    }
+    
+    return { ...pos, fret: newFret };
+  });
+
+  // Create new diagram
+  const newDiagram = createChordDiagramWithTuning(
+    diagram.name,
+    diagram.instrument.type,
+    newPositions,
+    targetTuning,
+    diagram.difficulty
+  );
+  
+  // Copy other properties
+  newDiagram.description = diagram.description;
+  newDiagram.alternatives = diagram.alternatives;
+  newDiagram.localization = diagram.localization;
+  
+  return newDiagram;
+}
+
+/**
+ * Calculate semitone difference between two notes
+ */
+function calculateSemitoneDifference(note1: string, note2: string): number {
+  const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+  
+  const normalizedNote1 = normalizeNote(note1);
+  const normalizedNote2 = normalizeNote(note2);
+  
+  const index1 = notes.indexOf(normalizedNote1);
+  const index2 = notes.indexOf(normalizedNote2);
+  
+  if (index1 === -1 || index2 === -1) return 0;
+  
+  return (index2 - index1 + 12) % 12;
 }
 
 /**
