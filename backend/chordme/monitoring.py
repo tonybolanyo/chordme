@@ -298,6 +298,260 @@ def reset_metrics():
         }), 500
 
 
+@monitoring_bp.route('/performance-metrics', methods=['POST'])
+def receive_performance_metrics():
+    """Receive performance metrics from frontend monitoring."""
+    try:
+        from flask import request
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({
+                'status': 'error',
+                'message': 'No data provided'
+            }), 400
+        
+        # Store performance metrics
+        performance_metrics_store.store_metrics(data)
+        
+        # Check for critical alerts
+        alerts = data.get('metrics', {}).get('alerts', [])
+        critical_alerts = [a for a in alerts if a.get('severity') == 'critical']
+        
+        if critical_alerts:
+            monitor_logger.warning(
+                f"Critical performance alerts received: {len(critical_alerts)}",
+                critical_alerts=critical_alerts
+            )
+        
+        return jsonify({
+            'status': 'success',
+            'message': 'Performance metrics stored successfully',
+            'timestamp': datetime.now(UTC).isoformat()
+        }), 200
+        
+    except Exception as e:
+        monitor_logger.error(f"Failed to store performance metrics: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': 'Failed to store performance metrics'
+        }), 500
+
+
+@monitoring_bp.route('/frontend-error', methods=['POST'])
+def receive_frontend_error():
+    """Receive error reports from frontend monitoring."""
+    try:
+        from flask import request
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({
+                'status': 'error',
+                'message': 'No error data provided'
+            }), 400
+        
+        # Log frontend error
+        monitor_logger.error(
+            f"Frontend error reported: {data.get('message', 'Unknown error')}",
+            frontend_error=True,
+            url=data.get('url'),
+            user_agent=data.get('userAgent'),
+            user_id=data.get('userId'),
+            error_details=data
+        )
+        
+        return jsonify({
+            'status': 'success',
+            'message': 'Error report received',
+            'timestamp': datetime.now(UTC).isoformat()
+        }), 200
+        
+    except Exception as e:
+        monitor_logger.error(f"Failed to process frontend error: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': 'Failed to process error report'
+        }), 500
+
+
+@monitoring_bp.route('/frontend-metrics', methods=['POST'])
+def receive_frontend_metrics():
+    """Receive individual performance metrics from frontend."""
+    try:
+        from flask import request
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({
+                'status': 'error',
+                'message': 'No metric data provided'
+            }), 400
+        
+        # Store individual metric
+        performance_metrics_store.store_individual_metric(data)
+        
+        return jsonify({
+            'status': 'success',
+            'message': 'Metric stored successfully',
+            'timestamp': datetime.now(UTC).isoformat()
+        }), 200
+        
+    except Exception as e:
+        monitor_logger.error(f"Failed to store frontend metric: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': 'Failed to store metric'
+        }), 500
+
+
+class PerformanceMetricsStore:
+    """Storage for performance metrics with retention policies."""
+    
+    def __init__(self):
+        self.metrics = []
+        self.max_metrics = 10000  # Keep last 10k metrics
+        self.cleanup_interval = 3600  # Clean up every hour
+        self.last_cleanup = time.time()
+    
+    def store_metrics(self, data: Dict[str, Any]):
+        """Store complete performance metrics data."""
+        metrics_entry = {
+            'timestamp': time.time(),
+            'data': data
+        }
+        
+        self.metrics.append(metrics_entry)
+        self._cleanup_if_needed()
+    
+    def store_individual_metric(self, metric: Dict[str, Any]):
+        """Store individual performance metric."""
+        metric_entry = {
+            'timestamp': time.time(),
+            'metric': metric
+        }
+        
+        self.metrics.append(metric_entry)
+        self._cleanup_if_needed()
+    
+    def get_recent_metrics(self, seconds: int = 300) -> List[Dict[str, Any]]:
+        """Get metrics from the last N seconds."""
+        cutoff_time = time.time() - seconds
+        return [m for m in self.metrics if m['timestamp'] > cutoff_time]
+    
+    def get_performance_summary(self) -> Dict[str, Any]:
+        """Get summary of recent performance metrics."""
+        recent_metrics = self.get_recent_metrics(300)  # Last 5 minutes
+        
+        if not recent_metrics:
+            return {
+                'status': 'no_data',
+                'message': 'No recent performance data available'
+            }
+        
+        # Extract collaboration latency data
+        collaboration_latencies = []
+        audio_sync_deviations = []
+        memory_usage_ratios = []
+        
+        for entry in recent_metrics:
+            if 'data' in entry and 'summary' in entry['data']:
+                summary = entry['data']['summary']
+                if 'collaboration' in summary:
+                    collaboration_latencies.append(summary['collaboration']['averageLatency'])
+                if 'audioSync' in summary:
+                    audio_sync_deviations.append(summary['audioSync']['averageAccuracy'])
+                if 'memory' in summary:
+                    memory_usage_ratios.append(summary['memory']['usageRatio'])
+        
+        # Calculate averages
+        avg_collaboration_latency = sum(collaboration_latencies) / len(collaboration_latencies) if collaboration_latencies else 0
+        avg_audio_sync_deviation = sum(audio_sync_deviations) / len(audio_sync_deviations) if audio_sync_deviations else 0
+        avg_memory_usage = sum(memory_usage_ratios) / len(memory_usage_ratios) if memory_usage_ratios else 0
+        
+        return {
+            'status': 'ok',
+            'metrics_count': len(recent_metrics),
+            'collaboration_latency_avg': round(avg_collaboration_latency, 2),
+            'collaboration_latency_threshold_met': avg_collaboration_latency <= 100,
+            'audio_sync_accuracy_avg': round(avg_audio_sync_deviation, 2),
+            'audio_sync_threshold_met': avg_audio_sync_deviation <= 50,
+            'memory_usage_avg': round(avg_memory_usage, 3),
+            'memory_usage_healthy': avg_memory_usage <= 0.9,
+            'timestamp': datetime.now(UTC).isoformat()
+        }
+    
+    def _cleanup_if_needed(self):
+        """Clean up old metrics if needed."""
+        current_time = time.time()
+        
+        # Check if cleanup is needed
+        if (current_time - self.last_cleanup > self.cleanup_interval or 
+            len(self.metrics) > self.max_metrics):
+            
+            # Keep only recent metrics
+            cutoff_time = current_time - (24 * 3600)  # Keep last 24 hours
+            self.metrics = [m for m in self.metrics if m['timestamp'] > cutoff_time]
+            
+            # If still too many, keep only the most recent
+            if len(self.metrics) > self.max_metrics:
+                self.metrics = self.metrics[-self.max_metrics:]
+            
+            self.last_cleanup = current_time
+
+
+# Initialize performance metrics store
+performance_metrics_store = PerformanceMetricsStore()
+
+
+@monitoring_bp.route('/performance-summary', methods=['GET'])
+def get_performance_summary():
+    """Get summary of recent performance metrics."""
+    try:
+        summary = performance_metrics_store.get_performance_summary()
+        
+        return jsonify({
+            'status': 'success',
+            'summary': summary,
+            'timestamp': datetime.now(UTC).isoformat()
+        }), 200
+        
+    except Exception as e:
+        monitor_logger.error(f"Failed to get performance summary: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': 'Failed to get performance summary'
+        }), 500
+
+
+@monitoring_bp.route('/websocket-metrics', methods=['GET'])
+def get_websocket_metrics():
+    """Get WebSocket performance metrics."""
+    try:
+        from . import websocket_server
+        
+        if hasattr(current_app, 'websocket_server'):
+            ws_metrics = current_app.websocket_server.get_performance_metrics()
+            
+            return jsonify({
+                'status': 'success',
+                'metrics': ws_metrics,
+                'timestamp': datetime.now(UTC).isoformat()
+            }), 200
+        else:
+            return jsonify({
+                'status': 'error',
+                'message': 'WebSocket server not available'
+            }), 503
+            
+    except Exception as e:
+        monitor_logger.error(f"Failed to get WebSocket metrics: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': 'Failed to get WebSocket metrics'
+        }), 500
+
+
 def record_user_activity(user_id: str, activity_type: str):
     """Helper function to record user activity."""
     metrics_collector.record_user_activity(user_id, activity_type)

@@ -16,6 +16,7 @@ import {
   SyncError,
   AudioErrorCode,
 } from '../types/audio';
+import { performanceMonitoringService } from './performanceMonitoringService';
 
 export class AudioSynchronizationService {
   private syncState: SyncState = {
@@ -75,8 +76,14 @@ export class AudioSynchronizationService {
   updateSyncPosition(currentTime: number): void {
     if (!this.config.enabled || !this.timeline) return;
 
+    const expectedTime = this.syncState.syncPosition;
     this.syncState.syncPosition = currentTime;
     this.syncState.lastSyncTime = Date.now();
+
+    // Monitor audio synchronization accuracy
+    if (expectedTime > 0) {
+      performanceMonitoringService.recordAudioSyncAccuracy(expectedTime, currentTime);
+    }
 
     // Find current chord based on time
     this.updateCurrentChord(currentTime);

@@ -29,6 +29,14 @@ class WebSocketServer:
         self.room_participants: Dict[str, Set[str]] = {}
         self.user_rooms: Dict[str, Set[str]] = {}
         
+        # Performance monitoring
+        self.operation_metrics: Dict[str, List[float]] = {}
+        self.performance_thresholds = {
+            'collaboration_operation': 100,  # 100ms
+            'join_room': 500,               # 500ms
+            'broadcast_message': 200        # 200ms
+        }
+        
         # Rate limiting configuration
         self.message_rate_limit = 60  # messages per minute
         self.connection_rate_limit = 10  # connections per minute per IP
@@ -107,6 +115,57 @@ class WebSocketServer:
                 return f(*args, **kwargs)
             return decorated
         return decorator
+
+    def monitor_performance(self, operation_name: str):
+        """Decorator to monitor WebSocket operation performance."""
+        def decorator(f):
+            @wraps(f)
+            def decorated(*args, **kwargs):
+                start_time = time.time()
+                
+                try:
+                    result = f(*args, **kwargs)
+                    
+                    # Record successful operation timing
+                    duration = (time.time() - start_time) * 1000  # Convert to ms
+                    self._record_operation_metric(operation_name, duration, success=True)
+                    
+                    # Check performance threshold
+                    threshold = self.performance_thresholds.get(operation_name, 1000)
+                    if duration > threshold:
+                        logger.warning(
+                            f"WebSocket operation {operation_name} exceeded threshold: {duration:.2f}ms > {threshold}ms"
+                        )
+                    
+                    return result
+                    
+                except Exception as e:
+                    # Record failed operation timing
+                    duration = (time.time() - start_time) * 1000
+                    self._record_operation_metric(operation_name, duration, success=False)
+                    
+                    logger.error(f"WebSocket operation {operation_name} failed after {duration:.2f}ms: {str(e)}")
+                    raise
+            return decorated
+        return decorator
+
+    def _record_operation_metric(self, operation_name: str, duration: float, success: bool):
+        """Record performance metric for WebSocket operation."""
+        if operation_name not in self.operation_metrics:
+            self.operation_metrics[operation_name] = []
+        
+        # Store with metadata
+        metric = {
+            'duration': duration,
+            'success': success,
+            'timestamp': time.time()
+        }
+        
+        self.operation_metrics[operation_name].append(metric)
+        
+        # Keep only last 1000 metrics per operation
+        if len(self.operation_metrics[operation_name]) > 1000:
+            self.operation_metrics[operation_name] = self.operation_metrics[operation_name][-1000:]
     
     def _register_event_handlers(self):
         """Register Socket.IO event handlers."""
@@ -201,6 +260,7 @@ class WebSocketServer:
         @self.socketio.on('join_room')
         @self.auth_required
         @self.rate_limit('join_room')
+        @self.monitor_performance('join_room')
         def handle_join_room(data):
             """Handle joining a collaboration room."""
             session_id = request.sid
@@ -261,6 +321,7 @@ class WebSocketServer:
         @self.socketio.on('broadcast_message')
         @self.auth_required
         @self.rate_limit('broadcast')
+        @self.monitor_performance('broadcast_message')
         def handle_broadcast_message(data):
             """Handle broadcasting messages to room participants."""
             session_id = request.sid
@@ -298,6 +359,7 @@ class WebSocketServer:
         @self.socketio.on('collaboration_operation')
         @self.auth_required
         @self.rate_limit('collaboration')
+        @self.monitor_performance('collaboration_operation')
         def handle_collaboration_operation(data):
             """Handle real-time collaboration operations."""
             session_id = request.sid
@@ -437,6 +499,47 @@ class WebSocketServer:
                         self._leave_room_internal(session_id, room_id)
                 
                 del self.active_connections[session_id]
+
+    def get_performance_metrics(self) -> Dict[str, Any]:
+        """Get WebSocket performance metrics."""
+        current_time = time.time()
+        five_minutes_ago = current_time - 300  # 5 minutes
+        
+        metrics_summary = {}
+        
+        for operation_name, metrics_list in self.operation_metrics.items():
+            # Filter recent metrics
+            recent_metrics = [m for m in metrics_list if m['timestamp'] > five_minutes_ago]
+            
+            if not recent_metrics:
+                continue
+            
+            # Calculate statistics
+            durations = [m['duration'] for m in recent_metrics]
+            successful_ops = [m for m in recent_metrics if m['success']]
+            
+            avg_duration = sum(durations) / len(durations) if durations else 0
+            max_duration = max(durations) if durations else 0
+            success_rate = len(successful_ops) / len(recent_metrics) if recent_metrics else 0
+            threshold = self.performance_thresholds.get(operation_name, 1000)
+            
+            metrics_summary[operation_name] = {
+                'average_duration_ms': round(avg_duration, 2),
+                'max_duration_ms': round(max_duration, 2),
+                'success_rate': round(success_rate, 3),
+                'total_operations': len(recent_metrics),
+                'threshold_ms': threshold,
+                'within_threshold': avg_duration <= threshold,
+                'threshold_violations': len([d for d in durations if d > threshold])
+            }
+        
+        return {
+            'operations': metrics_summary,
+            'active_connections': len(self.active_connections),
+            'active_rooms': len(self.room_participants),
+            'total_participants': sum(len(participants) for participants in self.room_participants.values()),
+            'timestamp': current_time
+        }
 
 # Global WebSocket server instance
 websocket_server = WebSocketServer()

@@ -13,6 +13,7 @@ import {
 import type { Unsubscribe } from 'firebase/firestore';
 import { firebaseService } from './firebase';
 import { OperationalTransform } from './operationalTransform';
+import { performanceMonitoringService } from './performanceMonitoringService';
 import type {
   CollaborationSession,
   CollaborationUser,
@@ -196,36 +197,47 @@ export class CollaborationService {
   ): Promise<OptimisticUpdate | null> {
     if (!this.currentUserId) return null;
 
+    const startTime = performance.now();
     const session = this.activeSessions.get(songId);
     if (!session) return null;
 
-    const editOperation: EditOperation = {
-      id: `${this.currentUserId}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      songId,
-      userId: this.currentUserId,
-      timestamp: new Date().toISOString(),
-      operations,
-      version: session.documentState.version,
-      attribution: {
+    try {
+      const editOperation: EditOperation = {
+        id: `${this.currentUserId}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        songId,
         userId: this.currentUserId,
         timestamp: new Date().toISOString(),
-      },
-    };
-
-    // Apply optimistic update locally
-    let optimisticUpdate: OptimisticUpdate | null = null;
-    if (optimistic) {
-      optimisticUpdate = {
-        id: editOperation.id,
-        operation: editOperation,
-        localState: { ...session.documentState },
-        rollbackData: {
-          previousContent: session.documentState.content,
-          previousVersion: session.documentState.version,
+        operations,
+        version: session.documentState.version,
+        attribution: {
+          userId: this.currentUserId,
+          timestamp: new Date().toISOString(),
         },
-        status: 'pending',
-        timestamp: new Date().toISOString(),
       };
+
+      // Apply optimistic update locally
+      let optimisticUpdate: OptimisticUpdate | null = null;
+      if (optimistic) {
+        optimisticUpdate = {
+          id: editOperation.id,
+          operation: editOperation,
+          localState: { ...session.documentState },
+          rollbackData: {
+            previousContent: session.documentState.content,
+            previousVersion: session.documentState.version,
+          },
+          status: 'pending',
+          timestamp: new Date().toISOString(),
+        };
+
+        // Record collaboration performance metrics
+        const duration = performance.now() - startTime;
+        performanceMonitoringService.recordCollaborationLatency(
+          duration,
+          'text_operation',
+          this.currentUserId,
+          true
+        );
 
       // Apply operations locally
       const newContent = OperationalTransform.applyOperations(
@@ -258,6 +270,15 @@ export class CollaborationService {
       }
     } catch (error) {
       console.error('Error applying text operation:', error);
+
+      // Record failed collaboration operation
+      const duration = performance.now() - startTime;
+      performanceMonitoringService.recordCollaborationLatency(
+        duration,
+        'text_operation_failed',
+        this.currentUserId,
+        false
+      );
 
       // Rollback optimistic update on error
       if (optimisticUpdate && optimisticUpdate.rollbackData) {
