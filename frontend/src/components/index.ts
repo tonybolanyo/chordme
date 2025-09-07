@@ -9,6 +9,7 @@ export { default as ChordAutocomplete } from './ChordAutocomplete';
 export { default as ChordDiagramRenderer } from './ChordDiagramRenderer';
 export { default as ChordDiagramPanel } from './ChordDiagramPanel';
 export { default as ChordHoverPreview } from './ChordHoverPreview';
+export { default as ChordDiagramEditor } from './ChordDiagramEditor';
 export { default as TranspositionControls } from './TranspositionControls';
 export { default as StorageSettings } from './StorageSettings';
 export { default as StorageIndicator } from './StorageIndicator';

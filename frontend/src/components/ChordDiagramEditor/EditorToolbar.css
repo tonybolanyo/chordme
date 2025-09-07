@@ -1,0 +1,319 @@
+/* Editor Toolbar Styles */
+
+.editor-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 16px 24px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  border-radius: 8px 8px 0 0;
+  overflow-x: auto;
+  min-height: 60px;
+}
+
+.toolbar-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.toolbar-section.actions {
+  margin-left: auto;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+}
+
+.section-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+/* Button Groups */
+.button-group {
+  display: flex;
+  gap: 4px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #dee2e6;
+  background: #ffffff;
+}
+
+.mode-button,
+.finger-button {
+  padding: 8px 12px;
+  border: none;
+  background: #ffffff;
+  color: #495057;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 60px;
+  justify-content: center;
+}
+
+.mode-button:hover,
+.finger-button:hover {
+  background: #e9ecef;
+  color: #212529;
+}
+
+.mode-button.active,
+.finger-button.active {
+  background: #667eea;
+  color: #ffffff;
+}
+
+.mode-button:disabled,
+.finger-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #f8f9fa;
+}
+
+.mode-button .icon,
+.finger-button .icon {
+  font-size: 14px;
+}
+
+/* Instrument Select */
+.instrument-select {
+  padding: 8px 12px;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #495057;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 140px;
+}
+
+.instrument-select:hover {
+  border-color: #667eea;
+}
+
+.instrument-select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+}
+
+/* Action Buttons */
+.action-button {
+  padding: 8px 16px;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #495057;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 80px;
+  justify-content: center;
+}
+
+.action-button:hover {
+  background: #e9ecef;
+  border-color: #adb5bd;
+}
+
+.action-button.clear {
+  border-color: #dc3545;
+  color: #dc3545;
+}
+
+.action-button.clear:hover {
+  background: #dc3545;
+  color: #ffffff;
+}
+
+.action-button.export {
+  border-color: #17a2b8;
+  color: #17a2b8;
+}
+
+.action-button.export:hover {
+  background: #17a2b8;
+  color: #ffffff;
+}
+
+.action-button.save.enabled {
+  border-color: #28a745;
+  color: #28a745;
+  font-weight: 600;
+}
+
+.action-button.save.enabled:hover {
+  background: #28a745;
+  color: #ffffff;
+}
+
+.action-button.save.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  border-color: #dee2e6;
+  color: #6c757d;
+}
+
+.action-button .icon {
+  font-size: 14px;
+}
+
+/* Export Group */
+.export-group {
+  display: flex;
+  gap: 4px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.export-group .action-button {
+  border-radius: 0;
+  border-right: none;
+  min-width: 60px;
+}
+
+.export-group .action-button:last-child {
+  border-right: 1px solid #17a2b8;
+  border-radius: 0 6px 6px 0;
+}
+
+.export-group .action-button:first-child {
+  border-radius: 6px 0 0 6px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .editor-toolbar {
+    flex-wrap: wrap;
+    gap: 16px;
+    padding: 12px 16px;
+  }
+  
+  .toolbar-section.actions {
+    order: 2;
+    margin-left: 0;
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .section-label {
+    font-size: 11px;
+  }
+  
+  .mode-button,
+  .finger-button,
+  .action-button {
+    padding: 6px 10px;
+    font-size: 12px;
+    min-width: 50px;
+  }
+  
+  .instrument-select {
+    padding: 6px 10px;
+    font-size: 12px;
+    min-width: 120px;
+  }
+}
+
+@media (max-width: 480px) {
+  .editor-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 12px;
+  }
+  
+  .toolbar-section {
+    align-items: center;
+  }
+  
+  .toolbar-section.actions {
+    flex-direction: row;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .button-group {
+    width: 100%;
+    max-width: 280px;
+  }
+  
+  .mode-button,
+  .finger-button {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .instrument-select {
+    width: 100%;
+    max-width: 280px;
+  }
+  
+  .action-button {
+    flex: 1;
+    min-width: 70px;
+  }
+  
+  .export-group {
+    flex: 1;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .editor-toolbar {
+    background: #f0f0f0;
+    border-bottom: 2px solid #000;
+  }
+  
+  .button-group {
+    border: 2px solid #000;
+  }
+  
+  .mode-button,
+  .finger-button,
+  .action-button,
+  .instrument-select {
+    border: 1px solid #000;
+  }
+  
+  .mode-button.active,
+  .finger-button.active {
+    background: #000;
+    color: #fff;
+  }
+}
+
+/* Focus styles for accessibility */
+.mode-button:focus,
+.finger-button:focus,
+.action-button:focus,
+.instrument-select:focus {
+  outline: 2px solid #667eea;
+  outline-offset: 2px;
+}
+
+/* Print styles */
+@media print {
+  .editor-toolbar {
+    display: none;
+  }
+}
