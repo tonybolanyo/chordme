@@ -28,6 +28,21 @@ cors = CORS(app, resources={
 # Initialize database
 db = SQLAlchemy(app)
 
+# Initialize database performance management (after app creation)
+with app.app_context():
+    from .database_performance import db_performance
+    from .database_indexing import db_index_optimizer  
+    from .read_replicas import read_replica_manager
+    from .database_maintenance import db_maintenance_manager
+    from .database_backup import db_backup_manager
+
+    # Initialize performance managers with app
+    db_performance.init_app(app)
+    db_index_optimizer.init_app(app)
+    read_replica_manager.init_app(app)
+    db_maintenance_manager.init_app(app)
+    db_backup_manager.init_app(app)
+
 # Initialize WebSocket server
 from .websocket_server import websocket_server
 websocket_server.init_app(app)
@@ -270,6 +285,7 @@ from . import project_management_routes  # Project management endpoints
 from . import metadata_routes  # Universal metadata system endpoints
 from . import ai_music_insights_routes  # AI music insights endpoints
 from . import business_intelligence_routes  # Business intelligence and reporting endpoints
+from . import database_performance_routes  # Database performance optimization endpoints
 
 # Register search blueprint
 app.register_blueprint(search_routes.search_bp)
@@ -301,6 +317,9 @@ app.register_blueprint(business_intelligence_routes.bi_bp)
 # Register cache management blueprint
 from . import cache_routes
 app.register_blueprint(cache_routes.cache_bp)
+
+# Register database performance blueprint
+app.register_blueprint(database_performance_routes.db_perf_bp)
 
 # Register practice mode API
 from .practice_api import practice_bp

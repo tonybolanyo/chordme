@@ -115,6 +115,51 @@ else:
 
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+# Database Performance Configuration
+DB_POOL_SIZE = int(os.environ.get('DB_POOL_SIZE', 20))
+DB_POOL_MAX_OVERFLOW = int(os.environ.get('DB_POOL_MAX_OVERFLOW', 30))
+DB_POOL_TIMEOUT = int(os.environ.get('DB_POOL_TIMEOUT', 30))
+DB_POOL_RECYCLE = int(os.environ.get('DB_POOL_RECYCLE', 3600))  # 1 hour
+DB_POOL_PRE_PING = os.environ.get('DB_POOL_PRE_PING', 'True').lower() == 'true'
+
+# Performance Monitoring Configuration
+DB_MONITORING_ENABLED = os.environ.get('DB_MONITORING_ENABLED', 'True').lower() == 'true'
+DB_ALERTS_ENABLED = os.environ.get('DB_ALERTS_ENABLED', 'True').lower() == 'true'
+SLOW_QUERY_THRESHOLD = float(os.environ.get('SLOW_QUERY_THRESHOLD', 1.0))  # 1 second
+
+# Database Maintenance Configuration
+DB_MAINTENANCE_ENABLED = os.environ.get('DB_MAINTENANCE_ENABLED', 'True').lower() == 'true'
+
+# Index Optimization Configuration
+INDEX_CACHE_TTL = int(os.environ.get('INDEX_CACHE_TTL', 3600))  # 1 hour
+
+# Read Replica Configuration (example configuration)
+# To enable read replicas, set READ_REPLICAS environment variable as JSON
+# Example: READ_REPLICAS='[{"name":"replica1","url":"postgresql://...","weight":1}]'
+READ_REPLICAS = []
+if os.environ.get('READ_REPLICAS'):
+    import json
+    try:
+        READ_REPLICAS = json.loads(os.environ.get('READ_REPLICAS'))
+    except (json.JSONDecodeError, TypeError):
+        READ_REPLICAS = []
+
+# Read Replica Pool Configuration
+REPLICA_POOL_SIZE = int(os.environ.get('REPLICA_POOL_SIZE', 10))
+REPLICA_POOL_MAX_OVERFLOW = int(os.environ.get('REPLICA_POOL_MAX_OVERFLOW', 20))
+REPLICA_POOL_TIMEOUT = int(os.environ.get('REPLICA_POOL_TIMEOUT', 30))
+REPLICA_POOL_RECYCLE = int(os.environ.get('REPLICA_POOL_RECYCLE', 3600))
+REPLICA_HEALTH_CHECK_ENABLED = os.environ.get('REPLICA_HEALTH_CHECK_ENABLED', 'True').lower() == 'true'
+REPLICA_LOAD_BALANCING = os.environ.get('REPLICA_LOAD_BALANCING', 'weighted_random')  # 'round_robin', 'weighted_random', 'least_connections'
+
+# Database Backup Configuration
+BACKUP_ENABLED = os.environ.get('BACKUP_ENABLED', 'True').lower() == 'true'
+BACKUP_DIRECTORY = os.environ.get('BACKUP_DIRECTORY', '/tmp/backups')
+BACKUP_RETENTION_DAYS = int(os.environ.get('BACKUP_RETENTION_DAYS', 30))
+BACKUP_COMPRESSION = os.environ.get('BACKUP_COMPRESSION', 'True').lower() == 'true'
+BACKUP_VERIFICATION = os.environ.get('BACKUP_VERIFICATION', 'True').lower() == 'true'
+BACKUP_PARALLEL_JOBS = int(os.environ.get('BACKUP_PARALLEL_JOBS', 4))
+
 # Google Drive API configuration (for server-side operations)
 # These are optional - server can work without Google Drive integration
 GOOGLE_DRIVE_ENABLED = os.environ.get('GOOGLE_DRIVE_ENABLED', 'False').lower() == 'true'
