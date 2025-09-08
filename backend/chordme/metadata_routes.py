@@ -496,11 +496,12 @@ def batch_enrich_metadata():
                     success_count += 1
                     
                 except Exception as e:
+                    logger.exception(f"Failed to enrich metadata for track {track.get('id', 'unknown')}")
                     if include_failures:
                         results.append({
                             'id': track.get('id', 'unknown'),
                             'status': 'error',
-                            'message': str(e)
+                            'message': 'Failed to enrich metadata for this track'
                         })
                     failure_count += 1
             
