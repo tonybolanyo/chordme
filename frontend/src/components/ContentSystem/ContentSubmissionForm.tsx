@@ -133,7 +133,7 @@ export const ContentSubmissionForm: React.FC<ContentSubmissionFormProps> = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (field: string, value: string | number | boolean | undefined) => {
     if (field.startsWith('content_data.')) {
       const contentField = field.replace('content_data.', '');
       setFormData(prev => ({
