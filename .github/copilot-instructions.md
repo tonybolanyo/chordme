@@ -274,3 +274,215 @@ cp config.template.py config.py
 5. **API validation**: `curl http://localhost:5000/api/v1/health`
 
 **Success criteria**: All commands complete without blocking errors, servers start successfully, and user workflows function in browser.
+
+## Documentation Standards and Requirements
+
+**CRITICAL: All documentation MUST be created in both English and Spanish with proper Jekyll frontmatter.**
+
+### Bilingual Documentation Requirements
+
+When creating or modifying ANY documentation file, you MUST:
+
+1. **Create both language versions:**
+   - English: `filename.md`
+   - Spanish: `filename-es.md`
+
+2. **Use proper Jekyll frontmatter in ALL documentation files:**
+   ```yaml
+   ---
+   layout: default
+   lang: en  # or "es" for Spanish
+   title: Your Document Title
+   ---
+   ```
+
+3. **Include cross-language navigation links:**
+   - English files: Add `**Cambiar idioma:** **English** | [Español](filename-es.md)` at bottom
+   - Spanish files: Add `**Cambiar idioma:** [English](filename.md) | **Español**` at bottom
+
+### Documentation Creation Workflow
+
+**MANDATORY: Follow this exact process for ALL documentation changes:**
+
+1. **Create English version first:**
+   ```bash
+   # Create new English documentation
+   touch docs/your-feature.md
+   ```
+
+2. **Use this frontmatter template:**
+   ```yaml
+   ---
+   layout: default
+   lang: en
+   title: Your Feature Documentation
+   ---
+   
+   # Your Feature Documentation
+   
+   Your content here...
+   
+   ---
+   
+   **Cambiar idioma:** **English** | [Español](your-feature-es.md)
+   ```
+
+3. **Create Spanish version immediately:**
+   ```bash
+   # Create corresponding Spanish documentation
+   touch docs/your-feature-es.md
+   ```
+
+4. **Use this Spanish frontmatter template:**
+   ```yaml
+   ---
+   layout: default
+   lang: es
+   title: Documentación de Tu Funcionalidad
+   ---
+   
+   # Documentación de Tu Funcionalidad
+   
+   Tu contenido aquí...
+   
+   ---
+   
+   **Cambiar idioma:** [English](your-feature.md) | **Español**
+   ```
+
+### Documentation Quality Validation
+
+**CRITICAL: ALWAYS run these validation commands before committing:**
+
+```bash
+# Validate documentation structure and frontmatter
+scripts/validate-docs.sh
+
+# Validate all internal and external links
+scripts/validate-links.sh
+
+# Expected results:
+# - All files have valid Jekyll frontmatter
+# - All English files have corresponding Spanish versions
+# - All cross-language links work correctly
+# - No broken internal links
+```
+
+### Content Guidelines
+
+**English Documentation:**
+- Use clear, concise technical English
+- Follow standard technical writing conventions
+- Use sentence case for headings and labels
+- Include code examples with proper syntax highlighting
+
+**Spanish Documentation:**
+- Use formal "usted" form for user-facing content
+- Follow Spanish technical writing conventions
+- Maintain consistent terminology across all Spanish docs
+- Translate technical concepts appropriately (not literal translations)
+
+### File Organization
+
+**Documentation Location:** All documentation MUST go in `/docs/` directory
+
+**File Naming Convention:**
+- English: `feature-name.md` (lowercase, hyphen-separated)
+- Spanish: `feature-name-es.md` (same name + `-es` suffix)
+
+**Required Documentation Types:**
+- User guides: How end-users interact with features
+- Developer guides: Technical implementation details
+- API documentation: Endpoint and integration details
+- Troubleshooting: Common issues and solutions
+
+### Cross-Language Linking Standards
+
+**Internal Links:**
+- English docs should link to English versions: `[User Guide](user-guide.md)`
+- Spanish docs should link to Spanish versions: `[Guía del Usuario](user-guide-es.md)`
+- Cross-language switcher links both versions
+
+**External Links:**
+- Use the same external URLs in both language versions
+- Prefer English documentation for external technical resources
+- Include Spanish resources when available and authoritative
+
+### Jekyll Integration Requirements
+
+**Frontmatter Fields (Required):**
+- `layout: default` - Uses the default Jekyll layout
+- `lang: en` or `lang: es` - Language identifier for proper rendering
+- `title: Document Title` - Page title for SEO and navigation
+
+**Jekyll Configuration:**
+- All markdown files are automatically processed by Jekyll
+- Language-specific navigation is configured in `_config.yml`
+- Cross-language functionality is handled by Jekyll themes
+
+### Validation Error Resolution
+
+**Common Issues and Fixes:**
+
+1. **Missing Spanish Translation:**
+   ```bash
+   # Error: "Missing Spanish version: filename-es.md"
+   # Fix: Create the Spanish version
+   cp docs/filename.md docs/filename-es.md
+   # Then translate content and update frontmatter lang to "es"
+   ```
+
+2. **Invalid Frontmatter:**
+   ```bash
+   # Error: "Missing front matter"
+   # Fix: Add proper frontmatter at the top of file
+   ---
+   layout: default
+   lang: en
+   title: Your Title
+   ---
+   ```
+
+3. **Broken Cross-Language Links:**
+   ```bash
+   # Error: Link validation fails
+   # Fix: Ensure both language versions exist and links are correct
+   ```
+
+### Documentation PR Checklist
+
+**MANDATORY: Every PR with documentation changes MUST:**
+
+- [ ] Include both English and Spanish versions of all new/modified docs
+- [ ] Have proper Jekyll frontmatter in all markdown files
+- [ ] Include cross-language navigation links
+- [ ] Pass `scripts/validate-docs.sh` without errors
+- [ ] Pass `scripts/validate-links.sh` with no broken internal links
+- [ ] Follow established file naming conventions
+- [ ] Include appropriate content for both technical and user audiences
+- [ ] Maintain consistency with existing documentation style
+
+### Testing Documentation Changes
+
+**Local Jekyll Testing (Optional but Recommended):**
+```bash
+cd docs
+bundle install  # First time only
+bundle exec jekyll serve --host 0.0.0.0 --port 4000
+# View at http://localhost:4000 to test Jekyll rendering
+```
+
+**Validation Commands (MANDATORY):**
+```bash
+# Run both validation scripts before committing
+scripts/validate-docs.sh && scripts/validate-links.sh
+
+# Expected output: All checks passed with no errors
+```
+
+**Manual Testing Checklist:**
+- [ ] Both language versions render correctly
+- [ ] Cross-language links work in both directions  
+- [ ] All internal links resolve correctly
+- [ ] Content is accurate and complete in both languages
+- [ ] Code examples work as documented
