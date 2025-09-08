@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: ChordMe Community Forum Documentation
+---
+
 # ChordMe Community Forum Documentation
 
 ## Overview

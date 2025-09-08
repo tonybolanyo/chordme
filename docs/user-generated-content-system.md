@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: User-Generated Content System Documentation
+---
+
 # User-Generated Content System Documentation
 
 ## Overview

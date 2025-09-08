@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Database Performance Optimization Guide
+---
+
 # Database Performance Optimization Guide
 
 ## Overview
