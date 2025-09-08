@@ -275,7 +275,6 @@ def health_check():
 
 @apple_music_bp.route('/search', methods=['POST'])
 @security_headers
-@validate_request_size
 @auth_required
 def apple_music_search_catalog():
     """Search Apple Music catalog"""
@@ -353,7 +352,6 @@ def apple_music_get_song_details(song_id):
 
 @apple_music_bp.route('/cross-platform-match', methods=['POST'])
 @security_headers
-@validate_request_size
 @auth_required
 def apple_music_cross_platform_match():
     """Match a track from another platform to Apple Music"""
@@ -423,7 +421,6 @@ def apple_music_get_recommendations(recommendation_id):
 
 @apple_music_bp.route('/link-metadata', methods=['POST'])
 @security_headers
-@validate_request_size
 @auth_required
 def apple_music_link_metadata():
     """Link Apple Music metadata to a ChordMe song"""

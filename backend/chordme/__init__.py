@@ -280,7 +280,7 @@ app.register_blueprint(favorites_routes.favorites_bp)
 app.register_blueprint(spotify_routes.spotify_bp)
 
 # Register Apple Music blueprint
-# app.register_blueprint(apple_music_routes.apple_music_bp)  # Temporarily disabled for testing
+app.register_blueprint(apple_music_routes.apple_music_bp)
 
 # Register practice mode API
 from .practice_api import practice_bp
