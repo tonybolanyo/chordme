@@ -27,7 +27,7 @@ google-auth==2.36.0
 google-auth-oauthlib==1.2.1
 
 # Spotify Web API integration
-requests==2.32.3  # For HTTP requests to Spotify API
+requests==2.32.4  # For HTTP requests to Spotify API
 
 # PDF generation
 reportlab==4.0.9
