@@ -507,11 +507,49 @@ export interface CrossPlatformMatchResult {
   bestMatch?: MusicPlatformTrack;
 }
 
+// Metadata quality and scoring types
+export interface MetadataSource {
+  platform: 'spotify' | 'apple-music' | 'musicbrainz' | 'discogs' | 'lastfm';
+  confidence: number; // 0.0 to 1.0
+  retrievedAt: string; // ISO timestamp
+  dataComplete: boolean;
+  fields: string[]; // which fields this source provided
+}
+
+export interface MetadataQuality {
+  overall: number; // 0.0 to 1.0 overall quality score
+  completeness: number; // how complete the metadata is
+  accuracy: number; // estimated accuracy based on source reliability
+  consistency: number; // consistency across sources
+  freshness: number; // how recent the metadata is
+  sources: MetadataSource[];
+  conflictCount: number;
+  verificationStatus: 'verified' | 'unverified' | 'disputed';
+}
+
+export interface MetadataConflict {
+  field: string;
+  sources: Array<{
+    platform: string;
+    value: any;
+    confidence: number;
+  }>;
+  resolution: 'automatic' | 'manual' | 'pending';
+  resolvedValue?: any;
+  resolutionReason?: string;
+}
+
 export interface UnifiedMusicMetadata {
+  // Enhanced platform data with metadata tracking
   platforms: {
     spotify?: SpotifyTrack;
     appleMusic?: AppleMusicTrack;
+    musicbrainz?: any; // Future extensibility
+    discogs?: any;
+    lastfm?: any;
   };
+  
+  // Enhanced normalized data with quality tracking
   normalized: {
     title: string;
     artists: string[];
@@ -533,7 +571,30 @@ export interface UnifiedMusicMetadata {
       spotify?: string;
       appleMusic?: string;
     };
+    // New enhanced fields
+    composer?: string[];
+    producer?: string[];
+    label?: string;
+    copyright?: string;
+    explicit?: boolean;
+    popularity?: number;
+    audioFeatures?: {
+      tempo?: number;
+      key?: number;
+      mode?: number;
+      energy?: number;
+      danceability?: number;
+      acousticness?: number;
+      instrumentalness?: number;
+      valence?: number;
+    };
   };
+  
+  // Metadata quality and conflict information
+  quality: MetadataQuality;
+  conflicts: MetadataConflict[];
+  lastUpdated: string;
+  cacheExpiry?: string;
 }
 
 // Song sharing types

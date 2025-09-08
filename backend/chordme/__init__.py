@@ -266,6 +266,7 @@ from . import apple_music_routes  # Apple Music integration endpoints
 from . import enhanced_analytics_routes
 from . import enterprise_api  # Enterprise authentication endpoints
 from . import project_management_routes  # Project management endpoints
+from . import metadata_routes  # Universal metadata system endpoints
 
 # Register search blueprint
 app.register_blueprint(search_routes.search_bp)
@@ -281,6 +282,9 @@ app.register_blueprint(spotify_routes.spotify_bp)
 
 # Register Apple Music blueprint
 app.register_blueprint(apple_music_routes.apple_music_bp)
+
+# Register metadata blueprint
+app.register_blueprint(metadata_routes.metadata_bp)
 
 # Register practice mode API
 from .practice_api import practice_bp
