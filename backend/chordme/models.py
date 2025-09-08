@@ -4275,3 +4275,458 @@ class ForumModeration(db.Model):
     def __repr__(self):
         target = f"thread:{self.thread_id}" if self.thread_id else f"post:{self.post_id}" if self.post_id else f"user:{self.target_user_id}"
         return f'<ForumModeration {self.action_type} on {target}>'
+
+
+# User-Generated Content System Models
+
+class ContentSubmission(db.Model):
+    """User-generated content submissions with quality gates and workflow."""
+    __tablename__ = 'content_submissions'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text)
+    content_type = db.Column(db.String(50), nullable=False)  # song, arrangement, tutorial, etc.
+    
+    # Submission metadata
+    submitter_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    original_song_id = db.Column(db.Integer, db.ForeignKey('songs.id'), nullable=True)  # If this is an arrangement/revision
+    content_data = db.Column(db.JSON)  # Flexible content storage (ChordPro, metadata, etc.)
+    
+    # Workflow status
+    status = db.Column(db.String(20), default='pending')  # pending, under_review, approved, rejected, featured
+    submission_stage = db.Column(db.String(30), default='initial')  # initial, quality_check, community_review, editorial_review
+    
+    # Quality gates
+    auto_quality_score = db.Column(db.Float, default=0.0)  # Automated quality assessment
+    manual_quality_check = db.Column(db.Boolean, default=False)
+    quality_issues = db.Column(db.JSON, default=list)  # List of quality issues found
+    
+    # Review aggregates
+    review_count = db.Column(db.Integer, default=0)
+    average_rating = db.Column(db.Float, default=0.0)
+    community_score = db.Column(db.Integer, default=0)  # Net votes from community
+    
+    # Editorial curation
+    is_featured = db.Column(db.Boolean, default=False)
+    featured_at = db.Column(db.DateTime)
+    featured_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    editorial_notes = db.Column(db.Text)
+    
+    # Analytics
+    view_count = db.Column(db.Integer, default=0)
+    download_count = db.Column(db.Integer, default=0)
+    share_count = db.Column(db.Integer, default=0)
+    
+    # Timestamps
+    submitted_at = db.Column(db.DateTime, default=utc_now)
+    reviewed_at = db.Column(db.DateTime)
+    published_at = db.Column(db.DateTime)
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+    
+    # Relationships
+    submitter = db.relationship('User', foreign_keys=[submitter_id], backref='content_submissions')
+    featured_by_user = db.relationship('User', foreign_keys=[featured_by])
+    original_song = db.relationship('Song', foreign_keys=[original_song_id])
+    reviews = db.relationship('ContentReview', backref='submission', cascade='all, delete-orphan')
+    votes = db.relationship('ContentVote', backref='submission', cascade='all, delete-orphan')
+    
+    def __init__(self, title, submitter_id, content_type, description=None, original_song_id=None, content_data=None):
+        self.title = title
+        self.submitter_id = submitter_id
+        self.content_type = content_type
+        self.description = description
+        self.original_song_id = original_song_id
+        self.content_data = content_data or {}
+    
+    def calculate_quality_score(self):
+        """Calculate automated quality score based on content analysis."""
+        score = 0.0
+        
+        # Title completeness (0-20 points)
+        if self.title and len(self.title.strip()) >= 5:
+            score += 20
+        
+        # Description quality (0-20 points) 
+        if self.description and len(self.description.strip()) >= 20:
+            score += 20
+        
+        # Content completeness (0-40 points)
+        if self.content_data:
+            if self.content_type == 'song' and self.content_data.get('chordpro_content'):
+                # Basic ChordPro validation
+                content = self.content_data.get('chordpro_content', '')
+                if len(content) >= 50:  # Minimum content length
+                    score += 20
+                if '[' in content and ']' in content:  # Has chords
+                    score += 10
+                if '{' in content and '}' in content:  # Has directives
+                    score += 10
+        
+        # Metadata completeness (0-20 points)
+        if self.content_data:
+            metadata_fields = ['artist', 'genre', 'key', 'tempo', 'time_signature']
+            filled_fields = sum(1 for field in metadata_fields if self.content_data.get(field))
+            score += (filled_fields / len(metadata_fields)) * 20
+        
+        self.auto_quality_score = min(score, 100.0)
+        return self.auto_quality_score
+    
+    def update_aggregates(self):
+        """Update review and voting aggregates."""
+        # Update review aggregates
+        from sqlalchemy import func
+        review_stats = db.session.query(
+            func.count(ContentReview.id).label('count'),
+            func.avg(ContentReview.rating).label('avg_rating')
+        ).filter(ContentReview.submission_id == self.id).first()
+        
+        self.review_count = review_stats.count or 0
+        self.average_rating = float(review_stats.avg_rating or 0.0)
+        
+        # Update voting aggregates
+        vote_stats = db.session.query(
+            func.sum(db.case((ContentVote.vote_type == 'upvote', 1), else_=0)).label('upvotes'),
+            func.sum(db.case((ContentVote.vote_type == 'downvote', 1), else_=0)).label('downvotes')
+        ).filter(ContentVote.submission_id == self.id).first()
+        
+        upvotes = vote_stats.upvotes or 0
+        downvotes = vote_stats.downvotes or 0
+        self.community_score = upvotes - downvotes
+    
+    def to_dict(self, include_content=True):
+        """Convert submission to dictionary."""
+        result = {
+            'id': self.id,
+            'title': self.title,
+            'description': self.description,
+            'content_type': self.content_type,
+            'submitter_id': self.submitter_id,
+            'original_song_id': self.original_song_id,
+            'status': self.status,
+            'submission_stage': self.submission_stage,
+            'auto_quality_score': self.auto_quality_score,
+            'manual_quality_check': self.manual_quality_check,
+            'quality_issues': self.quality_issues,
+            'review_count': self.review_count,
+            'average_rating': self.average_rating,
+            'community_score': self.community_score,
+            'is_featured': self.is_featured,
+            'featured_at': self.featured_at.isoformat() if self.featured_at else None,
+            'featured_by': self.featured_by,
+            'editorial_notes': self.editorial_notes,
+            'view_count': self.view_count,
+            'download_count': self.download_count,
+            'share_count': self.share_count,
+            'submitted_at': self.submitted_at.isoformat() if self.submitted_at else None,
+            'reviewed_at': self.reviewed_at.isoformat() if self.reviewed_at else None,
+            'published_at': self.published_at.isoformat() if self.published_at else None,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+        
+        if include_content:
+            result['content_data'] = self.content_data
+            
+        return result
+    
+    def __repr__(self):
+        return f'<ContentSubmission {self.title} ({self.content_type}) by user:{self.submitter_id}>'
+
+
+class ContentReview(db.Model):
+    """Community reviews for user-generated content submissions."""
+    __tablename__ = 'content_reviews'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    submission_id = db.Column(db.Integer, db.ForeignKey('content_submissions.id'), nullable=False)
+    reviewer_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    
+    # Review details
+    rating = db.Column(db.Integer, nullable=False)  # 1-5 star rating
+    review_text = db.Column(db.Text)
+    
+    # Review categories
+    quality_rating = db.Column(db.Integer)  # 1-5 rating for quality
+    accuracy_rating = db.Column(db.Integer)  # 1-5 rating for accuracy
+    usefulness_rating = db.Column(db.Integer)  # 1-5 rating for usefulness
+    
+    # Review metadata
+    is_verified_reviewer = db.Column(db.Boolean, default=False)  # High-reputation reviewer
+    helpful_votes = db.Column(db.Integer, default=0)  # How many found this review helpful
+    
+    # Status
+    status = db.Column(db.String(20), default='active')  # active, hidden, flagged
+    
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+    
+    # Relationships
+    reviewer = db.relationship('User', foreign_keys=[reviewer_id], backref='content_reviews')
+    
+    # Constraints
+    __table_args__ = (
+        db.UniqueConstraint('submission_id', 'reviewer_id', name='unique_submission_reviewer'),
+        db.CheckConstraint('rating >= 1 AND rating <= 5', name='valid_rating'),
+        db.CheckConstraint('quality_rating IS NULL OR (quality_rating >= 1 AND quality_rating <= 5)', name='valid_quality_rating'),
+        db.CheckConstraint('accuracy_rating IS NULL OR (accuracy_rating >= 1 AND accuracy_rating <= 5)', name='valid_accuracy_rating'),
+        db.CheckConstraint('usefulness_rating IS NULL OR (usefulness_rating >= 1 AND usefulness_rating <= 5)', name='valid_usefulness_rating')
+    )
+    
+    def __init__(self, submission_id, reviewer_id, rating, review_text=None, 
+                 quality_rating=None, accuracy_rating=None, usefulness_rating=None):
+        self.submission_id = submission_id
+        self.reviewer_id = reviewer_id
+        self.rating = rating
+        self.review_text = review_text
+        self.quality_rating = quality_rating
+        self.accuracy_rating = accuracy_rating
+        self.usefulness_rating = usefulness_rating
+    
+    def to_dict(self):
+        """Convert review to dictionary."""
+        return {
+            'id': self.id,
+            'submission_id': self.submission_id,
+            'reviewer_id': self.reviewer_id,
+            'rating': self.rating,
+            'review_text': self.review_text,
+            'quality_rating': self.quality_rating,
+            'accuracy_rating': self.accuracy_rating,
+            'usefulness_rating': self.usefulness_rating,
+            'is_verified_reviewer': self.is_verified_reviewer,
+            'helpful_votes': self.helpful_votes,
+            'status': self.status,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+    
+    def __repr__(self):
+        return f'<ContentReview {self.rating}★ for submission:{self.submission_id} by user:{self.reviewer_id}>'
+
+
+class ContentVote(db.Model):
+    """Community voting system for content submissions."""
+    __tablename__ = 'content_votes'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    submission_id = db.Column(db.Integer, db.ForeignKey('content_submissions.id'), nullable=False)
+    voter_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    vote_type = db.Column(db.String(10), nullable=False)  # upvote, downvote
+    
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+    
+    # Relationships
+    voter = db.relationship('User', foreign_keys=[voter_id], backref='content_votes')
+    
+    # Constraints
+    __table_args__ = (
+        db.UniqueConstraint('submission_id', 'voter_id', name='unique_submission_vote'),
+        db.CheckConstraint("vote_type IN ('upvote', 'downvote')", name='valid_vote_type')
+    )
+    
+    def __init__(self, submission_id, voter_id, vote_type):
+        self.submission_id = submission_id
+        self.voter_id = voter_id
+        self.vote_type = vote_type
+    
+    def to_dict(self):
+        """Convert vote to dictionary."""
+        return {
+            'id': self.id,
+            'submission_id': self.submission_id,
+            'voter_id': self.voter_id,
+            'vote_type': self.vote_type,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+    
+    def __repr__(self):
+        return f'<ContentVote {self.vote_type} for submission:{self.submission_id} by user:{self.voter_id}>'
+
+
+class ContentLicense(db.Model):
+    """Copyright and licensing management for user-generated content."""
+    __tablename__ = 'content_licenses'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    submission_id = db.Column(db.Integer, db.ForeignKey('content_submissions.id'), nullable=False)
+    
+    # License information
+    license_type = db.Column(db.String(50), nullable=False)  # CC, public_domain, original, copyrighted
+    license_details = db.Column(db.String(100))  # e.g., "CC BY-SA 4.0", "Public Domain", "Original Work"
+    copyright_holder = db.Column(db.String(255))  # Copyright holder name
+    
+    # Attribution requirements
+    attribution_required = db.Column(db.Boolean, default=True)
+    attribution_text = db.Column(db.Text)  # Required attribution text
+    
+    # Original work declaration
+    is_original_work = db.Column(db.Boolean, default=False)
+    original_work_declaration = db.Column(db.Text)  # Declaration of originality
+    
+    # Permission and usage
+    commercial_use_allowed = db.Column(db.Boolean, default=False)
+    derivative_works_allowed = db.Column(db.Boolean, default=True)
+    share_alike_required = db.Column(db.Boolean, default=False)
+    
+    # Source information
+    source_url = db.Column(db.String(500))  # URL to original source if applicable
+    source_notes = db.Column(db.Text)  # Additional source information
+    
+    # Verification
+    license_verified = db.Column(db.Boolean, default=False)
+    verified_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    verification_notes = db.Column(db.Text)
+    
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+    
+    # Relationships
+    submission = db.relationship('ContentSubmission', backref=db.backref('license', uselist=False))
+    verifier = db.relationship('User', foreign_keys=[verified_by])
+    
+    def __init__(self, submission_id, license_type, copyright_holder=None, is_original_work=False):
+        self.submission_id = submission_id
+        self.license_type = license_type
+        self.copyright_holder = copyright_holder
+        self.is_original_work = is_original_work
+        
+        # Set defaults based on license type
+        if license_type.startswith('CC'):
+            self.attribution_required = True
+            self.derivative_works_allowed = True
+            if 'SA' in license_type:
+                self.share_alike_required = True
+            if 'NC' not in license_type:
+                self.commercial_use_allowed = True
+        elif license_type == 'public_domain':
+            self.attribution_required = False
+            self.commercial_use_allowed = True
+            self.derivative_works_allowed = True
+        elif license_type == 'original':
+            self.is_original_work = True
+            self.attribution_required = True
+    
+    def to_dict(self):
+        """Convert license to dictionary."""
+        return {
+            'id': self.id,
+            'submission_id': self.submission_id,
+            'license_type': self.license_type,
+            'license_details': self.license_details,
+            'copyright_holder': self.copyright_holder,
+            'attribution_required': self.attribution_required,
+            'attribution_text': self.attribution_text,
+            'is_original_work': self.is_original_work,
+            'original_work_declaration': self.original_work_declaration,
+            'commercial_use_allowed': self.commercial_use_allowed,
+            'derivative_works_allowed': self.derivative_works_allowed,
+            'share_alike_required': self.share_alike_required,
+            'source_url': self.source_url,
+            'source_notes': self.source_notes,
+            'license_verified': self.license_verified,
+            'verified_by': self.verified_by,
+            'verification_notes': self.verification_notes,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+    
+    def __repr__(self):
+        return f'<ContentLicense {self.license_type} for submission:{self.submission_id}>'
+
+
+class ContentAnalytics(db.Model):
+    """Analytics and performance tracking for user-generated content."""
+    __tablename__ = 'content_analytics'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    submission_id = db.Column(db.Integer, db.ForeignKey('content_submissions.id'), nullable=False)
+    
+    # Time-based metrics
+    date = db.Column(db.Date, nullable=False)  # Analytics date
+    views = db.Column(db.Integer, default=0)
+    downloads = db.Column(db.Integer, default=0)
+    shares = db.Column(db.Integer, default=0)
+    favorites = db.Column(db.Integer, default=0)
+    
+    # Engagement metrics
+    time_spent_avg = db.Column(db.Float, default=0.0)  # Average time spent viewing (seconds)
+    bounce_rate = db.Column(db.Float, default=0.0)  # Percentage who left immediately
+    
+    # Source tracking
+    traffic_sources = db.Column(db.JSON, default=dict)  # {source: count}
+    referrers = db.Column(db.JSON, default=dict)  # {referrer: count}
+    
+    # Geographic data
+    countries = db.Column(db.JSON, default=dict)  # {country_code: count}
+    
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+    
+    # Relationships
+    submission = db.relationship('ContentSubmission', backref='analytics')
+    
+    # Constraints
+    __table_args__ = (
+        db.UniqueConstraint('submission_id', 'date', name='unique_submission_date'),
+    )
+    
+    def __init__(self, submission_id, date=None):
+        self.submission_id = submission_id
+        self.date = date or datetime.utcnow().date()
+    
+    def add_view(self, source='direct', referrer=None, country=None, time_spent=0.0):
+        """Record a view with optional metadata."""
+        self.views += 1
+        
+        if time_spent > 0:
+            # Update average time spent (simple moving average)
+            current_avg = self.time_spent_avg or 0.0
+            self.time_spent_avg = ((current_avg * (self.views - 1)) + time_spent) / self.views
+        
+        # Update traffic sources
+        if not self.traffic_sources:
+            self.traffic_sources = {}
+        self.traffic_sources[source] = self.traffic_sources.get(source, 0) + 1
+        
+        # Update referrers
+        if referrer:
+            if not self.referrers:
+                self.referrers = {}
+            self.referrers[referrer] = self.referrers.get(referrer, 0) + 1
+        
+        # Update countries
+        if country:
+            if not self.countries:
+                self.countries = {}
+            self.countries[country] = self.countries.get(country, 0) + 1
+        
+        # Mark JSON fields as modified for SQLAlchemy
+        from sqlalchemy.orm.attributes import flag_modified
+        flag_modified(self, 'traffic_sources')
+        flag_modified(self, 'referrers')
+        flag_modified(self, 'countries')
+    
+    def to_dict(self):
+        """Convert analytics to dictionary."""
+        return {
+            'id': self.id,
+            'submission_id': self.submission_id,
+            'date': self.date.isoformat() if self.date else None,
+            'views': self.views,
+            'downloads': self.downloads,
+            'shares': self.shares,
+            'favorites': self.favorites,
+            'time_spent_avg': self.time_spent_avg,
+            'bounce_rate': self.bounce_rate,
+            'traffic_sources': self.traffic_sources,
+            'referrers': self.referrers,
+            'countries': self.countries,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+    
+    def __repr__(self):
+        return f'<ContentAnalytics submission:{self.submission_id} date:{self.date}>'

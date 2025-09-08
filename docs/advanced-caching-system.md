@@ -1,3 +1,9 @@
+---
+title: Advanced Caching System Documentation
+description: Comprehensive multi-layer caching system for ChordMe performance optimization
+layout: default
+---
+
 # Advanced Caching System Documentation
 
 ChordMe implements a comprehensive multi-layer caching system designed to optimize performance across all application layers including database queries, API responses, and static assets.

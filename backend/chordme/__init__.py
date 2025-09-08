@@ -278,6 +278,7 @@ from . import filter_preset_routes
 from . import favorites_routes
 from . import session_routes
 from . import forum_routes  # Community forum and discussion system endpoints
+from . import content_routes  # User-generated content system endpoints
 from . import youtube_routes
 from . import spotify_routes  # Spotify integration endpoints
 from . import apple_music_routes  # Apple Music integration endpoints
