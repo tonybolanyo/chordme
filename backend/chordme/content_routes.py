@@ -418,11 +418,11 @@ def feature_content(submission_id):
     try:
         submission = ContentSubmission.query.get_or_404(submission_id)
         
-        # TODO: Add proper admin/moderator role check
-        # For now, require high reputation
-        user_reputation = UserReputation.query.filter_by(user_id=g.current_user.id).first()
-        if not user_reputation or user_reputation.total_score < 1000:
+        # Require admin or moderator role
+        if not hasattr(g.current_user, "role") or g.current_user.role not in ("admin", "moderator"):
             return create_error_response("Insufficient permissions", 403)
+        
+        
         
         data = request.get_json()
         featured = data.get('featured', True, type=bool)
