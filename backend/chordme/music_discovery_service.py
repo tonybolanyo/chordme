@@ -306,7 +306,7 @@ class MusicDiscoveryService:
         user_setlists = Setlist.query.filter_by(user_id=user_id).all()
         setlist_songs = []
         for setlist in user_setlists:
-            setlist_songs.extend([ss.song for ss in setlist.songs if ss.song and not ss.song.is_deleted])
+            setlist_songs.extend([ss.song for ss in setlist.setlist_songs if ss.song and not ss.song.is_deleted])
         
         # Combine and deduplicate
         all_songs = user_songs + setlist_songs
@@ -613,7 +613,7 @@ class MusicDiscoveryService:
         
         trending_songs = Song.query.filter(
             Song.is_deleted == False,
-            Song.updated_at >= start_date  # Songs with recent activity
+            Song.updated_at >= start_date.replace(tzinfo=None)  # Convert to naive datetime
         ).order_by(
             desc(Song.view_count + Song.favorite_count)
         ).limit(limit * 2).all()  # Get more than needed for filtering
@@ -622,7 +622,11 @@ class MusicDiscoveryService:
         for song in trending_songs:
             if song.can_user_access(user_id):
                 # Calculate simple trending score
-                days_since_update = (end_date - song.updated_at).days + 1
+                song_updated = song.updated_at or song.created_at
+                if song_updated:
+                    days_since_update = (end_date.replace(tzinfo=None) - song_updated).days + 1
+                else:
+                    days_since_update = 1
                 trending_score = (song.view_count + song.favorite_count) / days_since_update
                 
                 trending_data.append({
