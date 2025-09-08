@@ -219,13 +219,13 @@ class TestVersionHistoryAPI:
         # Create a song with one user
         song_data = {'title': 'Private Song', 'content': 'Private content'}
         response = client.post('/api/v1/songs', json=song_data, headers=auth_headers)
-        song_id = json.loads(response.data)['data']['song']['id']
+        song_id = json.loads(response.data)['data']['id']
         
         # Create second user
         client.post('/api/v1/auth/register', 
-                   json={'email': 'user2@example.com', 'password': 'test123'})
+                   json={'email': 'user2@example.com', 'password': 'TestPassword123'})
         response = client.post('/api/v1/auth/login',
-                              json={'email': 'user2@example.com', 'password': 'test123'})
+                              json={'email': 'user2@example.com', 'password': 'TestPassword123'})
         user2_token = json.loads(response.data)['data']['token']
         user2_headers = {'Authorization': f'Bearer {user2_token}'}
         
