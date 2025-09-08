@@ -6,3 +6,4 @@
 export { DailyChallenges } from './DailyChallenges';
 export { ReferralProgram } from './ReferralProgram';
 export { AchievementProgress } from './AchievementProgress';
+export { GrowthDashboard } from './GrowthDashboard';
