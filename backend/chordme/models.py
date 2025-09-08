@@ -4387,8 +4387,8 @@ class ContentSubmission(db.Model):
         
         # Update voting aggregates
         vote_stats = db.session.query(
-            func.sum(db.case([(ContentVote.vote_type == 'upvote', 1)], else_=0)).label('upvotes'),
-            func.sum(db.case([(ContentVote.vote_type == 'downvote', 1)], else_=0)).label('downvotes')
+            func.sum(db.case((ContentVote.vote_type == 'upvote', 1), else_=0)).label('upvotes'),
+            func.sum(db.case((ContentVote.vote_type == 'downvote', 1), else_=0)).label('downvotes')
         ).filter(ContentVote.submission_id == self.id).first()
         
         upvotes = vote_stats.upvotes or 0
