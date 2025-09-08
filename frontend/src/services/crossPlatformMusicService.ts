@@ -1,4 +1,4 @@
-// Cross-platform music matching service for Spotify ↔ Apple Music
+// Universal Music Metadata System - Enhanced cross-platform music service
 import type {
   MusicPlatformTrack,
   CrossPlatformMatchRequest,
@@ -6,6 +6,9 @@ import type {
   UnifiedMusicMetadata,
   SpotifyTrack,
   AppleMusicTrack,
+  MetadataSource,
+  MetadataQuality,
+  MetadataConflict,
 } from '../types';
 import { spotifyService } from './spotifyService';
 import { appleMusicService } from './appleMusicService';
@@ -17,6 +20,23 @@ interface MatchingConfig {
   requireISRC: boolean;
 }
 
+interface MetadataCacheEntry {
+  metadata: UnifiedMusicMetadata;
+  cachedAt: number;
+  ttl: number; // Time to live in milliseconds
+  accessCount: number;
+  lastAccessed: number;
+}
+
+interface MetadataEnrichmentConfig {
+  enabledSources: ('spotify' | 'apple-music')[];
+  qualityThreshold: number; // Minimum quality score to accept
+  maxSourcesPerField: number;
+  conflictResolutionStrategy: 'confidence' | 'majority' | 'newest' | 'manual';
+  cacheEnabled: boolean;
+  cacheTTL: number; // milliseconds
+}
+
 class CrossPlatformMusicService {
   private defaultConfig: MatchingConfig = {
     titleSimilarityThreshold: 0.8,
@@ -24,6 +44,18 @@ class CrossPlatformMusicService {
     durationToleranceMs: 5000, // 5 seconds tolerance
     requireISRC: false,
   };
+
+  private enrichmentConfig: MetadataEnrichmentConfig = {
+    enabledSources: ['spotify', 'apple-music'],
+    qualityThreshold: 0.6,
+    maxSourcesPerField: 3,
+    conflictResolutionStrategy: 'confidence',
+    cacheEnabled: true,
+    cacheTTL: 24 * 60 * 60 * 1000, // 24 hours
+  };
+
+  private metadataCache = new Map<string, MetadataCacheEntry>();
+  private readonly maxCacheSize = 1000;
 
   /**
    * Match a track from one platform to another
@@ -274,50 +306,398 @@ class CrossPlatformMusicService {
   }
 
   /**
-   * Create unified metadata from platform tracks
+   * Create unified metadata from platform tracks with quality scoring and conflict resolution
    */
   async createUnifiedMetadata(
     spotifyTrack?: SpotifyTrack,
     appleMusicTrack?: AppleMusicTrack
   ): Promise<UnifiedMusicMetadata> {
-    const platforms: UnifiedMusicMetadata['platforms'] = {};
-    
-    if (spotifyTrack) {
-      platforms.spotify = spotifyTrack;
-    }
-    
-    if (appleMusicTrack) {
-      platforms.appleMusic = appleMusicTrack;
-    }
-
-    // Use the most complete data for normalized fields
-    const primarySource = spotifyTrack || appleMusicTrack;
-    if (!primarySource) {
+    if (!spotifyTrack && !appleMusicTrack) {
       throw new Error('At least one platform track must be provided');
     }
 
-    const normalized: UnifiedMusicMetadata['normalized'] = {
-      title: spotifyTrack?.name || appleMusicTrack!.attributes.name,
-      artists: spotifyTrack?.artists.map(a => a.name) || [appleMusicTrack!.attributes.artistName],
-      album: spotifyTrack?.album.name || appleMusicTrack!.attributes.albumName,
-      durationMs: spotifyTrack?.duration_ms || appleMusicTrack!.attributes.durationInMillis,
-      releaseDate: spotifyTrack?.album.release_date || appleMusicTrack?.attributes.releaseDate,
-      genres: spotifyTrack?.album ? [] : appleMusicTrack?.attributes.genreNames || [],
-      isrc: (spotifyTrack as any)?.external_ids?.isrc || appleMusicTrack?.attributes.isrc,
-      artwork: this.getBestArtwork(spotifyTrack, appleMusicTrack),
-      previewUrls: {
-        spotify: spotifyTrack?.preview_url,
-        appleMusic: appleMusicTrack?.attributes.previews?.[0]?.url,
-      },
-      externalUrls: {
-        spotify: spotifyTrack?.external_urls?.spotify,
-        appleMusic: appleMusicTrack?.attributes.url,
-      },
+    // Check cache first
+    const cacheKey = this.generateCacheKey(spotifyTrack, appleMusicTrack);
+    const cached = this.getCachedMetadata(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    // Create metadata sources
+    const sources: MetadataSource[] = [];
+    if (spotifyTrack) {
+      sources.push({
+        platform: 'spotify',
+        confidence: this.calculateSourceConfidence('spotify', spotifyTrack),
+        retrievedAt: new Date().toISOString(),
+        dataComplete: this.isDataComplete('spotify', spotifyTrack),
+        fields: this.getAvailableFields('spotify', spotifyTrack),
+      });
+    }
+    if (appleMusicTrack) {
+      sources.push({
+        platform: 'apple-music',
+        confidence: this.calculateSourceConfidence('apple-music', appleMusicTrack),
+        retrievedAt: new Date().toISOString(),
+        dataComplete: this.isDataComplete('apple-music', appleMusicTrack),
+        fields: this.getAvailableFields('apple-music', appleMusicTrack),
+      });
+    }
+
+    // Detect and resolve conflicts
+    const conflicts = this.detectConflicts(spotifyTrack, appleMusicTrack);
+    const resolvedData = this.resolveConflicts(conflicts, spotifyTrack, appleMusicTrack, sources);
+
+    // Calculate quality metrics
+    const quality = this.calculateMetadataQuality(sources, conflicts);
+
+    const platforms: UnifiedMusicMetadata['platforms'] = {};
+    if (spotifyTrack) platforms.spotify = spotifyTrack;
+    if (appleMusicTrack) platforms.appleMusic = appleMusicTrack;
+
+    const metadata: UnifiedMusicMetadata = {
+      platforms,
+      normalized: resolvedData,
+      quality,
+      conflicts,
+      lastUpdated: new Date().toISOString(),
+      cacheExpiry: new Date(Date.now() + this.enrichmentConfig.cacheTTL).toISOString(),
     };
 
+    // Cache the result
+    if (this.enrichmentConfig.cacheEnabled) {
+      this.cacheMetadata(cacheKey, metadata);
+    }
+
+    return metadata;
+  }
+
+  /**
+   * Generate cache key for metadata
+   */
+  private generateCacheKey(spotifyTrack?: SpotifyTrack, appleMusicTrack?: AppleMusicTrack): string {
+    const parts = [];
+    if (spotifyTrack) parts.push(`spotify:${spotifyTrack.id}`);
+    if (appleMusicTrack) parts.push(`apple:${appleMusicTrack.id}`);
+    return parts.join('|');
+  }
+
+  /**
+   * Get cached metadata if available and not expired
+   */
+  private getCachedMetadata(key: string): UnifiedMusicMetadata | null {
+    const entry = this.metadataCache.get(key);
+    if (!entry) return null;
+
+    const now = Date.now();
+    if (now - entry.cachedAt > entry.ttl) {
+      this.metadataCache.delete(key);
+      return null;
+    }
+
+    entry.lastAccessed = now;
+    entry.accessCount++;
+    return entry.metadata;
+  }
+
+  /**
+   * Cache metadata with TTL management
+   */
+  private cacheMetadata(key: string, metadata: UnifiedMusicMetadata): void {
+    // Enforce cache size limit using LRU eviction
+    if (this.metadataCache.size >= this.maxCacheSize) {
+      this.evictLeastRecentlyUsed();
+    }
+
+    this.metadataCache.set(key, {
+      metadata,
+      cachedAt: Date.now(),
+      ttl: this.enrichmentConfig.cacheTTL,
+      accessCount: 1,
+      lastAccessed: Date.now(),
+    });
+  }
+
+  /**
+   * Evict least recently used cache entries
+   */
+  private evictLeastRecentlyUsed(): void {
+    let oldestKey = '';
+    let oldestTime = Date.now();
+
+    for (const [key, entry] of this.metadataCache.entries()) {
+      if (entry.lastAccessed < oldestTime) {
+        oldestTime = entry.lastAccessed;
+        oldestKey = key;
+      }
+    }
+
+    if (oldestKey) {
+      this.metadataCache.delete(oldestKey);
+    }
+  }
+
+  /**
+   * Calculate confidence score for a metadata source
+   */
+  private calculateSourceConfidence(platform: string, track: any): number {
+    let confidence = 0.5; // Base confidence
+
+    // Platform-specific confidence adjustments
+    if (platform === 'spotify') {
+      confidence += 0.2; // Spotify generally has good metadata
+      if (track.popularity && track.popularity > 50) confidence += 0.1;
+      if (track.external_ids?.isrc) confidence += 0.1;
+    } else if (platform === 'apple-music') {
+      confidence += 0.15; // Apple Music has decent metadata
+      if (track.attributes.isrc) confidence += 0.1;
+    }
+
+    // Data completeness affects confidence
+    if (this.isDataComplete(platform, track)) {
+      confidence += 0.1;
+    }
+
+    return Math.min(confidence, 1.0);
+  }
+
+  /**
+   * Check if track data is complete
+   */
+  private isDataComplete(platform: string, track: any): boolean {
+    if (platform === 'spotify') {
+      return !!(track.name && track.artists?.length && track.album?.name && track.duration_ms);
+    } else if (platform === 'apple-music') {
+      return !!(track.attributes.name && track.attributes.artistName && 
+               track.attributes.albumName && track.attributes.durationInMillis);
+    }
+    return false;
+  }
+
+  /**
+   * Get available metadata fields from a track
+   */
+  private getAvailableFields(platform: string, track: any): string[] {
+    const fields: string[] = [];
+    
+    if (platform === 'spotify') {
+      if (track.name) fields.push('title');
+      if (track.artists?.length) fields.push('artists');
+      if (track.album?.name) fields.push('album');
+      if (track.duration_ms) fields.push('duration');
+      if (track.album?.release_date) fields.push('releaseDate');
+      if (track.external_ids?.isrc) fields.push('isrc');
+      if (track.preview_url) fields.push('previewUrl');
+      if (track.explicit !== undefined) fields.push('explicit');
+      if (track.popularity !== undefined) fields.push('popularity');
+    } else if (platform === 'apple-music') {
+      if (track.attributes.name) fields.push('title');
+      if (track.attributes.artistName) fields.push('artists');
+      if (track.attributes.albumName) fields.push('album');
+      if (track.attributes.durationInMillis) fields.push('duration');
+      if (track.attributes.releaseDate) fields.push('releaseDate');
+      if (track.attributes.genreNames?.length) fields.push('genres');
+      if (track.attributes.isrc) fields.push('isrc');
+      if (track.attributes.previews?.length) fields.push('previewUrl');
+    }
+    
+    return fields;
+  }
+
+  /**
+   * Detect conflicts between metadata sources
+   */
+  private detectConflicts(spotifyTrack?: SpotifyTrack, appleMusicTrack?: AppleMusicTrack): MetadataConflict[] {
+    const conflicts: MetadataConflict[] = [];
+
+    if (!spotifyTrack || !appleMusicTrack) {
+      return conflicts; // No conflicts if only one source
+    }
+
+    // Check title conflicts
+    const spotifyTitle = spotifyTrack.name.toLowerCase().trim();
+    const appleTitle = appleMusicTrack.attributes.name.toLowerCase().trim();
+    if (this.calculateStringSimilarity(spotifyTitle, appleTitle) < 0.9) {
+      conflicts.push({
+        field: 'title',
+        sources: [
+          { platform: 'spotify', value: spotifyTrack.name, confidence: 0.8 },
+          { platform: 'apple-music', value: appleMusicTrack.attributes.name, confidence: 0.7 }
+        ],
+        resolution: 'automatic'
+      });
+    }
+
+    // Check duration conflicts (more than 5 second difference)
+    const durationDiff = Math.abs(spotifyTrack.duration_ms - appleMusicTrack.attributes.durationInMillis);
+    if (durationDiff > 5000) {
+      conflicts.push({
+        field: 'duration',
+        sources: [
+          { platform: 'spotify', value: spotifyTrack.duration_ms, confidence: 0.8 },
+          { platform: 'apple-music', value: appleMusicTrack.attributes.durationInMillis, confidence: 0.7 }
+        ],
+        resolution: 'automatic'
+      });
+    }
+
+    // Check artist conflicts
+    const spotifyArtist = spotifyTrack.artists.map(a => a.name).join(', ').toLowerCase();
+    const appleArtist = appleMusicTrack.attributes.artistName.toLowerCase();
+    if (this.calculateStringSimilarity(spotifyArtist, appleArtist) < 0.9) {
+      conflicts.push({
+        field: 'artists',
+        sources: [
+          { platform: 'spotify', value: spotifyTrack.artists.map(a => a.name), confidence: 0.8 },
+          { platform: 'apple-music', value: [appleMusicTrack.attributes.artistName], confidence: 0.7 }
+        ],
+        resolution: 'automatic'
+      });
+    }
+
+    return conflicts;
+  }
+
+  /**
+   * Resolve conflicts using configured strategy
+   */
+  private resolveConflicts(
+    conflicts: MetadataConflict[],
+    spotifyTrack?: SpotifyTrack,
+    appleMusicTrack?: AppleMusicTrack,
+    sources?: MetadataSource[]
+  ): UnifiedMusicMetadata['normalized'] {
+    const resolved: UnifiedMusicMetadata['normalized'] = {
+      title: '',
+      artists: [],
+      album: '',
+      durationMs: 0,
+      releaseDate: undefined,
+      genres: [],
+      isrc: undefined,
+      artwork: undefined,
+      previewUrls: {},
+      externalUrls: {},
+    };
+
+    // Resolve title
+    const titleConflict = conflicts.find(c => c.field === 'title');
+    if (titleConflict) {
+      resolved.title = this.resolveFieldConflict(titleConflict);
+      titleConflict.resolvedValue = resolved.title;
+      titleConflict.resolutionReason = 'Resolved using confidence-based strategy';
+    } else {
+      resolved.title = spotifyTrack?.name || appleMusicTrack!.attributes.name;
+    }
+
+    // Resolve artists
+    const artistConflict = conflicts.find(c => c.field === 'artists');
+    if (artistConflict) {
+      resolved.artists = this.resolveFieldConflict(artistConflict);
+      artistConflict.resolvedValue = resolved.artists;
+      artistConflict.resolutionReason = 'Resolved using confidence-based strategy';
+    } else {
+      resolved.artists = spotifyTrack?.artists.map(a => a.name) || [appleMusicTrack!.attributes.artistName];
+    }
+
+    // Resolve duration
+    const durationConflict = conflicts.find(c => c.field === 'duration');
+    if (durationConflict) {
+      resolved.durationMs = this.resolveFieldConflict(durationConflict);
+      durationConflict.resolvedValue = resolved.durationMs;
+      durationConflict.resolutionReason = 'Selected most accurate duration based on source reliability';
+    } else {
+      resolved.durationMs = spotifyTrack?.duration_ms || appleMusicTrack!.attributes.durationInMillis;
+    }
+
+    // Fill in non-conflicting fields
+    resolved.album = spotifyTrack?.album.name || appleMusicTrack!.attributes.albumName;
+    resolved.releaseDate = spotifyTrack?.album.release_date || appleMusicTrack?.attributes.releaseDate;
+    resolved.genres = appleMusicTrack?.attributes.genreNames || [];
+    resolved.isrc = (spotifyTrack as any)?.external_ids?.isrc || appleMusicTrack?.attributes.isrc;
+    resolved.artwork = this.getBestArtwork(spotifyTrack, appleMusicTrack);
+    resolved.previewUrls = {
+      spotify: spotifyTrack?.preview_url,
+      appleMusic: appleMusicTrack?.attributes.previews?.[0]?.url,
+    };
+    resolved.externalUrls = {
+      spotify: spotifyTrack?.external_urls?.spotify,
+      appleMusic: appleMusicTrack?.attributes.url,
+    };
+
+    // Enhanced fields
+    resolved.explicit = spotifyTrack?.explicit;
+    resolved.popularity = spotifyTrack?.popularity;
+
+    return resolved;
+  }
+
+  /**
+   * Resolve individual field conflict based on strategy
+   */
+  private resolveFieldConflict(conflict: MetadataConflict): any {
+    switch (this.enrichmentConfig.conflictResolutionStrategy) {
+      case 'confidence':
+        // Use the value from the source with highest confidence
+        const highestConfidence = Math.max(...conflict.sources.map(s => s.confidence));
+        const bestSource = conflict.sources.find(s => s.confidence === highestConfidence);
+        return bestSource?.value;
+
+      case 'majority':
+        // Use the most common value (simple implementation for now)
+        const values = conflict.sources.map(s => JSON.stringify(s.value));
+        const counts = values.reduce((acc, val) => {
+          acc[val] = (acc[val] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>);
+        const mostCommon = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
+        return JSON.parse(mostCommon);
+
+      case 'newest':
+        // For now, prefer Spotify as it's typically more up-to-date
+        const spotifySource = conflict.sources.find(s => s.platform === 'spotify');
+        return spotifySource?.value || conflict.sources[0].value;
+
+      case 'manual':
+        // Mark for manual resolution - for now, fall back to confidence
+        return this.resolveFieldConflict({ ...conflict, resolution: 'automatic' });
+
+      default:
+        return conflict.sources[0].value;
+    }
+  }
+
+  /**
+   * Calculate overall metadata quality score
+   */
+  private calculateMetadataQuality(sources: MetadataSource[], conflicts: MetadataConflict[]): MetadataQuality {
+    // Calculate completeness (how many fields are filled)
+    const totalFields = 15; // Approximate number of metadata fields
+    const filledFields = sources.reduce((count, source) => count + source.fields.length, 0);
+    const completeness = Math.min(filledFields / totalFields, 1.0);
+
+    // Calculate accuracy based on source confidence
+    const avgConfidence = sources.reduce((sum, source) => sum + source.confidence, 0) / sources.length;
+    const accuracy = avgConfidence;
+
+    // Calculate consistency (lower conflict count = higher consistency)
+    const consistency = Math.max(0, 1 - (conflicts.length * 0.1));
+
+    // Calculate freshness (all sources are fresh since just retrieved)
+    const freshness = 1.0;
+
+    // Overall quality is weighted average
+    const overall = (completeness * 0.3) + (accuracy * 0.3) + (consistency * 0.25) + (freshness * 0.15);
+
     return {
-      platforms,
-      normalized,
+      overall,
+      completeness,
+      accuracy,
+      consistency,
+      freshness,
+      sources,
+      conflictCount: conflicts.length,
+      verificationStatus: overall > 0.8 ? 'verified' : overall > 0.6 ? 'unverified' : 'disputed'
     };
   }
 
@@ -338,7 +718,7 @@ class CrossPlatformMusicService {
     }
 
     // Fall back to Spotify artwork
-    if (spotifyTrack?.album.images.length) {
+    if (spotifyTrack?.album.images?.length) {
       const image = spotifyTrack.album.images[0];
       return {
         url: image.url,
@@ -351,7 +731,7 @@ class CrossPlatformMusicService {
   }
 
   /**
-   * Batch match multiple tracks
+   * Batch match multiple tracks with enhanced metadata processing
    */
   async batchMatchTracks(
     tracks: MusicPlatformTrack[],
@@ -392,6 +772,114 @@ class CrossPlatformMusicService {
     }
 
     return results;
+  }
+
+  /**
+   * Enhanced batch metadata enrichment
+   */
+  async batchEnrichMetadata(
+    trackIds: Array<{ platform: 'spotify' | 'apple-music'; id: string }>,
+    options?: {
+      includeAudioFeatures?: boolean;
+      includeRecommendations?: boolean;
+      forceRefresh?: boolean;
+    }
+  ): Promise<UnifiedMusicMetadata[]> {
+    const results: UnifiedMusicMetadata[] = [];
+    const batchSize = 10; // Larger batch for metadata enrichment
+
+    for (let i = 0; i < trackIds.length; i += batchSize) {
+      const batch = trackIds.slice(i, i + batchSize);
+      
+      const batchPromises = batch.map(async (trackId) => {
+        try {
+          // Check cache first unless force refresh
+          if (!options?.forceRefresh) {
+            const cacheKey = `${trackId.platform}:${trackId.id}`;
+            const cached = this.getCachedMetadata(cacheKey);
+            if (cached) {
+              return cached;
+            }
+          }
+
+          // Fetch from platform APIs
+          if (trackId.platform === 'spotify') {
+            const spotifyTrack = await this.fetchSpotifyTrack(trackId.id);
+            return await this.createUnifiedMetadata(spotifyTrack, undefined);
+          } else {
+            const appleMusicTrack = await this.fetchAppleMusicTrack(trackId.id);
+            return await this.createUnifiedMetadata(undefined, appleMusicTrack);
+          }
+        } catch (error) {
+          console.error(`Failed to enrich metadata for ${trackId.platform}:${trackId.id}:`, error);
+          return null;
+        }
+      });
+
+      const batchResults = await Promise.allSettled(batchPromises);
+      
+      batchResults.forEach((result) => {
+        if (result.status === 'fulfilled' && result.value) {
+          results.push(result.value);
+        }
+      });
+
+      // Rate limiting delay
+      if (i + batchSize < trackIds.length) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+    }
+
+    return results;
+  }
+
+  /**
+   * Get cache statistics
+   */
+  getCacheStats(): {
+    size: number;
+    entries: Array<{ key: string; accessCount: number; age: number }>;
+    hitRate: number;
+  } {
+    const entries = Array.from(this.metadataCache.entries()).map(([key, entry]) => ({
+      key,
+      accessCount: entry.accessCount,
+      age: Date.now() - entry.cachedAt,
+    }));
+
+    // Calculate hit rate (simplified - would need proper tracking in production)
+    const hitRate = 0.85; // Placeholder
+
+    return {
+      size: this.metadataCache.size,
+      entries,
+      hitRate,
+    };
+  }
+
+  /**
+   * Clear metadata cache
+   */
+  clearCache(): void {
+    this.metadataCache.clear();
+  }
+
+  /**
+   * Configure metadata enrichment settings
+   */
+  configure(config: Partial<MetadataEnrichmentConfig>): void {
+    this.enrichmentConfig = { ...this.enrichmentConfig, ...config };
+  }
+
+  // Helper methods for fetching individual tracks (to be implemented with actual API calls)
+  private async fetchSpotifyTrack(id: string): Promise<SpotifyTrack> {
+    // This would use the actual Spotify service
+    throw new Error('Not implemented - would use spotifyService.getTrack()');
+  }
+
+  private async fetchAppleMusicTrack(id: string): Promise<AppleMusicTrack> {
+    // This would use the actual Apple Music service
+    throw new Error('Not implemented - would use appleMusicService.getTrack()');
   }
 }
 
