@@ -308,6 +308,119 @@ export type ExportFormat = 'json' | 'csv';
 export type ExportType = 'comprehensive' | 'performances' | 'songs' | 'trends';
 export type DeleteType = 'all' | 'performances' | 'songs' | 'personal_data';
 
+// Music Discovery and Recommendation Types
+export interface MusicRecommendation {
+  song_id: number;
+  title: string;
+  artist: string;
+  genre?: string;
+  relevance_score: number;
+  explanation: string;
+  recommendation_type: 'content_based' | 'collaborative' | 'popular';
+}
+
+export interface PersonalizedRecommendations {
+  user_id: number;
+  recommendations: MusicRecommendation[];
+  recommendation_sources: {
+    content_based: number;
+    collaborative_filtering: number;
+  };
+  privacy_notice: PrivacyNotice;
+  generated_at: string;
+}
+
+export interface SimilarSong {
+  song_id: number;
+  title: string;
+  artist: string;
+  genre?: string;
+  similarity_score: number;
+  similarity_explanation: string;
+}
+
+export interface SimilarSongsResponse {
+  reference_song: {
+    id: number;
+    title: string;
+    artist: string;
+    genre?: string;
+    key?: string;
+    tempo?: number;
+    difficulty?: string;
+  };
+  similar_songs: SimilarSong[];
+  similarity_factors: string[];
+  generated_at: string;
+}
+
+export interface ArtistExploration {
+  artist: string;
+  total_songs: number;
+  songs: any[]; // Song objects
+  artist_characteristics: {
+    primary_genres: Record<string, number>;
+    common_keys: Record<string, number>;
+    difficulty_levels: Record<string, number>;
+  };
+  related_artists: string[];
+  generated_at: string;
+}
+
+export interface GenreExploration {
+  genre: string;
+  total_songs: number;
+  songs: any[]; // Song objects
+  genre_characteristics: {
+    popular_artists: Record<string, number>;
+    common_keys: Record<string, number>;
+    average_tempo?: number;
+    difficulty_distribution: Record<string, number>;
+  };
+  generated_at: string;
+}
+
+export interface TrendingSong {
+  song_id: number;
+  title: string;
+  artist: string;
+  genre?: string;
+  trending_score: number;
+  view_count: number;
+  favorite_count: number;
+  trend_explanation: string;
+}
+
+export interface TrendingSongsResponse {
+  timeframe: string;
+  period: {
+    start_date: string;
+    end_date: string;
+  };
+  trending_songs: TrendingSong[];
+  trending_factors: string[];
+  generated_at: string;
+}
+
+export interface DiscoveryPreferences {
+  enable_personalized_recommendations: boolean;
+  enable_collaborative_filtering: boolean;
+  enable_trending_notifications: boolean;
+  preferred_genres: string[];
+  discovery_privacy_level: 'private' | 'anonymous' | 'public';
+}
+
+export interface DiscoveryPreferencesResponse {
+  discovery_preferences: DiscoveryPreferences;
+  privacy_controls: {
+    data_usage: string;
+    collaborative_filtering: string;
+    privacy_levels: Record<string, string>;
+  };
+}
+
+export type DiscoveryTimeframe = '1d' | '7d' | '30d';
+
 // Error types
 export interface AnalyticsError {
   code: string;

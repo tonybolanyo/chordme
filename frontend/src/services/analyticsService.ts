@@ -23,6 +23,15 @@ import {
   AnalyticsScope,
   ExportType,
   DeleteType,
+  // Music Discovery Types
+  PersonalizedRecommendations,
+  SimilarSongsResponse,
+  ArtistExploration,
+  GenreExploration,
+  TrendingSongsResponse,
+  DiscoveryPreferences,
+  DiscoveryPreferencesResponse,
+  DiscoveryTimeframe,
 } from '../types/analytics';
 
 class AnalyticsService {
@@ -388,6 +397,129 @@ class AnalyticsService {
     } catch (error) {
       console.error('Error checking analytics availability:', error);
       return false;
+    }
+  }
+
+  // Music Discovery and Recommendation Methods
+
+  /**
+   * Get personalized song recommendations
+   */
+  async getPersonalizedRecommendations(limit: number = 20): Promise<PersonalizedRecommendations> {
+    const response = await fetch(`${this.baseUrl}/api/v1/analytics/discovery/recommendations?limit=${limit}`, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+
+    return this.handleResponse<PersonalizedRecommendations>(response);
+  }
+
+  /**
+   * Find songs similar to a specific song
+   */
+  async getSimilarSongs(songId: number, limit: number = 10): Promise<SimilarSongsResponse> {
+    const response = await fetch(`${this.baseUrl}/api/v1/analytics/discovery/similar/${songId}?limit=${limit}`, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+
+    return this.handleResponse<SimilarSongsResponse>(response);
+  }
+
+  /**
+   * Explore songs by a specific artist
+   */
+  async exploreArtist(artist: string, limit: number = 20): Promise<ArtistExploration> {
+    const encodedArtist = encodeURIComponent(artist);
+    const response = await fetch(`${this.baseUrl}/api/v1/analytics/discovery/artists/${encodedArtist}/explore?limit=${limit}`, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+
+    return this.handleResponse<ArtistExploration>(response);
+  }
+
+  /**
+   * Explore songs within a specific genre
+   */
+  async exploreGenre(genre: string, limit: number = 20): Promise<GenreExploration> {
+    const encodedGenre = encodeURIComponent(genre);
+    const response = await fetch(`${this.baseUrl}/api/v1/analytics/discovery/genres/${encodedGenre}/explore?limit=${limit}`, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+
+    return this.handleResponse<GenreExploration>(response);
+  }
+
+  /**
+   * Get trending songs based on community activity
+   */
+  async getTrendingSongs(
+    timeframe: DiscoveryTimeframe = '7d',
+    limit: number = 20
+  ): Promise<TrendingSongsResponse> {
+    const params = new URLSearchParams({
+      timeframe,
+      limit: limit.toString(),
+    });
+
+    const response = await fetch(`${this.baseUrl}/api/v1/analytics/discovery/trending?${params}`, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+
+    return this.handleResponse<TrendingSongsResponse>(response);
+  }
+
+  /**
+   * Get user's music discovery preferences
+   */
+  async getDiscoveryPreferences(): Promise<DiscoveryPreferencesResponse> {
+    const response = await fetch(`${this.baseUrl}/api/v1/analytics/discovery/preferences`, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+
+    return this.handleResponse<DiscoveryPreferencesResponse>(response);
+  }
+
+  /**
+   * Update user's music discovery preferences
+   */
+  async updateDiscoveryPreferences(preferences: Partial<DiscoveryPreferences>): Promise<DiscoveryPreferencesResponse> {
+    const response = await fetch(`${this.baseUrl}/api/v1/analytics/discovery/preferences`, {
+      method: 'PUT',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(preferences),
+    });
+
+    return this.handleResponse<DiscoveryPreferencesResponse>(response);
+  }
+
+  /**
+   * Get music discovery dashboard data
+   */
+  async getDiscoveryDashboard(): Promise<{
+    personalized_recommendations: PersonalizedRecommendations;
+    trending_songs: TrendingSongsResponse;
+    discovery_preferences: DiscoveryPreferencesResponse;
+  }> {
+    try {
+      const [recommendations, trending, preferences] = await Promise.all([
+        this.getPersonalizedRecommendations(10),
+        this.getTrendingSongs('7d', 10),
+        this.getDiscoveryPreferences(),
+      ]);
+
+      return {
+        personalized_recommendations: recommendations,
+        trending_songs: trending,
+        discovery_preferences: preferences,
+      };
+    } catch (error) {
+      console.error('Error getting discovery dashboard data:', error);
+      throw error;
     }
   }
 }
