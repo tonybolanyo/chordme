@@ -486,3 +486,103 @@ scripts/validate-docs.sh && scripts/validate-links.sh
 - [ ] All internal links resolve correctly
 - [ ] Content is accurate and complete in both languages
 - [ ] Code examples work as documented
+
+## API Documentation Deployment Troubleshooting
+
+**CRITICAL: Common API documentation deployment issues and solutions:**
+
+### Issue: Documentation Validation Errors
+When API documentation deployment fails due to validation errors, follow these steps:
+
+1. **Run validation script locally:**
+   ```bash
+   cd /path/to/repo
+   scripts/validate-docs.sh
+   ```
+
+2. **Common validation errors and fixes:**
+
+   **Missing Spanish Translation:**
+   - Error: `Missing Spanish version: filename-es.md`
+   - Fix: Create Spanish translation following bilingual documentation requirements
+   - Template: Copy English file, translate content, update frontmatter with `lang: es`
+
+   **Missing Jekyll Frontmatter:**
+   - Error: `Missing front matter`
+   - Fix: Add proper frontmatter to all markdown files:
+     ```yaml
+     ---
+     layout: default
+     lang: en  # or "es" for Spanish
+     title: Your Document Title
+     ---
+     ```
+
+   **Jekyll Build Test Failure:**
+   - Error: `Jekyll build: Failed` or `Bundle not available`
+   - Root cause: Ruby/bundle dependencies not installed in environment
+   - GitHub Actions solution: This is handled automatically in deploy workflows
+   - Local fix (if needed): Install Ruby dependencies:
+     ```bash
+     sudo apt-get install ruby-dev ruby-bundler
+     cd docs && bundle install --user-install
+     ```
+
+3. **Validation success criteria:**
+   - All markdown files have valid Jekyll frontmatter
+   - All English files have corresponding Spanish translations
+   - Cross-language navigation links are present
+   - Jekyll build test passes (or shows expected warnings about missing Ruby)
+
+### Issue: Deploy Workflow Failing
+When `.github/workflows/deploy-api-docs.yml` or `update-api-docs.yml` fail:
+
+1. **Check workflow logs for specific error**
+2. **Common causes:**
+   - Documentation validation failures (see above)
+   - Backend generate_docs.py script issues
+   - GitHub Pages permissions issues
+   - Jekyll build failures in CI
+
+3. **Prevention:**
+   - Always run `scripts/validate-docs.sh` before committing documentation changes
+   - Ensure bilingual documentation requirements are met
+   - Test API documentation generation locally before pushing
+
+### Issue: API Documentation Generation Fails
+When `backend/generate_docs.py` fails:
+
+1. **Prerequisites for API docs generation:**
+   ```bash
+   cd backend
+   cp config.template.py config.py
+   # Edit config.py: set HTTPS_ENFORCED = False for development
+   pip install -r requirements.txt
+   ```
+
+2. **Test generation locally:**
+   ```bash
+   cd backend
+   python generate_docs.py
+   ```
+
+3. **Common issues:**
+   - Backend dependencies not installed
+   - Config file missing or incorrect
+   - HTTPS enforcement preventing local testing
+   - Flask app initialization errors
+
+### Emergency Resolution Steps
+If API documentation deployment is completely broken:
+
+1. **Identify specific error in GitHub Actions logs**
+2. **Fix validation issues first:** Run `scripts/validate-docs.sh` and resolve all errors
+3. **Test Jekyll build:** Ensure documentation builds properly
+4. **Verify workflow permissions:** GitHub Pages deployment requires proper permissions
+5. **Rollback if needed:** Revert problematic documentation changes temporarily
+
+**Success Criteria:**
+- `scripts/validate-docs.sh` passes with minimal warnings
+- GitHub Actions workflows complete successfully
+- Documentation deploys to GitHub Pages without errors
+- Both English and Spanish versions are accessible

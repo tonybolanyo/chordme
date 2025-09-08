@@ -2,6 +2,7 @@
 title: Advanced Caching System Documentation
 description: Comprehensive multi-layer caching system for ChordMe performance optimization
 layout: default
+lang: en
 ---
 
 # Advanced Caching System Documentation
@@ -561,3 +562,7 @@ npm run test:cache-invalidation
 7. **Optimize Continuously**: Regular performance analysis and tuning
 
 The advanced caching system provides significant performance improvements while maintaining data consistency and reliability. Regular monitoring and optimization ensure optimal performance as the application scales.
+
+---
+
+**Cambiar idioma:** **English** | [Español](advanced-caching-system-es.md)
