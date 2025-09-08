@@ -9,7 +9,7 @@ interface ContentData {
   tempo?: number;
   time_signature?: string;
   difficulty?: string;
-  [key: string]: any;
+  [key: string]: string | number | undefined;
 }
 
 interface LicenseData {
