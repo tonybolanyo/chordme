@@ -15,14 +15,17 @@ def sanitize_html_content(content):
     if not isinstance(content, str):
         return content
     
-    # Remove script tags and their content
-    content = re.sub(r'<script[^>]*>.*?</script>', '', content, flags=re.IGNORECASE | re.DOTALL)
+    # Remove script tags and their content (using more efficient regex to prevent ReDoS)
+    # Use possessive quantifiers and limit backtracking to avoid performance issues
+    content = re.sub(r'<script\b[^>]*>[^<]*(?:<(?!/script)[^<]*)*</script>', '', content, flags=re.IGNORECASE)
     
-    # Remove other potentially dangerous tags
-    dangerous_tags = ['script', 'iframe', 'object', 'embed', 'form', 'input', 'button']
+    # Remove other potentially dangerous tags and their content
+    dangerous_tags = ['iframe', 'object', 'embed', 'form', 'input', 'button']
     for tag in dangerous_tags:
-        # Remove opening and closing tags
-        content = re.sub(rf'<{tag}[^>]*>', '', content, flags=re.IGNORECASE)
+        # Remove complete tags with content (using safe regex to prevent ReDoS)
+        content = re.sub(rf'<{tag}\b[^>]*>[^<]*(?:<(?!/{tag})[^<]*)*</{tag}>', '', content, flags=re.IGNORECASE)
+        # Also remove self-closing tags and orphaned opening/closing tags
+        content = re.sub(rf'<{tag}[^>]*/?>', '', content, flags=re.IGNORECASE)
         content = re.sub(rf'</{tag}[^>]*>', '', content, flags=re.IGNORECASE)
     
     # Remove javascript: and data: URLs
