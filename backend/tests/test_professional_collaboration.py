@@ -8,7 +8,7 @@ import uuid
 from datetime import datetime, timedelta
 from unittest.mock import patch, MagicMock
 
-from chordme import create_app, db
+from chordme import db
 from chordme.models import User, CollaborationRoom, RoomParticipant, RoomResource, RoomMeeting
 from chordme.professional_templates_routes import PROFESSIONAL_TEMPLATES
 

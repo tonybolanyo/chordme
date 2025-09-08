@@ -5,6 +5,8 @@ from .rate_limiter import rate_limit
 from .csrf_protection import csrf_protect, get_csrf_token
 from .security_headers import security_headers, security_error_handler
 from .chordpro_utils import validate_chordpro_content, ChordProValidator, detect_key_signature
+from .etag_cache import cache_api_response, cache_song_response, conditional_request
+from .query_cache import cache_query, cache_model_query, cache_count_query
 from flask import send_from_directory, send_file, request, jsonify, g, Response
 from sqlalchemy.exc import IntegrityError
 from datetime import datetime
@@ -30,6 +32,7 @@ def version():
 
 @app.route('/api/v1/health', methods=['GET'])
 @security_headers
+@cache_api_response(ttl=300, tags=['health'])  # Cache for 5 minutes
 def health():
     """
     Health check endpoint
@@ -1039,6 +1042,7 @@ def update_user_password_change():
 @app.route('/api/v1/songs', methods=['GET'])
 @auth_required
 @security_headers
+@cache_song_response(ttl=1800)  # Cache for 30 minutes
 def get_songs():
     """
     Get all songs for authenticated user
@@ -1232,6 +1236,7 @@ def create_song():
 @auth_required
 @validate_positive_integer('song_id')
 @security_headers
+@cache_song_response(ttl=3600)  # Cache individual songs for 1 hour
 def get_song(song_id):
     """
     Get a specific song by ID
