@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Collaborative Session Management
+---
+
 # Collaborative Session Management
 
 This document describes the collaborative session management system implemented for ChordMe.

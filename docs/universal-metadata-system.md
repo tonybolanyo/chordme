@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Universal Music Metadata System Documentation
+---
+
 # Universal Music Metadata System Documentation
 
 ## Overview

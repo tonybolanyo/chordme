@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Professional Collaboration Workspace
+---
+
 # Professional Collaboration Workspace
 
 ChordMe's Professional Collaboration Workspace provides enterprise-grade collaboration tools designed for professional bands, music educators, and enterprise users.

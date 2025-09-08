@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Performance Mode - Full-Screen Interface Documentation
+---
+
 # Performance Mode - Full-Screen Interface Documentation
 
 ## Overview

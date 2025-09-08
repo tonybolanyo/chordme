@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Apple Music Integration
+---
+
 # Apple Music Integration for ChordMe
 
 ## Overview

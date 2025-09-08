@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Music Discovery and Recommendations User Guide
+---
+
 # Music Discovery and Recommendations User Guide
 
 The ChordMe Music Discovery system helps you find new songs based on your musical preferences and activity. This intelligent recommendation engine uses both your personal music library and community data to suggest songs you'll enjoy.

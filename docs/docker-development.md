@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: ChordMe Local Development with Docker
+---
+
 # ChordMe Local Development with Docker
 
 This guide provides instructions for running ChordMe locally using Docker Compose or Minikube for a complete containerized development environment.

@@ -1,3 +1,9 @@
+---
+layout: default
+lang: es
+title: Análisis de Rendimiento y Retroalimentación
+---
+
 # Análisis de Rendimiento y Retroalimentación
 
 ## Descripción General

@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: YouTube Integration Documentation
+---
+
 # YouTube Integration Documentation
 
 ## Overview

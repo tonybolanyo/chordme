@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Practice Mode User Guide
+---
+
 # Practice Mode User Guide
 
 ## Overview

@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Setlist Data Architecture Documentation
+---
+
 # Setlist Data Architecture Documentation
 
 ## Overview

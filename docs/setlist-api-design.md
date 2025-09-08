@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Setlist API Design Documentation
+---
+
 # Setlist API Design Documentation
 
 ## Overview

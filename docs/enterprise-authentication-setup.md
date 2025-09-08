@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Enterprise Authentication Setup Guide
+---
+
 # Enterprise Authentication Setup Guide
 
 This guide covers the setup and configuration of enterprise authentication features in ChordMe, including SSO, LDAP, and MFA.

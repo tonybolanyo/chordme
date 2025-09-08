@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: UAT Feedback Collection Templates
+---
+
 # UAT Feedback Collection Templates
 
 ## User Testing Session Template
