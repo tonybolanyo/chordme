@@ -262,6 +262,7 @@ from . import favorites_routes
 from . import session_routes
 from . import youtube_routes
 from . import spotify_routes  # Spotify integration endpoints
+from . import apple_music_routes  # Apple Music integration endpoints
 from . import enhanced_analytics_routes
 from . import enterprise_api  # Enterprise authentication endpoints
 from . import project_management_routes  # Project management endpoints
@@ -277,6 +278,9 @@ app.register_blueprint(favorites_routes.favorites_bp)
 
 # Register Spotify blueprint
 app.register_blueprint(spotify_routes.spotify_bp)
+
+# Register Apple Music blueprint
+# app.register_blueprint(apple_music_routes.apple_music_bp)  # Temporarily disabled for testing
 
 # Register practice mode API
 from .practice_api import practice_bp
