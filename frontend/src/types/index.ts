@@ -93,6 +93,191 @@ export interface DriveFileList {
   incompleteSearch?: boolean;
 }
 
+// Spotify API types
+export interface SpotifyOAuth2Config {
+  clientId: string;
+  redirectUri: string;
+  scopes: string[];
+}
+
+export interface SpotifyTokens {
+  access_token: string;
+  refresh_token?: string;
+  expires_in: number;
+  expires_at: number;
+  token_type: string;
+  scope: string;
+}
+
+export interface SpotifyUserProfile {
+  id: string;
+  display_name?: string;
+  email?: string;
+  images?: SpotifyImage[];
+  country?: string;
+  followers?: {
+    total: number;
+  };
+}
+
+export interface SpotifyAuthResponse {
+  tokens: SpotifyTokens;
+  userProfile: SpotifyUserProfile;
+}
+
+export interface SpotifyImage {
+  url: string;
+  height?: number;
+  width?: number;
+}
+
+export interface SpotifyArtist {
+  id: string;
+  name: string;
+  genres?: string[];
+  images?: SpotifyImage[];
+  external_urls?: {
+    spotify: string;
+  };
+  popularity?: number;
+}
+
+export interface SpotifyAlbum {
+  id: string;
+  name: string;
+  album_type: string;
+  artists: SpotifyArtist[];
+  images: SpotifyImage[];
+  release_date: string;
+  release_date_precision: string;
+  total_tracks: number;
+  external_urls?: {
+    spotify: string;
+  };
+}
+
+export interface SpotifyTrack {
+  id: string;
+  name: string;
+  artists: SpotifyArtist[];
+  album: SpotifyAlbum;
+  duration_ms: number;
+  explicit: boolean;
+  popularity: number;
+  preview_url?: string;
+  track_number: number;
+  external_urls?: {
+    spotify: string;
+  };
+  is_local?: boolean;
+}
+
+export interface SpotifyAudioFeatures {
+  id: string;
+  danceability: number;
+  energy: number;
+  key: number;
+  loudness: number;
+  mode: number;
+  speechiness: number;
+  acousticness: number;
+  instrumentalness: number;
+  liveness: number;
+  valence: number;
+  tempo: number;
+  time_signature: number;
+}
+
+export interface SpotifySearchParams {
+  query: string;
+  type: 'track' | 'artist' | 'album' | 'playlist';
+  limit?: number;
+  offset?: number;
+  market?: string;
+}
+
+export interface SpotifySearchResult {
+  tracks?: {
+    items: SpotifyTrack[];
+    total: number;
+    limit: number;
+    offset: number;
+    next?: string;
+    previous?: string;
+  };
+  artists?: {
+    items: SpotifyArtist[];
+    total: number;
+    limit: number;
+    offset: number;
+    next?: string;
+    previous?: string;
+  };
+  albums?: {
+    items: SpotifyAlbum[];
+    total: number;
+    limit: number;
+    offset: number;
+    next?: string;
+    previous?: string;
+  };
+}
+
+export interface SpotifyPlaylist {
+  id: string;
+  name: string;
+  description?: string;
+  public: boolean;
+  collaborative: boolean;
+  owner: SpotifyUserProfile;
+  images: SpotifyImage[];
+  tracks: {
+    total: number;
+    items?: SpotifyPlaylistTrack[];
+  };
+  external_urls?: {
+    spotify: string;
+  };
+}
+
+export interface SpotifyPlaylistTrack {
+  added_at: string;
+  added_by: SpotifyUserProfile;
+  is_local: boolean;
+  track: SpotifyTrack;
+}
+
+export interface SpotifyRecommendationParams {
+  seed_artists?: string[];
+  seed_genres?: string[];
+  seed_tracks?: string[];
+  limit?: number;
+  target_acousticness?: number;
+  target_danceability?: number;
+  target_energy?: number;
+  target_instrumentalness?: number;
+  target_key?: number;
+  target_liveness?: number;
+  target_loudness?: number;
+  target_mode?: number;
+  target_popularity?: number;
+  target_speechiness?: number;
+  target_tempo?: number;
+  target_time_signature?: number;
+  target_valence?: number;
+}
+
+export interface SpotifyRecommendations {
+  tracks: SpotifyTrack[];
+  seeds: {
+    initialPoolSize: number;
+    afterFilteringSize: number;
+    afterRelinkingSize: number;
+    id: string;
+    type: string;
+  }[];
+}
+
 // Song sharing types
 export interface SharedUser {
   id: string;
