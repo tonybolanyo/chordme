@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Business Intelligence and Reporting Documentation
+---
+
 # Business Intelligence and Reporting Documentation
 
 ## Overview

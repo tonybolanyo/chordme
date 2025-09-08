@@ -1,3 +1,9 @@
+---
+layout: default
+lang: es
+title: Inteligencia de Negocios y Reportes - Documentación
+---
+
 # Inteligencia de Negocios y Reportes - Documentación
 
 ## Resumen

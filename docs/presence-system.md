@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Multi-User Presence System Documentation
+---
+
 # Multi-User Presence System Documentation
 
 ## Overview

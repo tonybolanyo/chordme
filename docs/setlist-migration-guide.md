@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Setlist Migration Guide
+---
+
 # Setlist Migration Guide
 
 ## Overview

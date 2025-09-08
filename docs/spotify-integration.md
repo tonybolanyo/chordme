@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Spotify Integration for ChordMe
+---
+
 # Spotify Integration for ChordMe
 
 ## Overview

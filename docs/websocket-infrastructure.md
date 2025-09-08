@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: WebSocket Real-time Infrastructure Documentation
+---
+
 # WebSocket Real-time Infrastructure Documentation
 
 ## Overview

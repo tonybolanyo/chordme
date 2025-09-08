@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: ChordMe Operations Manual
+---
+
 # ChordMe Operations Manual
 
 ## Table of Contents
