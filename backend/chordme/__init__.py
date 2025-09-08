@@ -290,6 +290,7 @@ from . import metadata_routes  # Universal metadata system endpoints
 from . import ai_music_insights_routes  # AI music insights endpoints
 from . import business_intelligence_routes  # Business intelligence and reporting endpoints
 from . import database_performance_routes  # Database performance optimization endpoints
+from . import growth_routes  # Growth and engagement features endpoints
 
 # Register search blueprint
 app.register_blueprint(search_routes.search_bp)

@@ -4730,3 +4730,532 @@ class ContentAnalytics(db.Model):
     
     def __repr__(self):
         return f'<ContentAnalytics submission:{self.submission_id} date:{self.date}>'
+
+
+# Growth and Engagement Features Models
+
+class UserReferral(db.Model):
+    """Referral program tracking and rewards."""
+    __tablename__ = 'user_referrals'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    referrer_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    referred_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)  # Null until signup
+    
+    # Tracking data
+    referral_code = db.Column(db.String(50), unique=True, nullable=False)
+    referred_email = db.Column(db.String(120), nullable=True)  # Email before signup
+    status = db.Column(db.String(20), default='pending')  # pending, completed, expired, rewarded
+    
+    # Reward tracking
+    referrer_reward_type = db.Column(db.String(30), default='points')  # points, premium_days, badges
+    referrer_reward_amount = db.Column(db.Integer, default=100)
+    referred_reward_type = db.Column(db.String(30), default='points')
+    referred_reward_amount = db.Column(db.Integer, default=50)
+    rewards_claimed = db.Column(db.Boolean, default=False)
+    
+    # Attribution tracking
+    source = db.Column(db.String(50))  # social, email, direct, etc.
+    campaign = db.Column(db.String(100))  # Campaign identifier
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=utc_now)
+    completed_at = db.Column(db.DateTime)  # When referred user signed up
+    expires_at = db.Column(db.DateTime)  # Referral expiry
+    rewarded_at = db.Column(db.DateTime)  # When rewards were granted
+    
+    # Relationships
+    referrer = db.relationship('User', foreign_keys=[referrer_id], backref='referrals_made')
+    referred_user = db.relationship('User', foreign_keys=[referred_id], backref='referral_source')
+    
+    def __init__(self, referrer_id, referral_code, referred_email=None, source=None, campaign=None):
+        from datetime import timedelta
+        self.referrer_id = referrer_id
+        self.referral_code = referral_code
+        self.referred_email = referred_email
+        self.source = source
+        self.campaign = campaign
+        self.expires_at = utc_now() + timedelta(days=30)  # 30-day expiry
+    
+    def complete_referral(self, referred_user_id):
+        """Mark referral as completed when referred user signs up."""
+        self.referred_id = referred_user_id
+        self.status = 'completed'
+        self.completed_at = utc_now()
+    
+    def claim_rewards(self):
+        """Mark rewards as claimed and grant them to users."""
+        if self.status == 'completed' and not self.rewards_claimed:
+            self.rewards_claimed = True
+            self.rewarded_at = utc_now()
+            self.status = 'rewarded'
+            return True
+        return False
+    
+    def to_dict(self):
+        """Convert referral to dictionary."""
+        return {
+            'id': self.id,
+            'referrer_id': self.referrer_id,
+            'referred_id': self.referred_id,
+            'referral_code': self.referral_code,
+            'referred_email': self.referred_email,
+            'status': self.status,
+            'referrer_reward_type': self.referrer_reward_type,
+            'referrer_reward_amount': self.referrer_reward_amount,
+            'referred_reward_type': self.referred_reward_type,
+            'referred_reward_amount': self.referred_reward_amount,
+            'rewards_claimed': self.rewards_claimed,
+            'source': self.source,
+            'campaign': self.campaign,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'completed_at': self.completed_at.isoformat() if self.completed_at else None,
+            'expires_at': self.expires_at.isoformat() if self.expires_at else None,
+            'rewarded_at': self.rewarded_at.isoformat() if self.rewarded_at else None
+        }
+    
+    def __repr__(self):
+        return f'<UserReferral {self.referral_code} from user:{self.referrer_id}>'
+
+
+class DailyChallenge(db.Model):
+    """Daily challenges and practice goals for user engagement."""
+    __tablename__ = 'daily_challenges'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    challenge_date = db.Column(db.Date, nullable=False)
+    challenge_type = db.Column(db.String(30), nullable=False)  # practice_time, accuracy, new_song, sharing
+    
+    # Challenge definition
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    target_value = db.Column(db.Integer, nullable=False)  # Target to achieve
+    unit = db.Column(db.String(20), default='count')  # count, minutes, percentage, songs
+    
+    # Rewards
+    points_reward = db.Column(db.Integer, default=10)
+    badge_reward_id = db.Column(db.Integer, db.ForeignKey('user_badges.id'), nullable=True)
+    
+    # Challenge metadata
+    difficulty = db.Column(db.String(10), default='medium')  # easy, medium, hard
+    category = db.Column(db.String(30), default='general')  # practice, social, learning, achievement
+    is_active = db.Column(db.Boolean, default=True)
+    
+    # Internationalization
+    localized_titles = db.Column(db.JSON, default=dict)  # {locale: title}
+    localized_descriptions = db.Column(db.JSON, default=dict)  # {locale: description}
+    
+    created_at = db.Column(db.DateTime, default=utc_now)
+    
+    # Relationships
+    badge_reward = db.relationship('UserBadge', foreign_keys=[badge_reward_id])
+    user_progress = db.relationship('UserChallengeProgress', backref='challenge', cascade='all, delete-orphan')
+    
+    # Constraints
+    __table_args__ = (
+        db.UniqueConstraint('challenge_date', 'challenge_type', name='unique_daily_challenge'),
+        db.CheckConstraint("difficulty IN ('easy', 'medium', 'hard')", name='valid_difficulty'),
+        db.CheckConstraint("challenge_type IN ('practice_time', 'accuracy', 'new_song', 'sharing', 'streak', 'mastery')", name='valid_challenge_type')
+    )
+    
+    def __init__(self, challenge_date, challenge_type, title, description, target_value, 
+                 unit='count', points_reward=10, difficulty='medium', category='general'):
+        self.challenge_date = challenge_date
+        self.challenge_type = challenge_type
+        self.title = title
+        self.description = description
+        self.target_value = target_value
+        self.unit = unit
+        self.points_reward = points_reward
+        self.difficulty = difficulty
+        self.category = category
+    
+    def to_dict(self, locale='en'):
+        """Convert challenge to dictionary with localization."""
+        title = self.localized_titles.get(locale, self.title)
+        description = self.localized_descriptions.get(locale, self.description)
+        
+        return {
+            'id': self.id,
+            'challenge_date': self.challenge_date.isoformat() if self.challenge_date else None,
+            'challenge_type': self.challenge_type,
+            'title': title,
+            'description': description,
+            'target_value': self.target_value,
+            'unit': self.unit,
+            'points_reward': self.points_reward,
+            'badge_reward_id': self.badge_reward_id,
+            'difficulty': self.difficulty,
+            'category': self.category,
+            'is_active': self.is_active,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+    
+    def __repr__(self):
+        return f'<DailyChallenge {self.title} ({self.challenge_date})>'
+
+
+class UserChallengeProgress(db.Model):
+    """User progress tracking for daily challenges."""
+    __tablename__ = 'user_challenge_progress'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    challenge_id = db.Column(db.Integer, db.ForeignKey('daily_challenges.id'), nullable=False)
+    
+    # Progress tracking
+    current_value = db.Column(db.Integer, default=0)
+    is_completed = db.Column(db.Boolean, default=False)
+    completion_percentage = db.Column(db.Float, default=0.0)
+    
+    # Timestamps
+    started_at = db.Column(db.DateTime, default=utc_now)
+    completed_at = db.Column(db.DateTime)
+    last_update = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+    
+    # Relationships
+    user = db.relationship('User', backref='challenge_progress')
+    
+    # Constraints
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'challenge_id', name='unique_user_challenge'),
+    )
+    
+    def __init__(self, user_id, challenge_id):
+        self.user_id = user_id
+        self.challenge_id = challenge_id
+    
+    def update_progress(self, new_value):
+        """Update progress and check for completion."""
+        self.current_value = new_value
+        
+        # Calculate completion percentage
+        if self.challenge and self.challenge.target_value > 0:
+            self.completion_percentage = min((new_value / self.challenge.target_value) * 100, 100.0)
+            
+            # Check if completed
+            if new_value >= self.challenge.target_value and not self.is_completed:
+                self.is_completed = True
+                self.completed_at = utc_now()
+                return True  # Newly completed
+        
+        return False  # Not completed or already completed
+    
+    def to_dict(self):
+        """Convert progress to dictionary."""
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'challenge_id': self.challenge_id,
+            'current_value': self.current_value,
+            'is_completed': self.is_completed,
+            'completion_percentage': self.completion_percentage,
+            'started_at': self.started_at.isoformat() if self.started_at else None,
+            'completed_at': self.completed_at.isoformat() if self.completed_at else None,
+            'last_update': self.last_update.isoformat() if self.last_update else None
+        }
+    
+    def __repr__(self):
+        return f'<UserChallengeProgress user:{self.user_id} challenge:{self.challenge_id} {self.completion_percentage}%>'
+
+
+class UserOnboardingProgress(db.Model):
+    """User onboarding progress tracking and milestone celebrations."""
+    __tablename__ = 'user_onboarding_progress'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, unique=True)
+    
+    # Onboarding steps
+    profile_completed = db.Column(db.Boolean, default=False)
+    first_song_created = db.Column(db.Boolean, default=False)
+    first_song_saved = db.Column(db.Boolean, default=False)
+    tutorial_completed = db.Column(db.Boolean, default=False)
+    first_chord_learned = db.Column(db.Boolean, default=False)
+    first_practice_session = db.Column(db.Boolean, default=False)
+    first_social_interaction = db.Column(db.Boolean, default=False)
+    
+    # Progress tracking
+    completion_percentage = db.Column(db.Float, default=0.0)
+    onboarding_completed = db.Column(db.Boolean, default=False)
+    
+    # Milestone celebrations
+    milestones_achieved = db.Column(db.JSON, default=list)  # List of milestone identifiers
+    celebrations_shown = db.Column(db.JSON, default=list)  # List of shown celebrations
+    
+    # Engagement metrics
+    days_active = db.Column(db.Integer, default=0)
+    last_active = db.Column(db.DateTime, default=utc_now)
+    streak_days = db.Column(db.Integer, default=0)
+    
+    # Timestamps
+    started_at = db.Column(db.DateTime, default=utc_now)
+    completed_at = db.Column(db.DateTime)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+    
+    # Relationships
+    user = db.relationship('User', backref=db.backref('onboarding_progress', uselist=False))
+    
+    def __init__(self, user_id):
+        self.user_id = user_id
+    
+    def complete_step(self, step_name):
+        """Mark an onboarding step as completed."""
+        if hasattr(self, step_name) and not getattr(self, step_name):
+            setattr(self, step_name, True)
+            self.update_completion_percentage()
+            
+            # Check for milestone achievements
+            return self.check_milestones()
+        return []
+    
+    def update_completion_percentage(self):
+        """Update completion percentage based on completed steps."""
+        steps = [
+            'profile_completed', 'first_song_created', 'first_song_saved',
+            'tutorial_completed', 'first_chord_learned', 'first_practice_session',
+            'first_social_interaction'
+        ]
+        
+        completed_steps = sum(1 for step in steps if getattr(self, step, False))
+        self.completion_percentage = (completed_steps / len(steps)) * 100
+        
+        if self.completion_percentage >= 100 and not self.onboarding_completed:
+            self.onboarding_completed = True
+            self.completed_at = utc_now()
+    
+    def check_milestones(self):
+        """Check for new milestone achievements."""
+        new_milestones = []
+        
+        # First day milestone
+        if 'first_day' not in self.milestones_achieved and self.first_song_created:
+            self.milestones_achieved.append('first_day')
+            new_milestones.append('first_day')
+        
+        # First week milestone
+        if 'first_week' not in self.milestones_achieved and self.days_active >= 7:
+            self.milestones_achieved.append('first_week')
+            new_milestones.append('first_week')
+        
+        # Streak milestones
+        if 'streak_3' not in self.milestones_achieved and self.streak_days >= 3:
+            self.milestones_achieved.append('streak_3')
+            new_milestones.append('streak_3')
+        
+        if 'streak_7' not in self.milestones_achieved and self.streak_days >= 7:
+            self.milestones_achieved.append('streak_7')
+            new_milestones.append('streak_7')
+        
+        # Completion milestone
+        if 'onboarding_complete' not in self.milestones_achieved and self.onboarding_completed:
+            self.milestones_achieved.append('onboarding_complete')
+            new_milestones.append('onboarding_complete')
+        
+        # Mark JSON field as modified for SQLAlchemy
+        if new_milestones:
+            from sqlalchemy.orm.attributes import flag_modified
+            flag_modified(self, 'milestones_achieved')
+        
+        return new_milestones
+    
+    def update_activity(self):
+        """Update activity tracking."""
+        from datetime import timedelta
+        today = utc_now().date()
+        last_active_date = self.last_active.date() if self.last_active else None
+        
+        if last_active_date != today:
+            self.days_active += 1
+            
+            # Update streak
+            if last_active_date == today - timedelta(days=1):
+                self.streak_days += 1
+            else:
+                self.streak_days = 1
+            
+            self.last_active = utc_now()
+    
+    def to_dict(self):
+        """Convert onboarding progress to dictionary."""
+        return {
+            'user_id': self.user_id,
+            'profile_completed': self.profile_completed,
+            'first_song_created': self.first_song_created,
+            'first_song_saved': self.first_song_saved,
+            'tutorial_completed': self.tutorial_completed,
+            'first_chord_learned': self.first_chord_learned,
+            'first_practice_session': self.first_practice_session,
+            'first_social_interaction': self.first_social_interaction,
+            'completion_percentage': self.completion_percentage,
+            'onboarding_completed': self.onboarding_completed,
+            'milestones_achieved': self.milestones_achieved,
+            'celebrations_shown': self.celebrations_shown,
+            'days_active': self.days_active,
+            'last_active': self.last_active.isoformat() if self.last_active else None,
+            'streak_days': self.streak_days,
+            'started_at': self.started_at.isoformat() if self.started_at else None,
+            'completed_at': self.completed_at.isoformat() if self.completed_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+    
+    def __repr__(self):
+        return f'<UserOnboardingProgress user:{self.user_id} {self.completion_percentage}%>'
+
+
+class GrowthExperiment(db.Model):
+    """A/B testing framework for growth experiments."""
+    __tablename__ = 'growth_experiments'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), unique=True, nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    
+    # Experiment configuration
+    experiment_type = db.Column(db.String(30), nullable=False)  # ab_test, multivariate, feature_flag
+    variants = db.Column(db.JSON, nullable=False)  # List of variant configurations
+    traffic_allocation = db.Column(db.JSON, nullable=False)  # {variant: percentage}
+    
+    # Targeting
+    user_filters = db.Column(db.JSON, default=dict)  # User targeting criteria
+    feature_flags = db.Column(db.JSON, default=dict)  # Feature flag overrides
+    
+    # Status and timing
+    status = db.Column(db.String(20), default='draft')  # draft, active, paused, completed, archived
+    start_date = db.Column(db.DateTime)
+    end_date = db.Column(db.DateTime)
+    
+    # Success metrics
+    primary_metric = db.Column(db.String(50), nullable=False)  # conversion, retention, engagement
+    success_criteria = db.Column(db.JSON, nullable=False)  # Success thresholds
+    
+    # Results
+    statistical_significance = db.Column(db.Float, default=0.0)
+    confidence_level = db.Column(db.Float, default=95.0)
+    winning_variant = db.Column(db.String(50))
+    
+    # Metadata
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+    
+    # Relationships
+    creator = db.relationship('User', foreign_keys=[created_by])
+    assignments = db.relationship('ExperimentAssignment', backref='experiment', cascade='all, delete-orphan')
+    
+    def __init__(self, name, description, experiment_type, variants, traffic_allocation, 
+                 primary_metric, success_criteria, created_by):
+        self.name = name
+        self.description = description
+        self.experiment_type = experiment_type
+        self.variants = variants
+        self.traffic_allocation = traffic_allocation
+        self.primary_metric = primary_metric
+        self.success_criteria = success_criteria
+        self.created_by = created_by
+    
+    def assign_user(self, user_id):
+        """Assign a user to an experiment variant."""
+        import random
+        
+        # Check if user already assigned
+        existing = ExperimentAssignment.query.filter_by(
+            experiment_id=self.id,
+            user_id=user_id
+        ).first()
+        
+        if existing:
+            return existing.variant
+        
+        # Assign variant based on traffic allocation
+        rand_value = random.random() * 100
+        cumulative = 0
+        
+        for variant, percentage in self.traffic_allocation.items():
+            cumulative += percentage
+            if rand_value <= cumulative:
+                # Create assignment
+                assignment = ExperimentAssignment(
+                    experiment_id=self.id,
+                    user_id=user_id,
+                    variant=variant
+                )
+                db.session.add(assignment)
+                db.session.commit()
+                return variant
+        
+        # Fallback to control
+        return 'control'
+    
+    def to_dict(self):
+        """Convert experiment to dictionary."""
+        return {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+            'experiment_type': self.experiment_type,
+            'variants': self.variants,
+            'traffic_allocation': self.traffic_allocation,
+            'user_filters': self.user_filters,
+            'feature_flags': self.feature_flags,
+            'status': self.status,
+            'start_date': self.start_date.isoformat() if self.start_date else None,
+            'end_date': self.end_date.isoformat() if self.end_date else None,
+            'primary_metric': self.primary_metric,
+            'success_criteria': self.success_criteria,
+            'statistical_significance': self.statistical_significance,
+            'confidence_level': self.confidence_level,
+            'winning_variant': self.winning_variant,
+            'created_by': self.created_by,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+    
+    def __repr__(self):
+        return f'<GrowthExperiment {self.name} ({self.status})>'
+
+
+class ExperimentAssignment(db.Model):
+    """User assignments to experiment variants."""
+    __tablename__ = 'experiment_assignments'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    experiment_id = db.Column(db.Integer, db.ForeignKey('growth_experiments.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    variant = db.Column(db.String(50), nullable=False)
+    
+    # Tracking
+    assigned_at = db.Column(db.DateTime, default=utc_now)
+    first_exposure = db.Column(db.DateTime)  # When user first saw the variant
+    
+    # Relationships
+    user = db.relationship('User', backref='experiment_assignments')
+    
+    # Constraints
+    __table_args__ = (
+        db.UniqueConstraint('experiment_id', 'user_id', name='unique_experiment_user'),
+    )
+    
+    def __init__(self, experiment_id, user_id, variant):
+        self.experiment_id = experiment_id
+        self.user_id = user_id
+        self.variant = variant
+    
+    def record_exposure(self):
+        """Record first exposure to variant."""
+        if not self.first_exposure:
+            self.first_exposure = utc_now()
+    
+    def to_dict(self):
+        """Convert assignment to dictionary."""
+        return {
+            'id': self.id,
+            'experiment_id': self.experiment_id,
+            'user_id': self.user_id,
+            'variant': self.variant,
+            'assigned_at': self.assigned_at.isoformat() if self.assigned_at else None,
+            'first_exposure': self.first_exposure.isoformat() if self.first_exposure else None
+        }
+    
+    def __repr__(self):
+        return f'<ExperimentAssignment experiment:{self.experiment_id} user:{self.user_id} variant:{self.variant}>'
