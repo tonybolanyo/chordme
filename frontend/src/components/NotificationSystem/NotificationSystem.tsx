@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
-import { useError, type NotificationError } from '../../contexts/ErrorContext';
+import { useError } from '../../contexts/ErrorContext';
+import type { NotificationError } from '../../contexts/ErrorContext';
 import './NotificationSystem.css';
 
 interface NotificationItemProps {

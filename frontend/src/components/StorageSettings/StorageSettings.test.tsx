@@ -3,7 +3,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
-import StorageSettings, { type StorageBackend } from './StorageSettings';
+import StorageSettings from './StorageSettings';
+import type { StorageBackend } from './StorageSettings';
 
 // Mock services - Define functions inline to avoid hoisting issues
 vi.mock('../../services/firebase', () => ({

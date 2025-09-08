@@ -3,7 +3,8 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { sessionManagementService, type CreateSessionRequest } from '../../services/sessionManagementService';
+import { sessionManagementService } from '../../services/sessionManagementService';
+import type { CreateSessionRequest } from '../../services/sessionManagementService';
 import type { SessionTemplate } from '../../types/collaboration';
 
 export interface CreateSessionModalProps {

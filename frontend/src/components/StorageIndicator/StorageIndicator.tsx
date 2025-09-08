@@ -1,6 +1,6 @@
 import React from 'react';
 import { apiService } from '../../services/api';
-import { type StorageBackendType } from '../../services/storagePreference';
+import type { StorageBackendType } from '../../services/storagePreference';
 import './StorageIndicator.css';
 
 interface StorageIndicatorProps {
