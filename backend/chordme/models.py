@@ -3703,3 +3703,575 @@ class ProjectTemplate(db.Model):
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
+
+
+# Community Forum Models
+
+class ForumCategory(db.Model):
+    """Forum categories for organizing discussions."""
+    __tablename__ = 'forum_categories'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text)
+    slug = db.Column(db.String(100), unique=True, nullable=False, index=True)
+    color = db.Column(db.String(7), default='#3498db')  # Hex color code
+    icon = db.Column(db.String(50))  # Font icon class or emoji
+    
+    # Hierarchy support
+    parent_id = db.Column(db.Integer, db.ForeignKey('forum_categories.id'), nullable=True)
+    display_order = db.Column(db.Integer, default=0)
+    
+    # Access control
+    is_public = db.Column(db.Boolean, default=True)
+    required_reputation = db.Column(db.Integer, default=0)  # Minimum reputation to post
+    moderator_only = db.Column(db.Boolean, default=False)
+    
+    # Moderation settings
+    auto_approve_posts = db.Column(db.Boolean, default=True)
+    allow_anonymous = db.Column(db.Boolean, default=False)
+    
+    # Internationalization
+    localized_names = db.Column(db.JSON, default=dict)  # {locale: name}
+    localized_descriptions = db.Column(db.JSON, default=dict)  # {locale: description}
+    
+    # Statistics
+    thread_count = db.Column(db.Integer, default=0)
+    post_count = db.Column(db.Integer, default=0)
+    last_activity_at = db.Column(db.DateTime)
+    
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+    
+    # Relationships
+    subcategories = db.relationship('ForumCategory', backref=db.backref('parent', remote_side=[id]))
+    threads = db.relationship('ForumThread', backref='category', lazy=True, cascade='all, delete-orphan')
+    
+    def __init__(self, name, slug, description=None, parent_id=None, color='#3498db'):
+        self.name = name
+        self.slug = slug
+        self.description = description
+        self.parent_id = parent_id
+        self.color = color
+    
+    def to_dict(self, locale='en', include_stats=True):
+        """Convert category to dictionary with localization."""
+        name = self.localized_names.get(locale, self.name)
+        description = self.localized_descriptions.get(locale, self.description)
+        
+        result = {
+            'id': self.id,
+            'name': name,
+            'description': description,
+            'slug': self.slug,
+            'color': self.color,
+            'icon': self.icon,
+            'parent_id': self.parent_id,
+            'display_order': self.display_order,
+            'is_public': self.is_public,
+            'required_reputation': self.required_reputation,
+            'moderator_only': self.moderator_only,
+            'auto_approve_posts': self.auto_approve_posts,
+            'allow_anonymous': self.allow_anonymous,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+        
+        if include_stats:
+            result.update({
+                'thread_count': self.thread_count,
+                'post_count': self.post_count,
+                'last_activity_at': self.last_activity_at.isoformat() if self.last_activity_at else None
+            })
+            
+        return result
+    
+    def __repr__(self):
+        return f'<ForumCategory {self.name}>'
+
+
+class ForumThread(db.Model):
+    """Forum discussion threads."""
+    __tablename__ = 'forum_threads'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(255), nullable=False)
+    slug = db.Column(db.String(255), nullable=False, index=True)
+    
+    # Content and metadata
+    content = db.Column(db.Text, nullable=False)  # First post content
+    thread_type = db.Column(db.String(20), default='discussion')  # discussion, question, announcement, feature_request
+    tags = db.Column(db.JSON, default=list)  # Array of tag strings
+    
+    # Ownership and moderation
+    author_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey('forum_categories.id'), nullable=False)
+    
+    # Thread status
+    is_locked = db.Column(db.Boolean, default=False)
+    is_pinned = db.Column(db.Boolean, default=False)
+    is_solved = db.Column(db.Boolean, default=False)  # For Q&A threads
+    is_approved = db.Column(db.Boolean, default=True)
+    is_deleted = db.Column(db.Boolean, default=False)
+    
+    # Statistics
+    view_count = db.Column(db.Integer, default=0)
+    post_count = db.Column(db.Integer, default=1)  # Include initial post
+    participant_count = db.Column(db.Integer, default=1)
+    vote_score = db.Column(db.Integer, default=0)  # Net upvotes - downvotes
+    
+    # Activity tracking
+    last_activity_at = db.Column(db.DateTime, default=utc_now)
+    last_post_id = db.Column(db.Integer, db.ForeignKey('forum_posts.id'), nullable=True)
+    
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+    deleted_at = db.Column(db.DateTime)
+    
+    # Relationships
+    author = db.relationship('User', backref='forum_threads')
+    posts = db.relationship('ForumPost', backref='thread', lazy=True, cascade='all, delete-orphan', 
+                           foreign_keys='ForumPost.thread_id', order_by='ForumPost.created_at')
+    votes = db.relationship('ForumVote', backref='thread_voted', lazy=True, cascade='all, delete-orphan',
+                           foreign_keys='ForumVote.thread_id')
+    last_post = db.relationship('ForumPost', foreign_keys=[last_post_id], post_update=True)
+    
+    def __init__(self, title, content, author_id, category_id, thread_type='discussion', tags=None):
+        self.title = title
+        self.content = content
+        self.author_id = author_id
+        self.category_id = category_id
+        self.thread_type = thread_type
+        self.tags = tags or []
+        # Generate slug from title
+        import re
+        self.slug = re.sub(r'[^\w\s-]', '', title.lower()).strip()
+        self.slug = re.sub(r'[-\s]+', '-', self.slug)
+    
+    def update_activity(self, post_id=None):
+        """Update last activity tracking."""
+        self.last_activity_at = utc_now()
+        if post_id:
+            self.last_post_id = post_id
+    
+    def to_dict(self, include_content=False, include_author=False):
+        """Convert thread to dictionary."""
+        result = {
+            'id': self.id,
+            'title': self.title,
+            'slug': self.slug,
+            'thread_type': self.thread_type,
+            'tags': self.tags,
+            'author_id': self.author_id,
+            'category_id': self.category_id,
+            'is_locked': self.is_locked,
+            'is_pinned': self.is_pinned,
+            'is_solved': self.is_solved,
+            'is_approved': self.is_approved,
+            'is_deleted': self.is_deleted,
+            'view_count': self.view_count,
+            'post_count': self.post_count,
+            'participant_count': self.participant_count,
+            'vote_score': self.vote_score,
+            'last_activity_at': self.last_activity_at.isoformat() if self.last_activity_at else None,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+        
+        if include_content:
+            result['content'] = self.content
+            
+        if include_author and self.author:
+            result['author'] = {
+                'id': self.author.id,
+                'display_name': self.author.display_name,
+                'profile_image_url': self.author.profile_image_url
+            }
+            
+        return result
+    
+    def __repr__(self):
+        return f'<ForumThread {self.title}>'
+
+
+class ForumPost(db.Model):
+    """Individual posts within forum threads."""
+    __tablename__ = 'forum_posts'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.Text, nullable=False)
+    content_html = db.Column(db.Text)  # Rendered HTML content
+    
+    # Ownership and threading
+    author_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    thread_id = db.Column(db.Integer, db.ForeignKey('forum_threads.id'), nullable=False)
+    parent_post_id = db.Column(db.Integer, db.ForeignKey('forum_posts.id'), nullable=True)
+    
+    # Post metadata
+    post_number = db.Column(db.Integer, nullable=False)  # Position in thread (1, 2, 3...)
+    is_solution = db.Column(db.Boolean, default=False)  # Marked as solution for Q&A
+    is_approved = db.Column(db.Boolean, default=True)
+    is_deleted = db.Column(db.Boolean, default=False)
+    
+    # Editing and moderation
+    edit_count = db.Column(db.Integer, default=0)
+    last_edited_at = db.Column(db.DateTime)
+    last_edited_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    moderation_notes = db.Column(db.Text)
+    
+    # Voting and engagement
+    vote_score = db.Column(db.Integer, default=0)  # Net upvotes - downvotes
+    helpful_count = db.Column(db.Integer, default=0)  # Helpful votes
+    
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+    deleted_at = db.Column(db.DateTime)
+    
+    # Relationships
+    author = db.relationship('User', foreign_keys=[author_id], backref='forum_posts')
+    editor = db.relationship('User', foreign_keys=[last_edited_by])
+    replies = db.relationship('ForumPost', backref=db.backref('parent_post', remote_side=[id]))
+    votes = db.relationship('ForumVote', backref='post_voted', lazy=True, cascade='all, delete-orphan',
+                           foreign_keys='ForumVote.post_id')
+    
+    def __init__(self, content, author_id, thread_id, parent_post_id=None):
+        self.content = content
+        self.author_id = author_id
+        self.thread_id = thread_id
+        self.parent_post_id = parent_post_id
+        
+        # Set post number
+        from sqlalchemy import func
+        last_post_number = db.session.query(func.max(ForumPost.post_number)).filter_by(thread_id=thread_id).scalar()
+        self.post_number = (last_post_number or 0) + 1
+    
+    def mark_as_edited(self, editor_id):
+        """Mark post as edited."""
+        self.edit_count += 1
+        self.last_edited_at = utc_now()
+        self.last_edited_by = editor_id
+    
+    def to_dict(self, include_author=False, include_thread=False):
+        """Convert post to dictionary."""
+        result = {
+            'id': self.id,
+            'content': self.content,
+            'content_html': self.content_html,
+            'author_id': self.author_id,
+            'thread_id': self.thread_id,
+            'parent_post_id': self.parent_post_id,
+            'post_number': self.post_number,
+            'is_solution': self.is_solution,
+            'is_approved': self.is_approved,
+            'is_deleted': self.is_deleted,
+            'edit_count': self.edit_count,
+            'last_edited_at': self.last_edited_at.isoformat() if self.last_edited_at else None,
+            'last_edited_by': self.last_edited_by,
+            'vote_score': self.vote_score,
+            'helpful_count': self.helpful_count,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+        
+        if include_author and self.author:
+            result['author'] = {
+                'id': self.author.id,
+                'display_name': self.author.display_name,
+                'profile_image_url': self.author.profile_image_url
+            }
+            
+        if include_thread and self.thread:
+            result['thread'] = self.thread.to_dict()
+            
+        return result
+    
+    def __repr__(self):
+        return f'<ForumPost {self.id} in thread {self.thread_id}>'
+
+
+class ForumVote(db.Model):
+    """Voting system for threads and posts."""
+    __tablename__ = 'forum_votes'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    vote_type = db.Column(db.String(10), nullable=False)  # upvote, downvote, helpful
+    
+    # Polymorphic voting - can vote on threads OR posts
+    thread_id = db.Column(db.Integer, db.ForeignKey('forum_threads.id'), nullable=True)
+    post_id = db.Column(db.Integer, db.ForeignKey('forum_posts.id'), nullable=True)
+    
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+    
+    # Relationships
+    voter = db.relationship('User', backref='forum_votes')
+    
+    # Constraints
+    __table_args__ = (
+        db.CheckConstraint('(thread_id IS NOT NULL) OR (post_id IS NOT NULL)', 
+                          name='vote_target_check'),
+        db.UniqueConstraint('user_id', 'thread_id', name='unique_thread_vote'),
+        db.UniqueConstraint('user_id', 'post_id', name='unique_post_vote'),
+        db.CheckConstraint("vote_type IN ('upvote', 'downvote', 'helpful')", 
+                          name='valid_vote_type')
+    )
+    
+    def __init__(self, user_id, vote_type, thread_id=None, post_id=None):
+        if not (thread_id or post_id) or (thread_id and post_id):
+            raise ValueError("Must specify either thread_id or post_id, but not both")
+        
+        self.user_id = user_id
+        self.vote_type = vote_type
+        self.thread_id = thread_id
+        self.post_id = post_id
+    
+    def to_dict(self):
+        """Convert vote to dictionary."""
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'vote_type': self.vote_type,
+            'thread_id': self.thread_id,
+            'post_id': self.post_id,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+    
+    def __repr__(self):
+        target = f"thread:{self.thread_id}" if self.thread_id else f"post:{self.post_id}"
+        return f'<ForumVote {self.vote_type} on {target} by user:{self.user_id}>'
+
+
+class UserReputation(db.Model):
+    """User reputation tracking for forum participation."""
+    __tablename__ = 'user_reputation'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, unique=True)
+    
+    # Reputation scores
+    total_score = db.Column(db.Integer, default=0)
+    post_score = db.Column(db.Integer, default=0)  # From post upvotes
+    thread_score = db.Column(db.Integer, default=0)  # From thread upvotes
+    solution_score = db.Column(db.Integer, default=0)  # From accepted solutions
+    helpful_score = db.Column(db.Integer, default=0)  # From helpful votes
+    
+    # Activity metrics
+    posts_created = db.Column(db.Integer, default=0)
+    threads_created = db.Column(db.Integer, default=0)
+    solutions_provided = db.Column(db.Integer, default=0)
+    votes_cast = db.Column(db.Integer, default=0)
+    
+    # Reputation level
+    level = db.Column(db.Integer, default=1)
+    level_name = db.Column(db.String(50), default='Newcomer')
+    
+    # Achievement tracking
+    badges_earned = db.Column(db.JSON, default=list)  # Array of badge IDs
+    milestones_achieved = db.Column(db.JSON, default=list)  # Array of milestone names
+    
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+    
+    # Relationships
+    user = db.relationship('User', backref=db.backref('reputation', uselist=False))
+    
+    def __init__(self, user_id):
+        self.user_id = user_id
+    
+    def calculate_level(self):
+        """Calculate user level based on total score."""
+        if self.total_score >= 10000:
+            self.level = 10
+            self.level_name = 'Expert'
+        elif self.total_score >= 5000:
+            self.level = 9
+            self.level_name = 'Master'
+        elif self.total_score >= 2500:
+            self.level = 8
+            self.level_name = 'Advanced'
+        elif self.total_score >= 1000:
+            self.level = 7
+            self.level_name = 'Experienced'
+        elif self.total_score >= 500:
+            self.level = 6
+            self.level_name = 'Skilled'
+        elif self.total_score >= 250:
+            self.level = 5
+            self.level_name = 'Contributor'
+        elif self.total_score >= 100:
+            self.level = 4
+            self.level_name = 'Regular'
+        elif self.total_score >= 50:
+            self.level = 3
+            self.level_name = 'Member'
+        elif self.total_score >= 10:
+            self.level = 2
+            self.level_name = 'Participant'
+        else:
+            self.level = 1
+            self.level_name = 'Newcomer'
+    
+    def add_score(self, points, category='post'):
+        """Add reputation points and update totals."""
+        if category == 'post':
+            self.post_score += points
+        elif category == 'thread':
+            self.thread_score += points
+        elif category == 'solution':
+            self.solution_score += points
+        elif category == 'helpful':
+            self.helpful_score += points
+        
+        self.total_score = (self.post_score + self.thread_score + 
+                           self.solution_score + self.helpful_score)
+        self.calculate_level()
+    
+    def to_dict(self):
+        """Convert reputation to dictionary."""
+        return {
+            'user_id': self.user_id,
+            'total_score': self.total_score,
+            'post_score': self.post_score,
+            'thread_score': self.thread_score,
+            'solution_score': self.solution_score,
+            'helpful_score': self.helpful_score,
+            'posts_created': self.posts_created,
+            'threads_created': self.threads_created,
+            'solutions_provided': self.solutions_provided,
+            'votes_cast': self.votes_cast,
+            'level': self.level,
+            'level_name': self.level_name,
+            'badges_earned': self.badges_earned,
+            'milestones_achieved': self.milestones_achieved,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+    
+    def __repr__(self):
+        return f'<UserReputation user:{self.user_id} score:{self.total_score} level:{self.level}>'
+
+
+class UserBadge(db.Model):
+    """Badge system for community achievements."""
+    __tablename__ = 'user_badges'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), unique=True, nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    icon = db.Column(db.String(100))  # Icon class or image URL
+    color = db.Column(db.String(7), default='#3498db')  # Hex color
+    
+    # Badge type and requirements
+    badge_type = db.Column(db.String(20), nullable=False)  # achievement, milestone, special
+    requirements = db.Column(db.JSON, nullable=False)  # Requirements criteria
+    rarity = db.Column(db.String(20), default='common')  # common, uncommon, rare, epic, legendary
+    
+    # Internationalization
+    localized_names = db.Column(db.JSON, default=dict)  # {locale: name}
+    localized_descriptions = db.Column(db.JSON, default=dict)  # {locale: description}
+    
+    # Tracking
+    is_active = db.Column(db.Boolean, default=True)
+    awarded_count = db.Column(db.Integer, default=0)
+    
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+    
+    def __init__(self, name, description, badge_type, requirements, icon=None, color='#3498db', rarity='common'):
+        self.name = name
+        self.description = description
+        self.badge_type = badge_type
+        self.requirements = requirements
+        self.icon = icon
+        self.color = color
+        self.rarity = rarity
+    
+    def to_dict(self, locale='en'):
+        """Convert badge to dictionary with localization."""
+        name = self.localized_names.get(locale, self.name)
+        description = self.localized_descriptions.get(locale, self.description)
+        
+        return {
+            'id': self.id,
+            'name': name,
+            'description': description,
+            'icon': self.icon,
+            'color': self.color,
+            'badge_type': self.badge_type,
+            'requirements': self.requirements,
+            'rarity': self.rarity,
+            'is_active': self.is_active,
+            'awarded_count': self.awarded_count,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+    
+    def __repr__(self):
+        return f'<UserBadge {self.name}>'
+
+
+class ForumModeration(db.Model):
+    """Moderation actions and history for forum content."""
+    __tablename__ = 'forum_moderation'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    moderator_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    action_type = db.Column(db.String(20), nullable=False)  # lock, unlock, pin, unpin, delete, approve, warn
+    reason = db.Column(db.String(255), nullable=False)
+    notes = db.Column(db.Text)
+    
+    # Target content (polymorphic)
+    thread_id = db.Column(db.Integer, db.ForeignKey('forum_threads.id'), nullable=True)
+    post_id = db.Column(db.Integer, db.ForeignKey('forum_posts.id'), nullable=True)
+    target_user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)  # User being moderated
+    
+    # Action details
+    is_automated = db.Column(db.Boolean, default=False)
+    severity = db.Column(db.String(10), default='low')  # low, medium, high, critical
+    
+    created_at = db.Column(db.DateTime, default=utc_now)
+    
+    # Relationships
+    moderator = db.relationship('User', foreign_keys=[moderator_id], backref='moderation_actions')
+    target_user = db.relationship('User', foreign_keys=[target_user_id])
+    thread = db.relationship('ForumThread', backref='moderation_history')
+    post = db.relationship('ForumPost', backref='moderation_history')
+    
+    # Constraints
+    __table_args__ = (
+        db.CheckConstraint('(thread_id IS NOT NULL) OR (post_id IS NOT NULL) OR (target_user_id IS NOT NULL)', 
+                          name='moderation_target_check'),
+        db.CheckConstraint("action_type IN ('lock', 'unlock', 'pin', 'unpin', 'delete', 'approve', 'warn', 'ban', 'unban')", 
+                          name='valid_action_type'),
+        db.CheckConstraint("severity IN ('low', 'medium', 'high', 'critical')", 
+                          name='valid_severity')
+    )
+    
+    def __init__(self, moderator_id, action_type, reason, thread_id=None, post_id=None, target_user_id=None, notes=None):
+        self.moderator_id = moderator_id
+        self.action_type = action_type
+        self.reason = reason
+        self.thread_id = thread_id
+        self.post_id = post_id
+        self.target_user_id = target_user_id
+        self.notes = notes
+    
+    def to_dict(self):
+        """Convert moderation action to dictionary."""
+        return {
+            'id': self.id,
+            'moderator_id': self.moderator_id,
+            'action_type': self.action_type,
+            'reason': self.reason,
+            'notes': self.notes,
+            'thread_id': self.thread_id,
+            'post_id': self.post_id,
+            'target_user_id': self.target_user_id,
+            'is_automated': self.is_automated,
+            'severity': self.severity,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+    
+    def __repr__(self):
+        target = f"thread:{self.thread_id}" if self.thread_id else f"post:{self.post_id}" if self.post_id else f"user:{self.target_user_id}"
+        return f'<ForumModeration {self.action_type} on {target}>'
