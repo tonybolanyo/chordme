@@ -13,6 +13,36 @@ from datetime import datetime, UTC
 logger = logging.getLogger(__name__)
 
 
+def admin_required(f):
+    """Decorator that requires admin privileges."""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # For now, allow all authenticated users to access admin endpoints
+        # In production, this should check for actual admin role
+        if not hasattr(g, 'current_user_id') or g.current_user_id is None:
+            return create_error_response(
+                message="Authentication required for admin access",
+                status_code=401,
+                error_code="AUTHENTICATION_REQUIRED"
+            )
+        
+        # TODO: Add proper admin role checking
+        # For now, just log the access
+        SecurityAuditLogger.log_security_event(
+            'admin_endpoint_access',
+            {
+                'endpoint': request.endpoint,
+                'method': request.method,
+                'path': request.path
+            },
+            severity='INFO'
+        )
+        
+        return f(*args, **kwargs)
+    
+    return decorated_function
+
+
 class SecurityAuditLogger:
     """Enhanced security audit logging for collaboration activities."""
     
