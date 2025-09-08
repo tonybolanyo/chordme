@@ -298,6 +298,10 @@ app.register_blueprint(ai_music_insights_routes.ai_insights_bp)
 # Register business intelligence blueprint
 app.register_blueprint(business_intelligence_routes.bi_bp)
 
+# Register cache management blueprint
+from . import cache_routes
+app.register_blueprint(cache_routes.cache_bp)
+
 # Register practice mode API
 from .practice_api import practice_bp
 app.register_blueprint(practice_bp)

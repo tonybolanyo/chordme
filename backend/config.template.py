@@ -82,8 +82,19 @@ MFA_REQUIRED_FOR_ALL = os.environ.get('MFA_REQUIRED_FOR_ALL', 'False').lower() =
 MFA_REQUIRED_FOR_SSO = os.environ.get('MFA_REQUIRED_FOR_SSO', 'False').lower() == 'true'
 MFA_REQUIRED_DOMAINS = os.environ.get('MFA_REQUIRED_DOMAINS', '').split(',') if os.environ.get('MFA_REQUIRED_DOMAINS') else []
 
-# Redis Configuration (for session storage)
+# Redis Configuration (for session storage and caching)
 REDIS_URL = os.environ.get('REDIS_URL', None)
+
+# Advanced Cache Configuration
+CACHE_ENABLED = os.environ.get('CACHE_ENABLED', 'True').lower() == 'true'
+CACHE_DEFAULT_TTL = int(os.environ.get('CACHE_DEFAULT_TTL', 3600))  # 1 hour
+CACHE_MAX_TTL = int(os.environ.get('CACHE_MAX_TTL', 86400))  # 24 hours
+CACHE_KEY_PREFIX = os.environ.get('CACHE_KEY_PREFIX', 'chordme')
+CACHE_COMPRESSION_ENABLED = os.environ.get('CACHE_COMPRESSION_ENABLED', 'True').lower() == 'true'
+CACHE_COMPRESSION_THRESHOLD = int(os.environ.get('CACHE_COMPRESSION_THRESHOLD', 1024))  # bytes
+CACHE_WARM_ON_STARTUP = os.environ.get('CACHE_WARM_ON_STARTUP', 'True').lower() == 'true'
+CACHE_INVALIDATION_STRATEGY = os.environ.get('CACHE_INVALIDATION_STRATEGY', 'smart')  # smart, manual, time_based
+CACHE_CLUSTER_MODE = os.environ.get('CACHE_CLUSTER_MODE', 'False').lower() == 'true'
 
 # Base URL for redirects and metadata
 BASE_URL = os.environ.get('BASE_URL', 'http://localhost:5000')
