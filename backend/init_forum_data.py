@@ -72,7 +72,17 @@ def create_default_categories():
     for cat_data in categories:
         existing = ForumCategory.query.filter_by(slug=cat_data['slug']).first()
         if not existing:
-            category = ForumCategory(**cat_data)
+            category = ForumCategory(
+                name=cat_data['name'],
+                slug=cat_data['slug'],
+                description=cat_data['description'],
+                color=cat_data['color']
+            )
+            category.icon = cat_data['icon']
+            category.display_order = cat_data['display_order']
+            if 'moderator_only' in cat_data:
+                category.moderator_only = cat_data['moderator_only']
+            
             db.session.add(category)
             print(f"Created category: {cat_data['name']}")
     
@@ -178,7 +188,15 @@ def create_default_badges():
     for badge_data in badges:
         existing = UserBadge.query.filter_by(name=badge_data['name']).first()
         if not existing:
-            badge = UserBadge(**badge_data)
+            badge = UserBadge(
+                name=badge_data['name'],
+                description=badge_data['description'],
+                badge_type=badge_data['badge_type'],
+                requirements=badge_data['requirements'],
+                icon=badge_data['icon'],
+                color=badge_data['color'],
+                rarity=badge_data['rarity']
+            )
             db.session.add(badge)
             print(f"Created badge: {badge_data['name']}")
     
