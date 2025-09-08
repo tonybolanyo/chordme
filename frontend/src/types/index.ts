@@ -278,6 +278,264 @@ export interface SpotifyRecommendations {
   }[];
 }
 
+// Apple Music API types
+export interface AppleMusicConfig {
+  developerToken: string;
+  musicUserToken?: string;
+  app: {
+    name: string;
+    build: string;
+  };
+}
+
+export interface AppleMusicTokens {
+  developerToken: string;
+  musicUserToken?: string;
+  userInfo?: AppleMusicUserInfo;
+}
+
+export interface AppleMusicUserInfo {
+  id: string;
+  attributes?: {
+    handle?: string;
+  };
+}
+
+export interface AppleMusicAuthResponse {
+  tokens: AppleMusicTokens;
+  userInfo?: AppleMusicUserInfo;
+  subscriptionStatus: AppleMusicSubscriptionStatus;
+}
+
+export interface AppleMusicSubscriptionStatus {
+  active: boolean;
+  canPlayCatalogContent: boolean;
+  canPlayback: boolean;
+  hasCloudLibraryEnabled: boolean;
+}
+
+export interface AppleMusicArtwork {
+  url: string;
+  width: number;
+  height: number;
+  bgColor?: string;
+  textColor1?: string;
+  textColor2?: string;
+  textColor3?: string;
+  textColor4?: string;
+}
+
+export interface AppleMusicArtist {
+  id: string;
+  type: 'artists';
+  href: string;
+  attributes: {
+    name: string;
+    genreNames?: string[];
+    artwork?: AppleMusicArtwork;
+    url?: string;
+  };
+}
+
+export interface AppleMusicAlbum {
+  id: string;
+  type: 'albums';
+  href: string;
+  attributes: {
+    name: string;
+    artistName: string;
+    artwork: AppleMusicArtwork;
+    releaseDate: string;
+    trackCount: number;
+    genreNames: string[];
+    url?: string;
+    copyright?: string;
+    recordLabel?: string;
+  };
+  relationships?: {
+    artists?: {
+      data: AppleMusicArtist[];
+    };
+    tracks?: {
+      data: AppleMusicTrack[];
+    };
+  };
+}
+
+export interface AppleMusicTrack {
+  id: string;
+  type: 'songs';
+  href: string;
+  attributes: {
+    name: string;
+    artistName: string;
+    albumName: string;
+    durationInMillis: number;
+    isrc?: string;
+    artwork: AppleMusicArtwork;
+    url?: string;
+    playParams?: {
+      id: string;
+      kind: string;
+    };
+    previews?: Array<{
+      url: string;
+    }>;
+    genreNames: string[];
+    trackNumber?: number;
+    discNumber?: number;
+    releaseDate?: string;
+  };
+  relationships?: {
+    artists?: {
+      data: AppleMusicArtist[];
+    };
+    albums?: {
+      data: AppleMusicAlbum[];
+    };
+  };
+}
+
+export interface AppleMusicPlaylist {
+  id: string;
+  type: 'playlists';
+  href: string;
+  attributes: {
+    name: string;
+    description?: {
+      standard: string;
+    };
+    artwork?: AppleMusicArtwork;
+    url?: string;
+    playParams?: {
+      id: string;
+      kind: string;
+    };
+    trackTypes?: string[];
+  };
+  relationships?: {
+    curator?: {
+      data: AppleMusicArtist[];
+    };
+    tracks?: {
+      data: AppleMusicTrack[];
+    };
+  };
+}
+
+export interface AppleMusicSearchParams {
+  term: string;
+  types: ('songs' | 'artists' | 'albums' | 'playlists')[];
+  limit?: number;
+  offset?: number;
+  l?: string; // language
+}
+
+export interface AppleMusicSearchResult {
+  results: {
+    songs?: {
+      data: AppleMusicTrack[];
+      href?: string;
+      next?: string;
+    };
+    artists?: {
+      data: AppleMusicArtist[];
+      href?: string;
+      next?: string;
+    };
+    albums?: {
+      data: AppleMusicAlbum[];
+      href?: string;
+      next?: string;
+    };
+    playlists?: {
+      data: AppleMusicPlaylist[];
+      href?: string;
+      next?: string;
+    };
+  };
+}
+
+export interface AppleMusicRecommendationParams {
+  id: string;
+  limit?: number;
+  types?: ('songs' | 'albums' | 'playlists')[];
+}
+
+export interface AppleMusicRecommendations {
+  data: (AppleMusicTrack | AppleMusicAlbum | AppleMusicPlaylist)[];
+  href?: string;
+  next?: string;
+}
+
+// Cross-platform music matching types
+export interface MusicPlatformTrack {
+  platform: 'spotify' | 'apple-music';
+  id: string;
+  name: string;
+  artistName: string;
+  albumName: string;
+  durationMs: number;
+  isrc?: string;
+  previewUrl?: string;
+  externalUrl?: string;
+  artwork?: {
+    url: string;
+    width?: number;
+    height?: number;
+  };
+}
+
+export interface CrossPlatformMatchRequest {
+  track: MusicPlatformTrack;
+  targetPlatform: 'spotify' | 'apple-music';
+  matchCriteria?: {
+    requireISRC?: boolean;
+    titleSimilarityThreshold?: number;
+    artistSimilarityThreshold?: number;
+    durationToleranceMs?: number;
+  };
+}
+
+export interface CrossPlatformMatchResult {
+  sourceTrack: MusicPlatformTrack;
+  matches: Array<{
+    track: MusicPlatformTrack;
+    confidence: number;
+    matchedBy: ('isrc' | 'title' | 'artist' | 'duration' | 'combined')[];
+  }>;
+  bestMatch?: MusicPlatformTrack;
+}
+
+export interface UnifiedMusicMetadata {
+  platforms: {
+    spotify?: SpotifyTrack;
+    appleMusic?: AppleMusicTrack;
+  };
+  normalized: {
+    title: string;
+    artists: string[];
+    album: string;
+    durationMs: number;
+    releaseDate?: string;
+    genres: string[];
+    isrc?: string;
+    artwork?: {
+      url: string;
+      width: number;
+      height: number;
+    };
+    previewUrls: {
+      spotify?: string;
+      appleMusic?: string;
+    };
+    externalUrls: {
+      spotify?: string;
+      appleMusic?: string;
+    };
+  };
+}
+
 // Song sharing types
 export interface SharedUser {
   id: string;
