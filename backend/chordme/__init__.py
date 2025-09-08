@@ -269,6 +269,7 @@ from . import enterprise_api  # Enterprise authentication endpoints
 from . import project_management_routes  # Project management endpoints
 from . import metadata_routes  # Universal metadata system endpoints
 from . import ai_music_insights_routes  # AI music insights endpoints
+from . import business_intelligence_routes  # Business intelligence and reporting endpoints
 
 # Register search blueprint
 app.register_blueprint(search_routes.search_bp)
@@ -293,6 +294,9 @@ app.register_blueprint(music_discovery_routes.discovery_bp)
 
 # Register AI music insights blueprint
 app.register_blueprint(ai_music_insights_routes.ai_insights_bp)
+
+# Register business intelligence blueprint
+app.register_blueprint(business_intelligence_routes.bi_bp)
 
 # Register practice mode API
 from .practice_api import practice_bp

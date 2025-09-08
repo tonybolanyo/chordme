@@ -1,0 +1,553 @@
+/**
+ * Report Builder Component Styles
+ * 
+ * Styles for the custom report builder including:
+ * - Drag and drop interface
+ * - Configuration panels
+ * - Canvas area and preview
+ * - Responsive design
+ */
+
+.report-builder {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: var(--color-background, #f8f9fa);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+/* Header */
+.report-builder-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: white;
+  border-bottom: 1px solid var(--color-border, #e1e5e9);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.report-builder-header h2 {
+  margin: 0;
+  color: var(--color-text-primary, #2c3e50);
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.report-builder-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background-color: var(--color-primary, #3498db);
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--color-primary-dark, #2980b9);
+}
+
+.btn-secondary {
+  background-color: var(--color-secondary, #95a5a6);
+  color: white;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: var(--color-secondary-dark, #7f8c8d);
+}
+
+/* Error Messages */
+.report-builder-errors {
+  background-color: #fdf2f2;
+  border: 1px solid #f8d7da;
+  border-radius: 6px;
+  padding: 0.75rem;
+  margin: 1rem 2rem 0;
+}
+
+.error-message {
+  color: #721c24;
+  font-size: 0.875rem;
+  margin: 0.25rem 0;
+}
+
+/* Main Content */
+.report-builder-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Sidebar */
+.report-builder-sidebar {
+  width: 320px;
+  background: white;
+  border-right: 1px solid var(--color-border, #e1e5e9);
+  overflow-y: auto;
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
+}
+
+.configuration-panel,
+.data-sources-panel,
+.templates-panel {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--color-border, #e1e5e9);
+}
+
+.configuration-panel h3,
+.data-sources-panel h3,
+.templates-panel h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-text-primary, #2c3e50);
+}
+
+/* Configuration Sections */
+.config-section {
+  margin-bottom: 1.5rem;
+}
+
+.config-section label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--color-text-secondary, #5a6c7d);
+  font-size: 0.875rem;
+}
+
+.config-section select,
+.config-section input[type="date"] {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--color-border, #ddd);
+  border-radius: 4px;
+  font-size: 0.875rem;
+  background: white;
+  transition: border-color 0.2s ease;
+}
+
+.config-section select:focus,
+.config-section input[type="date"]:focus {
+  outline: none;
+  border-color: var(--color-primary, #3498db);
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1);
+}
+
+.date-range-inputs {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.date-range-inputs input {
+  flex: 1;
+}
+
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0;
+  font-weight: normal;
+  cursor: pointer;
+}
+
+.checkbox-group input[type="checkbox"] {
+  margin: 0;
+}
+
+/* Data Sources Panel */
+.draggable-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.draggable-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: var(--color-background, #f8f9fa);
+  border: 1px solid var(--color-border, #e1e5e9);
+  border-radius: 6px;
+  cursor: grab;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.draggable-item:hover {
+  background: var(--color-hover, #e9ecef);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.draggable-item:active {
+  cursor: grabbing;
+  transform: translateY(0);
+}
+
+.item-icon {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.item-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-primary, #2c3e50);
+}
+
+/* Templates Panel */
+.template-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.template-item {
+  padding: 1rem;
+  background: var(--color-background, #f8f9fa);
+  border: 1px solid var(--color-border, #e1e5e9);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.template-item:hover {
+  background: var(--color-hover, #e9ecef);
+  border-color: var(--color-primary, #3498db);
+}
+
+.template-name {
+  display: block;
+  font-weight: 600;
+  color: var(--color-text-primary, #2c3e50);
+  margin-bottom: 0.25rem;
+}
+
+.template-description {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--color-text-tertiary, #8e9ba8);
+  line-height: 1.4;
+}
+
+/* Main Canvas */
+.report-builder-canvas {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: white;
+  overflow: hidden;
+}
+
+.canvas-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--color-border, #e1e5e9);
+  background: #fafbfc;
+}
+
+.canvas-header h3 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-text-primary, #2c3e50);
+}
+
+.report-type-badge {
+  background: var(--color-primary, #3498db);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.canvas-area {
+  flex: 1;
+  padding: 1.5rem;
+  overflow-y: auto;
+  transition: background-color 0.2s ease;
+}
+
+.canvas-area.drag-active {
+  background-color: rgba(52, 152, 219, 0.05);
+}
+
+/* Canvas Placeholder */
+.canvas-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 300px;
+}
+
+.placeholder-content {
+  text-align: center;
+  color: var(--color-text-tertiary, #8e9ba8);
+}
+
+.placeholder-content h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.placeholder-content p {
+  margin: 0 0 1rem 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.placeholder-icons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  font-size: 2rem;
+  opacity: 0.5;
+}
+
+/* Report Preview */
+.report-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.preview-summary,
+.preview-charts,
+.preview-insights {
+  background: white;
+  border: 1px solid var(--color-border, #e1e5e9);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.preview-summary h4,
+.preview-charts h4,
+.preview-insights h4 {
+  margin: 0 0 1rem 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-text-primary, #2c3e50);
+}
+
+.summary-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.metric-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1rem;
+  background: var(--color-background, #f8f9fa);
+  border-radius: 6px;
+}
+
+.metric-label {
+  font-size: 0.8rem;
+  color: var(--color-text-tertiary, #8e9ba8);
+  text-transform: uppercase;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.metric-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text-primary, #2c3e50);
+}
+
+.chart-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  background: var(--color-background, #f8f9fa);
+  border: 2px dashed var(--color-border, #ddd);
+  border-radius: 6px;
+  color: var(--color-text-tertiary, #8e9ba8);
+}
+
+.preview-insights ul {
+  margin: 0;
+  padding-left: 1.5rem;
+  color: var(--color-text-secondary, #5a6c7d);
+}
+
+.preview-insights li {
+  margin-bottom: 0.5rem;
+  line-height: 1.5;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .report-builder-content {
+    flex-direction: column;
+  }
+  
+  .report-builder-sidebar {
+    width: 100%;
+    max-height: 40vh;
+    order: 2;
+  }
+  
+  .report-builder-canvas {
+    order: 1;
+  }
+  
+  .report-builder-header {
+    padding: 1rem;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+  
+  .report-builder-actions {
+    justify-content: center;
+  }
+  
+  .summary-metrics {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .date-range-inputs {
+    flex-direction: column;
+  }
+  
+  .canvas-area {
+    padding: 1rem;
+  }
+  
+  .preview-summary,
+  .preview-charts,
+  .preview-insights {
+    padding: 1rem;
+  }
+}
+
+/* Drag and Drop Effects */
+.drag-over {
+  background-color: rgba(52, 152, 219, 0.1);
+  border: 2px dashed var(--color-primary, #3498db);
+}
+
+.drag-preview {
+  position: fixed;
+  pointer-events: none;
+  z-index: 1000;
+  background: white;
+  border: 1px solid var(--color-border, #ddd);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+/* Loading States */
+.btn:disabled {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn:disabled::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  animation: loading-shimmer 1.5s infinite;
+}
+
+@keyframes loading-shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+/* Accessibility */
+.draggable-item:focus {
+  outline: 2px solid var(--color-primary, #3498db);
+  outline-offset: 2px;
+}
+
+.template-item:focus {
+  outline: 2px solid var(--color-primary, #3498db);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .draggable-item,
+  .template-item,
+  .btn,
+  .canvas-area {
+    transition: none;
+  }
+  
+  .btn:disabled::after {
+    animation: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .report-builder {
+    border: 2px solid;
+  }
+  
+  .draggable-item,
+  .template-item {
+    border-width: 2px;
+  }
+  
+  .btn {
+    border: 2px solid currentColor;
+  }
+}
