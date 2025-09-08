@@ -15,7 +15,7 @@ interface ContentData {
   difficulty?: string;
   tutorial_content?: string;
   exercise_content?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface LicenseData {
