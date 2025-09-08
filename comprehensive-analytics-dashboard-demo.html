@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChordMe - Comprehensive Analytics Dashboard Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+        .widget {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: 1px solid #e5e7eb;
+        }
+        .animate-pulse .pulse-bg {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+        <div class="px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Analytics Dashboard</h1>
+                    <p class="text-sm text-gray-600 mt-1">Comprehensive insights into your musical practice and performance</p>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <!-- Real-time status -->
+                    <div class="flex items-center text-sm">
+                        <div class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                        <span class="text-gray-600">Live updates</span>
+                    </div>
+
+                    <!-- Last updated -->
+                    <div class="text-sm text-gray-500">Updated: 08:47 AM</div>
+
+                    <!-- Timeframe selector -->
+                    <select class="border border-gray-300 rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option>Last 7 days</option>
+                        <option selected>Last 30 days</option>
+                        <option>Last 90 days</option>
+                        <option>Last year</option>
+                        <option>All time</option>
+                    </select>
+
+                    <!-- Actions -->
+                    <div class="flex items-center space-x-2">
+                        <button class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded" title="Customize Dashboard">⚙️</button>
+                        <button class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded" title="Refresh">🔄</button>
+                        <button class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded" title="Export Data">📥</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Dashboard Content -->
+    <div class="p-6">
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600">Total Sessions</p>
+                        <p class="text-2xl font-bold text-gray-900 mt-1">45</p>
+                        <p class="text-sm text-green-600 mt-1">+12%</p>
+                    </div>
+                    <div class="text-2xl">🎵</div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600">Songs Practiced</p>
+                        <p class="text-2xl font-bold text-gray-900 mt-1">23</p>
+                        <p class="text-sm text-green-600 mt-1">+5%</p>
+                    </div>
+                    <div class="text-2xl">🎼</div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600">Collaborations</p>
+                        <p class="text-2xl font-bold text-gray-900 mt-1">8</p>
+                        <p class="text-sm text-green-600 mt-1">+8%</p>
+                    </div>
+                    <div class="text-2xl">👥</div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600">Practice Time</p>
+                        <p class="text-2xl font-bold text-gray-900 mt-1">3h 30m</p>
+                        <p class="text-sm text-green-600 mt-1">+15%</p>
+                    </div>
+                    <div class="text-2xl">⏱️</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Widgets Grid -->
+        <div class="dashboard-grid">
+            <!-- User Activity Widget -->
+            <div class="widget p-4">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">User Activity</h3>
+                    <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">30d</span>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-gray-900">45</div>
+                        <div class="text-sm text-gray-600">Sessions</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-gray-900">3h 30m</div>
+                        <div class="text-sm text-gray-600">Practice Time</div>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-gray-600">Consistency</span>
+                        <span class="font-medium text-green-600">75%</span>
+                    </div>
+                    <div class="mt-2 bg-gray-200 rounded-full h-2">
+                        <div class="h-2 rounded-full bg-green-500" style="width: 75%"></div>
+                    </div>
+                </div>
+
+                <div class="text-sm">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-gray-600">Most Active Day</span>
+                        <span class="font-medium text-gray-900">Monday</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Song Popularity Widget -->
+            <div class="widget p-4">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Song Popularity</h3>
+                    <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">30d</span>
+                </div>
+                
+                <h4 class="text-sm font-medium text-gray-700 mb-3">Most Practiced Songs</h4>
+                <div class="space-y-2 mb-4">
+                    <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-sm font-medium text-gray-500 w-4 text-center">1</span>
+                            <div>
+                                <div class="text-sm font-medium text-gray-900">Wonderwall</div>
+                                <div class="text-xs text-gray-600">Oasis</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-sm text-gray-600">15x</span>
+                            <span class="text-xs">📈</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-sm font-medium text-gray-500 w-4 text-center">2</span>
+                            <div>
+                                <div class="text-sm font-medium text-gray-900">Sweet Child O' Mine</div>
+                                <div class="text-xs text-gray-600">Guns N' Roses</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-sm text-gray-600">12x</span>
+                            <span class="text-xs">➡️</span>
+                        </div>
+                    </div>
+                </div>
+
+                <h4 class="text-sm font-medium text-gray-700 mb-2">Popular Chords</h4>
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="font-medium text-gray-900">C</span>
+                        <div class="flex items-center space-x-1">
+                            <div class="w-8 bg-gray-200 rounded-full h-1">
+                                <div class="bg-purple-500 h-1 rounded-full" style="width: 85%"></div>
+                            </div>
+                            <span class="text-xs text-gray-600 w-6 text-right">15%</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="font-medium text-gray-900">G</span>
+                        <div class="flex items-center space-x-1">
+                            <div class="w-8 bg-gray-200 rounded-full h-1">
+                                <div class="bg-purple-500 h-1 rounded-full" style="width: 75%"></div>
+                            </div>
+                            <span class="text-xs text-gray-600 w-6 text-right">14%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Stats Widget -->
+            <div class="widget p-4">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Performance Stats</h3>
+                    <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">30d</span>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div class="text-center">
+                        <div class="text-xl font-bold text-gray-900">3h 30m</div>
+                        <div class="text-xs text-gray-600">Total Practice</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-xl font-bold text-green-600">86%</div>
+                        <div class="text-xs text-gray-600">Completion</div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <div class="flex items-center justify-between text-sm mb-2">
+                        <span class="text-gray-600">Improvement Score</span>
+                        <span class="font-medium text-green-600">72/100</span>
+                    </div>
+                    <div class="bg-gray-200 rounded-full h-2">
+                        <div class="h-2 rounded-full bg-green-500" style="width: 72%"></div>
+                    </div>
+                </div>
+
+                <h4 class="text-sm font-medium text-gray-700 mb-2">Trends</h4>
+                <div class="space-y-1">
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-gray-600">Completion</span>
+                        <div class="flex items-center space-x-1 text-green-600">
+                            <span class="text-xs">📈</span>
+                            <span class="capitalize">improving</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-gray-600">Consistency</span>
+                        <div class="flex items-center space-x-1 text-gray-600">
+                            <span class="text-xs">➡️</span>
+                            <span class="capitalize">stable</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Collaboration Widget -->
+            <div class="widget p-4">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Collaboration</h3>
+                    <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">30d</span>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-gray-900">8</div>
+                        <div class="text-sm text-gray-600">Sessions</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-gray-900">2.5</div>
+                        <div class="text-sm text-gray-600">Avg Participants</div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-gray-600">Frequency</span>
+                        <span class="font-medium text-blue-600">Regular</span>
+                    </div>
+                </div>
+
+                <h4 class="text-sm font-medium text-gray-700 mb-2">Patterns</h4>
+                <div class="space-y-2 text-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600">Peak Hours</span>
+                        <span class="text-gray-900">19:00-21:00</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600">Avg Duration</span>
+                        <span class="text-gray-900">45m</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Insights Widget -->
+            <div class="widget p-4">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Recent Insights</h3>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="p-3 bg-blue-50 rounded-lg border-l-4 border-blue-500">
+                        <div class="flex items-start justify-between">
+                            <div class="flex-1">
+                                <h4 class="text-sm font-medium text-blue-900 mb-1">Practice Consistency</h4>
+                                <p class="text-sm text-blue-800">Your practice consistency has improved by 15% this week!</p>
+                            </div>
+                            <span class="text-xs text-blue-600 ml-2">2h ago</span>
+                        </div>
+                    </div>
+                    
+                    <div class="p-3 bg-yellow-50 rounded-lg border-l-4 border-yellow-500">
+                        <div class="flex items-start justify-between">
+                            <div class="flex-1">
+                                <h4 class="text-sm font-medium text-yellow-900 mb-1">Focus Area</h4>
+                                <p class="text-sm text-yellow-800">Consider practicing chord transitions for better flow</p>
+                            </div>
+                            <span class="text-xs text-yellow-600 ml-2">1d ago</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Trends Widget -->
+            <div class="widget p-4">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Progress Trends</h3>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                        <div class="flex-1">
+                            <div class="text-sm font-medium text-gray-900">Completion Rate</div>
+                            <div class="text-xs text-gray-600">85% vs 78% previous</div>
+                        </div>
+                        <div class="flex items-center space-x-1 text-green-600">
+                            <span class="text-lg">📈</span>
+                            <span class="text-sm font-medium">7%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                        <div class="flex-1">
+                            <div class="text-sm font-medium text-gray-900">Session Length</div>
+                            <div class="text-xs text-gray-600">45m vs 42m previous</div>
+                        </div>
+                        <div class="flex items-center space-x-1 text-green-600">
+                            <span class="text-lg">📈</span>
+                            <span class="text-sm font-medium">3m</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Real-time Updates Log -->
+        <div class="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">Recent Updates</h3>
+            <div class="space-y-2 max-h-32 overflow-y-auto">
+                <div class="text-sm text-gray-600 flex items-center space-x-2">
+                    <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                    <span>Analytics updated</span>
+                    <span class="text-xs text-gray-400">08:47:15</span>
+                </div>
+                <div class="text-sm text-gray-600 flex items-center space-x-2">
+                    <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                    <span>New collaboration session detected</span>
+                    <span class="text-xs text-gray-400">08:45:32</span>
+                </div>
+                <div class="text-sm text-gray-600 flex items-center space-x-2">
+                    <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                    <span>Practice session completed</span>
+                    <span class="text-xs text-gray-400">08:43:18</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
