@@ -297,7 +297,7 @@ When creating or modifying ANY documentation file, you MUST:
    ```
 
 3. **Include cross-language navigation links:**
-   - English files: Add `**Cambiar idioma:** [English](filename.md) | [Español](filename-es.md)` at bottom
+   - English files: Add `**Cambiar idioma:** **English** | [Español](filename-es.md)` at bottom
    - Spanish files: Add `**Cambiar idioma:** [English](filename.md) | **Español**` at bottom
 
 ### Documentation Creation Workflow
@@ -324,7 +324,7 @@ When creating or modifying ANY documentation file, you MUST:
    
    ---
    
-   **Cambiar idioma:** [English](your-feature.md) | [Español](your-feature-es.md)
+   **Cambiar idioma:** **English** | [Español](your-feature-es.md)
    ```
 
 3. **Create Spanish version immediately:**
