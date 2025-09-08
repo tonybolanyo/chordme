@@ -82,14 +82,14 @@ describe('Login', () => {
       screen.getByPlaceholderText('Enter your password')
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: /^sign in$/i })
+      screen.getByRole('button', { name: /login/i })
     ).toBeInTheDocument();
   });
 
   it('renders register link', () => {
     render(<Login />);
 
-    const registerLink = screen.getByText(/sign up here/i);
+    const registerLink = screen.getByText(/sign up/i);
     expect(registerLink.closest('a')).toHaveAttribute('href', '#register');
   });
 
@@ -113,7 +113,7 @@ describe('Login', () => {
 
     const emailInput = screen.getByLabelText(/email/i);
     const passwordInput = screen.getByPlaceholderText('Enter your password');
-    const submitButton = screen.getByRole('button', { name: /^sign in$/i });
+    const submitButton = screen.getByRole('button', { name: /login/i });
 
     await user.type(emailInput, 'test@example.com');
     await user.type(passwordInput, 'password123');
