@@ -184,7 +184,10 @@ class ContentService {
       throw new Error(data.error || `HTTP ${response.status}: ${response.statusText}`);
     }
 
-    return data.data!;
+    if (data.data === null || data.data === undefined) {
+      throw new Error('API response missing expected data field.');
+    }
+    return data.data;
   }
 
   /**
