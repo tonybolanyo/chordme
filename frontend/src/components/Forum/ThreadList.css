@@ -1,0 +1,455 @@
+.thread-list {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+/* Loading and Error States */
+.thread-list__loading,
+.thread-list__error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f3f4f6;
+  border-top: 3px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.thread-list__error {
+  color: #e74c3c;
+}
+
+.error-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.retry-button {
+  background: #3498db;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: background-color 0.2s ease;
+}
+
+.retry-button:hover {
+  background: #2980b9;
+}
+
+/* Header */
+.thread-list__header {
+  margin-bottom: 2rem;
+}
+
+.category-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.category-info__icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  margin-right: 1rem;
+  color: white;
+}
+
+.category-info__name {
+  font-size: 2rem;
+  color: #2c3e50;
+  margin: 0 0 0.25rem 0;
+  font-weight: 700;
+}
+
+.category-info__breadcrumb {
+  color: #7f8c8d;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.category-info__breadcrumb a {
+  color: #3498db;
+  text-decoration: none;
+}
+
+.category-info__breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+/* Controls */
+.thread-list__controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.controls-group {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.control-select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  background: white;
+  color: #495057;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.control-select:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+.create-thread-button {
+  background: #3498db;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.25rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.create-thread-button:hover {
+  background: #2980b9;
+  transform: translateY(-1px);
+}
+
+/* Threads Container */
+.threads-container {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e1e8ed;
+  overflow: hidden;
+}
+
+.threads-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  color: #7f8c8d;
+}
+
+.empty-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.threads-empty h3 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: #95a5a6;
+}
+
+.create-first-thread {
+  background: #3498db;
+  color: white;
+  border: none;
+  padding: 0.875rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: all 0.2s ease;
+}
+
+.create-first-thread:hover {
+  background: #2980b9;
+  transform: translateY(-1px);
+}
+
+/* Thread Items */
+.threads-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.thread-item {
+  display: flex;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #f1f3f4;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.thread-item:last-child {
+  border-bottom: none;
+}
+
+.thread-item:hover {
+  background: #f8f9fa;
+}
+
+.thread-item:focus {
+  outline: none;
+  background: #f8f9fa;
+  box-shadow: inset 3px 0 0 #3498db;
+}
+
+.thread-item--pinned {
+  background: linear-gradient(90deg, #fff9e6 0%, #ffffff 100%);
+  border-left: 4px solid #f39c12;
+}
+
+.thread-item--locked {
+  opacity: 0.8;
+}
+
+.thread-item__main {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.thread-item__indicators {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  align-items: center;
+  margin-right: 0.5rem;
+}
+
+.indicator {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.thread-type-icon {
+  font-size: 1.1rem;
+  opacity: 0.7;
+}
+
+.thread-item__content {
+  flex: 1;
+}
+
+.thread-item__title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.4;
+}
+
+.thread-item__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.tag {
+  background: #e3f2fd;
+  color: #1976d2;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.thread-item__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  color: #7f8c8d;
+  font-size: 0.85rem;
+}
+
+.meta-item {
+  white-space: nowrap;
+}
+
+/* Thread Stats */
+.thread-item__stats {
+  display: flex;
+  gap: 1.5rem;
+  margin-left: 1rem;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  min-width: 3rem;
+}
+
+.stat__value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #3498db;
+  line-height: 1;
+}
+
+.stat__label {
+  font-size: 0.7rem;
+  color: #95a5a6;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 0.25rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .thread-list {
+    padding: 1rem 0.5rem;
+  }
+  
+  .category-info {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .category-info__icon {
+    margin: 0 auto 1rem auto;
+  }
+  
+  .category-info__name {
+    font-size: 1.5rem;
+  }
+  
+  .thread-list__controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .controls-group {
+    justify-content: center;
+  }
+  
+  .create-thread-button {
+    width: 100%;
+  }
+  
+  .thread-item {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 1rem;
+  }
+  
+  .thread-item__main {
+    margin-bottom: 1rem;
+  }
+  
+  .thread-item__stats {
+    justify-content: space-around;
+    margin-left: 0;
+    padding-top: 1rem;
+    border-top: 1px solid #f1f3f4;
+  }
+  
+  .thread-item__meta {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .meta-item {
+    white-space: normal;
+  }
+}
+
+@media (max-width: 480px) {
+  .category-info__name {
+    font-size: 1.25rem;
+  }
+  
+  .thread-item__title {
+    font-size: 1rem;
+  }
+  
+  .thread-item__stats {
+    gap: 1rem;
+  }
+  
+  .stat {
+    min-width: 2.5rem;
+  }
+  
+  .stat__value {
+    font-size: 1rem;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .loading-spinner {
+    animation: none;
+  }
+  
+  .thread-item {
+    transition: none;
+  }
+  
+  .create-thread-button,
+  .create-first-thread {
+    transition: none;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .thread-item {
+    border-bottom-width: 2px;
+  }
+  
+  .thread-item--pinned {
+    border-left-width: 6px;
+  }
+}
+
+/* Focus indicators for keyboard navigation */
+.thread-item:focus-visible {
+  outline: 3px solid #3498db;
+  outline-offset: -3px;
+}
+
+.create-thread-button:focus-visible,
+.create-first-thread:focus-visible {
+  outline: 3px solid #2c3e50;
+  outline-offset: 2px;
+}
