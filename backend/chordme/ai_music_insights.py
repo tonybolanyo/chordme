@@ -10,7 +10,6 @@ import json
 from typing import Dict, List, Optional, Tuple, Any, Set
 from dataclasses import dataclass, asdict
 from enum import Enum
-import numpy as np
 from collections import Counter, defaultdict
 
 

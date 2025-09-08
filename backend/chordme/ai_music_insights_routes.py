@@ -8,16 +8,37 @@ chord progression analysis, structure detection, and learning recommendations.
 from flask import Blueprint, request, jsonify
 from flasgger import swag_from
 import traceback
+from functools import wraps
 from .ai_music_insights import ai_music_insights_service
-from .utils import token_required, handle_request_errors
+from .utils import auth_required
 from .error_codes import ErrorCode
 
 # Create blueprint
 ai_insights_bp = Blueprint('ai_insights', __name__, url_prefix='/api/v1/ai-insights')
 
 
+def handle_request_errors(f):
+    """Simple error handler decorator"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        try:
+            return f(*args, **kwargs)
+        except Exception as e:
+            import logging
+            logging.error(f"Request error in {f.__name__}: {str(e)}")
+            logging.error(traceback.format_exc())
+            return jsonify({
+                'status': 'error',
+                'error': ErrorCode.format_error(
+                    ErrorCode.INTERNAL_SERVER_ERROR,
+                    detail='An unexpected error occurred'
+                )
+            }), 500
+    return decorated_function
+
+
 @ai_insights_bp.route('/analyze', methods=['POST'])
-@token_required
+@auth_required
 @handle_request_errors
 @swag_from({
     'tags': ['AI Music Insights'],
@@ -300,7 +321,7 @@ def analyze_song():
 
 
 @ai_insights_bp.route('/compare', methods=['POST'])
-@token_required
+@auth_required
 @handle_request_errors
 @swag_from({
     'tags': ['AI Music Insights'],
@@ -490,7 +511,7 @@ def compare_songs():
 
 
 @ai_insights_bp.route('/validate-content', methods=['POST'])
-@token_required
+@auth_required
 @handle_request_errors
 @swag_from({
     'tags': ['AI Music Insights'],

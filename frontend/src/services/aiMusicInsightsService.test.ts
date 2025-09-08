@@ -155,7 +155,7 @@ This should trigger an error`;
       const jazzProgression = insights.chordProgression.find(p => p.name === 'ii-V-I');
       expect(jazzProgression).toBeDefined();
       if (jazzProgression) {
-        expect(jazzProgression.description).toContain('jazz');
+        expect(jazzProgression.description.toLowerCase()).toContain('jazz');
         expect(jazzProgression.romanNumerals).toEqual(['ii', 'V', 'I']);
       }
     });
