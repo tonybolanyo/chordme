@@ -3,7 +3,8 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { sessionManagementService, type SessionFilters } from '../../services/sessionManagementService';
+import { sessionManagementService } from '../../services/sessionManagementService';
+import type { SessionFilters } from '../../services/sessionManagementService';
 import type { CollaborationSession } from '../../types/collaboration';
 
 export interface SessionListProps {

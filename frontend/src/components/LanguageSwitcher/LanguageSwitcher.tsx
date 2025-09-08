@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { supportedLanguages, type SupportedLanguage } from '../../i18n/config';
+import { supportedLanguages } from '../../i18n/config';
+import type { SupportedLanguage } from '../../i18n/config';
 import './LanguageSwitcher.css';
 
 interface LanguageSwitcherProps {
