@@ -7,7 +7,7 @@ const ContentSubmissionPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [submissionResult, setSubmissionResult] = useState<any>(null);
+  const [submissionResult, setSubmissionResult] = useState<Awaited<ReturnType<typeof contentService.submitContent>> | null>(null);
 
   const handleSubmit = async (data: ContentSubmissionData) => {
     setIsSubmitting(true);
