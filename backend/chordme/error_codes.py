@@ -45,6 +45,13 @@ ERROR_CODES = {
         'http_status': 400,
         'retryable': False
     },
+    'ANALYSIS_FAILED': {
+        'code': 'ANALYSIS_FAILED',
+        'category': ERROR_CATEGORIES['VALIDATION'],
+        'message': 'Analysis failed due to invalid or insufficient content',
+        'http_status': 422,
+        'retryable': False
+    },
     
     # Authentication errors (401)
     'INVALID_CREDENTIALS': {
