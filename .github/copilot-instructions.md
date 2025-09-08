@@ -275,6 +275,38 @@ cp config.template.py config.py
 
 **Success criteria**: All commands complete without blocking errors, servers start successfully, and user workflows function in browser.
 
+## Critical Completion Rules
+
+**MANDATORY: Never finish work or mark tasks complete while tests are failing.**
+
+When working on any part of the codebase:
+
+1. **Frontend work**: ALL frontend tests MUST pass before completing work
+   - Run `npm run test:frontend:run` to verify
+   - Fix any failing tests before moving to next task
+   - Zero test failures are required for Netlify deployment
+
+2. **Backend work**: Backend tests MUST pass (6 known failures are acceptable)
+   - Run `npm run test:backend` to verify
+   - Target: 147+ passing tests, 6 known failures maximum
+   - Any new failures beyond the 6 known failures must be fixed
+
+3. **Integration work**: All integration tests MUST pass
+   - Run `npm run test:integration` to verify
+   - Zero test failures are required
+
+4. **Full verification**: Before completing any task, run full test suite
+   - Run `npm run test:all` for comprehensive validation
+   - All test categories must meet their success criteria above
+
+**Enforcement**: If any tests are failing beyond known acceptable failures:
+- Do NOT mark work as complete
+- Do NOT close issues or mark milestones as done
+- Fix failing tests first, then continue with remaining work
+- Report test failures clearly in progress updates
+
+**Exception**: Only the 6 known backend test failures are acceptable. Any other test failures must be resolved before work completion.
+
 ## Documentation Standards and Requirements
 
 **CRITICAL: All documentation MUST be created in both English and Spanish with proper Jekyll frontmatter.**
