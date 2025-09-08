@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: AI-Powered Music Insights
+---
+
 # AI-Powered Music Insights
 
 The AI-Powered Music Insights system provides comprehensive analysis of musical content in ChordPro format, delivering intelligent insights about chord progressions, song structures, and musical patterns.

@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Alternative Tuning Support - ChordMe
+---
+
 # Alternative Tuning Support - ChordMe
 
 This document describes the comprehensive alternative tuning system implemented in ChordMe, providing support for 13+ common guitar tunings, automatic chord diagram adaptation, and tuning-specific chord libraries.

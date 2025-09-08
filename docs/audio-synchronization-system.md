@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Audio-Chord Synchronization System Documentation
+---
+
 # Audio-Chord Synchronization System Documentation
 
 ## Overview

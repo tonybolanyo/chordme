@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: UAT Test Cases and Results Documentation
+---
+
 # UAT Test Cases and Results Documentation
 
 ## Overview

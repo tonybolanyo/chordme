@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Auto-Scroll and Remote Control System
+---
+
 # Auto-Scroll and Remote Control System
 
 ## Overview

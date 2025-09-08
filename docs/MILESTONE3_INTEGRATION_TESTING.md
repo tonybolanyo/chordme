@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Milestone 3 Integration Testing
+---
+
 # Milestone 3 Integration Testing Implementation
 
 ## Overview

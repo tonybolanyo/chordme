@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Release Notes Template
+---
+
 # Release Notes Template with UAT Findings
 
 ## ChordMe Release Notes - Version [X.X.X]

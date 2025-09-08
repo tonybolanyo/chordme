@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: UAT Implementation Summary
+---
+
 # UAT Implementation Summary
 
 ## Overview

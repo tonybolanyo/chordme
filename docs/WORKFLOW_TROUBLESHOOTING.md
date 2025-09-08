@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: ChordMe Workflow Troubleshooting Guide
+---
+
 # ChordMe Workflow Troubleshooting Guide
 
 This guide provides step-by-step instructions for diagnosing and fixing workflow action errors in the ChordMe repository.

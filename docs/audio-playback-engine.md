@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: ChordMe Audio Playback Engine Documentation
+---
+
 # ChordMe Audio Playback Engine Documentation
 
 ## Overview

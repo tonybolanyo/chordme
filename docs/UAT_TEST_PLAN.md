@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: ChordMe User Acceptance Testing (UAT) Plan
+---
+
 # ChordMe User Acceptance Testing (UAT) Plan
 
 ## Overview

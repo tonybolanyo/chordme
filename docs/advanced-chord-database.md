@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Advanced Chord Database Documentation
+---
+
 # Advanced Chord Database Documentation
 
 ## Overview

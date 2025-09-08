@@ -1,3 +1,9 @@
+---
+layout: default
+lang: es
+title: Análisis Musical Inteligente con IA
+---
+
 # Análisis Musical Inteligente con IA
 
 El sistema de Análisis Musical Inteligente con IA proporciona un análisis integral del contenido musical en formato ChordPro, ofreciendo insights inteligentes sobre progresiones de acordes, estructuras de canciones y patrones musicales.

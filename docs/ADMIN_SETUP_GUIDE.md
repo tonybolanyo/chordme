@@ -1,3 +1,9 @@
+---
+layout: default
+lang: en
+title: Admin Quick Setup Guide - Workflow Secrets
+---
+
 # Admin Quick Setup Guide - Workflow Secrets
 
 ## Essential Secrets to Configure
