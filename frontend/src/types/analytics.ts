@@ -695,8 +695,186 @@ export interface PerformanceSessionTrackerProps {
   sessionId?: number;
   onSessionStart?: (sessionId: number) => void;
   onSessionEnd?: () => void;
-  autoTrack?: boolean;
-  className?: string;
+}
+
+// Comprehensive Analytics Dashboard Types
+
+export interface ComprehensiveDashboardData {
+  user_activity: UserActivityAnalytics;
+  song_popularity: SongPopularityAnalytics;
+  collaboration_patterns: CollaborationPatternsAnalytics;
+  performance_statistics: PerformanceStatistics;
+  geographic_distribution?: GeographicDistribution;
+  summary_metrics: SummaryMetrics;
+  real_time_status: RealTimeStatus;
+  timeframe: AnalyticsTimeframe;
+  generated_at: string;
+  privacy_notice: PrivacyNotice;
+}
+
+export interface UserActivityAnalytics {
+  total_sessions: number;
+  total_practice_time: number;
+  average_session_length: number;
+  device_distribution: Record<string, number>;
+  session_type_distribution: Record<string, number>;
+  most_active_day: string;
+  consistency_score: number;
+  activity_timeline?: ActivityTimelinePoint[];
+}
+
+export interface ActivityTimelinePoint {
+  period: string;
+  session_count: number;
+  average_duration: number;
+  device_variety: number;
+}
+
+export interface SongPopularityAnalytics {
+  top_songs: PopularSong[];
+  chord_popularity: ChordPopularity[];
+  trending_analysis: TrendingAnalysis;
+}
+
+export interface PopularSong {
+  song_id: number;
+  title: string;
+  artist?: string;
+  performance_count: number;
+  average_rating?: number;
+  trend_direction?: 'up' | 'down' | 'stable';
+}
+
+export interface ChordPopularity {
+  chord: string;
+  count: number;
+  percentage: number;
+  trend?: 'increasing' | 'decreasing' | 'stable';
+}
+
+export interface TrendingAnalysis {
+  trending_up: string[];
+  trending_down: string[];
+  new_favorites: string[];
+}
+
+export interface CollaborationPatternsAnalytics {
+  total_collaboration_sessions: number;
+  average_participants: number;
+  collaboration_frequency: string;
+  most_collaborative_songs: CollaborativeSong[];
+  collaboration_patterns: CollaborationPatterns;
+}
+
+export interface CollaborativeSong {
+  song_id: number;
+  title: string;
+  collaboration_count: number;
+  average_participants: number;
+}
+
+export interface CollaborationPatterns {
+  peak_hours: string[];
+  average_duration: number;
+  most_common_roles: string[];
+}
+
+export interface PerformanceStatistics {
+  total_practice_time: number;
+  completion_rate: number;
+  improvement_score: number;
+  problem_areas: ProblemArea[];
+  performance_trends: PerformanceTrends;
+}
+
+export interface ProblemArea {
+  problem_type: string;
+  frequency: number;
+}
+
+export interface PerformanceTrends {
+  completion_trend: 'improving' | 'declining' | 'stable';
+  improvement_trend: 'improving' | 'declining' | 'stable';
+  consistency: 'stable' | 'variable';
+}
+
+export interface GeographicDistribution {
+  note: string;
+  available: boolean;
+  privacy_compliant: boolean;
+  regions?: Record<string, number>;
+}
+
+export interface SummaryMetrics {
+  total_sessions: number;
+  total_songs: number;
+  total_collaborations: number;
+  active_period: string;
+}
+
+export interface RealTimeStatus {
+  websocket_connected: boolean;
+  last_update: string;
+  update_frequency: string;
+}
+
+export interface WidgetConfig {
+  layout: string;
+  enabled_widgets: string[];
+  widget_positions: Record<string, WidgetPosition>;
+  refresh_interval: number;
+  theme: 'light' | 'dark';
+}
+
+export interface WidgetPosition {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export interface DashboardWidget {
+  id: string;
+  name: string;
+  description: string;
+  component?: string;
+  default_position?: WidgetPosition;
+  min_size?: { width: number; height: number };
+  max_size?: { width: number; height: number };
+}
+
+export interface AnalyticsExportConfig {
+  format: 'json' | 'csv';
+  timeframe: AnalyticsTimeframe;
+  include_sections: string[];
+}
+
+// Hook types for comprehensive analytics
+
+export interface UseComprehensiveAnalyticsOptions {
+  timeframe?: AnalyticsTimeframe;
+  includeAnonymous?: boolean;
+  autoRefresh?: boolean;
+  refreshInterval?: number;
+}
+
+export interface UseComprehensiveAnalyticsReturn {
+  dashboardData: ComprehensiveDashboardData | null;
+  userActivity: UserActivityAnalytics | null;
+  songPopularity: SongPopularityAnalytics | null;
+  collaborationPatterns: CollaborationPatternsAnalytics | null;
+  widgetConfig: WidgetConfig | null;
+  availableWidgets: DashboardWidget[];
+  updateWidgetConfig: (config: Partial<WidgetConfig>) => Promise<void>;
+  loading: boolean;
+  error: string | null;
+  lastUpdated: Date | null;
+  isRealTimeConnected: boolean;
+  refresh: () => Promise<void>;
+  setTimeframe: (timeframe: AnalyticsTimeframe) => void;
+  exportData: (config: AnalyticsExportConfig) => Promise<any>;
+  subscribeToRealTimeUpdates: () => void;
+  unsubscribeFromRealTimeUpdates: () => void;
 }
 
 export interface ProblemSectionIndicatorProps {
