@@ -6223,9 +6223,11 @@ def serve_static(path):
 # Register route blueprints
 from .chord_routes import chord_bp
 from .analytics_routes import analytics_bp
+from .comprehensive_analytics_routes import comprehensive_analytics_bp
 from .setlist_routes import setlist_bp
 app.register_blueprint(chord_bp)
 app.register_blueprint(analytics_bp)
+app.register_blueprint(comprehensive_analytics_bp)
 app.register_blueprint(setlist_bp)
 
 # Initialize database tables
