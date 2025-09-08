@@ -35,6 +35,7 @@ with app.app_context():
     from .read_replicas import read_replica_manager
     from .database_maintenance import db_maintenance_manager
     from .database_backup import db_backup_manager
+    from .database_partitioning import db_partition_manager
 
     # Initialize performance managers with app
     db_performance.init_app(app)
@@ -42,6 +43,7 @@ with app.app_context():
     read_replica_manager.init_app(app)
     db_maintenance_manager.init_app(app)
     db_backup_manager.init_app(app)
+    db_partition_manager.init_app(app)
 
 # Initialize WebSocket server
 from .websocket_server import websocket_server

@@ -15,6 +15,7 @@ from .database_indexing import db_index_optimizer
 from .read_replicas import read_replica_manager
 from .database_maintenance import db_maintenance_manager
 from .database_backup import db_backup_manager
+from .database_partitioning import db_partition_manager
 from .permission_helpers import admin_required
 
 logger = logging.getLogger(__name__)
@@ -957,6 +958,75 @@ def restore_backup(backup_id):
             'status': 'error',
             'error': {
                 'message': f'Failed to restore backup: {str(e)}',
+                'retryable': True
+            }
+        }), 500
+
+
+@db_perf_bp.route('/partitions/analyze', methods=['GET'])
+@admin_required
+@swag_from({
+    'tags': ['Database Performance'],
+    'summary': 'Analyze partitioning candidates',
+    'description': 'Analyze tables that would benefit from database partitioning',
+    'security': [{'Bearer': []}],
+    'responses': {
+        200: {'description': 'Partitioning analysis completed'}
+    }
+})
+def analyze_partitioning_candidates():
+    """Analyze tables for partitioning opportunities."""
+    try:
+        candidates = db_partition_manager.analyze_partitioning_candidates()
+        status = db_partition_manager.get_partitioning_status()
+        
+        return jsonify({
+            'status': 'success',
+            'data': {
+                'candidates': candidates,
+                'partitioning_status': status,
+                'recommendations': len([c for c in candidates if c.get('recommended_strategy')])
+            }
+        })
+        
+    except Exception as e:
+        logger.error(f"Error analyzing partitioning candidates: {e}")
+        return jsonify({
+            'status': 'error',
+            'error': {
+                'message': 'Failed to analyze partitioning candidates',
+                'retryable': True
+            }
+        }), 500
+
+
+@db_perf_bp.route('/partitions/status', methods=['GET'])
+@admin_required
+@swag_from({
+    'tags': ['Database Performance'],
+    'summary': 'Get partitioning status',
+    'description': 'Get comprehensive database partitioning status',
+    'security': [{'Bearer': []}],
+    'responses': {
+        200: {'description': 'Partitioning status retrieved successfully'}
+    }
+})
+def get_partitioning_status():
+    """Get database partitioning status."""
+    try:
+        status = db_partition_manager.get_partitioning_status()
+        
+        return jsonify({
+            'status': 'success',
+            'data': status
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting partitioning status: {e}")
+        return jsonify({
+            'status': 'error',
+            'error': {
+                'message': 'Failed to retrieve partitioning status',
                 'retryable': True
             }
         }), 500

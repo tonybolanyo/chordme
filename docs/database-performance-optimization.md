@@ -42,7 +42,16 @@ Horizontal scaling support through read replicas:
 - Replication lag monitoring
 - Read/write query routing
 
-### 5. Automated Database Maintenance
+### 5. Database Partitioning
+
+Horizontal partitioning support for large datasets:
+- Range partitioning by date/timestamp
+- Partition creation and management
+- Automated partition cleanup and retention
+- Partitioning candidate analysis
+- Performance monitoring for partitioned tables
+
+### 6. Automated Database Maintenance
 
 Scheduled maintenance tasks including:
 - Statistics updates for query optimization
@@ -51,7 +60,7 @@ Scheduled maintenance tasks including:
 - Connection pool health checks
 - PostgreSQL VACUUM and ANALYZE operations
 
-### 6. Performance Alerting
+### 7. Performance Alerting
 
 Comprehensive alerting system for:
 - Slow query detection
@@ -82,6 +91,21 @@ SLOW_QUERY_THRESHOLD=1.0         # Slow query threshold in seconds
 # Database Maintenance Configuration
 DB_MAINTENANCE_ENABLED=True      # Enable automated maintenance
 INDEX_CACHE_TTL=3600             # Index analysis cache TTL
+
+# Database partitioning configuration
+PARTITIONING_ENABLED=True
+AUTO_CREATE_PARTITIONS=True
+PARTITION_RETENTION_MONTHS=12
+
+# Custom partition strategies (JSON format)
+PARTITION_STRATEGIES='[
+  {
+    "table_name": "performance_sessions",
+    "partition_type": "range", 
+    "partition_column": "created_at",
+    "strategy_config": {"interval": "month"}
+  }
+]'
 
 # Read Replica Configuration (JSON format)
 READ_REPLICAS='[
@@ -216,6 +240,49 @@ GET /api/v1/admin/database/health
 ```
 
 Comprehensive database health and performance check.
+
+### Partitioning Analysis
+
+```http
+GET /api/v1/admin/database/partitions/analyze
+```
+
+Analyze tables that would benefit from database partitioning.
+
+### Partitioning Status
+
+```http
+GET /api/v1/admin/database/partitions/status
+```
+
+Get comprehensive database partitioning status.
+
+### Create Partitions
+
+```http
+POST /api/v1/admin/database/partitions/create
+```
+
+Create range partitions for a specified table.
+
+**Request Body:**
+```json
+{
+  "table_name": "performance_sessions",
+  "column_name": "created_at",
+  "start_date": "2024-01-01",
+  "end_date": "2024-12-31",
+  "interval": "month"
+}
+```
+
+### Cleanup Partitions
+
+```http
+POST /api/v1/admin/database/partitions/{table_name}/cleanup
+```
+
+Remove old partitions based on retention policy.
 
 ## CLI Commands
 

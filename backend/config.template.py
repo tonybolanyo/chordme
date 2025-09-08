@@ -160,6 +160,21 @@ BACKUP_COMPRESSION = os.environ.get('BACKUP_COMPRESSION', 'True').lower() == 'tr
 BACKUP_VERIFICATION = os.environ.get('BACKUP_VERIFICATION', 'True').lower() == 'true'
 BACKUP_PARALLEL_JOBS = int(os.environ.get('BACKUP_PARALLEL_JOBS', 4))
 
+# Database Partitioning Configuration
+PARTITIONING_ENABLED = os.environ.get('PARTITIONING_ENABLED', 'True').lower() == 'true'
+AUTO_CREATE_PARTITIONS = os.environ.get('AUTO_CREATE_PARTITIONS', 'True').lower() == 'true'
+PARTITION_RETENTION_MONTHS = int(os.environ.get('PARTITION_RETENTION_MONTHS', 12))
+
+# Custom partition strategies (JSON format)
+# Example: PARTITION_STRATEGIES='[{"table_name":"logs","partition_type":"range","partition_column":"created_at","strategy_config":{"interval":"month"}}]'
+PARTITION_STRATEGIES = []
+if os.environ.get('PARTITION_STRATEGIES'):
+    import json
+    try:
+        PARTITION_STRATEGIES = json.loads(os.environ.get('PARTITION_STRATEGIES'))
+    except (json.JSONDecodeError, TypeError):
+        PARTITION_STRATEGIES = []
+
 # Google Drive API configuration (for server-side operations)
 # These are optional - server can work without Google Drive integration
 GOOGLE_DRIVE_ENABLED = os.environ.get('GOOGLE_DRIVE_ENABLED', 'False').lower() == 'true'
