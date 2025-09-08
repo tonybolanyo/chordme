@@ -792,6 +792,7 @@ def test_alerts():
         # Get test parameters
         data = request.get_json() or {}
         alert_type = data.get('type', 'error_rate')
+        locale = data.get('locale', 'en')  # Support locale parameter
         
         # Generate test metrics that exceed thresholds
         test_metrics = {
@@ -801,22 +802,24 @@ def test_alerts():
             'timestamp': datetime.now(UTC).isoformat()
         }
         
-        # Check thresholds and trigger alerts
+        # Check thresholds and trigger alerts with locale support
         if hasattr(current_app, 'alert_manager'):
-            alerts = current_app.alert_manager.check_thresholds(test_metrics)
+            alerts = current_app.alert_manager.check_thresholds(test_metrics, locale)
             if alerts:
                 current_app.alert_manager.send_alerts(alerts)
                 
                 monitor_logger.info(
-                    f"Test alerts triggered: {len(alerts)} alerts",
+                    f"Test alerts triggered: {len(alerts)} alerts (locale: {locale})",
                     alert_type=alert_type,
+                    locale=locale,
                     alerts=alerts
                 )
                 
                 return jsonify({
                     'status': 'success',
                     'message': f'Triggered {len(alerts)} test alerts',
-                    'alerts': alerts
+                    'alerts': alerts,
+                    'locale': locale
                 }), 200
             else:
                 return jsonify({

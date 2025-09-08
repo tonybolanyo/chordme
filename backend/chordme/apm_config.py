@@ -178,6 +178,7 @@ class AlertManager:
             'disk_usage_percent': 90        # Alert if disk usage > 90%
         }
         self.notification_channels = []
+        self.locale = 'en'  # Default locale for alert messages
         
         if app:
             self.init_app(app)
@@ -191,12 +192,40 @@ class AlertManager:
             app.config.get('ALERT_THRESHOLDS', {})
         )
         
+        # Set locale from config or default to 'en'
+        self.locale = app.config.get('DEFAULT_LOCALE', 'en')
+        
         # Configure notification channels
         self._setup_notification_channels()
         
         logging.getLogger('chordme.alerts').info(
-            f"Alert manager initialized with {len(self.notification_channels)} channels"
+            f"Alert manager initialized with {len(self.notification_channels)} channels, locale: {self.locale}"
         )
+    
+    def get_cultural_thresholds(self, locale: str) -> Dict[str, float]:
+        """Get culturally-adjusted performance thresholds based on locale."""
+        base_thresholds = self.alert_thresholds.copy()
+        
+        # Cultural adjustments based on research and best practices
+        cultural_adjustments = {
+            'es': {
+                # Spanish-speaking users may have different expectations
+                # More tolerance for collaboration latency in distributed teams
+                'collaboration_latency': base_thresholds.get('collaboration_latency', 100) * 1.2,
+                # Lower tolerance for audio sync issues due to musical culture
+                'audio_sync_accuracy': base_thresholds.get('audio_sync_accuracy', 50) * 0.8
+            },
+            'en': {
+                # English users - baseline thresholds
+            }
+        }
+        
+        if locale in cultural_adjustments:
+            for metric, adjustment in cultural_adjustments[locale].items():
+                if metric in base_thresholds:
+                    base_thresholds[metric] = adjustment
+        
+        return base_thresholds
     
     def _setup_notification_channels(self):
         """Setup notification channels for alerts."""
@@ -224,11 +253,15 @@ class AlertManager:
                 'url': custom_webhook
             })
     
-    def check_thresholds(self, metrics: Dict[str, Any]) -> list:
+    def check_thresholds(self, metrics: Dict[str, Any], locale: str = None) -> list:
         """Check if any metrics exceed alert thresholds."""
         alerts = []
+        current_locale = locale or self.locale
         
-        for metric_name, threshold in self.alert_thresholds.items():
+        # Use culturally-adjusted thresholds
+        thresholds = self.get_cultural_thresholds(current_locale)
+        
+        for metric_name, threshold in thresholds.items():
             if metric_name in metrics:
                 value = metrics[metric_name]
                 if value > threshold:
@@ -237,7 +270,10 @@ class AlertManager:
                         'value': value,
                         'threshold': threshold,
                         'severity': self._get_alert_severity(metric_name, value, threshold),
-                        'timestamp': metrics.get('timestamp', 'unknown')
+                        'timestamp': metrics.get('timestamp', 'unknown'),
+                        'message': self._get_localized_alert_message(metric_name, value, threshold, current_locale),
+                        'title': self._get_localized_alert_title(metric_name, current_locale),
+                        'locale': current_locale
                     })
         
         return alerts
@@ -254,6 +290,56 @@ class AlertManager:
             return 'medium'
         else:
             return 'low'
+    
+    def _get_localized_alert_message(self, metric_name: str, value: float, threshold: float, locale: str) -> str:
+        """Get localized alert message based on metric type and locale."""
+        messages = {
+            'en': {
+                'error_rate_percent': f"Error rate of {value}% exceeds threshold of {threshold}%",
+                'response_time_ms': f"Response time of {value}ms exceeds threshold of {threshold}ms",
+                'cpu_usage_percent': f"CPU usage of {value}% exceeds threshold of {threshold}%",
+                'memory_usage_percent': f"Memory usage of {value}% exceeds threshold of {threshold}%",
+                'disk_usage_percent': f"Disk usage of {value}% exceeds threshold of {threshold}%",
+                'collaboration_latency': f"Collaboration latency of {value}ms exceeds threshold of {threshold}ms",
+                'audio_sync_accuracy': f"Audio sync deviation of {value}ms exceeds threshold of {threshold}ms"
+            },
+            'es': {
+                'error_rate_percent': f"Tasa de errores de {value}% excede el umbral de {threshold}%",
+                'response_time_ms': f"Tiempo de respuesta de {value}ms excede el umbral de {threshold}ms",
+                'cpu_usage_percent': f"Uso de CPU de {value}% excede el umbral de {threshold}%",
+                'memory_usage_percent': f"Uso de memoria de {value}% excede el umbral de {threshold}%",
+                'disk_usage_percent': f"Uso de disco de {value}% excede el umbral de {threshold}%",
+                'collaboration_latency': f"Latencia de colaboración de {value}ms excede el umbral de {threshold}ms",
+                'audio_sync_accuracy': f"Desviación de sincronización de audio de {value}ms excede el umbral de {threshold}ms"
+            }
+        }
+        
+        return messages.get(locale, messages['en']).get(metric_name, f"Metric {metric_name}: {value} > {threshold}")
+    
+    def _get_localized_alert_title(self, metric_name: str, locale: str) -> str:
+        """Get localized alert title based on metric type and locale."""
+        titles = {
+            'en': {
+                'error_rate_percent': "Error Rate Exceeded",
+                'response_time_ms': "Response Time Exceeded",
+                'cpu_usage_percent': "CPU Usage High",
+                'memory_usage_percent': "Memory Usage High",
+                'disk_usage_percent': "Disk Usage High",
+                'collaboration_latency': "Collaboration Latency High",
+                'audio_sync_accuracy': "Audio Sync Issue"
+            },
+            'es': {
+                'error_rate_percent': "Tasa de Errores Excedida",
+                'response_time_ms': "Tiempo de Respuesta Excedido",
+                'cpu_usage_percent': "Uso de CPU Alto",
+                'memory_usage_percent': "Uso de Memoria Alto",
+                'disk_usage_percent': "Uso de Disco Alto",
+                'collaboration_latency': "Latencia de Colaboración Alta",
+                'audio_sync_accuracy': "Problema de Sincronización de Audio"
+            }
+        }
+        
+        return titles.get(locale, titles['en']).get(metric_name, f"Alert: {metric_name}")
     
     def send_alerts(self, alerts: list):
         """Send alerts through configured notification channels."""
@@ -332,8 +418,8 @@ class AlertManager:
         fields = []
         for alert in alerts[:5]:  # Limit to first 5 alerts
             fields.append({
-                'title': f"{alert['metric']} ({alert['severity']})",
-                'value': f"{alert['value']} > {alert['threshold']}",
+                'title': alert.get('title', f"{alert['metric']} ({alert['severity']})"),
+                'value': alert.get('message', f"{alert['value']} > {alert['threshold']}"),
                 'short': True
             })
         

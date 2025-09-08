@@ -187,5 +187,86 @@
       "checkEmpty": "Empty Elements",
       "checkTypos": "Typo Detection"
     }
+  },
+  "apm": {
+    "title": "Application Performance Monitoring",
+    "dashboard": "Performance Dashboard",
+    "metrics": {
+      "title": "Performance Metrics",
+      "responseTime": "Response Time",
+      "errorRate": "Error Rate",
+      "cpuUsage": "CPU Usage",
+      "memoryUsage": "Memory Usage",
+      "diskUsage": "Disk Usage",
+      "collaborationLatency": "Collaboration Latency",
+      "audioSyncAccuracy": "Audio Sync Accuracy",
+      "networkEfficiency": "Network Efficiency"
+    },
+    "alerts": {
+      "title": "Performance Alerts",
+      "noAlerts": "No active alerts",
+      "newAlert": "New Alert",
+      "acknowledged": "Acknowledged",
+      "resolved": "Resolved",
+      "acknowledge": "Acknowledge",
+      "resolve": "Resolve",
+      "severity": {
+        "low": "Low",
+        "medium": "Medium", 
+        "high": "High",
+        "critical": "Critical"
+      },
+      "types": {
+        "error_rate_percent": "Error Rate Exceeded",
+        "response_time_ms": "Response Time Exceeded",
+        "cpu_usage_percent": "CPU Usage High",
+        "memory_usage_percent": "Memory Usage High",
+        "disk_usage_percent": "Disk Usage High",
+        "collaboration_latency": "Collaboration Latency High",
+        "audio_sync_accuracy": "Audio Sync Issue"
+      },
+      "messages": {
+        "errorRateExceeded": "Error rate of {{value}}% exceeds threshold of {{threshold}}%",
+        "responseTimeExceeded": "Response time of {{value}}ms exceeds threshold of {{threshold}}ms",
+        "cpuUsageHigh": "CPU usage of {{value}}% exceeds threshold of {{threshold}}%",
+        "memoryUsageHigh": "Memory usage of {{value}}% exceeds threshold of {{threshold}}%",
+        "diskUsageHigh": "Disk usage of {{value}}% exceeds threshold of {{threshold}}%",
+        "collaborationLatencyHigh": "Collaboration latency of {{value}}ms exceeds threshold of {{threshold}}ms",
+        "audioSyncIssue": "Audio sync deviation of {{value}}ms exceeds threshold of {{threshold}}ms"
+      }
+    },
+    "health": {
+      "title": "System Health",
+      "status": {
+        "healthy": "Healthy",
+        "degraded": "Degraded",
+        "unhealthy": "Unhealthy"
+      },
+      "components": {
+        "database": "Database",
+        "application": "Application",
+        "monitoring": "Monitoring"
+      }
+    },
+    "thresholds": {
+      "title": "Performance Thresholds",
+      "description": "Configure when alerts should be triggered",
+      "updateSuccess": "Thresholds updated successfully",
+      "updateError": "Failed to update thresholds"
+    },
+    "monitoring": {
+      "enabled": "Monitoring Enabled",
+      "disabled": "Monitoring Disabled",
+      "enable": "Enable Monitoring",
+      "disable": "Disable Monitoring",
+      "status": "Monitoring Status"
+    },
+    "units": {
+      "milliseconds": "ms",
+      "percent": "%",
+      "bytes": "bytes",
+      "kilobytes": "KB",
+      "megabytes": "MB"
+    }
   }
 }

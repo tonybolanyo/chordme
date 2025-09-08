@@ -187,5 +187,86 @@
       "checkEmpty": "Elementos Vacíos",
       "checkTypos": "Detección de Errores Tipográficos"
     }
+  },
+  "apm": {
+    "title": "Monitoreo de Rendimiento de Aplicación",
+    "dashboard": "Panel de Rendimiento",
+    "metrics": {
+      "title": "Métricas de Rendimiento",
+      "responseTime": "Tiempo de Respuesta",
+      "errorRate": "Tasa de Errores",
+      "cpuUsage": "Uso de CPU",
+      "memoryUsage": "Uso de Memoria",
+      "diskUsage": "Uso de Disco",
+      "collaborationLatency": "Latencia de Colaboración",
+      "audioSyncAccuracy": "Precisión de Sincronización de Audio",
+      "networkEfficiency": "Eficiencia de Red"
+    },
+    "alerts": {
+      "title": "Alertas de Rendimiento",
+      "noAlerts": "No hay alertas activas",
+      "newAlert": "Nueva Alerta",
+      "acknowledged": "Reconocida",
+      "resolved": "Resuelta",
+      "acknowledge": "Reconocer",
+      "resolve": "Resolver",
+      "severity": {
+        "low": "Bajo",
+        "medium": "Medio",
+        "high": "Alto",
+        "critical": "Crítico"
+      },
+      "types": {
+        "error_rate_percent": "Tasa de Errores Excedida",
+        "response_time_ms": "Tiempo de Respuesta Excedido",
+        "cpu_usage_percent": "Uso de CPU Alto",
+        "memory_usage_percent": "Uso de Memoria Alto",
+        "disk_usage_percent": "Uso de Disco Alto",
+        "collaboration_latency": "Latencia de Colaboración Alta",
+        "audio_sync_accuracy": "Problema de Sincronización de Audio"
+      },
+      "messages": {
+        "errorRateExceeded": "Tasa de errores de {{value}}% excede el umbral de {{threshold}}%",
+        "responseTimeExceeded": "Tiempo de respuesta de {{value}}ms excede el umbral de {{threshold}}ms",
+        "cpuUsageHigh": "Uso de CPU de {{value}}% excede el umbral de {{threshold}}%",
+        "memoryUsageHigh": "Uso de memoria de {{value}}% excede el umbral de {{threshold}}%",
+        "diskUsageHigh": "Uso de disco de {{value}}% excede el umbral de {{threshold}}%",
+        "collaborationLatencyHigh": "Latencia de colaboración de {{value}}ms excede el umbral de {{threshold}}ms",
+        "audioSyncIssue": "Desviación de sincronización de audio de {{value}}ms excede el umbral de {{threshold}}ms"
+      }
+    },
+    "health": {
+      "title": "Estado del Sistema",
+      "status": {
+        "healthy": "Saludable",
+        "degraded": "Degradado",
+        "unhealthy": "No Saludable"
+      },
+      "components": {
+        "database": "Base de Datos",
+        "application": "Aplicación",
+        "monitoring": "Monitoreo"
+      }
+    },
+    "thresholds": {
+      "title": "Umbrales de Rendimiento",
+      "description": "Configurar cuándo se deben activar las alertas",
+      "updateSuccess": "Umbrales actualizados exitosamente",
+      "updateError": "Error al actualizar umbrales"
+    },
+    "monitoring": {
+      "enabled": "Monitoreo Habilitado",
+      "disabled": "Monitoreo Deshabilitado",
+      "enable": "Habilitar Monitoreo",
+      "disable": "Deshabilitar Monitoreo",
+      "status": "Estado del Monitoreo"
+    },
+    "units": {
+      "milliseconds": "ms",
+      "percent": "%",
+      "bytes": "bytes",
+      "kilobytes": "KB",
+      "megabytes": "MB"
+    }
   }
 }
