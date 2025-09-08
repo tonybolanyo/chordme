@@ -264,6 +264,7 @@ from . import youtube_routes
 from . import spotify_routes  # Spotify integration endpoints
 from . import apple_music_routes  # Apple Music integration endpoints
 from . import enhanced_analytics_routes
+from . import music_discovery_routes  # Music discovery and recommendation endpoints
 from . import enterprise_api  # Enterprise authentication endpoints
 from . import project_management_routes  # Project management endpoints
 from . import metadata_routes  # Universal metadata system endpoints
@@ -285,6 +286,9 @@ app.register_blueprint(apple_music_routes.apple_music_bp)
 
 # Register metadata blueprint
 app.register_blueprint(metadata_routes.metadata_bp)
+
+# Register music discovery blueprint  
+app.register_blueprint(music_discovery_routes.discovery_bp)
 
 # Register practice mode API
 from .practice_api import practice_bp
