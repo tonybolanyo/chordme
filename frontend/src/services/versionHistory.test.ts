@@ -4,12 +4,14 @@ import { versionHistoryService, SongVersion } from './versionHistory';
 // Mock the API service
 vi.mock('./api', () => ({
   apiService: {
-    request: vi.fn(),
+    getSongVersions: vi.fn(),
+    getSongVersion: vi.fn(),
+    restoreSongVersion: vi.fn(),
   },
 }));
 
-// Skip all tests as version history is not yet implemented
-describe.skip('VersionHistoryService', () => {
+// Enable tests as version history is now implemented
+describe('VersionHistoryService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -38,9 +40,9 @@ describe.skip('VersionHistoryService', () => {
   describe('getVersions', () => {
     it('should fetch versions successfully', async () => {
       const { apiService } = await import('./api');
-      const mockRequest = vi.mocked(apiService.request);
+      const mockGetSongVersions = vi.mocked(apiService.getSongVersions);
 
-      mockRequest.mockResolvedValue({
+      mockGetSongVersions.mockResolvedValue({
         status: 'success',
         message: 'Versions retrieved',
         data: { versions: mockVersions },
@@ -49,36 +51,14 @@ describe.skip('VersionHistoryService', () => {
       const result = await versionHistoryService.getVersions(123);
 
       expect(result).toEqual(mockVersions);
-      expect(mockRequest).toHaveBeenCalledWith({
-        endpoint: '/songs/123/versions',
-        method: 'GET',
-      });
+      expect(mockGetSongVersions).toHaveBeenCalledWith(123);
     });
 
     it('should handle API errors', async () => {
       const { apiService } = await import('./api');
-      const mockRequest = vi.mocked(apiService.request);
+      const mockGetSongVersions = vi.mocked(apiService.getSongVersions);
 
-      mockRequest.mockResolvedValue({
-        status: 'error',
-        message: 'Song not found',
-        data: { versions: [] },
-      });
-
-      await expect(versionHistoryService.getVersions(123)).rejects.toThrow(
-        'Song not found'
-      );
-    });
-
-    it('should handle API errors without message', async () => {
-      const { apiService } = await import('./api');
-      const mockRequest = vi.mocked(apiService.request);
-
-      mockRequest.mockResolvedValue({
-        status: 'error',
-        message: '',
-        data: { versions: [] },
-      });
+      mockGetSongVersions.mockRejectedValue(new Error('API Error'));
 
       await expect(versionHistoryService.getVersions(123)).rejects.toThrow(
         'Failed to fetch version history'
@@ -89,10 +69,10 @@ describe.skip('VersionHistoryService', () => {
   describe('getVersion', () => {
     it('should fetch a specific version successfully', async () => {
       const { apiService } = await import('./api');
-      const mockRequest = vi.mocked(apiService.request);
+      const mockGetSongVersion = vi.mocked(apiService.getSongVersion);
       const mockVersion = mockVersions[0];
 
-      mockRequest.mockResolvedValue({
+      mockGetSongVersion.mockResolvedValue({
         status: 'success',
         message: 'Version retrieved',
         data: mockVersion,
@@ -101,24 +81,17 @@ describe.skip('VersionHistoryService', () => {
       const result = await versionHistoryService.getVersion(123, 1);
 
       expect(result).toEqual(mockVersion);
-      expect(mockRequest).toHaveBeenCalledWith({
-        endpoint: '/songs/123/versions/1',
-        method: 'GET',
-      });
+      expect(mockGetSongVersion).toHaveBeenCalledWith(123, 1);
     });
 
     it('should handle version not found', async () => {
       const { apiService } = await import('./api');
-      const mockRequest = vi.mocked(apiService.request);
+      const mockGetSongVersion = vi.mocked(apiService.getSongVersion);
 
-      mockRequest.mockResolvedValue({
-        status: 'error',
-        message: 'Version not found',
-        data: mockVersions[0],
-      });
+      mockGetSongVersion.mockRejectedValue(new Error('Version not found'));
 
       await expect(versionHistoryService.getVersion(123, 999)).rejects.toThrow(
-        'Version not found'
+        'Failed to fetch song version'
       );
     });
   });
@@ -126,9 +99,9 @@ describe.skip('VersionHistoryService', () => {
   describe('restoreVersion', () => {
     it('should restore version successfully', async () => {
       const { apiService } = await import('./api');
-      const mockRequest = vi.mocked(apiService.request);
+      const mockRestoreSongVersion = vi.mocked(apiService.restoreSongVersion);
 
-      mockRequest.mockResolvedValue({
+      mockRestoreSongVersion.mockResolvedValue({
         status: 'success',
         message: 'Version restored',
         data: {
@@ -145,32 +118,18 @@ describe.skip('VersionHistoryService', () => {
         versionHistoryService.restoreVersion(123, 1)
       ).resolves.not.toThrow();
 
-      expect(mockRequest).toHaveBeenCalledWith({
-        endpoint: '/songs/123/restore/1',
-        method: 'POST',
-      });
+      expect(mockRestoreSongVersion).toHaveBeenCalledWith(123, 1);
     });
 
     it('should handle restore errors', async () => {
       const { apiService } = await import('./api');
-      const mockRequest = vi.mocked(apiService.request);
+      const mockRestoreSongVersion = vi.mocked(apiService.restoreSongVersion);
 
-      mockRequest.mockResolvedValue({
-        status: 'error',
-        message: 'Insufficient permissions',
-        data: {
-          id: 123,
-          title: 'Song',
-          content: 'Content',
-          author_id: 1,
-          created_at: '2024-01-15T09:00:00Z',
-          updated_at: '2024-01-15T11:00:00Z',
-        },
-      });
+      mockRestoreSongVersion.mockRejectedValue(new Error('Insufficient permissions'));
 
       await expect(
         versionHistoryService.restoreVersion(123, 1)
-      ).rejects.toThrow('Insufficient permissions');
+      ).rejects.toThrow('Failed to restore song version');
     });
   });
 

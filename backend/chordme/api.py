@@ -1315,7 +1315,7 @@ def create_version_snapshot(song, user_id):
         version_number=next_version_number,
         title=song.title,
         content=song.content,
-        user_id=user_id
+        created_by=user_id
     )
     
     db.session.add(version)

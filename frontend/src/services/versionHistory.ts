@@ -1,4 +1,4 @@
-// import { apiService } from './api'; // TODO: Implement when version history API is ready
+import { apiService } from './api';
 
 export interface SongVersion {
   id: number;
@@ -45,9 +45,13 @@ export class VersionHistoryService {
    * Get all versions for a song
    */
   async getVersions(songId: string | number): Promise<SongVersion[]> {
-    // TODO: Implement version history API endpoint
-    console.warn('Version history not yet implemented for song:', songId);
-    return [];
+    try {
+      const response = await apiService.getSongVersions(songId);
+      return response.data.versions;
+    } catch (error) {
+      console.error('Failed to fetch song versions:', error);
+      throw new Error('Failed to fetch version history');
+    }
   }
 
   /**
@@ -57,14 +61,13 @@ export class VersionHistoryService {
     songId: string | number,
     versionId: string | number
   ): Promise<SongVersion> {
-    // TODO: Implement version history API endpoint
-    console.warn(
-      'Version history not yet implemented for song:',
-      songId,
-      'version:',
-      versionId
-    );
-    throw new Error('Version history not yet implemented');
+    try {
+      const response = await apiService.getSongVersion(songId, versionId);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch song version:', error);
+      throw new Error('Failed to fetch song version');
+    }
   }
 
   /**
@@ -74,14 +77,12 @@ export class VersionHistoryService {
     songId: string | number,
     versionId: string | number
   ): Promise<void> {
-    // TODO: Implement version restore API endpoint
-    console.warn(
-      'Version restore not yet implemented for song:',
-      songId,
-      'version:',
-      versionId
-    );
-    throw new Error('Version restore not yet implemented');
+    try {
+      await apiService.restoreSongVersion(songId, versionId);
+    } catch (error) {
+      console.error('Failed to restore song version:', error);
+      throw new Error('Failed to restore song version');
+    }
   }
 
   /**

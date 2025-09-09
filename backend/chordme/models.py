@@ -695,14 +695,15 @@ class SongVersion(db.Model):
     # Composite unique constraint to ensure version numbers are unique per song
     __table_args__ = (db.UniqueConstraint('song_id', 'version_number', name='unique_song_version'),)
     
-    def __init__(self, song_id, version_number, title, content, created_by, 
-                 artist=None, version_note=None, is_major_version=False):
+    def __init__(self, song_id, version_number, title, content, created_by=None, 
+                 artist=None, version_note=None, is_major_version=False, user_id=None):
         self.song_id = song_id
         self.version_number = version_number
         self.title = title
         self.artist = artist
         self.content = content
-        self.created_by = created_by
+        # Support both created_by and user_id for backward compatibility
+        self.created_by = created_by or user_id
         self.version_note = version_note
         self.is_major_version = is_major_version
     
@@ -718,10 +719,22 @@ class SongVersion(db.Model):
             'lyrics': self.lyrics,
             'chords_used': self.chords_used,
             'created_by': self.created_by,
+            'user_id': self.created_by,  # Backward compatibility
             'version_note': self.version_note,
             'is_major_version': self.is_major_version,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
+    
+    # Backward compatibility property
+    @property
+    def user_id(self):
+        """Backward compatibility: alias for created_by."""
+        return self.created_by
+    
+    @user_id.setter
+    def user_id(self, value):
+        """Backward compatibility: alias for created_by."""
+        self.created_by = value
     
     def __repr__(self):
         return f'<SongVersion {self.song_id}v{self.version_number}>'

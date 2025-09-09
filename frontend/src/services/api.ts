@@ -848,6 +848,47 @@ class ApiService {
 
     return this.fetchApi(`/api/v1/songs/${songId}/sharing`);
   }
+
+  /**
+   * Get version history for a song
+   */
+  async getSongVersions(songId: string | number): Promise<{
+    status: string;
+    message: string;
+    data: { versions: any[] };
+  }> {
+    return this.fetchApi(`/api/v1/songs/${songId}/versions`);
+  }
+
+  /**
+   * Get a specific version of a song
+   */
+  async getSongVersion(
+    songId: string | number,
+    versionId: string | number
+  ): Promise<{
+    status: string;
+    message: string;
+    data: any;
+  }> {
+    return this.fetchApi(`/api/v1/songs/${songId}/versions/${versionId}`);
+  }
+
+  /**
+   * Restore a song to a specific version
+   */
+  async restoreSongVersion(
+    songId: string | number,
+    versionId: string | number
+  ): Promise<{
+    status: string;
+    message: string;
+    data: any;
+  }> {
+    return this.fetchApi(`/api/v1/songs/${songId}/restore/${versionId}`, {
+      method: 'POST',
+    });
+  }
 }
 
 export const apiService = new ApiService();
