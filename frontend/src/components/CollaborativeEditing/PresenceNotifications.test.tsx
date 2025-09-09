@@ -10,6 +10,8 @@ vi.mock('../../hooks/usePresenceSystem', () => ({
   usePresenceSystem: vi.fn(),
 }));
 
+import { usePresenceSystem } from '../../hooks/usePresenceSystem';
+
 const mockParticipants: CollaborationUser[] = [
   {
     id: 'user-1',
@@ -51,8 +53,7 @@ describe('PresenceNotifications', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     
-    const { usePresenceSystem } = require('../../hooks/usePresenceSystem');
-    usePresenceSystem.mockReturnValue({
+    vi.mocked(usePresenceSystem).mockReturnValue({
       notifications: [],
       removeNotification: vi.fn(),
       generateUserAvatar: vi.fn((user) => ({
