@@ -23,6 +23,7 @@ This directory contains the comprehensive user manual for ChordMe, automatically
 - **[Testing Guide](testing.html)** - Testing setup and guidelines
 - **[Backend Testing](backend-testing.html)** - Backend automated testing documentation
 - **[ChordPro Support](chordpro-support.html)** - ChordPro format implementation details
+- **[Actions](actions.html)** - Github Actions & Workflows Documentation
 
 ### Infrastructure & Deployment
 - **[Infrastructure Guide](infrastructure.html)** - Cloud deployment with Terraform/CloudFormation
