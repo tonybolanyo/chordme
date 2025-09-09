@@ -77,9 +77,8 @@ describe('PresenceNotifications', () => {
 
   it('renders notifications when they exist', () => {
     const mockRemoveNotification = vi.fn();
-    const { usePresenceSystem } = require('../../hooks/usePresenceSystem');
     
-    usePresenceSystem.mockReturnValue({
+    vi.mocked(usePresenceSystem).mockReturnValue({
       notifications: mockNotifications,
       removeNotification: mockRemoveNotification,
       generateUserAvatar: vi.fn((user) => ({
@@ -101,7 +100,7 @@ describe('PresenceNotifications', () => {
   });
 
   it('displays correct icons for different notification types', () => {
-    const { usePresenceSystem } = require('../../hooks/usePresenceSystem');
+    
     
     const notifications = [
       {
@@ -120,7 +119,7 @@ describe('PresenceNotifications', () => {
       },
     ] as PresenceNotification[];
 
-    usePresenceSystem.mockReturnValue({
+    vi.mocked(usePresenceSystem).mockReturnValue({
       notifications,
       removeNotification: vi.fn(),
       generateUserAvatar: vi.fn(() => ({
@@ -143,9 +142,9 @@ describe('PresenceNotifications', () => {
 
   it('handles close button clicks', () => {
     const mockRemoveNotification = vi.fn();
-    const { usePresenceSystem } = require('../../hooks/usePresenceSystem');
     
-    usePresenceSystem.mockReturnValue({
+    
+    vi.mocked(usePresenceSystem).mockReturnValue({
       notifications: [mockNotifications[0]],
       removeNotification: mockRemoveNotification,
       generateUserAvatar: vi.fn(() => ({
@@ -170,9 +169,9 @@ describe('PresenceNotifications', () => {
 
   it('formats timestamps correctly', () => {
     const testTime = new Date('2024-01-01T12:30:00Z');
-    const { usePresenceSystem } = require('../../hooks/usePresenceSystem');
     
-    usePresenceSystem.mockReturnValue({
+    
+    vi.mocked(usePresenceSystem).mockReturnValue({
       notifications: [{
         ...mockNotifications[0],
         timestamp: testTime.toISOString(),
@@ -198,7 +197,7 @@ describe('PresenceNotifications', () => {
   });
 
   it('applies correct CSS classes for notification types', () => {
-    const { usePresenceSystem } = require('../../hooks/usePresenceSystem');
+    
     
     const notifications = [
       {
@@ -217,7 +216,7 @@ describe('PresenceNotifications', () => {
       },
     ] as PresenceNotification[];
 
-    usePresenceSystem.mockReturnValue({
+    vi.mocked(usePresenceSystem).mockReturnValue({
       notifications,
       removeNotification: vi.fn(),
       generateUserAvatar: vi.fn(() => ({
@@ -242,7 +241,7 @@ describe('PresenceNotifications', () => {
   });
 
   it('handles unknown users gracefully', () => {
-    const { usePresenceSystem } = require('../../hooks/usePresenceSystem');
+    
     
     const notificationWithUnknownUser = {
       id: '1',
@@ -252,7 +251,7 @@ describe('PresenceNotifications', () => {
       timestamp: new Date().toISOString(),
     } as PresenceNotification;
 
-    usePresenceSystem.mockReturnValue({
+    vi.mocked(usePresenceSystem).mockReturnValue({
       notifications: [notificationWithUnknownUser],
       removeNotification: vi.fn(),
       generateUserAvatar: vi.fn(() => ({
@@ -274,9 +273,9 @@ describe('PresenceNotifications', () => {
   });
 
   it('renders user avatars with correct styling', () => {
-    const { usePresenceSystem } = require('../../hooks/usePresenceSystem');
     
-    usePresenceSystem.mockReturnValue({
+    
+    vi.mocked(usePresenceSystem).mockReturnValue({
       notifications: [mockNotifications[0]],
       removeNotification: vi.fn(),
       generateUserAvatar: vi.fn(() => ({
@@ -300,9 +299,9 @@ describe('PresenceNotifications', () => {
   });
 
   it('handles multiple notifications correctly', () => {
-    const { usePresenceSystem } = require('../../hooks/usePresenceSystem');
     
-    usePresenceSystem.mockReturnValue({
+    
+    vi.mocked(usePresenceSystem).mockReturnValue({
       notifications: mockNotifications,
       removeNotification: vi.fn(),
       generateUserAvatar: vi.fn((user) => ({
