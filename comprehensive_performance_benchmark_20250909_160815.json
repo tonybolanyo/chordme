@@ -1,0 +1,167 @@
+{
+  "benchmark_config": {
+    "base_url": "http://localhost:5000",
+    "frontend_url": "http://localhost:5173",
+    "max_concurrent_users": 5,
+    "test_duration_minutes": 1,
+    "ramp_up_time_seconds": 120,
+    "operation_interval_seconds": 0.5,
+    "database_records_target": 100,
+    "batch_size": 1000,
+    "database_operation_timeout": 60,
+    "memory_sample_interval": 1.0,
+    "memory_leak_threshold_mb": 100,
+    "max_memory_usage_mb": 4096,
+    "max_api_response_time_ms": 1000,
+    "max_database_response_time_ms": 500,
+    "max_collaboration_latency_ms": 100,
+    "min_throughput_ops_per_second": 100,
+    "max_error_rate_percent": 1.0,
+    "websocket_timeout_seconds": 30,
+    "collaboration_room_count": 100,
+    "participants_per_room": 10
+  },
+  "timestamp": "2025-09-09T16:08:02.865520",
+  "phases": {
+    "database_performance": {
+      "setup_successful": true,
+      "read_performance": {
+        "simple_reads": {
+          "avg_ms": 0.012159347534179688,
+          "p95_ms": 0.010752677917480467,
+          "max_ms": 0.244140625,
+          "operations_tested": 100
+        },
+        "indexed_reads": {
+          "avg_ms": 0.009365081787109375,
+          "p95_ms": 0.008618831634521483,
+          "max_ms": 0.08559226989746094,
+          "operations_tested": 100
+        }
+      },
+      "write_performance": {
+        "single_inserts": {
+          "avg_ms": 0.9581804275512695,
+          "p95_ms": 1.1836290359497068,
+          "max_ms": 6.201744079589844,
+          "operations_tested": 100
+        },
+        "batch_inserts": {
+          "avg_ms": 1.589345932006836,
+          "p95_ms": 1.756620407104492,
+          "max_ms": 1.811981201171875,
+          "operations_tested": 10,
+          "records_per_batch": 100
+        }
+      },
+      "search_performance": {
+        "text_search": {
+          "avg_ms": 0.1389765739440918,
+          "p95_ms": 0.156712532043457,
+          "max_ms": 0.2791881561279297,
+          "operations_tested": 100
+        }
+      },
+      "complex_query_performance": {
+        "complex_queries": {
+          "avg_ms": 0.37862062454223633,
+          "p95_ms": 1.0266065597534182,
+          "max_ms": 1.1982917785644531,
+          "operations_tested": 20
+        }
+      },
+      "concurrent_access_performance": {
+        "concurrent_access": {
+          "avg_ms": 5.536713600158691,
+          "p95_ms": 1.8116354942321773,
+          "max_ms": 630.0082206726074,
+          "operations_tested": 1000,
+          "concurrent_workers": 20
+        }
+      }
+    },
+    "load_testing": {
+      "status": "completed",
+      "concurrent_users": 5,
+      "output": "\n================================================================================\nENTERPRISE LOAD TEST RESULTS\n================================================================================\nERROR: Backend not reachable: Cannot connect to host localhost:5000 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 5000, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 5000)]\n",
+      "note": "Load test completed but detailed results not parsed"
+    },
+    "collaboration_performance": {
+      "error": "No collaboration latency data collected"
+    },
+    "api_performance": {
+      "GET /api/v1/health": {
+        "avg_response_time_ms": 0.7614564895629883,
+        "p95_response_time_ms": 0.9992003440856931,
+        "max_response_time_ms": 1.1551380157470703,
+        "success_rate": 0.0,
+        "requests_tested": 50,
+        "meets_threshold": true
+      },
+      "GET /api/v1/songs": {
+        "avg_response_time_ms": 0.771946907043457,
+        "p95_response_time_ms": 0.9606719017028807,
+        "max_response_time_ms": 1.0387897491455078,
+        "success_rate": 0.0,
+        "requests_tested": 50,
+        "meets_threshold": true
+      },
+      "POST /api/v1/auth/register": {
+        "avg_response_time_ms": 0.831141471862793,
+        "p95_response_time_ms": 1.048779487609863,
+        "max_response_time_ms": 1.180410385131836,
+        "success_rate": 0.0,
+        "requests_tested": 50,
+        "meets_threshold": true
+      },
+      "POST /api/v1/auth/login": {
+        "avg_response_time_ms": 0.7961893081665039,
+        "p95_response_time_ms": 1.0515570640563963,
+        "max_response_time_ms": 1.4755725860595703,
+        "success_rate": 0.0,
+        "requests_tested": 50,
+        "meets_threshold": true
+      }
+    }
+  },
+  "memory_analysis": {
+    "monitoring_duration_seconds": 12.006746768951416,
+    "sample_count": 13,
+    "baseline_memory_mb": 37.98046875,
+    "current_memory_mb": 42.8828125,
+    "memory_growth_mb": 4.6171875,
+    "memory_leak_detected": false,
+    "peak_memory_mb": 42.8828125,
+    "avg_memory_mb": 42.51802884615385,
+    "memory_stability": {
+      "min_mb": 38.265625,
+      "max_mb": 42.8828125,
+      "std_dev_mb": 1.2781553415855045,
+      "range_mb": 4.6171875
+    },
+    "memory_trend": "stable",
+    "system_impact": {
+      "max_system_memory_percent": 9.6,
+      "avg_system_memory_percent": 9.546153846153846,
+      "file_descriptors_used": 14,
+      "threads_used": 3
+    }
+  },
+  "benchmark_summary": {
+    "total_duration_seconds": 12.229601860046387,
+    "total_metrics_collected": 0,
+    "performance_assessment": {
+      "overall_grade": "NEEDS_IMPROVEMENT",
+      "meets_enterprise_requirements": false,
+      "critical_issues": [
+        "GET /api/v1/health: Success rate (0.00%) below 95%",
+        "GET /api/v1/songs: Success rate (0.00%) below 95%",
+        "POST /api/v1/auth/register: Success rate (0.00%) below 95%",
+        "POST /api/v1/auth/login: Success rate (0.00%) below 95%"
+      ],
+      "warnings": [],
+      "performance_score": 20,
+      "recommendation": "REQUIRES_OPTIMIZATION"
+    }
+  }
+}
