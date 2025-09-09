@@ -75,10 +75,16 @@ def security_headers(f):
                 return (response,) + result[1:]
             else:
                 # It's a (data, status_code) tuple, need to convert to response
-                from flask import jsonify
-                response = jsonify(result[0])
-                response = add_security_headers(response)
-                return response, result[1]
+                from flask import jsonify, Response
+                if isinstance(result[0], Response):
+                    # First element is already a Response object
+                    response = add_security_headers(result[0])
+                    return response, result[1]
+                else:
+                    # First element is data, convert to response
+                    response = jsonify(result[0])
+                    response = add_security_headers(response)
+                    return response, result[1]
         elif hasattr(result, 'headers'):
             result = add_security_headers(result)
         else:

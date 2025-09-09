@@ -105,7 +105,21 @@ class ETagManager:
             return response
         
         # Create full response
-        if isinstance(data, dict) and 'status' not in data:
+        from flask import Response
+        
+        # If data is already a Response object, extract its JSON data
+        if isinstance(data, Response):
+            if hasattr(data, 'json') and data.json:
+                response_data = data.json
+            else:
+                # Try to parse the response data
+                try:
+                    import json
+                    response_data = json.loads(data.get_data(as_text=True))
+                except:
+                    # If we can't parse it, just return the original Response
+                    return data
+        elif isinstance(data, dict) and 'status' not in data:
             # Wrap data in standard response format if not already wrapped
             response_data = {
                 'status': 'success',
@@ -223,6 +237,14 @@ def etag_cached(ttl: int = 3600, key_func: Optional[Callable] = None,
             elif isinstance(result, tuple):
                 # Function returned (data, status_code) tuple
                 data, status_code = result
+                # If data is a Response object, extract its JSON content
+                if isinstance(data, Response):
+                    try:
+                        import json
+                        data = json.loads(data.get_data(as_text=True))
+                    except:
+                        # If we can't parse it, return the original Response
+                        return data
             else:
                 # Function returned data only
                 data = result
