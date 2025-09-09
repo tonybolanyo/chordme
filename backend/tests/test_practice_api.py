@@ -36,8 +36,7 @@ def test_user():
     """Create a test user"""
     user = User(
         email='test@example.com',
-        username='testuser',
-        password_hash='hashed_password'
+        password='TestPassword123'
     )
     db.session.add(user)
     db.session.commit()

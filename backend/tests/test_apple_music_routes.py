@@ -28,7 +28,7 @@ def auth_headers():
     """Create authentication headers for testing"""
     with app.app_context():
         # Create test user
-        test_user = User(email='test@example.com', password_hash='hashed_password')
+        test_user = User(email='test@example.com', password='TestPassword123')
         db.session.add(test_user)
         db.session.commit()
         
@@ -44,7 +44,7 @@ def test_song():
     with app.app_context():
         user = User.query.filter_by(email='test@example.com').first()
         if not user:
-            user = User(email='test@example.com', password_hash='hashed_password')
+            user = User(email='test@example.com', password='TestPassword123')
             db.session.add(user)
             db.session.commit()
         

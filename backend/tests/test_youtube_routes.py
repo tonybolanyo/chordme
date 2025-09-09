@@ -26,8 +26,7 @@ def client():
 def authenticated_user(client):
     """Create and authenticate a test user"""
     # Create test user
-    user = User(email='test@example.com')
-    user.set_password('TestPassword123!')
+    user = User(email='test@example.com', password='TestPassword123!')
     db.session.add(user)
     db.session.commit()
     
