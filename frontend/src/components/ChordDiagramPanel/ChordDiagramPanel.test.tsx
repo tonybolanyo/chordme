@@ -11,7 +11,7 @@ import { ChordDiagram, INSTRUMENT_CONFIGS } from '../../types/chordDiagram';
 
 // Mock the ChordDiagramRenderer component
 vi.mock('../ChordDiagramRenderer', () => ({
-  default: ({ chord, onFingerClick }: any) => (
+  default: ({ chord, onFingerClick }: { chord: ChordDiagram; onFingerClick?: () => void }) => (
     <div 
       data-testid={`chord-diagram-${chord.name}`}
       onClick={() => onFingerClick && onFingerClick()}

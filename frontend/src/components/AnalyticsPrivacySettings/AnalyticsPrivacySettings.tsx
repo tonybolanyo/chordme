@@ -41,7 +41,7 @@ const AnalyticsPrivacySettingsComponent: React.FC<PrivacySettingsProps> = ({
     }
   };
 
-  const handleSettingChange = (key: keyof AnalyticsPrivacySettings, value: any) => {
+  const handleSettingChange = (key: keyof AnalyticsPrivacySettings, value: boolean | number) => {
     setCurrentSettings(prev => ({
       ...prev,
       [key]: value,

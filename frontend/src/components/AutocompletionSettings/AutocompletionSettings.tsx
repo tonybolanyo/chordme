@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import './AutocompletionSettings.css';
 import { 
   autocompletionSettingsService, 
-  type AutocompletionSettings
+  type AutocompletionSettings,
+  type CustomChord
 } from '../../services/autocompletionSettings';
 
 interface AutocompletionSettingsProps {
@@ -31,7 +32,7 @@ const AutocompletionSettings: React.FC<AutocompletionSettingsProps> = ({
     }
   }, [visible]);
 
-  const handleSettingChange = (key: keyof AutocompletionSettings, value: any) => {
+  const handleSettingChange = (key: keyof AutocompletionSettings, value: boolean | number | CustomChord[]) => {
     const newSettings = { ...settings, [key]: value };
     setSettings(newSettings);
     autocompletionSettingsService.saveSettings({ [key]: value });

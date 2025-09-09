@@ -48,7 +48,7 @@ const mockPresets = [
   }
 ];
 
-function renderWithProvider(props: any = {}) {
+function renderWithProvider(props: Partial<{ isOpen: boolean; onClose: () => void; onSearch: (results: any[]) => void }> = {}) {
   const defaultProps = {
     isOpen: true,
     onClose: jest.fn(),
@@ -414,7 +414,6 @@ describe('AdvancedFilterPanel', () => {
       const user = userEvent.setup();
       renderWithProvider();
       
-      const genreSelect = screen.getByLabelText('Genre:');
       await user.tab();
       
       // Should be able to tab to the first input
