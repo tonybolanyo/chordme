@@ -132,7 +132,7 @@ describe('Header Accessibility', () => {
     it('should show login and register links', () => {
       render(<Header />);
 
-      expect(screen.getByRole('link', { name: /demo/i })).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: 'Demo' })).toBeInTheDocument();
       expect(screen.getByRole('link', { name: /login/i })).toBeInTheDocument();
       expect(
         screen.getByRole('link', { name: /sign up/i })
