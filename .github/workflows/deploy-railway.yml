@@ -74,28 +74,35 @@ jobs:
         fi
     
     - name: Deploy to Railway
+      env:
+        RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
       run: |
-        export RAILWAY_TOKEN="${{ secrets.RAILWAY_TOKEN }}"
-        
         if [ -z "$RAILWAY_TOKEN" ]; then
           echo "⚠️ Railway deployment skipped: RAILWAY_TOKEN not configured"
           echo "To enable automatic deployment to Railway, configure the RAILWAY_TOKEN secret"
           exit 0
         fi
         
+        # Verify Railway CLI authentication
+        echo "🔐 Authenticating with Railway..."
+        railway whoami || echo "Warning: Railway authentication status unclear"
+        
         # Set project context
+        echo "🔗 Linking to Railway project..."
         railway link --project ${{ env.RAILWAY_PROJECT_ID }}
         
         # Deploy the backend
+        echo "🚀 Deploying backend to Railway..."
         railway up --service ${{ env.RAILWAY_SERVICE_ID }}
       working-directory: ./backend
     
     - name: Run database migrations
       if: env.RAILWAY_PROJECT_ID != ''
-      run: |
-        export RAILWAY_TOKEN="${{ secrets.RAILWAY_TOKEN }}"
-        
+      env:
+        RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      run: |        
         # Run migrations using Railway's environment
+        echo "🗃️ Running database migrations..."
         railway run --service ${{ env.RAILWAY_SERVICE_ID }} python ../database/migrate.py
       working-directory: ./backend
       continue-on-error: true
