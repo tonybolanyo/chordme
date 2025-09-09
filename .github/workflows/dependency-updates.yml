@@ -1,3 +1,13 @@
+# Dependency Updates Workflow
+#
+# This workflow automatically updates frontend and backend dependencies.
+# 
+# If PR creation fails due to permissions, you have two options:
+# 1. Create a Personal Access Token (PAT) and add it as PAT_TOKEN secret
+# 2. Manually create PRs from the update branches that are created
+#
+# The dependency updates will still be pushed to branches even if PR creation fails.
+
 name: Dependency Updates
 
 on:
@@ -9,6 +19,9 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  actions: read
+  checks: read
+  repository-projects: read
 
 jobs:
   update-frontend-dependencies:
@@ -36,7 +49,8 @@ jobs:
     - name: Create Pull Request for Frontend Updates
       uses: peter-evans/create-pull-request@v5
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
+        # Use PAT if available, fallback to GITHUB_TOKEN
+        token: ${{ secrets.PAT_TOKEN || secrets.GITHUB_TOKEN }}
         commit-message: 'chore(frontend): update npm dependencies'
         title: 'chore(frontend): update npm dependencies'
         body: |
@@ -51,6 +65,19 @@ jobs:
         delete-branch: true
         committer: GitHub <noreply@github.com>
         author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
+        # Add additional options to help with permissions
+        add-paths: |
+          frontend/package-lock.json
+          frontend/package.json
+      continue-on-error: true
+      id: create-pr-frontend
+    
+    - name: Report Frontend Update Status
+      if: failure() && steps.create-pr-frontend.outcome == 'failure'
+      run: |
+        echo "⚠️ Could not create PR automatically due to permission restrictions."
+        echo "Frontend dependencies were updated on branch: update-frontend-dependencies"
+        echo "Please manually create a PR from this branch or configure a PAT_TOKEN secret."
 
   update-backend-dependencies:
     name: Update Backend Dependencies  
@@ -83,7 +110,8 @@ jobs:
     - name: Create Pull Request for Backend Updates
       uses: peter-evans/create-pull-request@v5
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
+        # Use PAT if available, fallback to GITHUB_TOKEN
+        token: ${{ secrets.PAT_TOKEN || secrets.GITHUB_TOKEN }}
         commit-message: 'chore(backend): update Python dependencies'
         title: 'chore(backend): update Python dependencies'
         body: |
@@ -98,3 +126,16 @@ jobs:
         delete-branch: true
         committer: GitHub <noreply@github.com>
         author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
+        # Add additional options to help with permissions
+        add-paths: |
+          backend/requirements.txt
+          backend/requirements.in
+      continue-on-error: true
+      id: create-pr-backend
+    
+    - name: Report Backend Update Status
+      if: failure() && steps.create-pr-backend.outcome == 'failure'
+      run: |
+        echo "⚠️ Could not create PR automatically due to permission restrictions."
+        echo "Backend dependencies were updated on branch: update-backend-dependencies"
+        echo "Please manually create a PR from this branch or configure a PAT_TOKEN secret."
