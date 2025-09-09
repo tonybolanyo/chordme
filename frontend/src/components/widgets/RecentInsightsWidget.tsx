@@ -15,10 +15,10 @@ interface RecentInsightsWidgetProps {
 }
 
 const RecentInsightsWidget: React.FC<RecentInsightsWidgetProps> = ({
-  data,
-  timeframe,
+  data: _data,
+  timeframe: _timeframe,
   loading,
-  error
+  error: _error
 }) => {
   const { t } = useTranslation();
 

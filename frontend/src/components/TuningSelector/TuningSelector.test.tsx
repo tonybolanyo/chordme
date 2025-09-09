@@ -363,8 +363,8 @@ describe('TuningSelector', () => {
 });
 
 describe('CustomTuningModal', () => {
-  const mockOnSave = vi.fn();
-  const mockOnCancel = vi.fn();
+  const _mockOnSave = vi.fn();
+  const _mockOnCancel = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();

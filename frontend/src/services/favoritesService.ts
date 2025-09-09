@@ -34,7 +34,7 @@ export interface FavoriteQuery {
   id: number | string;
   name: string;
   query: string;
-  filters: Record<string, any>;
+  filters: Record<string, string | number | boolean | string[]>;
   created_at: string;
   usage_count: number;
 }
@@ -163,7 +163,7 @@ class EnhancedSearchHistoryManager {
     }
   }
 
-  saveFavoriteQuery(name: string, query: string, filters: Record<string, any> = {}): void {
+  saveFavoriteQuery(name: string, query: string, filters: Record<string, string | number | boolean | string[]> = {}): void {
     if (!name.trim() || !query.trim()) return;
 
     const favorites = this.getFavoriteQueries();
@@ -407,7 +407,7 @@ export class FavoritesService {
     return this.historyManager.getFavoriteQueries();
   }
 
-  saveFavoriteQuery(name: string, query: string, filters: Record<string, any> = {}) {
+  saveFavoriteQuery(name: string, query: string, filters: Record<string, string | number | boolean | string[]> = {}) {
     return this.historyManager.saveFavoriteQuery(name, query, filters);
   }
 

@@ -3,6 +3,8 @@
  * Provides real-time validation with error detection and highlighting
  */
 
+import { chordRecognitionEngine } from './chordRecognition';
+
 export interface ValidationError {
   type: 'chord' | 'directive' | 'bracket' | 'syntax' | 'security' | 'format';
   severity: 'error' | 'warning' | 'info';
@@ -123,8 +125,7 @@ export class ChordProValidator {
     // Use enhanced chord recognition engine for improved validation
     // Fall back to original pattern for backward compatibility
     try {
-      // Import dynamically to avoid circular dependencies
-      const { chordRecognitionEngine } = require('./chordRecognition');
+      // Use imported recognition engine
       return chordRecognitionEngine.isValidChord(chord.trim());
     } catch (error) {
       // Fallback to original regex pattern if enhanced engine fails

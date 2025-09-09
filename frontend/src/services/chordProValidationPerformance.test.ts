@@ -57,7 +57,7 @@ describe('ChordPro Validation Performance Tests', () => {
       const complexContent = generateComplexNesting(100);
       
       const startTime = performance.now();
-      const result = validator.validateContent(complexContent);
+      const _result = validator.validateContent(complexContent);
       const endTime = performance.now();
       
       const duration = endTime - startTime;
@@ -120,7 +120,7 @@ describe('ChordPro Validation Performance Tests', () => {
       const content = generateManyRegexMatches(5000);
       
       const startTime = performance.now();
-      const result = validator.validateContent(content);
+      const _result = validator.validateContent(content);
       const endTime = performance.now();
       
       const duration = endTime - startTime;
@@ -133,7 +133,7 @@ describe('ChordPro Validation Performance Tests', () => {
       const pathologicalContent = generatePathologicalRegexCase();
       
       const startTime = performance.now();
-      const result = validator.validateContent(pathologicalContent);
+      const _result = validator.validateContent(pathologicalContent);
       const endTime = performance.now();
       
       const duration = endTime - startTime;
@@ -161,7 +161,7 @@ describe('ChordPro Validation Performance Tests', () => {
       const mixedContent = generateMixedLanguageDocument(500);
       
       const startTime = performance.now();
-      const result = validator.validateContent(mixedContent);
+      const _result = validator.validateContent(mixedContent);
       const endTime = performance.now();
       
       const duration = endTime - startTime;

@@ -15,10 +15,10 @@ interface ProgressTrendsWidgetProps {
 }
 
 const ProgressTrendsWidget: React.FC<ProgressTrendsWidgetProps> = ({
-  data,
-  timeframe,
+  data: _data,
+  timeframe: _timeframe,
   loading,
-  error
+  error: _error
 }) => {
   const { t } = useTranslation();
 

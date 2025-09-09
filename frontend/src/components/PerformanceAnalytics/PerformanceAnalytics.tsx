@@ -5,7 +5,6 @@ import {
   PerformanceRecommendations,
   AnalyticsTimeframe,
   AnalyticsDashboardProps,
-  ChartDataPoint,
 } from '../../types/analytics';
 import './PerformanceAnalytics.css';
 

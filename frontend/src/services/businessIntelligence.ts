@@ -149,7 +149,7 @@ class BusinessIntelligenceService {
     startDate: string,
     endDate: string,
     format: 'json' | 'csv' = 'json',
-    filters?: Record<string, any>
+    filters?: Record<string, string | number | boolean | string[]>
   ): Promise<DataExport> {
     const requestBody = {
       data_type: dataType,

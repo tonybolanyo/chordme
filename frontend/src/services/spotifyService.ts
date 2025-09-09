@@ -587,4 +587,5 @@ class SpotifyService {
   }
 }
 
+export { SpotifyService };
 export const spotifyService = new SpotifyService();

@@ -26,7 +26,7 @@ export const SetlistPage: React.FC<SetlistPageProps> = ({
   const [setlists, setSetlists] = useState<Setlist[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [searchParams, setSearchParams] = useState<SetlistSearchParams>({
+  const [searchParams, _setSearchParams] = useState<SetlistSearchParams>({
     limit: 20,
     offset: 0,
     sort: 'updated_at',
@@ -57,12 +57,12 @@ export const SetlistPage: React.FC<SetlistPageProps> = ({
     setCurrentMode('create');
   };
 
-  const handleEdit = (setlistId: string) => {
+  const handleEdit = (_setlistId: string) => {
     // In a real app, you'd navigate to edit mode with the setlist ID
     setCurrentMode('edit');
   };
 
-  const handleSave = (setlist: Setlist) => {
+  const handleSave = (_setlist: Setlist) => {
     // Handle save and navigate back to list
     setCurrentMode('list');
     loadSetlists(); // Refresh the list

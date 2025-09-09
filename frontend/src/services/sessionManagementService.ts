@@ -44,7 +44,7 @@ export interface ActivityFilters {
   activity_type?: string;
 }
 
-export interface SessionResponse<T = any> {
+export interface SessionResponse<T = unknown> {
   status: 'success' | 'error';
   message?: string;
   data?: T;

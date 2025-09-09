@@ -8,9 +8,6 @@ import {
   getChordAtCursor,
   getChordsInRange,
   useChordDetection,
-  ChordPosition,
-  ChordDetectionResult,
-  ChordAtCursor
 } from './chordDetectionService';
 
 describe('Chord Detection Service', () => {

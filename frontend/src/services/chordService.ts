@@ -3,6 +3,7 @@
  */
 
 import { CustomChord } from './autocompletionSettings';
+import { chordRecognitionEngine } from './chordRecognition';
 
 // Comprehensive chord dictionary with 200+ common chords
 const COMMON_CHORDS = [
@@ -186,8 +187,7 @@ export function isValidChord(chord: string): boolean {
   // Use enhanced chord recognition engine for improved validation
   // Fall back to original pattern for backward compatibility
   try {
-    // Import dynamically to avoid circular dependencies
-    const { chordRecognitionEngine } = require('./chordRecognition');
+    // Use imported recognition engine
     return chordRecognitionEngine.isValidChord(chord.trim());
   } catch (error) {
     // Fallback to original regex pattern if enhanced engine fails

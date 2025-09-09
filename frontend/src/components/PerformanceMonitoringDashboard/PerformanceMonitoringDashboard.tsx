@@ -50,7 +50,7 @@ const PerformanceMonitoringDashboard: React.FC<PerformanceMonitoringDashboardPro
   onClose
 }) => {
   const [performanceData, setPerformanceData] = useState<PerformanceStatus | null>(null);
-  const [isMonitoring, setIsMonitoring] = useState(false);
+  const [_isMonitoring, setIsMonitoring] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [refreshInterval, setRefreshInterval] = useState(5000); // 5 seconds
   const [alerts, setAlerts] = useState<any[]>([]);
@@ -113,7 +113,7 @@ const PerformanceMonitoringDashboard: React.FC<PerformanceMonitoringDashboardPro
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const formatDuration = (ms: number) => {
+  const _formatDuration = (ms: number) => {
     if (ms < 1000) return `${Math.round(ms)}ms`;
     return `${(ms / 1000).toFixed(2)}s`;
   };

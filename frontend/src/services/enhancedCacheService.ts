@@ -9,7 +9,7 @@
  * - Intelligent cache warming
  */
 
-interface CacheEntry<T = any> {
+interface CacheEntry<T = unknown> {
   data: T;
   timestamp: number;
   ttl: number;

@@ -79,7 +79,7 @@ export function useComprehensiveAnalytics(
   const [isRealTimeConnected, setIsRealTimeConnected] = useState(false);
   
   const [timeframe, setTimeframe] = useState<AnalyticsTimeframe>(options.timeframe || '30d');
-  const [includeAnonymous, setIncludeAnonymous] = useState(options.includeAnonymous || false);
+  const [includeAnonymous, _setIncludeAnonymous] = useState(options.includeAnonymous || false);
   
   // Refs for cleanup and intervals
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -456,11 +456,11 @@ export function useWidgetAnalytics(
  * Hook for real-time analytics updates
  */
 export function useRealTimeAnalytics() {
-  const [updates, setUpdates] = useState<any[]>([]);
+  const [updates, setUpdates] = useState<unknown[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   
   useEffect(() => {
-    const handleUpdate = (update: any) => {
+    const handleUpdate = (update: unknown) => {
       setUpdates(prev => [update, ...prev.slice(0, 9)]); // Keep last 10 updates
     };
     

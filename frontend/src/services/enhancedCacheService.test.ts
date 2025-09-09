@@ -4,7 +4,6 @@
 
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { enhancedCacheService } from '../services/enhancedCacheService';
-import type { CacheConfig } from '../services/enhancedCacheService';
 
 // Mock localStorage for testing
 const localStorageMock = (() => {
