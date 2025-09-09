@@ -83,7 +83,7 @@ class AutocompletionSettingsService {
       if (stored) {
         const parsed = JSON.parse(stored);
         // Convert date strings back to Date objects
-        return parsed.map((chord: any) => ({
+        return parsed.map((chord: Omit<CustomChord, 'createdAt'> & { createdAt: string }) => ({
           ...chord,
           createdAt: new Date(chord.createdAt),
         }));

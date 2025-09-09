@@ -565,7 +565,7 @@ class CrossPlatformMusicService {
     conflicts: MetadataConflict[],
     spotifyTrack?: SpotifyTrack,
     appleMusicTrack?: AppleMusicTrack,
-    sources?: MetadataSource[]
+    _sources?: MetadataSource[]
   ): UnifiedMusicMetadata['normalized'] {
     const resolved: UnifiedMusicMetadata['normalized'] = {
       title: '',
@@ -872,12 +872,12 @@ class CrossPlatformMusicService {
   }
 
   // Helper methods for fetching individual tracks (to be implemented with actual API calls)
-  private async fetchSpotifyTrack(id: string): Promise<SpotifyTrack> {
+  private async fetchSpotifyTrack(_id: string): Promise<SpotifyTrack> {
     // This would use the actual Spotify service
     throw new Error('Not implemented - would use spotifyService.getTrack()');
   }
 
-  private async fetchAppleMusicTrack(id: string): Promise<AppleMusicTrack> {
+  private async fetchAppleMusicTrack(_id: string): Promise<AppleMusicTrack> {
     // This would use the actual Apple Music service
     throw new Error('Not implemented - would use appleMusicService.getTrack()');
   }

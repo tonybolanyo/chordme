@@ -7,7 +7,7 @@ interface Props {
   onUpdate: () => void;
 }
 
-const RoomProgress: React.FC<Props> = ({ room, onUpdate }) => {
+const RoomProgress: React.FC<Props> = ({ room: _room, onUpdate: _onUpdate }) => {
   return (
     <Box>
       <Typography variant="h5">Progress Tracking</Typography>

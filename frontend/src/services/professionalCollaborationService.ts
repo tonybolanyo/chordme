@@ -33,6 +33,7 @@ import type {
   ProjectFilters,
   TaskFilters
 } from '../types/professionalCollaboration';
+import type { PaginationInfo } from '../types/searchResults';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
@@ -648,7 +649,7 @@ class ProfessionalCollaborationService {
     return response.data;
   }
 
-  async listProjects(filters: ProjectFilters = {}): Promise<{ projects: Project[]; pagination: any }> {
+  async listProjects(filters: ProjectFilters = {}): Promise<{ projects: Project[]; pagination: PaginationInfo }> {
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined) {
@@ -656,7 +657,7 @@ class ProfessionalCollaborationService {
       }
     });
 
-    const response = await this.makeRequest<{ projects: Project[]; pagination: any }>(
+    const response = await this.makeRequest<{ projects: Project[]; pagination: PaginationInfo }>(
       `/api/v1/projects?${params.toString()}`
     );
     

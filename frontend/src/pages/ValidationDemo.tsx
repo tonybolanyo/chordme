@@ -40,7 +40,7 @@ export const ValidationDemo: React.FC = () => {
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
   const [validationWarnings, setValidationWarnings] = useState<ValidationError[]>([]);
 
-  const handleValidationChange = (errors: any[], warnings: any[]) => {
+  const handleValidationChange = (errors: ValidationError[], warnings: ValidationError[]) => {
     setValidationErrors(errors);
     setValidationWarnings(warnings);
   };

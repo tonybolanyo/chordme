@@ -19,7 +19,6 @@ import {
   LinearProgress
 } from '@mui/material';
 import {
-  TrendingUp as TrendingUpIcon,
   People as PeopleIcon,
   Event as EventIcon,
   FolderOpen as FolderIcon,
@@ -34,7 +33,7 @@ interface Props {
   onUpdate: () => void;
 }
 
-const RoomDashboard: React.FC<Props> = ({ room, onUpdate }) => {
+const RoomDashboard: React.FC<Props> = ({ room, onUpdate: _onUpdate }) => {
   const [dashboard, setDashboard] = useState<ActivityDashboard | null>(null);
   const [loading, setLoading] = useState(true);
 
