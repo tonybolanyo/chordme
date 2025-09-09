@@ -13,6 +13,8 @@ import {
   SetlistComparison,
   AnalyticsExportData,
   AnalyticsPrivacySettings,
+  PerformanceSession,
+  SongPerformanceTrend,
   PrivacySettingsResponse,
   AnalyticsApiResponse,
   ExportRequest,
@@ -284,7 +286,7 @@ class AnalyticsService {
       lines.push('=== PERFORMANCES ===');
       lines.push('Setlist ID,Performance Date,Venue,Total Duration,Overall Rating,Songs Performed');
       
-      exportData.data.performances.forEach((performance: any) => {
+      exportData.data.performances.forEach((performance: PerformanceSession) => {
         lines.push([
           performance.setlist_id || '',
           performance.performance_date || '',
@@ -302,7 +304,7 @@ class AnalyticsService {
       lines.push('=== SONGS ===');
       lines.push('Song ID,Title,Artist,Total Performances,Average Rating,Average Duration');
       
-      exportData.data.songs.forEach((song: any) => {
+      exportData.data.songs.forEach((song: SongPerformanceTrend) => {
         lines.push([
           song.song_id || '',
           `"${song.song_title || ''}"`,
@@ -321,7 +323,7 @@ class AnalyticsService {
   /**
    * Validate analytics data for privacy compliance
    */
-  validateDataPrivacy(data: any): boolean {
+  validateDataPrivacy(data: Record<string, unknown>): boolean {
     // Check for personally identifiable information
     const sensitiveFields = ['email', 'full_name', 'address', 'phone'];
     
