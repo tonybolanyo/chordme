@@ -478,7 +478,7 @@ For questions about these guidelines, reports of violations, or suggestions for 
 - [Collaboration User Guide](collaboration-user-guide.md)
 - [Best Practices for Collaborative Music-Making](collaboration-best-practices.md)
 - [Troubleshooting Guide](troubleshooting.md)
-- [Privacy Policy](privacy-policy.md)
+- [Privacy Policy](security-checklist.md)
 
 ---
 

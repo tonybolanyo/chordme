@@ -399,4 +399,4 @@ rm -rf ~/.minikube
 - [Docker Compose Documentation](https://docs.docker.com/compose/)
 - [Minikube Documentation](https://minikube.sigs.k8s.io/docs/)
 - [Kubernetes Documentation](https://kubernetes.io/docs/)
-- [ChordMe Developer Guide](docs/developer-guide.md)
+- [ChordMe Developer Guide](developer-guide.md)
