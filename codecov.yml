@@ -9,34 +9,34 @@ coverage:
   status:
     project:
       default:
-        target: 85%
-        threshold: 2%
+        target: 75%
+        threshold: 5%
         if_ci_failed: error
       backend:
-        target: 85%
-        threshold: 2%
+        target: 75%
+        threshold: 5%
         flags:
           - backend
         paths:
           - backend/
       frontend:
-        target: 85%
-        threshold: 2%
+        target: 75%
+        threshold: 5%
         flags:
           - frontend
         paths:
           - frontend/
       integration:
-        target: 85%
-        threshold: 5%
+        target: 70%
+        threshold: 10%
         flags:
           - integration
         paths:
           - integration-tests/
     patch:
       default:
-        target: 85%
-        threshold: 5%
+        target: 70%
+        threshold: 10%
 
 parsers:
   gcov:

@@ -12,7 +12,8 @@ import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from chordme.cache_service import CacheService, CacheConfig
+# Import only CacheConfig at module level, CacheService will be imported in fixtures
+from chordme.cache_service import CacheConfig
 
 
 class TestBasicCacheService:
@@ -33,6 +34,9 @@ class TestBasicCacheService:
     @pytest.fixture 
     def cache_service(self, cache_config):
         """Test cache service instance with mocked Flask app."""
+        # Import CacheService inside the fixture to avoid import-time Flask context issues
+        from chordme.cache_service import CacheService
+        
         with patch('chordme.cache_service.current_app') as mock_app:
             mock_app.config.get.return_value = None  # No Redis URL
             return CacheService(cache_config)
