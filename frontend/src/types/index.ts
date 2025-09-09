@@ -531,11 +531,11 @@ export interface MetadataConflict {
   field: string;
   sources: Array<{
     platform: string;
-    value: any;
+    value: string | number | Date | string[];
     confidence: number;
   }>;
   resolution: 'automatic' | 'manual' | 'pending';
-  resolvedValue?: any;
+  resolvedValue?: string | number | Date | string[];
   resolutionReason?: string;
 }
 
@@ -544,9 +544,9 @@ export interface UnifiedMusicMetadata {
   platforms: {
     spotify?: SpotifyTrack;
     appleMusic?: AppleMusicTrack;
-    musicbrainz?: any; // Future extensibility
-    discogs?: any;
-    lastfm?: any;
+    musicbrainz?: Record<string, unknown>; // Future extensibility
+    discogs?: Record<string, unknown>;
+    lastfm?: Record<string, unknown>;
   };
   
   // Enhanced normalized data with quality tracking
