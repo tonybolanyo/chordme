@@ -30,7 +30,10 @@ def app():
         try:
             yield app
         finally:
-            # Clean up after test
+            # Clean up after test - disable foreign key checks for SQLite
+            if db.engine.dialect.name == 'sqlite':
+                db.session.execute(db.text('PRAGMA foreign_keys=OFF'))
+                db.session.commit()
             db.session.remove()
             db.drop_all()
 
@@ -55,7 +58,10 @@ def client():
             try:
                 yield client
             finally:
-                # Clean up after test
+                # Clean up after test - disable foreign key checks for SQLite
+                if db.engine.dialect.name == 'sqlite':
+                    db.session.execute(db.text('PRAGMA foreign_keys=OFF'))
+                    db.session.commit()
                 db.session.remove()
                 db.drop_all()
 
@@ -63,9 +69,10 @@ def client():
 
 @pytest.fixture
 def sample_user_data():
-    """Sample user data for testing."""
+    """Sample user data for testing with unique email per test."""
+    import uuid
     return {
-        'email': 'test@example.com',
+        'email': f'test-{uuid.uuid4().hex[:8]}@example.com',
         'password': 'TestPassword123'
     }
 
@@ -114,10 +121,11 @@ def valid_user_variations():
 def auth_token(client):
     """Create a user and return a valid JWT token for testing."""
     import json
+    import uuid
     
-    # Create a test user
+    # Create a test user with unique email
     user_data = {
-        'email': 'test@example.com',
+        'email': f'test-token-{uuid.uuid4().hex[:8]}@example.com',
         'password': 'TestPassword123'
     }
     

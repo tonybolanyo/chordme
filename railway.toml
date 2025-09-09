@@ -15,6 +15,7 @@
   FLASK_CONFIG = { default = "config" }
   SECRET_KEY = { generate = true }
   JWT_SECRET_KEY = { generate = true }
+  HTTPS_ENFORCED = { default = "true" }
   
 [variables.DATABASE_URL]
   description = "PostgreSQL connection string from Supabase"
