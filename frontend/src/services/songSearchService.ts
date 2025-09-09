@@ -224,7 +224,7 @@ export class SearchQueryParser {
     }
 
     // Remove phrases from query for further parsing
-    let cleanQuery = query.replace(/"[^"]+"/g, '');
+    const cleanQuery = query.replace(/"[^"]+"/g, '');
 
     // Split into terms
     const terms = cleanQuery.split(/\s+/).filter(term => term.trim());

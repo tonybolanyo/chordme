@@ -138,11 +138,11 @@ export class TuningService {
       return newFret < 0 ? -1 : newFret; // Mute if would go below fret 0
     });
 
-    let adjustments = tuningDifferences;
+    const adjustments = tuningDifferences;
     let requiresCapo = false;
     let capoPosition = 0;
     let confidence = 100;
-    let notes: string[] = [];
+    const notes: string[] = [];
 
     // Check if we need a capo
     const minValidFret = Math.min(...convertedPositions.filter(fret => fret >= 0));
@@ -211,7 +211,7 @@ export class TuningService {
     let bestCapo = 0;
     let bestScore = 0;
     let bestEffectiveTuning: string[] = [];
-    let alternatives: Array<{ position: number; confidence: number; notes: string }> = [];
+    const alternatives: Array<{ position: number; confidence: number; notes: string }> = [];
 
     for (let capoPos = 1; capoPos <= maxCapoPosition; capoPos++) {
       // Calculate effective tuning with capo

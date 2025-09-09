@@ -843,7 +843,7 @@ export function transposeChordDiagramToTuning(
     if (pos.fret < 0) return pos; // Keep muted strings
     
     const adjustment = tuningDifferences[index];
-    let newFret = pos.fret - adjustment;
+    const newFret = pos.fret - adjustment;
     
     if (newFret < 0) {
       // Try with capo if allowed
