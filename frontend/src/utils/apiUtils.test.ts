@@ -25,7 +25,6 @@ global.AbortSignal.timeout = vi.fn((ms: number) => {
 describe('apiUtils', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.useFakeTimers();
   });
 
   afterEach(() => {
@@ -233,7 +232,7 @@ describe('apiUtils', () => {
         .mockResolvedValueOnce(errorResponse)
         .mockResolvedValueOnce(successResponse);
 
-      const result = await fetchWithRetry('/api/test');
+      const result = await fetchWithRetry('/api/test', {}, { delay: 0 });
 
       expect(result).toBe(successResponse);
       expect(mockFetch).toHaveBeenCalledTimes(2);
@@ -298,22 +297,16 @@ describe('apiUtils', () => {
       const errorResponse = new Response('Server Error', { status: 500 });
       mockFetch.mockResolvedValue(errorResponse);
 
+      // Use zero delay to avoid timing issues
       const promise = fetchWithRetry(
         '/api/test',
         {},
         {
           maxAttempts: 3,
-          delay: 1, // Very small delay for tests
+          delay: 0, // Zero delay for tests
           backoffMultiplier: 2,
         }
       );
-
-      // Fast-forward through the delays
-      vi.advanceTimersByTime(1); // First retry delay
-      await Promise.resolve(); // Let first retry execute
-
-      vi.advanceTimersByTime(2); // Second retry delay (1 * 2)
-      await Promise.resolve(); // Let second retry execute
 
       await expect(promise).rejects.toThrow();
       expect(mockFetch).toHaveBeenCalledTimes(3);
@@ -436,11 +429,16 @@ describe('apiUtils', () => {
 
   describe('waitForOnline', () => {
     beforeEach(() => {
+      vi.useFakeTimers();
       // Reset navigator.onLine
       Object.defineProperty(navigator, 'onLine', {
         writable: true,
         value: false,
       });
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
     });
 
     it('resolves immediately if already online', async () => {
