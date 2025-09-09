@@ -381,7 +381,7 @@ def search_songs():
                 'include_public': include_public,
                 'limit': limit,
                 'offset': offset,
-                'user_id': str(g.current_user.id)
+                'user_id': str(g.current_user_id)
             }
             cache_key = str(hash(json.dumps(cache_params, sort_keys=True)))
             
@@ -406,7 +406,7 @@ def search_songs():
             min_tempo=min_tempo,
             max_tempo=max_tempo,
             time_signature=time_signature if time_signature else None,
-            user_id=g.current_user.id,
+            user_id=g.current_user_id,
             include_public=include_public,
             date_from=date_from,
             date_to=date_to,
@@ -429,7 +429,7 @@ def search_songs():
             min_tempo=min_tempo,
             max_tempo=max_tempo,
             time_signature=time_signature if time_signature else None,
-            user_id=g.current_user.id,
+            user_id=g.current_user_id,
             include_public=include_public,
             date_from=date_from,
             date_to=date_to,
@@ -438,19 +438,6 @@ def search_songs():
             offset=None
         )
         total_count = count_query.count()
-        count_params['limit_count'] = 999999
-        count_params['offset_count'] = 0
-        
-        count_sql = text('''
-            SELECT COUNT(*) FROM search_songs_advanced(
-                :search_query, :search_genre, :search_key, :search_difficulty,
-                :search_language, :search_tags, :search_categories,
-                :min_tempo, :max_tempo, :user_id_filter, :include_public,
-                :limit_count, :offset_count, :enable_fuzzy
-            )
-        ''')
-        
-        total_count = db.session.execute(count_sql, count_params).scalar()
         
         # Process results and add highlighting
         processed_results = []
@@ -518,45 +505,57 @@ def search_songs():
             }
         }
         
-        # Add search suggestions if query is provided but results are limited
+        # Add search suggestions if query is provided but results are limited (PostgreSQL only)
         if query and len(processed_results) < 5:
-            suggestions_sql = text('''
-                SELECT suggestion, type, count FROM get_search_suggestions(
-                    :partial_query, 'all', 5, :user_id_filter
-                )
-            ''')
-            suggestions_result = db.session.execute(suggestions_sql, {
-                'partial_query': query,
-                'user_id_filter': g.current_user.id
-            }).fetchall()
-            
-            response_data['suggestions'] = [row.suggestion for row in suggestions_result]
+            # Check if we're using PostgreSQL (has the get_search_suggestions function)
+            try:
+                # Only try suggestions on PostgreSQL
+                if 'postgresql' in str(db.engine.url).lower():
+                    suggestions_sql = text('''
+                        SELECT suggestion, type, count FROM get_search_suggestions(
+                            :partial_query, 'all', 5, :user_id_filter
+                        )
+                    ''')
+                    suggestions_result = db.session.execute(suggestions_sql, {
+                        'partial_query': query,
+                        'user_id_filter': g.current_user_id
+                    }).fetchall()
+                    
+                    response_data['suggestions'] = [row.suggestion for row in suggestions_result]
+                else:
+                    # For SQLite or other databases, provide basic suggestions
+                    response_data['suggestions'] = []
+            except Exception:
+                # If suggestions fail, continue without them
+                response_data['suggestions'] = []
         
         # Cache the result if caching is enabled
         if enable_cache and cache_key:
             cache_result(cache_key, response_data)
         
-        # Log search analytics
+        # Log search analytics (PostgreSQL only)
         try:
-            analytics_sql = text('''
-                SELECT log_search_analytics(
-                    :query, :user_id, :results_count, :search_time,
-                    :filters, :ip_address, :user_agent
-                )
-            ''')
-            
-            filters_json = json.dumps(response_data['query_info']['filters_applied'])
-            
-            db.session.execute(analytics_sql, {
-                'query': query or '',
-                'user_id': g.current_user.id,
-                'results_count': total_count,
-                'search_time': search_time_ms,
-                'filters': filters_json,
-                'ip_address': request.remote_addr,
-                'user_agent': request.headers.get('User-Agent', '')[:500]
-            })
-            db.session.commit()
+            # Only log analytics on PostgreSQL
+            if 'postgresql' in str(db.engine.url).lower():
+                analytics_sql = text('''
+                    SELECT log_search_analytics(
+                        :query, :user_id, :results_count, :search_time,
+                        :filters, :ip_address, :user_agent
+                    )
+                ''')
+                
+                filters_json = json.dumps(response_data['query_info']['filters_applied'])
+                
+                db.session.execute(analytics_sql, {
+                    'query': query or '',
+                    'user_id': g.current_user_id,
+                    'results_count': total_count,
+                    'search_time': search_time_ms,
+                    'filters': filters_json,
+                    'ip_address': request.remote_addr,
+                    'user_agent': request.headers.get('User-Agent', '')[:500]
+                })
+                db.session.commit()
         except Exception as analytics_error:
             # Don't fail the search if analytics logging fails
             db.session.rollback()
@@ -567,7 +566,7 @@ def search_songs():
     except Exception as e:
         # Log security event for potential attack
         logger = logging.getLogger(__name__)
-        logger.warning(f"Search error for user {getattr(g, 'current_user', {}).get('id')}: {str(e)}", 
+        logger.warning(f"Search error for user {getattr(g, 'current_user_id', None)}: {str(e)}", 
                       extra={'ip_address': request.remote_addr})
         
         return jsonify({
@@ -661,7 +660,7 @@ def get_suggestions():
             'partial_query': query,
             'suggestion_type': suggestion_type,
             'max_suggestions': limit,
-            'user_id_filter': g.current_user.id
+            'user_id_filter': g.current_user_id
         }).fetchall()
         
         suggestions = []
@@ -680,7 +679,7 @@ def get_suggestions():
         
     except Exception as e:
         logger = logging.getLogger(__name__)
-        logger.warning(f"Suggestions error for user {getattr(g, 'current_user', {}).get('id')}: {str(e)}", 
+        logger.warning(f"Suggestions error for user {getattr(g, 'current_user_id', None)}: {str(e)}", 
                       extra={'ip_address': request.remote_addr})
         
         return jsonify({
