@@ -1,12 +1,41 @@
 import '@testing-library/jest-dom';
-import '../i18n/config'; // Initialize i18n for tests
 import { cleanup } from '@testing-library/react';
-import { afterEach, vi } from 'vitest';
+import { afterEach, beforeAll, vi } from 'vitest';
 
 // Extend global interface for test environment
 declare global {
   var fetch: typeof globalThis.fetch;
 }
+
+// Mock localStorage before importing i18n config
+beforeAll(() => {
+  Object.defineProperty(window, 'localStorage', {
+    value: {
+      getItem: vi.fn(() => null),
+      setItem: vi.fn(() => null),
+      removeItem: vi.fn(() => null),
+      clear: vi.fn(() => null),
+      length: 0,
+      key: vi.fn(() => null),
+    },
+    writable: true,
+  });
+
+  Object.defineProperty(window, 'sessionStorage', {
+    value: {
+      getItem: vi.fn(() => null),
+      setItem: vi.fn(() => null),
+      removeItem: vi.fn(() => null),
+      clear: vi.fn(() => null),
+      length: 0,
+      key: vi.fn(() => null),
+    },
+    writable: true,
+  });
+});
+
+// Initialize i18n after localStorage mock is set up
+import '../i18n/config';
 
 // Clean up after each test to prevent memory leaks
 afterEach(() => {
