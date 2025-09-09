@@ -8,7 +8,7 @@
 import { ChordDiagram, INSTRUMENT_CONFIGS } from '../types/chordDiagram';
 
 // Helper function to create chord metadata
-const createMetadata = (_name: string) => ({
+const createMetadata = () => ({
   createdAt: '2024-01-01T00:00:00Z',
   updatedAt: '2024-01-01T00:00:00Z',
   source: 'sample-data',

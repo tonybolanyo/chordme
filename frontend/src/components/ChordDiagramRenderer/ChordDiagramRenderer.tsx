@@ -5,8 +5,8 @@
  * interactive tooltips, and accessibility features.
  */
 
-import React, { useState, useRef, useEffect } from 'react';
-import { ChordDiagram, InstrumentConfig, StringPosition, BarreChord } from '../../types/chordDiagram';
+import React, { useState, useRef } from 'react';
+import { ChordDiagram, StringPosition } from '../../types/chordDiagram';
 import './ChordDiagramRenderer.css';
 
 interface ChordDiagramRendererProps {

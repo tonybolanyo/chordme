@@ -109,13 +109,6 @@ const ChordProEditor = forwardRef<HTMLTextAreaElement, ChordProEditorProps>(
       return chordDetection.chordAtCursor?.chord;
     }, [chordDetection.chordAtCursor]);
 
-    // Update cursor position tracking
-    const updateCursorPosition = useCallback(() => {
-      if (textareaRef.current) {
-        setCursorPosition(textareaRef.current.selectionStart);
-      }
-    }, [textareaRef]);
-
     // Handle chord panel visibility changes
     useEffect(() => {
       if (onChordPanelVisibilityChange) {
@@ -162,13 +155,9 @@ const ChordProEditor = forwardRef<HTMLTextAreaElement, ChordProEditorProps>(
     const {
       result: validationResult,
       hasErrors,
-      hasWarnings,
-      errorCount,
-      warningCount,
       isValidating,
       validateNow,
       updateConfig,
-      getErrorsAtPosition,
       validator
     } = useChordProValidation(value, {
       enableRealTime: enableValidation,

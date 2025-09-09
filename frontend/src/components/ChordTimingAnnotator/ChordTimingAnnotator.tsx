@@ -28,7 +28,6 @@ export const ChordTimingAnnotator: React.FC<ChordTimingAnnotatorProps> = ({
   className = '',
   onAnnotationChange,
   enableKeyboardShortcuts = true,
-  showMiniPlayer = true,
 }) => {
   // Hooks
   const {
@@ -39,7 +38,6 @@ export const ChordTimingAnnotator: React.FC<ChordTimingAnnotatorProps> = ({
     startAnnotation,
     stopAnnotation,
     addChordAnnotation,
-    updateChordAnnotation,
     removeChordAnnotation,
     addMarker,
     createNewTimeline,

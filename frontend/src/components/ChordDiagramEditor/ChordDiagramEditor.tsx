@@ -13,8 +13,6 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { 
   ChordDiagram, 
-  StringPosition, 
-  BarreChord, 
   InstrumentType, 
   DifficultyLevel,
   FingerNumber,

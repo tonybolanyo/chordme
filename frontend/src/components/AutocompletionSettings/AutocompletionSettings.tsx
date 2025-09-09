@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './AutocompletionSettings.css';
 import { 
   autocompletionSettingsService, 
-  type AutocompletionSettings,
-  type CustomChord 
+  type AutocompletionSettings
 } from '../../services/autocompletionSettings';
 
 interface AutocompletionSettingsProps {
@@ -90,7 +89,7 @@ const AutocompletionSettings: React.FC<AutocompletionSettingsProps> = ({
         autocompletionSettingsService.importData(data);
         setSettings(autocompletionSettingsService.getSettings());
         alert('Settings imported successfully!');
-      } catch (error) {
+      } catch {
         alert('Error importing settings: Invalid file format');
       }
     };

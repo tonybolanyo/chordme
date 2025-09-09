@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './ChordAutocomplete.css';
 import {
-  getChordSuggestions,
   getDirectiveSuggestions,
   getEnhancedChordSuggestions,
   getContextAwareChordSuggestions,

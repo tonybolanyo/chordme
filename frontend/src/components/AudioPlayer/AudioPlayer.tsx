@@ -5,21 +5,18 @@
 
 import React, { useRef, useEffect } from 'react';
 import { useAudioPlayer } from '../../hooks/useAudioPlayer';
-import { AudioPlayerProps, AudioSource } from '../../types/audio';
+import { AudioPlayerProps } from '../../types/audio';
 import './AudioPlayer.css';
 
 export const AudioPlayer: React.FC<AudioPlayerProps> = ({
   playlist,
   autoPlay = false,
   showVisualization = false,
-  visualizationConfig,
   keyboardShortcuts = true,
-  customShortcuts,
   className = '',
   theme = 'auto',
   compact = false,
   showPlaylist = true,
-  enableCrossfade = false,
   onTrackChange,
   onPlaylistChange,
   onError,
@@ -29,7 +26,6 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
   const {
     state,
     isPlaying,
-    isPaused,
     isStopped,
     isLoading,
     hasError,
