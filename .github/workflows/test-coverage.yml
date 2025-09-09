@@ -86,17 +86,17 @@ jobs:
         if [ -f backend/coverage.xml ]; then
           echo "✅ Backend coverage report generated successfully" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          cd backend && python -c "
-          import xml.etree.ElementTree as ET
-          try:
-              tree = ET.parse('coverage.xml')
-              root = tree.getroot()
-              coverage_rate = root.get('line-rate', '0')
-              coverage_pct = float(coverage_rate) * 100
-              print(f'Backend Coverage: {coverage_pct:.1f}%')
-          except:
-              print('Backend Coverage: Unable to parse')
-          " >> $GITHUB_STEP_SUMMARY
+          cd backend && python3 << 'EOF' >> $GITHUB_STEP_SUMMARY
+        import xml.etree.ElementTree as ET
+        try:
+            tree = ET.parse('coverage.xml')
+            root = tree.getroot()
+            coverage_rate = root.get('line-rate', '0')
+            coverage_pct = float(coverage_rate) * 100
+            print(f'Backend Coverage: {coverage_pct:.1f}%')
+        except:
+            print('Backend Coverage: Unable to parse')
+        EOF
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
         else
           echo "❌ Backend coverage report not found" >> $GITHUB_STEP_SUMMARY
