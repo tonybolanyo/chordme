@@ -190,6 +190,35 @@ python -m pytest tests/test_specific_module.py -v
 3. Verify secret names match exactly (case-sensitive)
 4. Re-run the failed workflow
 
+### Dependency Updates Workflow Failures
+
+**Symptom:** "GitHub Actions is not permitted to create or approve pull requests"
+
+**Root Cause:** The repository settings prevent GitHub Actions from creating pull requests automatically. This is a security restriction that's often enabled by default.
+
+**Solution:**
+1. **Enable GitHub Actions PR creation:**
+   - Go to repository Settings → Actions → General
+   - Scroll to "Workflow permissions"
+   - Check "Allow GitHub Actions to create and approve pull requests"
+   - Click "Save"
+
+2. **Alternative - Manual PR creation:**
+   - The workflow will still create and push the update branches
+   - Manually create PRs from these branches:
+     - `update-frontend-dependencies`
+     - `update-backend-dependencies`
+
+**Prevention:**
+- Monitor the workflow logs for clear instructions when this occurs
+- The updated workflow provides helpful error messages with exact steps
+
+**Expected Behavior After Fix:**
+- Dependencies are updated successfully
+- PRs are created automatically if permissions allow
+- Clear instructions provided if permissions are insufficient
+- Workflow completes successfully either way
+
 ### Build Import/Export Warnings
 
 **Symptom:** TypeScript warnings about missing exports

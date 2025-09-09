@@ -33,8 +33,17 @@ jobs:
         npm audit fix --audit-level=high
       continue-on-error: true
     
+    - name: Check for changes
+      id: changes
+      run: |
+        git diff --quiet || echo "changes=true" >> $GITHUB_OUTPUT
+        echo "changed_files=$(git diff --name-only | wc -l)" >> $GITHUB_OUTPUT
+    
     - name: Create Pull Request for Frontend Updates
+      id: create-pr
+      if: steps.changes.outputs.changes == 'true'
       uses: peter-evans/create-pull-request@v5
+      continue-on-error: true
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         commit-message: 'chore(frontend): update npm dependencies'
@@ -51,6 +60,25 @@ jobs:
         delete-branch: true
         committer: GitHub <noreply@github.com>
         author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
+    
+    - name: Handle PR creation result
+      if: steps.changes.outputs.changes == 'true'
+      run: |
+        if [ "${{ steps.create-pr.outcome }}" = "failure" ]; then
+          echo "⚠️ Pull request creation failed due to insufficient permissions."
+          echo "📋 Changes were made to the frontend dependencies but could not create a PR automatically."
+          echo "🔧 To fix this:"
+          echo "   1. Go to repository Settings → Actions → General"
+          echo "   2. Under 'Workflow permissions', enable 'Allow GitHub Actions to create and approve pull requests'"
+          echo "   3. Or manually create a PR from the 'update-frontend-dependencies' branch"
+          echo ""
+          echo "📊 Summary: ${{ steps.changes.outputs.changed_files }} files were modified"
+          exit 0
+        elif [ "${{ steps.create-pr.outcome }}" = "success" ]; then
+          echo "✅ Pull request created successfully: ${{ steps.create-pr.outputs.pull-request-url }}"
+        else
+          echo "ℹ️ No changes were detected in frontend dependencies"
+        fi
 
   update-backend-dependencies:
     name: Update Backend Dependencies  
@@ -80,8 +108,17 @@ jobs:
         pip-compile --upgrade requirements.in
       continue-on-error: true
     
+    - name: Check for changes
+      id: changes
+      run: |
+        git diff --quiet || echo "changes=true" >> $GITHUB_OUTPUT
+        echo "changed_files=$(git diff --name-only | wc -l)" >> $GITHUB_OUTPUT
+    
     - name: Create Pull Request for Backend Updates
+      id: create-pr
+      if: steps.changes.outputs.changes == 'true'
       uses: peter-evans/create-pull-request@v5
+      continue-on-error: true
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         commit-message: 'chore(backend): update Python dependencies'
@@ -98,3 +135,22 @@ jobs:
         delete-branch: true
         committer: GitHub <noreply@github.com>
         author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
+    
+    - name: Handle PR creation result
+      if: steps.changes.outputs.changes == 'true'
+      run: |
+        if [ "${{ steps.create-pr.outcome }}" = "failure" ]; then
+          echo "⚠️ Pull request creation failed due to insufficient permissions."
+          echo "📋 Changes were made to the backend dependencies but could not create a PR automatically."
+          echo "🔧 To fix this:"
+          echo "   1. Go to repository Settings → Actions → General"
+          echo "   2. Under 'Workflow permissions', enable 'Allow GitHub Actions to create and approve pull requests'"
+          echo "   3. Or manually create a PR from the 'update-backend-dependencies' branch"
+          echo ""
+          echo "📊 Summary: ${{ steps.changes.outputs.changed_files }} files were modified"
+          exit 0
+        elif [ "${{ steps.create-pr.outcome }}" = "success" ]; then
+          echo "✅ Pull request created successfully: ${{ steps.create-pr.outputs.pull-request-url }}"
+        else
+          echo "ℹ️ No changes were detected in backend dependencies"
+        fi
