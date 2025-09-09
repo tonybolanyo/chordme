@@ -397,8 +397,15 @@ scripts/validate-links.sh
 # - All files have valid Jekyll frontmatter
 # - All English files have corresponding Spanish versions
 # - All cross-language links work correctly
-# - No broken internal links
+# - No broken internal links (external link failures are warnings only)
 ```
+
+**Link Validation Behavior:**
+- **Internal link failures**: Will cause deployment to fail (exit code 1)
+- **External link failures**: Will show warnings but NOT fail deployment (exit code 0)
+- **Missing critical files**: Will cause deployment to fail (exit code 1)
+
+This approach ensures documentation deployments aren't blocked by temporary external service outages while maintaining internal documentation integrity.
 
 ### Content Guidelines
 
@@ -509,8 +516,14 @@ bundle exec jekyll serve --host 0.0.0.0 --port 4000
 # Run both validation scripts before committing
 scripts/validate-docs.sh && scripts/validate-links.sh
 
-# Expected output: All checks passed with no errors
+# Expected output: All checks passed with warnings for external links only
 ```
+
+**Important Notes:**
+- Documentation validation (`validate-docs.sh`) must pass completely (exit code 0)
+- Link validation (`validate-links.sh`) will pass if only external links fail (exit code 0)  
+- Internal link failures will cause link validation to fail (exit code 1)
+- External link failures show as warnings but don't block deployment
 
 **Manual Testing Checklist:**
 - [ ] Both language versions render correctly
@@ -566,6 +579,43 @@ When API documentation deployment fails due to validation errors, follow these s
    - Cross-language navigation links are present
    - Jekyll build test passes (or shows expected warnings about missing Ruby)
 
+### Issue: Link Validation Errors
+When link validation fails and blocks deployment:
+
+1. **Run link validation locally:**
+   ```bash
+   cd /path/to/repo
+   scripts/validate-links.sh
+   ```
+
+2. **Understanding link validation results:**
+   - **Internal link failures**: Broken references to local `.md` files - MUST be fixed
+   - **External link failures**: Unreachable external URLs - Shows warnings only
+   - **Missing critical files**: Required documentation files missing - MUST be fixed
+
+3. **Common fixes for internal link failures:**
+   
+   **Broken Internal Links:**
+   ```bash
+   # Example error: "firebase-integration.md -> ./FIRESTORE_SECURITY_RULES.md (missing)"
+   # Fix: Update link to point to existing file
+   # Change: [FIRESTORE_SECURITY_RULES.md](./FIRESTORE_SECURITY_RULES.md)
+   # To: [Firestore Security Rules](firestore-security-rules.md)
+   ```
+
+   **Incorrect Path References:**
+   ```bash
+   # Example error: "docker-development.md -> docs/developer-guide.md (missing)"
+   # Fix: Remove incorrect path prefix
+   # Change: [Developer Guide](docs/developer-guide.md)
+   # To: [Developer Guide](developer-guide.md)
+   ```
+
+4. **Link validation success criteria:**
+   - All internal links point to existing files
+   - All critical documentation files are present
+   - External link failures are acceptable (show as warnings only)
+
 ### Issue: Deploy Workflow Failing
 When `.github/workflows/deploy-api-docs.yml` or `update-api-docs.yml` fail:
 
@@ -578,8 +628,10 @@ When `.github/workflows/deploy-api-docs.yml` or `update-api-docs.yml` fail:
 
 3. **Prevention:**
    - Always run `scripts/validate-docs.sh` before committing documentation changes
+   - Always run `scripts/validate-links.sh` to check for broken internal links
    - Ensure bilingual documentation requirements are met
    - Test API documentation generation locally before pushing
+   - Fix any internal link failures immediately (external link failures are acceptable)
 
 ### Issue: API Documentation Generation Fails
 When `backend/generate_docs.py` fails:

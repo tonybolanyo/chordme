@@ -151,7 +151,7 @@ firebase emulators:start --only firestore
 cd frontend && npm test -- --run firestore-security-rules.test.ts
 ```
 
-**📖 See [FIRESTORE_SECURITY_RULES.md](./FIRESTORE_SECURITY_RULES.md) for complete implementation guide.**
+**📖 See [Firestore Security Rules](firestore-security-rules.md) for complete implementation guide.**
 
 ### Legacy Basic Rules (Deprecated)
 
