@@ -366,6 +366,20 @@ class PerformanceMonitor {
     this.observers.forEach((observer) => observer.disconnect());
     this.observers = [];
   }
+
+  /**
+   * Reset all metrics (for testing purposes)
+   */
+  resetMetrics(): void {
+    this.metrics = {
+      navigationTiming: null,
+      paintMetrics: {},
+      resourceTiming: [],
+      userInteractionMetrics: {},
+      customMetrics: {},
+    };
+    this.vitals = {};
+  }
 }
 
 // Utility functions for performance monitoring
