@@ -1,0 +1,372 @@
+{
+  "config": {
+    "frontend_url": "http://localhost:5173",
+    "api_base_url": "http://localhost:5000",
+    "network_profiles": {
+      "3G": {
+        "downlink": 1600,
+        "uplink": 768,
+        "latency": 300,
+        "packet_loss": 0
+      },
+      "4G": {
+        "downlink": 9000,
+        "uplink": 9000,
+        "latency": 170,
+        "packet_loss": 0
+      },
+      "WiFi": {
+        "downlink": 30000,
+        "uplink": 15000,
+        "latency": 28,
+        "packet_loss": 0
+      },
+      "Slow_3G": {
+        "downlink": 500,
+        "uplink": 500,
+        "latency": 400,
+        "packet_loss": 0
+      }
+    },
+    "max_initial_load_time_ms": 3000,
+    "max_api_response_time_mobile_ms": 5000,
+    "max_touch_response_time_ms": 100,
+    "min_lighthouse_performance_score": 90,
+    "max_bundle_size_mb": 2.0,
+    "max_image_size_kb": 500,
+    "test_iterations": 3,
+    "network_timeout_seconds": 10
+  },
+  "timestamp": "2025-09-09T16:18:51.467524",
+  "test_phases": {
+    "asset_analysis": {
+      "total_bundle_size": {
+        "bytes": 1298273,
+        "kb": 1267.8447265625,
+        "mb": 1.2381296157836914,
+        "within_threshold": true
+      },
+      "asset_breakdown": {
+        "javascript": {
+          "total_size_kb": 1056.3759765625,
+          "files": 1,
+          "largest_files": [
+            [
+              "assets/index-0ehYYcbG.js",
+              {
+                "size_bytes": 1081729,
+                "size_kb": 1056.3759765625,
+                "size_mb": 1.0316171646118164
+              }
+            ]
+          ]
+        },
+        "css": {
+          "total_size_kb": 209.31640625,
+          "files": 1,
+          "largest_files": [
+            [
+              "assets/index-7M8GkMt3.css",
+              {
+                "size_bytes": 214340,
+                "size_kb": 209.31640625,
+                "size_mb": 0.20441055297851562
+              }
+            ]
+          ]
+        },
+        "images": {
+          "total_size_kb": 1.7099609375,
+          "files": 2,
+          "oversized_count": 0,
+          "oversized_files": []
+        }
+      },
+      "optimization_recommendations": [
+        "Consider code splitting to reduce JavaScript bundle size",
+        "Enable tree shaking and minification",
+        "Enable gzip/brotli compression on server",
+        "Implement service worker for caching",
+        "Use CDN for static assets",
+        "Implement resource hints (preload, prefetch)"
+      ]
+    },
+    "network_performance": {
+      "3G": {
+        "frontend_loading": {
+          "avg_load_time_ms": 315.11906699008426,
+          "p95_load_time_ms": 340.9294241549639,
+          "max_load_time_ms": 343.56908086806953,
+          "min_load_time_ms": 284.6156063651702,
+          "within_threshold": true,
+          "test_iterations": 3
+        },
+        "api_performance": {
+          "GET /api/v1/health": {
+            "avg_response_time_ms": 11059.635315367894,
+            "p95_response_time_ms": 11127.89189663103,
+            "max_response_time_ms": 11144.98079391053,
+            "success_rate": 0.0,
+            "within_mobile_threshold": false
+          },
+          "GET /api/v1/songs": {
+            "avg_response_time_ms": 9912.483638739235,
+            "p95_response_time_ms": 11141.72689762306,
+            "max_response_time_ms": 11145.393011224012,
+            "success_rate": 0.0,
+            "within_mobile_threshold": false
+          },
+          "POST /api/v1/auth/register": {
+            "avg_response_time_ms": 323.19338697823173,
+            "p95_response_time_ms": 355.14747403019516,
+            "max_response_time_ms": 357.28538334749027,
+            "success_rate": 0.0,
+            "within_mobile_threshold": true
+          }
+        },
+        "network_profile": {
+          "downlink": 1600,
+          "uplink": 768,
+          "latency": 300,
+          "packet_loss": 0
+        }
+      },
+      "4G": {
+        "frontend_loading": {
+          "avg_load_time_ms": 161.84803719418537,
+          "p95_load_time_ms": 176.56763945857307,
+          "max_load_time_ms": 177.11327449504998,
+          "min_load_time_ms": 136.7739129572253,
+          "within_threshold": true,
+          "test_iterations": 3
+        },
+        "api_performance": {
+          "GET /api/v1/health": {
+            "avg_response_time_ms": 150.75642613900138,
+            "p95_response_time_ms": 167.85039834161606,
+            "max_response_time_ms": 171.8677143862397,
+            "success_rate": 0.0,
+            "within_mobile_threshold": true
+          },
+          "GET /api/v1/songs": {
+            "avg_response_time_ms": 184.94410388327137,
+            "p95_response_time_ms": 197.49183608890223,
+            "max_response_time_ms": 199.53775825147136,
+            "success_rate": 0.0,
+            "within_mobile_threshold": true
+          },
+          "POST /api/v1/auth/register": {
+            "avg_response_time_ms": 159.65125482056857,
+            "p95_response_time_ms": 198.03398112047248,
+            "max_response_time_ms": 203.83731334697347,
+            "success_rate": 0.0,
+            "within_mobile_threshold": true
+          }
+        },
+        "network_profile": {
+          "downlink": 9000,
+          "uplink": 9000,
+          "latency": 170,
+          "packet_loss": 0
+        }
+      },
+      "WiFi": {
+        "frontend_loading": {
+          "avg_load_time_ms": 32.08866819390816,
+          "p95_load_time_ms": 33.8147235125861,
+          "max_load_time_ms": 33.84380877483091,
+          "min_load_time_ms": 28.86923965451079,
+          "within_threshold": true,
+          "test_iterations": 3
+        },
+        "api_performance": {
+          "GET /api/v1/health": {
+            "avg_response_time_ms": 28.39889383600498,
+            "p95_response_time_ms": 33.07112182858005,
+            "max_response_time_ms": 34.29377574279803,
+            "success_rate": 0.0,
+            "within_mobile_threshold": true
+          },
+          "GET /api/v1/songs": {
+            "avg_response_time_ms": 29.33716651801112,
+            "p95_response_time_ms": 32.7131619667991,
+            "max_response_time_ms": 32.78132766837763,
+            "success_rate": 0.0,
+            "within_mobile_threshold": true
+          },
+          "POST /api/v1/auth/register": {
+            "avg_response_time_ms": 28.159967606919853,
+            "p95_response_time_ms": 32.38667771564521,
+            "max_response_time_ms": 33.144029402282946,
+            "success_rate": 0.0,
+            "within_mobile_threshold": true
+          }
+        },
+        "network_profile": {
+          "downlink": 30000,
+          "uplink": 15000,
+          "latency": 28,
+          "packet_loss": 0
+        }
+      },
+      "Slow_3G": {
+        "frontend_loading": {
+          "avg_load_time_ms": 401.34703657926343,
+          "p95_load_time_ms": 453.69145264606334,
+          "max_load_time_ms": 459.1938439856035,
+          "min_load_time_ms": 340.67733516198496,
+          "within_threshold": true,
+          "test_iterations": 3
+        },
+        "api_performance": {
+          "GET /api/v1/health": {
+            "avg_response_time_ms": 347.4911660445418,
+            "p95_response_time_ms": 389.3845233834948,
+            "max_response_time_ms": 400.16517998840516,
+            "success_rate": 0.0,
+            "within_mobile_threshold": true
+          },
+          "GET /api/v1/songs": {
+            "avg_response_time_ms": 388.5680181222332,
+            "p95_response_time_ms": 434.43578972574664,
+            "max_response_time_ms": 439.98641431102413,
+            "success_rate": 0.0,
+            "within_mobile_threshold": true
+          },
+          "POST /api/v1/auth/register": {
+            "avg_response_time_ms": 422.38979398050014,
+            "p95_response_time_ms": 442.2847982552302,
+            "max_response_time_ms": 443.331594338322,
+            "success_rate": 0.0,
+            "within_mobile_threshold": true
+          }
+        },
+        "network_profile": {
+          "downlink": 500,
+          "uplink": 500,
+          "latency": 400,
+          "packet_loss": 0
+        }
+      }
+    },
+    "mobile_api_performance": {
+      "GET /api/v1/health": {
+        "avg_response_time_ms": 0.864863395690918,
+        "avg_payload_size_kb": 0.0,
+        "max_payload_size_kb": 0.0,
+        "success_rate": 0.0,
+        "mobile_optimized": true
+      },
+      "GET /api/v1/songs?limit=10": {
+        "avg_response_time_ms": 0.8215427398681641,
+        "avg_payload_size_kb": 0.0,
+        "max_payload_size_kb": 0.0,
+        "success_rate": 0.0,
+        "mobile_optimized": true
+      },
+      "GET /api/v1/songs?format=mobile": {
+        "avg_response_time_ms": 0.786137580871582,
+        "avg_payload_size_kb": 0.0,
+        "max_payload_size_kb": 0.0,
+        "success_rate": 0.0,
+        "mobile_optimized": true
+      }
+    },
+    "pwa_performance": {
+      "manifest": {
+        "available": false,
+        "error": "Cannot connect to host localhost:5173 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 5173, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 5173)]"
+      },
+      "service_worker": {
+        "available": false,
+        "error": "Cannot connect to host localhost:5173 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('127.0.0.1', 5173), [Errno 111] Connect call failed ('::1', 5173, 0, 0)]"
+      },
+      "offline_support": {
+        "cache_strategy": "Unknown",
+        "offline_pages": "Unknown",
+        "note": "Detailed offline testing requires service worker analysis"
+      }
+    },
+    "touch_performance": {
+      "touch_interactions": [
+        {
+          "interaction": "tap_navigation",
+          "avg_response_time_ms": 17.95674627310306,
+          "p95_response_time_ms": 21.17925715061007,
+          "max_response_time_ms": 21.413269833226288,
+          "within_threshold": true,
+          "samples": 10
+        },
+        {
+          "interaction": "scroll_list",
+          "avg_response_time_ms": 28.868984482833103,
+          "p95_response_time_ms": 33.05455968219357,
+          "max_response_time_ms": 33.836888860167655,
+          "within_threshold": true,
+          "samples": 10
+        },
+        {
+          "interaction": "swipe_gesture",
+          "avg_response_time_ms": 35.99807729100235,
+          "p95_response_time_ms": 44.73022753074951,
+          "max_response_time_ms": 44.83768865080902,
+          "within_threshold": true,
+          "samples": 10
+        },
+        {
+          "interaction": "pinch_zoom",
+          "avg_response_time_ms": 55.38720437122384,
+          "p95_response_time_ms": 66.1088537217899,
+          "max_response_time_ms": 67.53503182798971,
+          "within_threshold": true,
+          "samples": 10
+        },
+        {
+          "interaction": "long_press",
+          "avg_response_time_ms": 22.4284988610366,
+          "p95_response_time_ms": 27.224674886344037,
+          "max_response_time_ms": 27.94821829987013,
+          "within_threshold": true,
+          "samples": 10
+        }
+      ],
+      "overall_touch_performance": {
+        "avg_response_time_ms": 32.12790225583979,
+        "interactions_within_threshold": 5,
+        "total_interactions_tested": 5
+      },
+      "note": "Touch performance simulated - browser automation recommended for accurate testing"
+    }
+  },
+  "benchmark_summary": {
+    "total_duration_seconds": 130.54237294197083,
+    "total_metrics_collected": 122,
+    "mobile_performance_assessment": {
+      "mobile_performance_grade": "NEEDS_IMPROVEMENT",
+      "mobile_ready": false,
+      "critical_issues": [
+        "GET /api/v1/health: Low success rate (0.00%)",
+        "GET /api/v1/songs?limit=10: Low success rate (0.00%)",
+        "GET /api/v1/songs?format=mobile: Low success rate (0.00%)"
+      ],
+      "warnings": [
+        "PWA manifest not available - affects mobile app experience",
+        "Service worker not available - affects offline capability"
+      ],
+      "optimization_recommendations": [
+        "Consider code splitting to reduce JavaScript bundle size",
+        "Enable tree shaking and minification",
+        "Enable gzip/brotli compression on server",
+        "Implement service worker for caching",
+        "Use CDN for static assets",
+        "Implement resource hints (preload, prefetch)"
+      ],
+      "mobile_score": 5,
+      "assessment_summary": {
+        "total_issues": 3,
+        "total_warnings": 2,
+        "recommendation": "REQUIRES_MOBILE_OPTIMIZATION"
+      }
+    }
+  }
+}
