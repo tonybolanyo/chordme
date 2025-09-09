@@ -6,6 +6,10 @@ on:
     - cron: '0 9 * * 1'
   workflow_dispatch: # Allow manual triggering
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   update-frontend-dependencies:
     name: Update Frontend Dependencies
@@ -45,6 +49,8 @@ jobs:
         branch: update-frontend-dependencies
         base: main
         delete-branch: true
+        committer: GitHub <noreply@github.com>
+        author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
 
   update-backend-dependencies:
     name: Update Backend Dependencies  
@@ -90,3 +96,5 @@ jobs:
         branch: update-backend-dependencies
         base: main
         delete-branch: true
+        committer: GitHub <noreply@github.com>
+        author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
