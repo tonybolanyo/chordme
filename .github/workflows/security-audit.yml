@@ -150,11 +150,7 @@ jobs:
       if: github.event.inputs.fail_on_issues == 'true' || github.event_name == 'push'
       run: |
         if [ -f security_reports/security_audit_summary.json ]; then
-          CRITICAL_ISSUES=$(cat security_reports/security_audit_summary.json | python -c "
-          import sys, json
-          data = json.load(sys.stdin)
-          print(data['summary']['critical_issues'])
-          ")
+          CRITICAL_ISSUES=$(cat security_reports/security_audit_summary.json | python3 -c "import sys, json; data = json.load(sys.stdin); print(data['summary']['critical_issues'])")
           
           if [ "$CRITICAL_ISSUES" -gt 0 ]; then
             echo "❌ Critical security issues found: $CRITICAL_ISSUES"
@@ -246,11 +242,7 @@ jobs:
     - name: Check Security Trends
       run: |
         if [ -f security_reports/security_audit_summary.json ]; then
-          SECURITY_SCORE=$(cat security_reports/security_audit_summary.json | python -c "
-          import sys, json
-          data = json.load(sys.stdin)
-          print(data['summary']['security_score'])
-          ")
+          SECURITY_SCORE=$(cat security_reports/security_audit_summary.json | python3 -c "import sys, json; data = json.load(sys.stdin); print(data['summary']['security_score'])")
           
           echo "Current security score: $SECURITY_SCORE"
           
