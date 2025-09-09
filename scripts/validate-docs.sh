@@ -176,7 +176,20 @@ if command -v bundle >/dev/null 2>&1; then
         invalid_files=$((invalid_files + 1))
     fi
 else
+    # In CI environments or when Ruby is not available, check Jekyll config syntax
     echo -e "${YELLOW}⚠️  Bundle not available for Jekyll build test${NC}"
+    if [ -f "_config.yml" ] && [ -f "Gemfile" ]; then
+        # Basic syntax check for Jekyll configuration
+        if grep -q "^title:" "_config.yml" && grep -q "^description:" "_config.yml"; then
+            echo -e "${GREEN}✅ Jekyll config: Basic syntax appears valid${NC}"
+        else
+            echo -e "${YELLOW}⚠️  Jekyll config: Missing basic required fields${NC}"
+            warnings=$((warnings + 1))
+        fi
+    else
+        echo -e "${RED}❌ Jekyll files: Missing _config.yml or Gemfile${NC}"
+        invalid_files=$((invalid_files + 1))
+    fi
     warnings=$((warnings + 1))
 fi
 
