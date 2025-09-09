@@ -26,8 +26,8 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Any, Tuple, Optional
 from dataclasses import dataclass, asdict
 import smtplib
-from email.mime.text import MimeText
-from email.mime.multipart import MimeMultipart
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -675,10 +675,10 @@ class PerformanceMonitor:
         
         # Send email
         try:
-            msg = MimeMultipart()
+            msg = MIMEMultipart()
             msg['From'] = self.config.email_username
             msg['Subject'] = subject
-            msg.attach(MimeText(body, 'plain'))
+            msg.attach(MIMEText(body, 'plain'))
             
             server = smtplib.SMTP(self.config.smtp_server, self.config.smtp_port)
             if self.config.email_username and self.config.email_password:
