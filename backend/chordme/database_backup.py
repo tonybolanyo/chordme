@@ -20,7 +20,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import json
 import tempfile
-
+import re
 logger = logging.getLogger(__name__)
 
 
@@ -502,6 +502,12 @@ class DatabaseBackupManager:
             logger.error(f"Restore failed: {e}")
             raise
     
+    def _validate_database_name(self, name: str) -> bool:
+        """Validate PostgreSQL database name against allowed pattern."""
+        # PostgreSQL database names: must begin with a letter or underscore,
+        # and can contain letters, digits, or underscores (maxlen 63 by default).
+        return bool(re.match(r'^[A-Za-z_][A-Za-z0-9_]{0,62}$', name))
+
     def _restore_postgresql_backup(self, backup: BackupMetadata, target_database: Optional[str] = None) -> bool:
         """Restore PostgreSQL database from backup."""
         from . import db
@@ -509,6 +515,11 @@ class DatabaseBackupManager:
         # Parse database URL
         url = db.engine.url
         database_name = target_database or url.database
+        # Validate user-supplied database name if set
+        if target_database:
+            if not self._validate_database_name(target_database):
+                logger.error(f"Invalid target database name received: {target_database!r}")
+                raise ValueError("Invalid target database name. Allowed: [A-Za-z_][A-Za-z0-9_]{0,62}")
         
         # Prepare restoration file
         if backup.file_path.endswith('.gz'):
