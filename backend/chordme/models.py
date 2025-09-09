@@ -208,7 +208,7 @@ class Song(db.Model):
     
     def __init__(self, title, user_id=None, content=None, artist=None, genre=None, song_key=None, 
                  tempo=None, time_signature=None, capo=0, difficulty='medium', duration=None, language='en',
-                 shared_with=None, permissions=None, share_settings='private', author_id=None):
+                 shared_with=None, permissions=None, share_settings='private', author_id=None, is_public=False):
         self.title = title
         # Support both user_id and author_id for backward compatibility
         self.user_id = user_id or author_id
@@ -225,6 +225,7 @@ class Song(db.Model):
         self.shared_with = shared_with or []
         self.permissions = permissions or {}
         self.share_settings = share_settings
+        self.is_public = is_public
     
     def to_dict(self):
         """Convert song to dictionary."""

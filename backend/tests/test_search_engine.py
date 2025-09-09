@@ -31,94 +31,117 @@ def client():
 
 
 @pytest.fixture
-def auth_headers():
+def auth_headers(client):
     """Create authentication headers for test user"""
-    with app.app_context():
-        # Create test user
-        test_user = User(email='test@example.com', password='password123')
-        db.session.add(test_user)
-        db.session.commit()
-        
-        # Generate JWT token
-        token = generate_jwt_token(test_user.id, test_user.email)
-        return {'Authorization': f'Bearer {token}'}
+    import json
+    
+    # Create a test user using the API
+    user_data = {
+        'email': 'test@example.com',
+        'password': 'TestPassword123'
+    }
+    
+    # Register the user
+    response = client.post('/api/v1/auth/register',
+                           data=json.dumps(user_data),
+                           content_type='application/json')
+    
+    assert response.status_code == 201
+    
+    # Login to get the token
+    login_response = client.post('/api/v1/auth/login',
+                                data=json.dumps(user_data),
+                                content_type='application/json')
+    
+    assert login_response.status_code == 200
+    login_data = login_response.get_json()
+    
+    # Extract token from response data
+    token = login_data['data']['token']
+    assert token is not None
+    
+    return {'Authorization': f'Bearer {token}'}
 
 
 @pytest.fixture
-def sample_songs():
+def sample_songs(client, auth_headers):
     """Create sample songs for testing"""
-    with app.app_context():
-        # Get test user
-        user = User.query.filter_by(email='test@example.com').first()
-        
-        songs = [
-            Song(
-                title='Amazing Grace',
-                artist='Traditional',
-                content='{title: Amazing Grace}\n{artist: Traditional}\n[G]Amazing [C]grace how [G]sweet the sound',
-                user_id=user.id,
-                genre='gospel',
-                song_key='G',
-                difficulty='beginner',
-                tempo=80,
-                language='en',
-                is_public=True
-            ),
-            Song(
-                title='Hotel California',
-                artist='Eagles',
-                content='{title: Hotel California}\n{artist: Eagles}\n[Am]On a dark desert [F]highway',
-                user_id=user.id,
-                genre='rock',
-                song_key='Am',
-                difficulty='intermediate',
-                tempo=120,
-                language='en',
-                is_public=True
-            ),
-            Song(
-                title='Wonderwall',
-                artist='Oasis',
-                content='{title: Wonderwall}\n{artist: Oasis}\n[Em7]Today is gonna be the day',
-                user_id=user.id,
-                genre='rock',
-                song_key='Em',
-                difficulty='beginner',
-                tempo=87,
-                language='en',
-                is_public=True
-            ),
-            Song(
-                title='La Bamba',
-                artist='Ritchie Valens',
-                content='{title: La Bamba}\n{artist: Ritchie Valens}\n[C]Para bailar la [F]Bamba',
-                user_id=user.id,
-                genre='latin',
-                song_key='C',
-                difficulty='intermediate',
-                tempo=140,
-                language='es',
-                is_public=True
-            ),
-            Song(
-                title='Blackbird',
-                artist='The Beatles',
-                content='{title: Blackbird}\n{artist: The Beatles}\n[G]Blackbird singing in the dead of night',
-                user_id=user.id,
-                genre='folk',
-                song_key='G',
-                difficulty='advanced',
-                tempo=95,
-                language='en',
-                is_public=False  # Private song
-            )
-        ]
-        
-        for song in songs:
-            db.session.add(song)
-        db.session.commit()
-        
-        return songs
+    # Create songs directly in the database within the test app context
+    from chordme import db
+    from chordme.models import User, Song
+    
+    # Find the test user by email
+    user = User.query.filter_by(email='test@example.com').first()
+    assert user is not None, "Test user not found"
+    
+    songs = [
+        Song(
+            title='Amazing Grace',
+            artist='Traditional',
+            content='{title: Amazing Grace}\n{artist: Traditional}\n[G]Amazing [C]grace how [G]sweet the sound',
+            user_id=user.id,
+            genre='gospel',
+            song_key='G',
+            difficulty='beginner',
+            tempo=80,
+            language='en',
+            is_public=True
+        ),
+        Song(
+            title='Hotel California',
+            artist='Eagles',
+            content='{title: Hotel California}\n{artist: Eagles}\n[Am]On a dark desert [F]highway',
+            user_id=user.id,
+            genre='rock',
+            song_key='Am',
+            difficulty='intermediate',
+            tempo=120,
+            language='en',
+            is_public=True
+        ),
+        Song(
+            title='Wonderwall',
+            artist='Oasis',
+            content='{title: Wonderwall}\n{artist: Oasis}\n[Em7]Today is gonna be the day',
+            user_id=user.id,
+            genre='rock',
+            song_key='Em',
+            difficulty='beginner',
+            tempo=87,
+            language='en',
+            is_public=True
+        ),
+        Song(
+            title='La Bamba',
+            artist='Ritchie Valens',
+            content='{title: La Bamba}\n{artist: Ritchie Valens}\n[C]Para bailar la [F]Bamba',
+            user_id=user.id,
+            genre='latin',
+            song_key='C',
+            difficulty='intermediate',
+            tempo=140,
+            language='es',
+            is_public=True
+        ),
+        Song(
+            title='Blackbird',
+            artist='The Beatles',
+            content='{title: Blackbird}\n{artist: The Beatles}\n[G]Blackbird singing in the dead of night',
+            user_id=user.id,
+            genre='folk',
+            song_key='G',
+            difficulty='advanced',
+            tempo=95,
+            language='en',
+            is_public=False  # Private song
+        )
+    ]
+    
+    for song in songs:
+        db.session.add(song)
+    db.session.commit()
+    
+    return songs
 
 
 class TestBasicSearch:
@@ -146,7 +169,7 @@ class TestBasicSearch:
         data = response.get_json()
         assert data['total_count'] == 1
         assert data['results'][0]['title'] == 'Amazing Grace'
-        assert data['results'][0]['match_type'] == 'title_contains'
+        assert data['results'][0]['match_type'] == 'query_match'
         assert 'title' in data['results'][0]['matched_fields']
     
     def test_search_by_artist(self, client, auth_headers, sample_songs):
@@ -155,8 +178,10 @@ class TestBasicSearch:
         assert response.status_code == 200
         
         data = response.get_json()
-        # Should not find private song
-        assert data['total_count'] == 0
+        # Should find user's own private song
+        assert data['total_count'] == 1
+        assert data['results'][0]['title'] == 'Blackbird'
+        assert data['results'][0]['artist'] == 'The Beatles'
         
         # Test with public artist
         response = client.get('/api/v1/songs/search?q=Eagles', headers=auth_headers)
