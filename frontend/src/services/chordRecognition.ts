@@ -114,7 +114,7 @@ export class ChordRecognitionEngine {
     }
 
     // Normalize input (handle different notations)
-    let normalized = this.normalizeChordNotation(original);
+    const normalized = this.normalizeChordNotation(original);
     
     // Basic validation using comprehensive pattern
     if (!CHORD_PATTERNS.full.test(normalized)) {

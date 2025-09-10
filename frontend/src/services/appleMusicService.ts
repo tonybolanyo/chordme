@@ -13,22 +13,19 @@ import type {
   AppleMusicRecommendationParams,
   AppleMusicRecommendations,
   AppleMusicSubscriptionStatus,
-  CrossPlatformMatchRequest,
-  CrossPlatformMatchResult,
-  UnifiedMusicMetadata,
   MusicPlatformTrack,
 } from '../types';
 
 // MusicKit types for better integration
 declare global {
   interface Window {
-    MusicKit: any;
+    MusicKit: unknown;
   }
 }
 
 class AppleMusicService {
   private config: AppleMusicConfig;
-  private musicKitInstance: any = null;
+  private musicKitInstance: unknown = null;
   private isInitialized: boolean = false;
 
   constructor() {
@@ -208,7 +205,7 @@ class AppleMusicService {
     };
 
     if (params.l) {
-      (searchParams as any).l = params.l;
+      (searchParams as unknown).l = params.l;
     }
 
     try {

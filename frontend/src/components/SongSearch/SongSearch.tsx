@@ -5,8 +5,7 @@ import {
   SearchQuery, 
   SearchResult, 
   SearchSuggestion,
-  SearchQueryParser,
-  SearchResultUtils
+  SearchQueryParser
 } from '../../services/songSearchService';
 import { favoritesService, FavoriteQuery } from '../../services/favoritesService';
 import { 
@@ -16,7 +15,6 @@ import {
   PageSize, 
   ResultAction,
   BulkOperation,
-  SearchResultsConfig,
   BulkActionContext
 } from '../../types';
 import ResultViewSelector from '../ResultViewSelector/ResultViewSelector';
@@ -54,8 +52,7 @@ const SongSearch: React.FC<SongSearchProps> = ({
   initialQuery = {},
   showAdvancedFilters = true,
   showSearchHistory = true,
-  placeholder = "Search songs... (try: \"title\" AND artist, or rock NOT metal)",
-  maxResults = 50
+  placeholder = "Search songs... (try: \"title\" AND artist, or rock NOT metal)"
 }) => {
   // State management
   const [query, setQuery] = useState(initialQuery.q || '');
@@ -202,7 +199,7 @@ const SongSearch: React.FC<SongSearchProps> = ({
         q: searchQuery.trim() || undefined,
         genre: filters.genre || undefined,
         key: filters.key || undefined,
-        difficulty: filters.difficulty as any || undefined,
+        difficulty: filters.difficulty as unknown || undefined,
         language: filters.language || undefined,
         tags: filters.tags.length > 0 ? filters.tags : undefined,
         minTempo: filters.minTempo ? parseInt(filters.minTempo) : undefined,

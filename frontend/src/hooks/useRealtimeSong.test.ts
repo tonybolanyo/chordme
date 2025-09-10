@@ -60,7 +60,7 @@ describe('useRealtimeSong', () => {
     expect(result.current.error).toBe(null);
     expect(mockApiService.subscribeToSong).toHaveBeenCalledWith(
       '1',
-      expect.any(Function)
+      expect.any((...args: unknown[]) => unknown)
     );
   });
 
@@ -155,7 +155,7 @@ describe('useRealtimeSong', () => {
 
     expect(mockApiService.subscribeToSong).toHaveBeenCalledWith(
       '1',
-      expect.any(Function)
+      expect.any((...args: unknown[]) => unknown)
     );
 
     unmount();

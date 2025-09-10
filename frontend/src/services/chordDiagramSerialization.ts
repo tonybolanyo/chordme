@@ -1,5 +1,5 @@
 /**
- * Chord Diagram Serialization/Deserialization Functions
+ * Chord Diagram Serialization/Deserialization (...args: unknown[]) => unknowns
  * 
  * This module provides functions for converting chord diagrams to and from
  * JSON format for storage and transmission.
@@ -186,11 +186,11 @@ export function deserializeChordDiagram(
     name: data.name,
     instrument: instrumentConfig,
     positions: data.positions,
-    difficulty: data.difficulty as any,
+    difficulty: data.difficulty as unknown,
     alternatives: data.alternatives || [],
     notes: data.notes,
     localization: data.localization,
-    metadata: data.metadata || (fillDefaults ? createDefaultMetadata() : undefined as any)
+    metadata: data.metadata || (fillDefaults ? createDefaultMetadata() : undefined as unknown)
   };
 
   // Optional fields
@@ -249,7 +249,7 @@ export function deserializeChordDiagramCollection(
   json: string,
   options: DeserializationOptions = {}
 ): ChordDiagramCollection {
-  let data: any;
+  let data: unknown;
   try {
     data = JSON.parse(json);
   } catch (error) {
@@ -260,7 +260,7 @@ export function deserializeChordDiagramCollection(
     throw new Error('Missing required fields in chord diagram collection data');
   }
 
-  const diagrams = data.diagrams.map((diagramData: any) => 
+  const diagrams = data.diagrams.map((diagramData: unknown) => 
     deserializeChordDiagram(JSON.stringify(diagramData), options)
   );
 
@@ -342,7 +342,7 @@ export function fromCompactFormat(compact: string): ChordDiagram {
     positions.push({
       stringNumber: i + 1,
       fret,
-      finger: finger as any
+      finger: finger as unknown
     });
   }
 
@@ -375,7 +375,7 @@ export function fromCompactFormat(compact: string): ChordDiagram {
       if (barreMatch) {
         diagram.barre = {
           fret: parseInt(barreMatch[1], 10),
-          finger: 1 as any,
+          finger: 1 as unknown,
           startString: parseInt(barreMatch[2], 10),
           endString: parseInt(barreMatch[3], 10),
           isPartial: false

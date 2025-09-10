@@ -30,7 +30,7 @@ global.HTMLElement = class MockHTMLElement {
     width: 800,
     height: 400,
   }));
-} as any;
+} as unknown;
 
 // Mock Web Speech API
 const mockSpeechRecognition = {
@@ -56,7 +56,7 @@ Object.defineProperty(window, 'webkitSpeechRecognition', {
 });
 
 // Mock WebHID API
-(global as any).navigator = {
+(global as unknown).navigator = {
   ...global.navigator,
   hid: {
     getDevices: vi.fn().mockResolvedValue([]),
@@ -72,8 +72,8 @@ describe('AutoScrollService', () => {
   let mockChord: ChordTimeMapping;
 
   beforeEach(() => {
-    container = new (global.HTMLElement as any)();
-    chordElement = new (global.HTMLElement as any)();
+    container = new (global.HTMLElement as unknown)();
+    chordElement = new (global.HTMLElement as unknown)();
     
     mockChord = {
       id: 'chord-1',
@@ -422,7 +422,7 @@ describe('useAutoScrollAndRemoteControl Hook', () => {
       useAutoScrollAndRemoteControl({ enableAutoScroll: true })
     );
 
-    const mockElement = new (global.HTMLElement as any)();
+    const mockElement = new (global.HTMLElement as unknown)();
     const mockChord: ChordTimeMapping = {
       id: 'test-chord',
       chordName: 'C',
@@ -476,8 +476,8 @@ describe('Integration Tests', () => {
   let chordElement: HTMLElement;
 
   beforeEach(() => {
-    container = new (global.HTMLElement as any)();
-    chordElement = new (global.HTMLElement as any)();
+    container = new (global.HTMLElement as unknown)();
+    chordElement = new (global.HTMLElement as unknown)();
   });
 
   afterEach(() => {
@@ -589,8 +589,8 @@ describe('Performance Tests', () => {
       useAutoScrollAndRemoteControl({ enableAutoScroll: true })
     );
 
-    const container = new (global.HTMLElement as any)();
-    const chordElement = new (global.HTMLElement as any)();
+    const container = new (global.HTMLElement as unknown)();
+    const chordElement = new (global.HTMLElement as unknown)();
 
     act(() => {
       result.current.setScrollContainer(container);

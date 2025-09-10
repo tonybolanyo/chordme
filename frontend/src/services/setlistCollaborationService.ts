@@ -55,7 +55,7 @@ export interface SetlistOperation {
   userId: string;
   timestamp: string;
   operationType: 'song_reorder' | 'song_add' | 'song_remove' | 'song_update' | 'metadata_update' | 'comment_add' | 'task_update';
-  operationData: any;
+  operationData: unknown;
   version: number;
 }
 

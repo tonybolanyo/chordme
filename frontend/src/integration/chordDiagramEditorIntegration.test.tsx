@@ -16,7 +16,7 @@ vi.mock('../services/chordDiagramUtils', () => ({
 }));
 
 vi.mock('../components/ChordDiagramRenderer', () => ({
-  default: ({ chord }: any) => (
+  default: ({ chord }: unknown) => (
     <div data-testid={`chord-diagram-${chord.name}`}>
       Diagram for {chord.name}
     </div>

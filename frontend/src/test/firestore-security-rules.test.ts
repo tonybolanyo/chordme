@@ -5,6 +5,7 @@
  * authentication and authorization requirements for the ChordMe application.
  */
 
+import { readFileSync } from 'fs';
 import {
   initializeTestEnvironment,
   assertSucceeds,
@@ -68,7 +69,7 @@ describe('Firestore Security Rules', () => {
         firestore: {
           host: 'localhost',
           port: 8080,
-          rules: require('fs').readFileSync(
+          rules: readFileSync(
             '/home/runner/work/chordme/chordme/firestore.rules',
             'utf8'
           ),

@@ -6,14 +6,10 @@
  */
 
 import {
-  ChordDiagram,
-  StringPosition,
-  ChordDiagramCollection,
-  InstrumentType,
-  DifficultyLevel
+  ChordDiagram
 } from '../types/chordDiagram';
 
-import { createChordDiagram, createBarreChord, addAlternativeFingering } from '../services/chordDiagramUtils';
+import { createChordDiagram } from '../services/chordDiagramUtils';
 
 /**
  * Jazz Chord Database - Major 7th Chords

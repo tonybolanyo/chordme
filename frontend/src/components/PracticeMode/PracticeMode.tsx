@@ -39,7 +39,6 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({
   const [currentSession, setCurrentSession] = useState<PracticeSession | null>(null);
   const [isSessionActive, setIsSessionActive] = useState(false);
   const [statistics, setStatistics] = useState<PracticeStatistics | null>(null);
-  const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [timingFeedback, setTimingFeedback] = useState<ChordTimingFeedback[]>([]);
   const [showAchievement, setShowAchievement] = useState<Achievement | null>(null);
   

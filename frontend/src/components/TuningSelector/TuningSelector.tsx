@@ -7,7 +7,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { tuningService } from '../../services/tuningService';
-import { TuningInfo, TuningPreset, TuningSuggestion } from '../../types/tuning';
+import { TuningInfo, TuningSuggestion } from '../../types/tuning';
 import { InstrumentType } from '../../types/chordDiagram';
 import './TuningSelector.css';
 
@@ -123,7 +123,7 @@ export const TuningSelector: React.FC<TuningSelectorProps> = ({
         <div className="tuning-suggestions">
           <h4>Suggested Tunings</h4>
           <div className="suggestions-list">
-            {suggestions.slice(0, 3).map((suggestion, index) => (
+            {suggestions.slice(0, 3).map((suggestion) => (
               <TuningSuggestionCard
                 key={suggestion.tuning.id}
                 suggestion={suggestion}
@@ -348,7 +348,7 @@ const CustomTuningModal: React.FC<CustomTuningModalProps> = ({
       );
       
       onSave(customTuning);
-    } catch (error) {
+    } catch {
       setErrors(['Failed to create custom tuning']);
     }
   };
@@ -412,7 +412,7 @@ const CustomTuningModal: React.FC<CustomTuningModalProps> = ({
           <select
             id="tuning-difficulty"
             value={difficulty}
-            onChange={(e) => setDifficulty(e.target.value as any)}
+            onChange={(e) => setDifficulty(e.target.value as unknown)}
           >
             <option value="easy">Easy</option>
             <option value="medium">Medium</option>

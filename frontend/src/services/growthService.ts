@@ -76,7 +76,7 @@ export interface ExperimentAssignment {
   experiment: string;
   variant: string;
   assigned_at: string;
-  feature_flags: Record<string, any>;
+  feature_flags: Record<string, unknown>;
 }
 
 export interface AchievementProgress {
@@ -113,7 +113,7 @@ export interface Badge {
   icon?: string;
   color: string;
   badge_type: string;
-  requirements: Record<string, any>;
+  requirements: Record<string, unknown>;
   rarity: string;
   is_active: boolean;
   awarded_count: number;
@@ -333,10 +333,10 @@ export class GrowthService {
     if (currentIndex === -1) return false;
     
     // Show hint if this step is not completed but previous steps are
-    if ((progress as any)[step]) return false;
+    if ((progress as unknown)[step]) return false;
     
     for (let i = 0; i < currentIndex; i++) {
-      if (!(progress as any)[stepOrder[i]]) return false;
+      if (!(progress as unknown)[stepOrder[i]]) return false;
     }
     
     return true;

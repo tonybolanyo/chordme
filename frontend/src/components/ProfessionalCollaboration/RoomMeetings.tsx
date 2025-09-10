@@ -7,7 +7,7 @@ interface Props {
   onUpdate: () => void;
 }
 
-const RoomMeetings: React.FC<Props> = ({ room, onUpdate }) => {
+const RoomMeetings: React.FC<Props> = () => {
   return (
     <Box>
       <Typography variant="h5">Meeting Scheduler</Typography>

@@ -281,7 +281,7 @@ describe('FirebaseAuthButtons Component', () => {
 
   describe('Component State Management', () => {
     it('should manage loading state correctly', async () => {
-      let resolveSignIn: ((value: any) => void) | undefined;
+      let resolveSignIn: ((value: unknown) => void) | undefined;
       mockSignInWithGoogle.mockImplementation(
         () =>
           new Promise((resolve) => {

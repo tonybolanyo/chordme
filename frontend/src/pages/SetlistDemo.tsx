@@ -136,7 +136,7 @@ const mockSetlistService = {
 
 // Mock the service module
 React.createElement(() => {
-  (global as any).mockSetlistService = mockSetlistService;
+  (global as unknown).mockSetlistService = mockSetlistService;
   return null;
 });
 

@@ -7,7 +7,6 @@ import {
   ChordDiagram,
   StringPosition,
   BarreChord,
-  InstrumentType,
   INSTRUMENT_CONFIGS,
   DifficultyLevel
 } from '../types/chordDiagram';
@@ -133,8 +132,8 @@ describe('ChordDiagram Validation', () => {
 
     it('should reject invalid finger assignments', () => {
       const positions: StringPosition[] = [
-        { stringNumber: 1, fret: 3, finger: 5 as any }, // Invalid finger (> 4)
-        { stringNumber: 2, fret: 2, finger: -2 as any } // Invalid finger (< -1)
+        { stringNumber: 1, fret: 3, finger: 5 as unknown }, // Invalid finger (> 4)
+        { stringNumber: 2, fret: 2, finger: -2 as unknown } // Invalid finger (< -1)
       ];
       const invalid = { ...validChordDiagram, positions };
       const result = validateChordDiagram(invalid);
@@ -273,7 +272,7 @@ describe('ChordDiagram Validation', () => {
     });
   });
 
-  describe('Utility Functions', () => {
+  describe('Utility (...args: unknown[]) => unknowns', () => {
     it('should check validity quickly', () => {
       expect(isValidChordDiagram(validChordDiagram)).toBe(true);
     });
@@ -424,7 +423,7 @@ describe('ChordDiagram Utilities', () => {
     });
   });
 
-  describe('Search Functionality', () => {
+  describe('Search (...args: unknown[]) => unknownality', () => {
     it('should search chord diagrams by name', () => {
       const diagrams = [
         createChordDiagram('C', 'guitar', []),
@@ -600,8 +599,8 @@ describe('ChordDiagram Serialization', () => {
     });
 
     it('should throw for unsupported formats', () => {
-      expect(() => exportChordDiagram(testDiagram, 'unknown' as any)).toThrow();
-      expect(() => importChordDiagram('data', 'unknown' as any)).toThrow();
+      expect(() => exportChordDiagram(testDiagram, 'unknown' as unknown)).toThrow();
+      expect(() => importChordDiagram('data', 'unknown' as unknown)).toThrow();
     });
   });
 

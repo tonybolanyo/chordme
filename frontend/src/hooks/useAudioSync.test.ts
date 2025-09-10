@@ -58,7 +58,7 @@ describe('useAudioSync', () => {
     vi.clearAllMocks();
   });
 
-  describe('Basic Hook Functionality', () => {
+  describe('Basic Hook (...args: unknown[]) => unknownality', () => {
     it('should initialize with default values', () => {
       const { result } = renderHook(() => useAudioSync());
 
@@ -75,11 +75,11 @@ describe('useAudioSync', () => {
 
       expect(audioEngine.addEventListener).toHaveBeenCalledWith(
         'sync:chordchange',
-        expect.any(Function)
+        expect.any((...args: unknown[]) => unknown)
       );
       expect(audioEngine.addEventListener).toHaveBeenCalledWith(
         'sync:timelineloaded',
-        expect.any(Function)
+        expect.any((...args: unknown[]) => unknown)
       );
       expect(audioEngine.enableSync).toHaveBeenCalled();
     });
@@ -91,7 +91,7 @@ describe('useAudioSync', () => {
 
       expect(audioEngine.removeEventListener).toHaveBeenCalledWith(
         'sync:chordchange',
-        expect.any(Function)
+        expect.any((...args: unknown[]) => unknown)
       );
     });
   });
@@ -310,7 +310,7 @@ describe('useAudioSync', () => {
     });
 
     it('should add chord annotation', () => {
-      vi.mocked(audioEngine.getState).mockReturnValue({ currentTime: 5 } as any);
+      vi.mocked(audioEngine.getState).mockReturnValue({ currentTime: 5 } as unknown);
 
       const { result } = renderHook(() => useAudioSync());
 

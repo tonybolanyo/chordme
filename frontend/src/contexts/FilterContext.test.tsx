@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import { render, screen, act, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { FilterProvider, useFilterContext } from '../FilterContext';
 import { songSearchService } from '../../services/songSearchService';
@@ -207,7 +207,7 @@ describe('FilterContext', () => {
     });
   });
 
-  describe('Search Functionality', () => {
+  describe('Search (...args: unknown[]) => unknownality', () => {
     it('should perform search with current filters', async () => {
       const user = userEvent.setup();
       renderWithProvider(<TestComponent />);

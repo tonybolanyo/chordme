@@ -183,7 +183,7 @@ export interface ConflictMarker {
   type: 'conflict-start' | 'conflict-separator' | 'conflict-end';
   position: number;
   userId?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface NetworkStatus {
@@ -247,7 +247,7 @@ export interface CollaborationEvent {
     | 'user-idle'
     | 'user-away'
     | 'selection-changed';
-  payload: any;
+  payload: unknown;
   timestamp: string;
   userId?: string;
 }

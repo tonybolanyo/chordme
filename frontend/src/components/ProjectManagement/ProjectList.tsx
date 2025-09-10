@@ -168,7 +168,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ onClose, onSubm
     try {
       await onSubmit(formData);
       onClose();
-    } catch (error) {
+    } catch {
       // Error handling is done in parent component
     } finally {
       setIsSubmitting(false);

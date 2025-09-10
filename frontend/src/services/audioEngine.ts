@@ -5,7 +5,6 @@
 
 import {
   AudioSource,
-  PlaybackState,
   PlaybackConfig,
   AudioEngineState,
   AudioError,
@@ -13,10 +12,8 @@ import {
   AudioCapabilities,
   AudioEventMap,
   IAudioEngine,
-  CrossfadeType,
   VisualizationData,
   Playlist,
-  PlaylistItem,
   // Synchronization imports
   SyncTimeline,
   ChordTimeMapping,
@@ -65,7 +62,7 @@ export class AudioEngine implements IAudioEngine {
     gaplessPlayback: false,
   };
   
-  private eventListeners = new Map<keyof AudioEventMap, Set<EventListener<any>>>();
+  private eventListeners = new Map<keyof AudioEventMap, Set<EventListener<unknown>>>();
   private currentAudioBuffer?: AudioBuffer;
   private nextAudioBuffer?: AudioBuffer;
   private crossfadeTimeoutId?: number;
@@ -109,7 +106,7 @@ export class AudioEngine implements IAudioEngine {
   private async initializeWebAudio(): Promise<void> {
     try {
       // Create AudioContext with cross-browser compatibility
-      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      const AudioContextClass = window.AudioContext || (window as unknown).webkitAudioContext;
       this.audioContext = new AudioContextClass();
       
       // Create audio nodes
@@ -163,7 +160,7 @@ export class AudioEngine implements IAudioEngine {
   }
   
   private detectCapabilities(): AudioCapabilities {
-    const hasAudioContext = !!(window.AudioContext || (window as any).webkitAudioContext);
+    const hasAudioContext = !!(window.AudioContext || (window as unknown).webkitAudioContext);
     const hasHTML5Audio = !!document.createElement('audio').canPlayType;
     
     const audio = document.createElement('audio');
@@ -188,7 +185,7 @@ export class AudioEngine implements IAudioEngine {
     return {
       webAudioSupported: hasAudioContext,
       html5AudioSupported: hasHTML5Audio,
-      supportedFormats: supportedFormats as any[],
+      supportedFormats: supportedFormats as unknown[],
       maxChannels: hasAudioContext ? 2 : 2, // Default to stereo
       maxSampleRate: hasAudioContext ? 48000 : 44100,
       canPlayType: (format) => audio.canPlayType(formatTests[format as keyof typeof formatTests]) !== '',

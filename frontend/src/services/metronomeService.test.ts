@@ -270,7 +270,7 @@ describe('MetronomeService', () => {
       vi.useRealTimers();
     });
     it('should emit started event when metronome starts', () => {
-      let startedEvent: any = null;
+      let startedEvent: unknown = null;
       metronome.addEventListener('started', (event) => {
         startedEvent = event;
       });
@@ -283,7 +283,7 @@ describe('MetronomeService', () => {
     });
 
     it('should emit stopped event when metronome stops', () => {
-      let stoppedEvent: any = null;
+      let stoppedEvent: unknown = null;
       metronome.addEventListener('stopped', (event) => {
         stoppedEvent = event;
       });
@@ -297,7 +297,7 @@ describe('MetronomeService', () => {
     });
 
     it('should emit beat events with correct information', () => {
-      const beatEvents: any[] = [];
+      const beatEvents: unknown[] = [];
       metronome.addEventListener('beat', (event) => {
         beatEvents.push(event);
       });
@@ -315,7 +315,7 @@ describe('MetronomeService', () => {
     });
 
     it('should emit measure events correctly', () => {
-      const measureEvents: any[] = [];
+      const measureEvents: unknown[] = [];
       metronome.addEventListener('measure', (event) => {
         measureEvents.push(event);
       });
@@ -332,8 +332,8 @@ describe('MetronomeService', () => {
     });
 
     it('should emit configuration change events', () => {
-      let bpmChangedEvent: any = null;
-      let timeSignatureChangedEvent: any = null;
+      let bpmChangedEvent: unknown = null;
+      let timeSignatureChangedEvent: unknown = null;
       
       metronome.addEventListener('bpm_changed', (event) => {
         bpmChangedEvent = event;
@@ -363,7 +363,7 @@ describe('MetronomeService', () => {
       vi.useRealTimers();
     });
     it('should mark first beat of measure as accent', () => {
-      const beatEvents: any[] = [];
+      const beatEvents: unknown[] = [];
       metronome.addEventListener('beat', (event) => {
         beatEvents.push(event);
       });
@@ -376,7 +376,7 @@ describe('MetronomeService', () => {
     });
 
     it('should mark non-first beats as non-accent', () => {
-      const beatEvents: any[] = [];
+      const beatEvents: unknown[] = [];
       metronome.addEventListener('beat', (event) => {
         beatEvents.push(event);
       });
@@ -448,7 +448,7 @@ describe('MetronomeService', () => {
       
       // Create metronome with no audio context
       const brokenMetronome = new MetronomeService();
-      (brokenMetronome as any).audioContext = null;
+      (brokenMetronome as unknown).audioContext = null;
       
       brokenMetronome.start();
       

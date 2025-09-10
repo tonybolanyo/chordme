@@ -189,11 +189,11 @@ describe('ErrorContext', () => {
     // Check that event listeners were added
     expect(addEventListenerSpy).toHaveBeenCalledWith(
       'online',
-      expect.any(Function)
+      expect.any((...args: unknown[]) => unknown)
     );
     expect(addEventListenerSpy).toHaveBeenCalledWith(
       'offline',
-      expect.any(Function)
+      expect.any((...args: unknown[]) => unknown)
     );
 
     unmount();
@@ -201,11 +201,11 @@ describe('ErrorContext', () => {
     // Check that event listeners were removed
     expect(removeEventListenerSpy).toHaveBeenCalledWith(
       'online',
-      expect.any(Function)
+      expect.any((...args: unknown[]) => unknown)
     );
     expect(removeEventListenerSpy).toHaveBeenCalledWith(
       'offline',
-      expect.any(Function)
+      expect.any((...args: unknown[]) => unknown)
     );
 
     addEventListenerSpy.mockRestore();

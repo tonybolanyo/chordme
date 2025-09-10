@@ -10,8 +10,7 @@ import {
   Song,
   DraggedSong,
   DropTargetSection,
-  SetlistBuilderState,
-  BulkAddSongsRequest
+  SetlistBuilderState
 } from '../../types/setlist';
 import { setlistService } from '../../services/setlistService';
 import './SetlistBuilder.css';
@@ -38,7 +37,6 @@ export const SetlistBuilder: React.FC<SetlistBuilderProps> = ({
   const [availableSongs, setAvailableSongs] = useState<Song[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
   
   // UI state
   const [builderState, setBuilderState] = useState<SetlistBuilderState>({
@@ -58,7 +56,6 @@ export const SetlistBuilder: React.FC<SetlistBuilderProps> = ({
   const [isDragging, setIsDragging] = useState(false);
 
   // Refs
-  const dragOverRef = useRef<HTMLDivElement>(null);
   const autoScrollInterval = useRef<NodeJS.Timeout | null>(null);
 
   // Load setlist or create new one
@@ -290,7 +287,6 @@ export const SetlistBuilder: React.FC<SetlistBuilderProps> = ({
 
     // Auto-scroll logic
     const element = e.currentTarget as HTMLElement;
-    const rect = element.getBoundingClientRect();
     const scrollContainer = element.closest('.setlist-builder-content');
     
     if (scrollContainer) {
@@ -346,7 +342,6 @@ export const SetlistBuilder: React.FC<SetlistBuilderProps> = ({
     setIsDragging(false);
 
     try {
-      const songData = e.dataTransfer.getData('text/plain');
       const songId = e.dataTransfer.getData('application/x-chordme-song');
       
       if (!songId || !setlist) return;
@@ -459,37 +454,6 @@ export const SetlistBuilder: React.FC<SetlistBuilderProps> = ({
       console.error('Search failed:', err);
     }
   }, []);
-
-  // Bulk operations
-  const handleBulkAddSongs = useCallback(async (songs: Song[], section?: string) => {
-    if (!setlist || readOnly) return;
-
-    try {
-      setSaving(true);
-      
-      const bulkData: BulkAddSongsRequest = {
-        songs: songs.map(song => ({
-          song_id: song.id,
-          section,
-          is_optional: false,
-          is_highlight: false
-        }))
-      };
-
-      await setlistService.bulkAddSongs(setlist.id, bulkData);
-
-      // Reload setlist
-      const updatedSetlist = await setlistService.getSetlist(setlist.id, {
-        include_songs: true
-      });
-      setSetlist(updatedSetlist);
-
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to add songs');
-    } finally {
-      setSaving(false);
-    }
-  }, [setlist, readOnly]);
 
   // Render functions
   const renderSongCard = (song: Song, isDraggable = true) => (

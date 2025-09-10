@@ -146,7 +146,7 @@ describe('Enhanced Chord Diagram Search', () => {
     });
   });
 
-  describe('Advanced Search Functionality', () => {
+  describe('Advanced Search (...args: unknown[]) => unknownality', () => {
     it('should search by chord name with fuzzy matching', () => {
       const options: ChordDiagramSearchOptions = {
         criteria: {
@@ -262,7 +262,7 @@ describe('Enhanced Chord Diagram Search', () => {
     });
   });
 
-  describe('Sorting Functionality', () => {
+  describe('Sorting (...args: unknown[]) => unknownality', () => {
     it('should sort by relevance (default)', () => {
       const options: ChordDiagramSearchOptions = {
         criteria: { name: 'C' },
@@ -413,7 +413,7 @@ describe('Enhanced Chord Diagram Search', () => {
         ...createChordDiagram(`Chord${i}`, 'guitar', [
           { stringNumber: 1, fret: i % 12, finger: 1 }
         ]),
-        difficulty: ['beginner', 'intermediate', 'advanced'][i % 3] as any
+        difficulty: ['beginner', 'intermediate', 'advanced'][i % 3] as unknown
       }));
 
       const startTime = performance.now();

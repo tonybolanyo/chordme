@@ -87,7 +87,7 @@ export interface ReportSummary {
 }
 
 export interface ReportData {
-  [key: string]: any;
+  [key: string]: string | number | boolean | Date | Record<string, unknown> | Array<unknown>;
 }
 
 // Student Progress Report Data
@@ -131,7 +131,7 @@ export interface CollaborationData {
     most_performed_setlists: [number, number][];
     performance_frequency: Record<string, number>;
   };
-  team_effectiveness: Record<string, any>;
+  team_effectiveness: Record<string, number | string>;
   rehearsal_to_performance_ratio: number;
 }
 
@@ -284,9 +284,9 @@ export interface WidgetSize {
 export interface WidgetConfig {
   chart_type?: ChartType;
   data_fields?: string[];
-  filters?: Record<string, any>;
+  filters?: Record<string, string | number | boolean>;
   refresh_interval?: number;
-  display_options?: Record<string, any>;
+  display_options?: Record<string, string | number | boolean>;
   aggregation?: 'sum' | 'avg' | 'count' | 'max' | 'min';
   time_range?: {
     start: string;
@@ -347,14 +347,14 @@ export interface DataExport {
   end_date: string;
   format: 'json' | 'csv';
   record_count: number;
-  data: any[];
+  data: Record<string, unknown>[];
   metadata: ExportMetadata;
 }
 
 export interface ExportMetadata {
   exported_at: string;
   exported_by: number;
-  filters_applied: Record<string, any>;
+  filters_applied: Record<string, string | number | boolean>;
   schema_version?: string;
   data_quality_score?: number;
 }
@@ -370,7 +370,7 @@ export interface ReportBuilderState {
   filters: ReportFilters;
   visualization: VisualizationConfig;
   options: ReportOptions;
-  preview_data?: any;
+  preview_data?: Record<string, unknown>;
   is_generating: boolean;
   errors: string[];
 }
@@ -459,7 +459,7 @@ export interface ScaleConfig {
   max?: number;
   ticks?: {
     stepSize?: number;
-    callback?: (value: any) => string;
+    callback?: (value: number | string) => string;
   };
 }
 
@@ -467,7 +467,7 @@ export interface ScaleConfig {
 export interface DragItem {
   type: 'widget' | 'data_field' | 'filter';
   id: string;
-  content: any;
+  content: Record<string, unknown>;
   preview?: string;
 }
 
@@ -487,7 +487,7 @@ export interface DragContext {
 }
 
 // API Response Types
-export interface BIApiResponse<T = any> {
+export interface BIApiResponse<T = unknown> {
   status: 'success' | 'error';
   data?: T;
   error?: {
@@ -495,7 +495,7 @@ export interface BIApiResponse<T = any> {
     message: string;
     category: string;
     retryable: boolean;
-    details?: any;
+    details?: Record<string, unknown>;
   };
 }
 

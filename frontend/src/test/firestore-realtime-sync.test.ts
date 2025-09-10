@@ -94,7 +94,7 @@ describe('Firestore Real-time Sync Behavior - Integration Tests', () => {
       await assertSucceeds(setDoc(songRef1, initialData));
 
       // Set up listener from second client
-      const updates: any[] = [];
+      const updates: unknown[] = [];
       const unsubscribe = onSnapshot(songRef2, (snapshot) => {
         if (snapshot.exists()) {
           updates.push({
@@ -164,7 +164,7 @@ describe('Firestore Real-time Sync Behavior - Integration Tests', () => {
       await assertSucceeds(setDoc(songRef1, songData));
 
       // Set up listener
-      const snapshots: any[] = [];
+      const snapshots: unknown[] = [];
       const unsubscribe = onSnapshot(songRef2, (snapshot) => {
         snapshots.push({
           exists: snapshot.exists(),
@@ -261,7 +261,7 @@ describe('Firestore Real-time Sync Behavior - Integration Tests', () => {
         where('user_id', '==', USER_1_ID)
       );
 
-      const collectionUpdates: any[] = [];
+      const collectionUpdates: unknown[] = [];
       const unsubscribe = onSnapshot(songsQuery, (snapshot) => {
         collectionUpdates.push({
           size: snapshot.size,
@@ -337,7 +337,7 @@ describe('Firestore Real-time Sync Behavior - Integration Tests', () => {
         where('user_id', '==', USER_1_ID)
       );
 
-      const modificationUpdates: any[] = [];
+      const modificationUpdates: unknown[] = [];
       const unsubscribe = onSnapshot(songsQuery, (snapshot) => {
         const songs = snapshot.docs.map((doc) => ({
           id: doc.id,
@@ -377,10 +377,10 @@ describe('Firestore Real-time Sync Behavior - Integration Tests', () => {
       expect(finalUpdate).toHaveLength(2);
 
       const updatedSong1 = finalUpdate.find(
-        (s: any) => s.id === 'modify-song-1'
+        (s: unknown) => s.id === 'modify-song-1'
       );
       const updatedSong2 = finalUpdate.find(
-        (s: any) => s.id === 'modify-song-2'
+        (s: unknown) => s.id === 'modify-song-2'
       );
 
       expect(updatedSong1.title).toBe('Updated Song 1');
@@ -418,7 +418,7 @@ describe('Firestore Real-time Sync Behavior - Integration Tests', () => {
         where('user_id', '==', USER_1_ID)
       );
 
-      const removalUpdates: any[] = [];
+      const removalUpdates: unknown[] = [];
       const unsubscribe = onSnapshot(songsQuery, (snapshot) => {
         removalUpdates.push({
           size: snapshot.size,
@@ -473,8 +473,8 @@ describe('Firestore Real-time Sync Behavior - Integration Tests', () => {
       await assertSucceeds(setDoc(songRef1, initialData));
 
       // Set up listeners on both clients
-      const client1Updates: any[] = [];
-      const client2Updates: any[] = [];
+      const client1Updates: unknown[] = [];
+      const client2Updates: unknown[] = [];
 
       const unsubscribe1 = onSnapshot(songRef1, (snapshot) => {
         if (snapshot.exists()) {

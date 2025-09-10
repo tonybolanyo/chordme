@@ -149,7 +149,7 @@ class BusinessIntelligenceService {
     startDate: string,
     endDate: string,
     format: 'json' | 'csv' = 'json',
-    filters?: Record<string, any>
+    filters?: Record<string, string | number | boolean | string[]>
   ): Promise<DataExport> {
     const requestBody = {
       data_type: dataType,
@@ -503,8 +503,8 @@ class BusinessIntelligenceService {
   /**
    * Preview report data before generation
    */
-  async previewReport(config: ReportConfig): Promise<any> {
-    const response = await apiCall<BIApiResponse<any>>(
+  async previewReport(config: ReportConfig): Promise<unknown> {
+    const response = await apiCall<BIApiResponse<unknown>>(
       `${this.baseUrl}/reports/preview`,
       {
         method: 'POST',

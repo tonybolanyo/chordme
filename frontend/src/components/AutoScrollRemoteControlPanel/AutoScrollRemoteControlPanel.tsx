@@ -262,7 +262,7 @@ export const AutoScrollRemoteControlPanel: React.FC<AutoScrollRemoteControlPanel
                 Behavior:
                 <select
                   value={autoScrollConfig.behavior}
-                  onChange={(e) => handleBehaviorChange(e.target.value as any)}
+                  onChange={(e) => handleBehaviorChange(e.target.value as 'smooth' | 'instant' | 'progressive')}
                   disabled={!autoScrollConfig.enabled || isEmergencyStopped}
                 >
                   <option value="smooth">Smooth</option>

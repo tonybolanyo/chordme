@@ -104,7 +104,7 @@ export class YouTubeService implements IYouTubeService {
   /**
    * Create a YouTube player
    */
-  async createPlayer(containerId: string, config: YouTubePlayerConfig): Promise<any> {
+  async createPlayer(containerId: string, config: YouTubePlayerConfig): Promise<YT.Player> {
     if (!this.isInitialized()) {
       throw new Error('YouTube service not initialized');
     }

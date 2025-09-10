@@ -407,7 +407,7 @@ describe('Collaborative Editing Integration', () => {
       const mockNetworkCallback = vi.fn();
 
       // Simulate network status changes
-      let networkCallbacks: Array<(status: any) => void> = [];
+      let networkCallbacks: Array<(status: unknown) => void> = [];
       vi.mocked(collaborationService.onNetworkStatusChange).mockImplementation(
         (callback) => {
           networkCallbacks.push(callback);
@@ -495,7 +495,7 @@ describe('Collaborative Editing Integration', () => {
         songId: 'song1',
       };
 
-      let permissionCallbacks: Array<(change: any) => void> = [];
+      let permissionCallbacks: Array<(change: unknown) => void> = [];
       vi.mocked(collaborationService.onPermissionChange).mockImplementation(
         (callback) => {
           permissionCallbacks.push(callback);
@@ -718,7 +718,7 @@ describe('Error Handling and Recovery', () => {
 
   it('should handle operation transformation errors', () => {
     // Test with invalid operation data
-    const invalidOperation: any = {
+    const invalidOperation: unknown = {
       type: 'invalid',
       position: -1,
       length: -5,

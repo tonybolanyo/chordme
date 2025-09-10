@@ -11,13 +11,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { useFilterContext } from '../../contexts/FilterContext';
-import { SearchQuery } from '../../services/songSearchService';
+import { SearchQuery, SearchResult } from '../../services/songSearchService';
 import './AdvancedFilterPanel.css';
 
 interface AdvancedFilterPanelProps {
   isOpen: boolean;
   onClose: () => void;
-  onSearch?: (results: any[]) => void;
+  onSearch?: (results: SearchResult[]) => void;
 }
 
 // Predefined options for dropdowns
@@ -80,7 +80,7 @@ export default function AdvancedFilterPanel({ isOpen, onClose, onSearch }: Advan
   }, [state.currentFilters]);
 
   // Handle input changes
-  const handleFilterChange = (key: keyof SearchQuery, value: any) => {
+  const handleFilterChange = (key: keyof SearchQuery, value: string | number | boolean | string[]) => {
     const newFilters = { ...localFilters, [key]: value };
     setLocalFilters(newFilters);
     setFilter(key, value);

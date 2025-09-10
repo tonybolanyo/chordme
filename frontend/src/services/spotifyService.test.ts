@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { spotifyService } from './spotifyService';
+import { spotifyService, SpotifyService } from './spotifyService';
 import type { SpotifyTokens, SpotifyUserProfile } from '../types';
 
 // Mock fetch globally
@@ -39,8 +39,8 @@ describe('SpotifyService', () => {
     sessionStorage.clear();
     
     // Reset location mock
-    delete (window as any).location;
-    window.location = { href: '' } as any;
+    delete (window as unknown).location;
+    window.location = { href: '' } as unknown;
   });
 
   afterEach(() => {
@@ -59,7 +59,7 @@ describe('SpotifyService', () => {
         env: {},
       }));
       
-      const unconfiguredService = new (require('./spotifyService').default)();
+      const unconfiguredService = new SpotifyService();
       expect(unconfiguredService.isConfigured()).toBe(false);
     });
   });
@@ -109,7 +109,7 @@ describe('SpotifyService', () => {
     });
 
     it('should throw error when not configured', async () => {
-      const unconfiguredService = new (require('./spotifyService').default)();
+      const unconfiguredService = new SpotifyService();
       
       await expect(unconfiguredService.startAuthFlow()).rejects.toThrow(
         'Spotify API not configured'

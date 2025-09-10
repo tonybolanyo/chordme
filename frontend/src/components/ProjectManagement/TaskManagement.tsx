@@ -136,7 +136,7 @@ interface TaskItemProps {
   onUpdate: (task: ProjectTask) => void;
 }
 
-const TaskItem: React.FC<TaskItemProps> = ({ task, onUpdate }) => {
+const TaskItem: React.FC<TaskItemProps> = ({ task }) => {
   const [expanded, setExpanded] = useState(false);
 
   const getPriorityColor = (priority: string) => {

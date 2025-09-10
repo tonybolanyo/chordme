@@ -440,7 +440,7 @@ class CrossPlatformMusicService {
   /**
    * Calculate confidence score for a metadata source
    */
-  private calculateSourceConfidence(platform: string, track: any): number {
+  private calculateSourceConfidence(platform: string, track: unknown): number {
     let confidence = 0.5; // Base confidence
 
     // Platform-specific confidence adjustments
@@ -464,7 +464,7 @@ class CrossPlatformMusicService {
   /**
    * Check if track data is complete
    */
-  private isDataComplete(platform: string, track: any): boolean {
+  private isDataComplete(platform: string, track: unknown): boolean {
     if (platform === 'spotify') {
       return !!(track.name && track.artists?.length && track.album?.name && track.duration_ms);
     } else if (platform === 'apple-music') {
@@ -477,7 +477,7 @@ class CrossPlatformMusicService {
   /**
    * Get available metadata fields from a track
    */
-  private getAvailableFields(platform: string, track: any): string[] {
+  private getAvailableFields(platform: string, track: unknown): string[] {
     const fields: string[] = [];
     
     if (platform === 'spotify') {
@@ -565,7 +565,7 @@ class CrossPlatformMusicService {
     conflicts: MetadataConflict[],
     spotifyTrack?: SpotifyTrack,
     appleMusicTrack?: AppleMusicTrack,
-    sources?: MetadataSource[]
+    _sources?: MetadataSource[]
   ): UnifiedMusicMetadata['normalized'] {
     const resolved: UnifiedMusicMetadata['normalized'] = {
       title: '',
@@ -614,7 +614,7 @@ class CrossPlatformMusicService {
     resolved.album = spotifyTrack?.album.name || appleMusicTrack!.attributes.albumName;
     resolved.releaseDate = spotifyTrack?.album.release_date || appleMusicTrack?.attributes.releaseDate;
     resolved.genres = appleMusicTrack?.attributes.genreNames || [];
-    resolved.isrc = (spotifyTrack as any)?.external_ids?.isrc || appleMusicTrack?.attributes.isrc;
+    resolved.isrc = (spotifyTrack as unknown)?.external_ids?.isrc || appleMusicTrack?.attributes.isrc;
     resolved.artwork = this.getBestArtwork(spotifyTrack, appleMusicTrack);
     resolved.previewUrls = {
       spotify: spotifyTrack?.preview_url,
@@ -872,12 +872,12 @@ class CrossPlatformMusicService {
   }
 
   // Helper methods for fetching individual tracks (to be implemented with actual API calls)
-  private async fetchSpotifyTrack(id: string): Promise<SpotifyTrack> {
+  private async fetchSpotifyTrack(_id: string): Promise<SpotifyTrack> {
     // This would use the actual Spotify service
     throw new Error('Not implemented - would use spotifyService.getTrack()');
   }
 
-  private async fetchAppleMusicTrack(id: string): Promise<AppleMusicTrack> {
+  private async fetchAppleMusicTrack(_id: string): Promise<AppleMusicTrack> {
     // This would use the actual Apple Music service
     throw new Error('Not implemented - would use appleMusicService.getTrack()');
   }

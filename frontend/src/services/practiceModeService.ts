@@ -28,7 +28,7 @@ export class PracticeModeService implements IPracticeModeService {
   private isRecording = false;
   private recordingData?: PracticeRecording;
   private timingHistory: ChordTimingFeedback[] = [];
-  private eventListeners = new Map<keyof PracticeModeEventMap, Set<EventListener<any>>>();
+  private eventListeners = new Map<keyof PracticeModeEventMap, Set<EventListener<unknown>>>();
   private progressData: PracticeStatistics;
 
   constructor() {

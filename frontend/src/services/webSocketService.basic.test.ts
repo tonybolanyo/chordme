@@ -42,7 +42,7 @@ describe('WebSocketService Basic Tests', () => {
 
   it('should authenticate with token', async () => {
     const { io } = await import('socket.io-client');
-    const mockSocket = (io as any)();
+    const mockSocket = (io as unknown)();
     
     service.connect();
     mockSocket.connected = true;
@@ -59,7 +59,7 @@ describe('WebSocketService Basic Tests', () => {
     const { io } = await import('socket.io-client');
     
     service.connect(); // First need to connect to have a socket to disconnect
-    const mockSocket = (io as any)();
+    const mockSocket = (io as unknown)();
     
     service.destroy();
     expect(mockSocket.disconnect).toHaveBeenCalled();

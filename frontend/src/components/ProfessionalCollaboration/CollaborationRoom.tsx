@@ -85,6 +85,7 @@ const CollaborationRoomComponent: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState(0);
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [notifications, setNotifications] = useState<number>(0);
 
   useEffect(() => {

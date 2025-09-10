@@ -389,7 +389,7 @@ export class AudioPlaylistService {
         id: this.generateId(),
         name: playlistData.name,
         description: playlistData.description,
-        items: playlistData.items.map((item: any, index: number) => ({
+        items: playlistData.items.map((item: unknown, index: number) => ({
           id: this.generateId(),
           audioSource: item.audioSource,
           order: index,
@@ -401,7 +401,7 @@ export class AudioPlaylistService {
         repeat: 'none',
         createdAt: new Date(),
         updatedAt: new Date(),
-        duration: playlistData.items.reduce((total: number, item: any) => 
+        duration: playlistData.items.reduce((total: number, item: unknown) => 
           total + (item.audioSource?.duration || 0), 0),
         tags: playlistData.tags || [],
       };
@@ -476,7 +476,7 @@ export class AudioPlaylistService {
           // Convert date strings back to Date objects
           playlist.createdAt = new Date(playlist.createdAt);
           playlist.updatedAt = new Date(playlist.updatedAt);
-          playlist.items.forEach((item: any) => {
+          playlist.items.forEach((item: unknown) => {
             item.addedAt = new Date(item.addedAt);
             if (item.lastPlayed) {
               item.lastPlayed = new Date(item.lastPlayed);

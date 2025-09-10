@@ -1,5 +1,5 @@
 // Test Firebase Authentication service
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 // Mock Firebase Auth modules first
@@ -42,7 +42,7 @@ describe('FirebaseAuthService', () => {
     it('should report as available when Firebase is initialized', async () => {
       const { firebaseService } = await import('./firebase');
       vi.mocked(firebaseService.isInitialized).mockReturnValue(true);
-      vi.mocked(firebaseService.getAuth).mockReturnValue({} as any);
+      vi.mocked(firebaseService.getAuth).mockReturnValue({} as unknown);
 
       expect(firebaseAuthService.isAvailable()).toBe(true);
     });
@@ -52,7 +52,7 @@ describe('FirebaseAuthService', () => {
     beforeEach(async () => {
       const { firebaseService } = await import('./firebase');
       vi.mocked(firebaseService.isInitialized).mockReturnValue(true);
-      vi.mocked(firebaseService.getAuth).mockReturnValue({} as any);
+      vi.mocked(firebaseService.getAuth).mockReturnValue({} as unknown);
     });
 
     it('should sign up with email and password', async () => {
@@ -122,7 +122,7 @@ describe('FirebaseAuthService', () => {
     beforeEach(async () => {
       const { firebaseService } = await import('./firebase');
       vi.mocked(firebaseService.isInitialized).mockReturnValue(true);
-      vi.mocked(firebaseService.getAuth).mockReturnValue({} as any);
+      vi.mocked(firebaseService.getAuth).mockReturnValue({} as unknown);
     });
 
     it('should sign in with Google', async () => {
@@ -170,7 +170,7 @@ describe('FirebaseAuthService', () => {
       const { signOut } = await import('firebase/auth');
 
       vi.mocked(firebaseService.isInitialized).mockReturnValue(true);
-      vi.mocked(firebaseService.getAuth).mockReturnValue({} as any);
+      vi.mocked(firebaseService.getAuth).mockReturnValue({} as unknown);
       vi.mocked(signOut).mockResolvedValue(undefined);
 
       await expect(firebaseAuthService.signOut()).resolves.not.toThrow();
@@ -229,7 +229,7 @@ describe('FirebaseAuthService', () => {
       const mockUnsubscribe = vi.fn();
 
       vi.mocked(firebaseService.isInitialized).mockReturnValue(true);
-      vi.mocked(firebaseService.getAuth).mockReturnValue({} as any);
+      vi.mocked(firebaseService.getAuth).mockReturnValue({} as unknown);
       vi.mocked(onAuthStateChanged).mockReturnValue(mockUnsubscribe);
 
       const callback = vi.fn();

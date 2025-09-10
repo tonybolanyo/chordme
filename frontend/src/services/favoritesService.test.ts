@@ -164,7 +164,7 @@ describe('FavoritesService', () => {
     });
   });
 
-  describe('Export Functionality', () => {
+  describe('Export (...args: unknown[]) => unknownality', () => {
     it('should export local data', () => {
       const mockHistory = [{ query: 'test', timestamp: Date.now(), results_count: 1 }];
       const mockQueries = [{ id: '1', name: 'Test', query: 'test', filters: {}, created_at: '2023-01-01', usage_count: 0 }];

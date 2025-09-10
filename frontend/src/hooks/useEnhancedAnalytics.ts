@@ -25,8 +25,7 @@ import {
   UsePerformanceInsightsOptions,
   UsePerformanceInsightsReturn,
   UseProblemSectionsOptions,
-  UseProblemSectionsReturn,
-  PerformanceAnalyticsError
+  UseProblemSectionsReturn
 } from '../types/analytics';
 import enhancedAnalyticsService from '../services/enhancedAnalyticsService';
 

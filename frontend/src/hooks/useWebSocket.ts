@@ -107,7 +107,7 @@ export function useWebSocketRoom(roomId?: string) {
     };
   }, [roomId, currentRoom]);
 
-  const sendMessage = useCallback((message: any) => {
+  const sendMessage = useCallback((message: unknown) => {
     webSocketService.sendMessage(message);
   }, []);
 

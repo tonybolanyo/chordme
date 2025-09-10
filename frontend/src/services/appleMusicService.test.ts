@@ -54,8 +54,8 @@ describe('AppleMusicService', () => {
     localStorage.clear();
     
     // Reset service state
-    (appleMusicService as any).isInitialized = false;
-    (appleMusicService as any).musicKitInstance = null;
+    (appleMusicService as unknown).isInitialized = false;
+    (appleMusicService as unknown).musicKitInstance = null;
     
     // Reset mock instance state
     mockMusicKitInstance.isAuthorized = false;
@@ -68,19 +68,19 @@ describe('AppleMusicService', () => {
   describe('Configuration', () => {
     it('should be configured when developer token is available', () => {
       // Set environment variable
-      (appleMusicService as any).config.developerToken = 'test-token';
+      (appleMusicService as unknown).config.developerToken = 'test-token';
       expect(appleMusicService.isConfigured()).toBe(true);
     });
 
     it('should not be configured when developer token is missing', () => {
-      (appleMusicService as any).config.developerToken = '';
+      (appleMusicService as unknown).config.developerToken = '';
       expect(appleMusicService.isConfigured()).toBe(false);
     });
   });
 
   describe('Initialization', () => {
     it('should initialize MusicKit with correct configuration', async () => {
-      (appleMusicService as any).config.developerToken = 'test-token';
+      (appleMusicService as unknown).config.developerToken = 'test-token';
       
       await appleMusicService.initialize();
 
@@ -95,7 +95,7 @@ describe('AppleMusicService', () => {
     });
 
     it('should throw error when not configured', async () => {
-      (appleMusicService as any).config.developerToken = '';
+      (appleMusicService as unknown).config.developerToken = '';
 
       await expect(appleMusicService.initialize()).rejects.toThrow(
         'Apple Music developer token not configured'
@@ -103,7 +103,7 @@ describe('AppleMusicService', () => {
     });
 
     it('should handle MusicKit configuration failure', async () => {
-      (appleMusicService as any).config.developerToken = 'test-token';
+      (appleMusicService as unknown).config.developerToken = 'test-token';
       mockMusicKit.configure.mockRejectedValue(new Error('MusicKit error'));
 
       await expect(appleMusicService.initialize()).rejects.toThrow(
@@ -114,7 +114,7 @@ describe('AppleMusicService', () => {
 
   describe('Authentication', () => {
     beforeEach(async () => {
-      (appleMusicService as any).config.developerToken = 'test-token';
+      (appleMusicService as unknown).config.developerToken = 'test-token';
       await appleMusicService.initialize();
     });
 
@@ -163,7 +163,7 @@ describe('AppleMusicService', () => {
 
   describe('Search', () => {
     beforeEach(async () => {
-      (appleMusicService as any).config.developerToken = 'test-token';
+      (appleMusicService as unknown).config.developerToken = 'test-token';
       await appleMusicService.initialize();
     });
 
@@ -229,7 +229,7 @@ describe('AppleMusicService', () => {
 
   describe('Track Operations', () => {
     beforeEach(async () => {
-      (appleMusicService as any).config.developerToken = 'test-token';
+      (appleMusicService as unknown).config.developerToken = 'test-token';
       await appleMusicService.initialize();
     });
 
@@ -307,7 +307,7 @@ describe('AppleMusicService', () => {
 
   describe('Playlist Operations', () => {
     beforeEach(async () => {
-      (appleMusicService as any).config.developerToken = 'test-token';
+      (appleMusicService as unknown).config.developerToken = 'test-token';
       await appleMusicService.initialize();
       mockMusicKitInstance.isAuthorized = true;
     });
@@ -360,7 +360,7 @@ describe('AppleMusicService', () => {
 
   describe('Preview Playback', () => {
     beforeEach(async () => {
-      (appleMusicService as any).config.developerToken = 'test-token';
+      (appleMusicService as unknown).config.developerToken = 'test-token';
       await appleMusicService.initialize();
     });
 
@@ -397,22 +397,22 @@ describe('AppleMusicService', () => {
         userInfo: { id: 'user123' },
       };
 
-      (appleMusicService as any).storeTokens(tokens);
-      const stored = (appleMusicService as any).getStoredTokens();
+      (appleMusicService as unknown).storeTokens(tokens);
+      const stored = (appleMusicService as unknown).getStoredTokens();
 
       expect(stored).toEqual(tokens);
     });
 
     it('should handle invalid stored tokens', () => {
       localStorage.setItem('appleMusicTokens', 'invalid-json');
-      const stored = (appleMusicService as any).getStoredTokens();
+      const stored = (appleMusicService as unknown).getStoredTokens();
       expect(stored).toBeNull();
     });
 
     it('should clear stored data on sign out', async () => {
       localStorage.setItem('appleMusicTokens', JSON.stringify({ test: 'data' }));
       
-      (appleMusicService as any).config.developerToken = 'test-token';
+      (appleMusicService as unknown).config.developerToken = 'test-token';
       await appleMusicService.initialize();
       mockMusicKitInstance.isAuthorized = true;
 
@@ -425,7 +425,7 @@ describe('AppleMusicService', () => {
 
   describe('Error Handling', () => {
     beforeEach(async () => {
-      (appleMusicService as any).config.developerToken = 'test-token';
+      (appleMusicService as unknown).config.developerToken = 'test-token';
       await appleMusicService.initialize();
     });
 

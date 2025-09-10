@@ -78,9 +78,9 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({
     hover_zone: null,
   });
 
-  const [availableDataSources, setAvailableDataSources] = useState<any[]>([]);
-  const [previewData, setPreviewData] = useState<any>(null);
-  const [reportTemplates, setReportTemplates] = useState<any[]>([]);
+  const [availableDataSources, setAvailableDataSources] = useState<unknown[]>([]);
+  const [previewData, setPreviewData] = useState<unknown>(null);
+  const [reportTemplates, setReportTemplates] = useState<unknown[]>([]);
 
   const canvasRef = useRef<HTMLDivElement>(null);
 
@@ -164,7 +164,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({
     }));
   };
 
-  const handleFilterChange = (filterKey: string, value: any) => {
+  const handleFilterChange = (filterKey: string, value: unknown) => {
     setBuilderState(prev => ({
       ...prev,
       filters: {
@@ -174,7 +174,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({
     }));
   };
 
-  const handleVisualizationChange = (vizKey: string, value: any) => {
+  const handleVisualizationChange = (vizKey: string, value: unknown) => {
     setBuilderState(prev => ({
       ...prev,
       visualization: {
@@ -184,7 +184,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({
     }));
   };
 
-  const handleOptionsChange = (optionKey: string, value: any) => {
+  const handleOptionsChange = (optionKey: string, value: unknown) => {
     setBuilderState(prev => ({
       ...prev,
       options: {
@@ -280,7 +280,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({
     }
   };
 
-  const loadTemplate = (template: any) => {
+  const loadTemplate = (template: unknown) => {
     setBuilderState(prev => ({
       ...prev,
       report_type: template.report_type,
@@ -553,7 +553,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({
                   <div className="preview-insights">
                     <h4>Key Insights</h4>
                     <ul>
-                      {previewData.insights.slice(0, 3).map((insight: any, index: number) => (
+                      {previewData.insights.slice(0, 3).map((insight: unknown, index: number) => (
                         <li key={index}>{insight.description || insight}</li>
                       ))}
                     </ul>

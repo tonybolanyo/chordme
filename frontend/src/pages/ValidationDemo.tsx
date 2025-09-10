@@ -4,6 +4,7 @@
 
 import React, { useState } from 'react';
 import { ChordProEditor } from '../components/ChordProEditor';
+import type { ValidationError } from '../services/chordProValidation';
 import './ValidationDemo.css';
 
 const DEMO_CONTENT = `{title: Amazing Grace}
@@ -36,10 +37,10 @@ const INVALID_CONTENT = `{titel: Song With Errors}
 
 export const ValidationDemo: React.FC = () => {
   const [content, setContent] = useState(DEMO_CONTENT);
-  const [validationErrors, setValidationErrors] = useState<any[]>([]);
-  const [validationWarnings, setValidationWarnings] = useState<any[]>([]);
+  const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
+  const [validationWarnings, setValidationWarnings] = useState<ValidationError[]>([]);
 
-  const handleValidationChange = (errors: any[], warnings: any[]) => {
+  const handleValidationChange = (errors: ValidationError[], warnings: ValidationError[]) => {
     setValidationErrors(errors);
     setValidationWarnings(warnings);
   };

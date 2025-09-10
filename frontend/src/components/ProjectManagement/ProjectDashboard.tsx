@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Project, ProjectTask, ProjectMilestone, TimelineData } from '../../types/professionalCollaboration';
+import { Project } from '../../types/professionalCollaboration';
 import { professionalCollaborationService } from '../../services/professionalCollaborationService';
 import ProjectList from './ProjectList';
 import ProjectTimeline from './ProjectTimeline';
@@ -42,7 +42,7 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ className = '' }) =
     setActiveView('overview');
   };
 
-  const handleCreateProject = async (projectData: any) => {
+  const handleCreateProject = async (projectData: unknown) => {
     try {
       const newProject = await professionalCollaborationService.createProject(projectData);
       setProjects(prev => [newProject, ...prev]);

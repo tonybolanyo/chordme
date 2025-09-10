@@ -4,14 +4,14 @@
 
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import ChordDiagramPanel from './ChordDiagramPanel';
 import { ChordDetectionResult } from '../../services/chordDetectionService';
 import { ChordDiagram, INSTRUMENT_CONFIGS } from '../../types/chordDiagram';
 
 // Mock the ChordDiagramRenderer component
 vi.mock('../ChordDiagramRenderer', () => ({
-  default: ({ chord, onFingerClick }: any) => (
+  default: ({ chord, onFingerClick }: { chord: ChordDiagram; onFingerClick?: () => void }) => (
     <div 
       data-testid={`chord-diagram-${chord.name}`}
       onClick={() => onFingerClick && onFingerClick()}

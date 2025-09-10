@@ -221,7 +221,7 @@ export class ChordQualityAssuranceService {
   /**
    * Validate barre chord structure
    */
-  private validateBarreChord(barre: any, positions: StringPosition[], errors: ChordDiagramValidationError[], warnings: ChordDiagramValidationWarning[]): void {
+  private validateBarreChord(barre: unknown, positions: StringPosition[], errors: ChordDiagramValidationError[], warnings: ChordDiagramValidationWarning[]): void {
     // Check barre fret validity
     if (barre.fret < 1 || barre.fret > this.instrumentConfig.fretRange.max) {
       errors.push({
@@ -351,7 +351,7 @@ export class ChordQualityAssuranceService {
   /**
    * Assess chord difficulty based on technical requirements
    */
-  private assessDifficulty(positions: StringPosition[], barre?: any): DifficultyLevel {
+  private assessDifficulty(positions: StringPosition[], barre?: unknown): DifficultyLevel {
     const frettedPositions = positions.filter(p => p.fret > 0);
     
     if (frettedPositions.length === 0) return 'beginner';

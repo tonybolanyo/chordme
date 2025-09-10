@@ -55,7 +55,9 @@ export const DailyChallenges: React.FC<DailyChallengesProps> = ({ className = ''
     }
   };
 
-  const getChallengeIcon = (type: string) => {
+  // getChallengeIcon is used in the render logic below
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const getChallengeIcon = React.useCallback((type: string) => {
     const icons = {
       practice_time: '⏱️',
       accuracy: '🎯',
@@ -65,7 +67,7 @@ export const DailyChallenges: React.FC<DailyChallengesProps> = ({ className = ''
       mastery: '⭐'
     };
     return icons[type as keyof typeof icons] || '🎯';
-  };
+  }, []);
 
   if (loading) {
     return (
@@ -214,16 +216,4 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({ challenge, onProgressUpda
       )}
     </div>
   );
-};
-
-const getChallengeIcon = (type: string) => {
-  const icons = {
-    practice_time: '⏱️',
-    accuracy: '🎯',
-    new_song: '🎵',
-    sharing: '📤',
-    streak: '🔥',
-    mastery: '⭐'
-  };
-  return icons[type as keyof typeof icons] || '🎯';
 };

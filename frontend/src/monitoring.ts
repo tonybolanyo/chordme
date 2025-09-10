@@ -9,7 +9,7 @@ export interface ErrorContext {
   userAgent?: string;
   url?: string;
   timestamp?: string;
-  additional?: Record<string, any>;
+  additional?: Record<string, unknown>;
 }
 
 export interface PerformanceMetric {
@@ -31,7 +31,7 @@ export interface MonitoringConfig {
 
 class FrontendMonitoring {
   private config: MonitoringConfig;
-  private errors: Array<any> = [];
+  private errors: Array<unknown> = [];
   private performanceMetrics: Array<PerformanceMetric> = [];
   private userId?: string;
 
@@ -105,7 +105,7 @@ class FrontendMonitoring {
   /**
    * Filter Sentry events to reduce noise
    */
-  private filterSentryEvent(event: any): any {
+  private filterSentryEvent(event: unknown): unknown {
     // Filter out development-only errors
     if (this.config.environment === 'development') {
       if (event.exception?.values?.[0]?.value?.includes('ResizeObserver loop limit exceeded')) {
@@ -284,7 +284,7 @@ class FrontendMonitoring {
   /**
    * Report an error to the monitoring system
    */
-  public reportError(errorInfo: any, context?: ErrorContext) {
+  public reportError(errorInfo: unknown, context?: ErrorContext) {
     const errorReport = {
       ...errorInfo,
       timestamp: new Date().toISOString(),
@@ -335,7 +335,7 @@ class FrontendMonitoring {
   /**
    * Set user context for error reporting
    */
-  public setUser(userId: string, additionalContext?: Record<string, any>) {
+  public setUser(userId: string, additionalContext?: Record<string, unknown>) {
     this.userId = userId;
 
     // Set user context in Sentry if available
@@ -350,7 +350,7 @@ class FrontendMonitoring {
   /**
    * Send data to backend monitoring endpoint
    */
-  private async sendToBackend(endpoint: string, data: any) {
+  private async sendToBackend(endpoint: string, data: unknown) {
     try {
       await fetch(`${this.config.apiEndpoint}${endpoint}`, {
         method: 'POST',

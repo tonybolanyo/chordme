@@ -51,8 +51,8 @@ describe('PerformanceMonitoringService', () => {
     });
 
     it('should trigger alert when collaboration latency exceeds threshold', () => {
-      const alerts: any[] = [];
-      const listener = (data: any) => {
+      const alerts: unknown[] = [];
+      const listener = (data: unknown) => {
         if (data.type === 'alert') {
           alerts.push(data.alert);
         }
@@ -102,8 +102,8 @@ describe('PerformanceMonitoringService', () => {
     });
 
     it('should trigger alert when audio sync deviation exceeds threshold', () => {
-      const alerts: any[] = [];
-      const listener = (data: any) => {
+      const alerts: unknown[] = [];
+      const listener = (data: unknown) => {
         if (data.type === 'alert') {
           alerts.push(data.alert);
         }
@@ -167,8 +167,8 @@ describe('PerformanceMonitoringService', () => {
         configurable: true,
       });
 
-      const alerts: any[] = [];
-      const listener = (data: any) => {
+      const alerts: unknown[] = [];
+      const listener = (data: unknown) => {
         if (data.type === 'alert') {
           alerts.push(data.alert);
         }

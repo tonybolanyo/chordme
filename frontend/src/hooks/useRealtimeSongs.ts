@@ -18,7 +18,7 @@ export function useRealtimeSongs(): UseRealtimeSongsResult {
   const [error, setError] = useState<string | null>(null);
   const [isRealTime, setIsRealTime] = useState(false);
 
-  // Function to fetch songs via regular API (for Flask backend or initial load)
+  // (...args: unknown[]) => unknown to fetch songs via regular API (for Flask backend or initial load)
   const fetchSongs = useCallback(async () => {
     try {
       setError(null);

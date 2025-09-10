@@ -5,7 +5,7 @@
  * Supports both local storage and server-side storage.
  */
 
-import { ChordDiagram, ChordDiagramCollection, InstrumentType } from '../types/chordDiagram';
+import { ChordDiagram, InstrumentType } from '../types/chordDiagram';
 import { validateChordDiagram } from './chordDiagramValidation';
 
 export interface CustomChordStorageOptions {

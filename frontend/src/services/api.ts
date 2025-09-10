@@ -13,6 +13,24 @@ import type {
   BatchExportRequest,
   // User, // removed as it is unused
 } from '../types';
+
+// Generic API Response interface
+interface ApiResponse<T = unknown> {
+  status: string;
+  message: string;
+  data: T;
+}
+
+interface SongVersion {
+  id: string | number;
+  songId: string | number;
+  version: number;
+  title: string;
+  content: string;
+  timestamp: string;
+  changes?: string;
+}
+
 import { isTokenExpired } from '../utils/jwt';
 import { firebaseService } from './firebase';
 import { firestoreService } from './firestore';
@@ -558,7 +576,7 @@ class ApiService {
     return response.data;
   }
 
-  async getPDFTemplate(templateName: string): Promise<any> {
+  async getPDFTemplate(templateName: string): Promise<PDFTemplate> {
     if (this.shouldUseFirebase()) {
       throw new Error('PDF templates are not currently supported with Firebase storage');
     }
@@ -852,11 +870,7 @@ class ApiService {
   /**
    * Get version history for a song
    */
-  async getSongVersions(songId: string | number): Promise<{
-    status: string;
-    message: string;
-    data: { versions: any[] };
-  }> {
+  async getSongVersions(songId: string | number): Promise<ApiResponse<{ versions: SongVersion[] }>> {
     return this.fetchApi(`/api/v1/songs/${songId}/versions`);
   }
 
@@ -866,11 +880,7 @@ class ApiService {
   async getSongVersion(
     songId: string | number,
     versionId: string | number
-  ): Promise<{
-    status: string;
-    message: string;
-    data: any;
-  }> {
+  ): Promise<ApiResponse<SongVersion>> {
     return this.fetchApi(`/api/v1/songs/${songId}/versions/${versionId}`);
   }
 
@@ -880,11 +890,7 @@ class ApiService {
   async restoreSongVersion(
     songId: string | number,
     versionId: string | number
-  ): Promise<{
-    status: string;
-    message: string;
-    data: any;
-  }> {
+  ): Promise<ApiResponse<Song>> {
     return this.fetchApi(`/api/v1/songs/${songId}/restore/${versionId}`, {
       method: 'POST',
     });

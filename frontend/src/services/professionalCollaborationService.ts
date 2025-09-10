@@ -33,10 +33,11 @@ import type {
   ProjectFilters,
   TaskFilters
 } from '../types/professionalCollaboration';
+import type { PaginationInfo } from '../types/searchResults';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   status: 'success' | 'error';
   message?: string;
   data?: T;
@@ -101,7 +102,7 @@ class ProfessionalCollaborationService {
       limit: limit.toString(),
       offset: offset.toString(),
       ...Object.fromEntries(
-        Object.entries(filters).filter(([_, value]) => value !== undefined)
+        Object.entries(filters).filter(([ value]) => value !== undefined)
       ),
     });
 
@@ -162,7 +163,7 @@ class ProfessionalCollaborationService {
   async addParticipant(
     roomId: string, 
     participantData: AddParticipantRequest
-  ): Promise<any> {
+  ): Promise<unknown> {
     const response = await this.makeRequest(
       `/api/v1/collaboration-rooms/${roomId}/participants`,
       {
@@ -182,7 +183,7 @@ class ProfessionalCollaborationService {
     roomId: string,
     participantId: number,
     updates: Partial<AddParticipantRequest>
-  ): Promise<any> {
+  ): Promise<unknown> {
     const response = await this.makeRequest(
       `/api/v1/collaboration-rooms/${roomId}/participants/${participantId}`,
       {
@@ -213,7 +214,7 @@ class ProfessionalCollaborationService {
   async createResource(
     roomId: string, 
     resourceData: CreateResourceRequest
-  ): Promise<any> {
+  ): Promise<unknown> {
     const response = await this.makeRequest(
       `/api/v1/collaboration-rooms/${roomId}/resources`,
       {
@@ -234,7 +235,7 @@ class ProfessionalCollaborationService {
     category?: string,
     limit = 50,
     offset = 0
-  ): Promise<any> {
+  ): Promise<unknown> {
     const params = new URLSearchParams({
       limit: limit.toString(),
       offset: offset.toString(),
@@ -256,7 +257,7 @@ class ProfessionalCollaborationService {
     roomId: string,
     resourceId: number,
     updates: Partial<CreateResourceRequest>
-  ): Promise<any> {
+  ): Promise<unknown> {
     const response = await this.makeRequest(
       `/api/v1/collaboration-rooms/${roomId}/resources/${resourceId}`,
       {
@@ -287,7 +288,7 @@ class ProfessionalCollaborationService {
   async scheduleMeeting(
     roomId: string, 
     meetingData: ScheduleMeetingRequest
-  ): Promise<any> {
+  ): Promise<unknown> {
     const response = await this.makeRequest(
       `/api/v1/collaboration-rooms/${roomId}/meetings`,
       {
@@ -308,7 +309,7 @@ class ProfessionalCollaborationService {
     status?: string,
     limit = 20,
     offset = 0
-  ): Promise<any> {
+  ): Promise<unknown> {
     const params = new URLSearchParams({
       limit: limit.toString(),
       offset: offset.toString(),
@@ -330,7 +331,7 @@ class ProfessionalCollaborationService {
     roomId: string,
     meetingId: number,
     updates: Partial<ScheduleMeetingRequest>
-  ): Promise<any> {
+  ): Promise<unknown> {
     const response = await this.makeRequest(
       `/api/v1/collaboration-rooms/${roomId}/meetings/${meetingId}`,
       {
@@ -379,7 +380,7 @@ class ProfessionalCollaborationService {
   async sendChatMessage(
     roomId: string, 
     messageData: SendChatMessageRequest
-  ): Promise<any> {
+  ): Promise<unknown> {
     const response = await this.makeRequest(
       `/api/v1/collaboration-rooms/${roomId}/chat`,
       {
@@ -400,7 +401,7 @@ class ProfessionalCollaborationService {
     limit = 50,
     offset = 0,
     threadId?: string
-  ): Promise<any> {
+  ): Promise<unknown> {
     const params = new URLSearchParams({
       limit: limit.toString(),
       offset: offset.toString(),
@@ -648,7 +649,7 @@ class ProfessionalCollaborationService {
     return response.data;
   }
 
-  async listProjects(filters: ProjectFilters = {}): Promise<{ projects: Project[]; pagination: any }> {
+  async listProjects(filters: ProjectFilters = {}): Promise<{ projects: Project[]; pagination: PaginationInfo }> {
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined) {
@@ -656,7 +657,7 @@ class ProfessionalCollaborationService {
       }
     });
 
-    const response = await this.makeRequest<{ projects: Project[]; pagination: any }>(
+    const response = await this.makeRequest<{ projects: Project[]; pagination: PaginationInfo }>(
       `/api/v1/projects?${params.toString()}`
     );
     

@@ -7,9 +7,6 @@
 
 import {
   ChordDiagram,
-  StringPosition,
-  BarreChord,
-  AlternativeFingering,
   ChordDiagramCollection,
   InstrumentType
 } from '../types/chordDiagram';

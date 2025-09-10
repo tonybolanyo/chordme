@@ -67,7 +67,7 @@ describe('SplitViewLayout', () => {
     });
   });
 
-  describe('Resizer Functionality', () => {
+  describe('Resizer (...args: unknown[]) => unknownality', () => {
     it('should have proper ARIA attributes on resizer', () => {
       render(<SplitViewLayout {...defaultProps} />);
       

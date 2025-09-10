@@ -61,7 +61,7 @@ describe('useRealtimeSongs', () => {
     expect(result.current.isRealTime).toBe(true);
     expect(result.current.error).toBe(null);
     expect(mockApiService.subscribeToSongs).toHaveBeenCalledWith(
-      expect.any(Function)
+      expect.any((...args: unknown[]) => unknown)
     );
   });
 

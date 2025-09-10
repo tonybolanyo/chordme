@@ -17,12 +17,12 @@ export interface FilterState {
   availablePresets: FilterPreset[];
   isLoading: boolean;
   error: string | null;
-  lastSearchResults: any[];
+  lastSearchResults: unknown[];
   searchHistory: SearchQuery[];
 }
 
 export type FilterAction =
-  | { type: 'SET_FILTER'; payload: { key: keyof SearchQuery; value: any } }
+  | { type: 'SET_FILTER'; payload: { key: keyof SearchQuery; value: string | number | boolean | string[] } }
   | { type: 'SET_FILTERS'; payload: SearchQuery }
   | { type: 'CLEAR_FILTERS' }
   | { type: 'SET_ADVANCED_MODE'; payload: boolean }
@@ -31,7 +31,7 @@ export type FilterAction =
   | { type: 'SET_AVAILABLE_PRESETS'; payload: FilterPreset[] }
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_ERROR'; payload: string | null }
-  | { type: 'SET_SEARCH_RESULTS'; payload: any[] }
+  | { type: 'SET_SEARCH_RESULTS'; payload: unknown[] }
   | { type: 'ADD_TO_HISTORY'; payload: SearchQuery }
   | { type: 'CLEAR_HISTORY' };
 
@@ -158,7 +158,7 @@ interface FilterContextType {
   state: FilterState;
   
   // Filter actions
-  setFilter: (key: keyof SearchQuery, value: any) => void;
+  setFilter: (key: keyof SearchQuery, value: unknown) => void;
   setFilters: (filters: SearchQuery) => void;
   clearFilters: () => void;
   toggleAdvancedMode: () => void;
@@ -174,8 +174,8 @@ interface FilterContextType {
   sharePreset: (presetId: number, userEmail: string) => Promise<void>;
   
   // Search actions
-  search: () => Promise<any[]>;
-  searchWithFilters: (filters: SearchQuery) => Promise<any[]>;
+  search: () => Promise<unknown[]>;
+  searchWithFilters: (filters: SearchQuery) => Promise<unknown[]>;
   
   // Utility functions
   hasActiveFilters: () => boolean;
@@ -208,7 +208,7 @@ export function FilterProvider({ children }: FilterProviderProps): JSX.Element {
   }, []);
 
   // Filter actions
-  const setFilter = useCallback((key: keyof SearchQuery, value: any) => {
+  const setFilter = useCallback((key: keyof SearchQuery, value: unknown) => {
     dispatch({ type: 'SET_FILTER', payload: { key, value } });
   }, []);
 
@@ -319,11 +319,11 @@ export function FilterProvider({ children }: FilterProviderProps): JSX.Element {
   }, [refreshPresets]);
 
   // Search actions
-  const search = useCallback(async (): Promise<any[]> => {
+  const search = useCallback(async (): Promise<unknown[]> => {
     return searchWithFilters(state.currentFilters);
   }, [state.currentFilters]);
 
-  const searchWithFilters = useCallback(async (filters: SearchQuery): Promise<any[]> => {
+  const searchWithFilters = useCallback(async (filters: SearchQuery): Promise<unknown[]> => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
       

@@ -9,7 +9,7 @@
  * - Intelligent cache warming
  */
 
-interface CacheEntry<T = any> {
+interface CacheEntry<T = unknown> {
   data: T;
   timestamp: number;
   ttl: number;
@@ -237,7 +237,7 @@ class EnhancedCacheService {
    */
   async warmCache(warmupData: Array<{
     key: string;
-    factory: () => Promise<any> | any;
+    factory: () => Promise<unknown> | any;
     options?: { ttl?: number; tags?: string[] };
   }>): Promise<void> {
     const promises = warmupData.map(async ({ key, factory, options }) => {
@@ -292,7 +292,7 @@ class EnhancedCacheService {
    */
   getEntries(): Array<{
     key: string;
-    data: any;
+    data: unknown;
     timestamp: number;
     age: number;
     accessCount: number;
@@ -397,7 +397,7 @@ class EnhancedCacheService {
     }
   }
 
-  private calculateSize(data: any): number {
+  private calculateSize(data: unknown): number {
     try {
       return new Blob([JSON.stringify(data)]).size;
     } catch {
@@ -405,11 +405,11 @@ class EnhancedCacheService {
     }
   }
 
-  private shouldCompress(data: any, size: number): boolean {
+  private shouldCompress(data: unknown, size: number): boolean {
     return size > this.config.compressionThreshold && typeof data === 'object';
   }
 
-  private compress(data: any): any {
+  private compress(data: unknown): any {
     // Simple compression simulation - in real implementation, 
     // you might use libraries like pako for gzip compression
     try {
@@ -423,7 +423,7 @@ class EnhancedCacheService {
     }
   }
 
-  private decompress(compressedData: any): any {
+  private decompress(compressedData: unknown): any {
     if (compressedData && compressedData._compressed) {
       try {
         return JSON.parse(atob(compressedData._data));

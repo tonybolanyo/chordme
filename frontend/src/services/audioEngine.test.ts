@@ -215,7 +215,7 @@ describe('AudioEngine', () => {
           ok: true,
           arrayBuffer: () => Promise.resolve(new ArrayBuffer(1024)),
         })
-      ) as any;
+      ) as unknown;
 
       await audioEngine.loadTrack(mockAudioSource);
       
@@ -232,7 +232,7 @@ describe('AudioEngine', () => {
           status: 404,
           statusText: 'Not Found',
         })
-      ) as any;
+      ) as unknown;
 
       const errorSpy = vi.fn();
       audioEngine.addEventListener('error', errorSpy);

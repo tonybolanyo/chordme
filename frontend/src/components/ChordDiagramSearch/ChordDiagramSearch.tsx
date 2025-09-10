@@ -10,10 +10,6 @@ import {
   ChordDiagramSearchOptions,
   ChordDiagramSearchResults,
   ChordDiagramSearchCriteria,
-  InstrumentType,
-  DifficultyLevel,
-  ChordType,
-  FretRange,
   SortOption
 } from '../../types/chordDiagram';
 import { searchChordDiagramsAdvanced } from '../../services/chordDiagramUtils';

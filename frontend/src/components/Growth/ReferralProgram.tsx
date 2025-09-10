@@ -37,7 +37,7 @@ export const ReferralProgram: React.FC<ReferralProgramProps> = ({ className = ''
   const generateNewCode = async () => {
     try {
       setGenerating(true);
-      const newCode = await growthService.generateReferralCode();
+      await growthService.generateReferralCode();
       await loadStats(); // Reload stats to include new code
     } catch (err) {
       setError('Failed to generate referral code');

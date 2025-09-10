@@ -11,11 +11,9 @@ import {
   setlistCollaborationService,
 } from '../services/setlistCollaborationService';
 import type {
-  Setlist,
   SetlistSong,
   SetlistComment,
   SetlistTask,
-  BandMember,
   MobileCoordinationState,
 } from '../types/setlist';
 
@@ -300,7 +298,7 @@ export function useSetlistCollaboration(
         description: options.description,
         assigned_to: options.assignedTo,
         task_type: 'general',
-        priority: (options.priority as any) || 'normal',
+        priority: (options.priority as unknown) || 'normal',
         status: 'todo',
         progress_percentage: 0,
         due_date: options.dueDate?.toISOString(),
@@ -329,7 +327,7 @@ export function useSetlistCollaboration(
           task.id === taskId
             ? {
                 ...task,
-                status: status as any,
+                status: status as unknown,
                 progress_percentage: progressPercentage ?? task.progress_percentage,
                 updated_at: new Date().toISOString(),
                 ...(status === 'completed' && { completed_at: new Date().toISOString() }),
@@ -435,7 +433,9 @@ export function useSetlistCollaboration(
 
   // External sharing
   const createExternalShare = useCallback(async (
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     shareType: string,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     options: {
       accessLevel: string;
       expiresAt?: Date;

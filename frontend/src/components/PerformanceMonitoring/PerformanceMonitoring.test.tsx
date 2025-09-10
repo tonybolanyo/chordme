@@ -4,7 +4,7 @@ import { vi } from 'vitest';
 import PerformanceMonitoring from './PerformanceMonitoring';
 
 // Mock react-i18next
-const mockT = vi.fn((key: string, options?: any) => {
+const mockT = vi.fn((key: string, options?: unknown) => {
   const translations: Record<string, string> = {
     'apm.title': 'Application Performance Monitoring',
     'apm.monitoring.status': 'Monitoring Status',

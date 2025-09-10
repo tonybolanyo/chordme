@@ -22,7 +22,7 @@ vi.mock('../utils/apiUtils', () => ({
 
 import { apiRequest } from '../utils/apiUtils';
 
-const mockApiRequest = apiRequest as any;
+const mockApiRequest = apiRequest as unknown;
 
 const mockResult = {
   id: '1',

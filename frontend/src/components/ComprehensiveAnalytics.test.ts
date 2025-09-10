@@ -2,7 +2,7 @@
  * Tests for Comprehensive Analytics Hook
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import {
   ComprehensiveDashboardData,
   UserActivityAnalytics,
@@ -228,7 +228,7 @@ describe('Comprehensive Analytics Types', () => {
   });
 });
 
-describe('Analytics Utility Functions', () => {
+describe('Analytics Utility (...args: unknown[]) => unknowns', () => {
   it('should format durations correctly', () => {
     const formatDuration = (seconds: number): string => {
       const hours = Math.floor(seconds / 3600);

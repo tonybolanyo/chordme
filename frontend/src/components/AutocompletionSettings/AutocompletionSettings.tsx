@@ -3,7 +3,7 @@ import './AutocompletionSettings.css';
 import { 
   autocompletionSettingsService, 
   type AutocompletionSettings,
-  type CustomChord 
+  type CustomChord
 } from '../../services/autocompletionSettings';
 
 interface AutocompletionSettingsProps {
@@ -32,7 +32,7 @@ const AutocompletionSettings: React.FC<AutocompletionSettingsProps> = ({
     }
   }, [visible]);
 
-  const handleSettingChange = (key: keyof AutocompletionSettings, value: any) => {
+  const handleSettingChange = (key: keyof AutocompletionSettings, value: boolean | number | CustomChord[]) => {
     const newSettings = { ...settings, [key]: value };
     setSettings(newSettings);
     autocompletionSettingsService.saveSettings({ [key]: value });
@@ -90,7 +90,7 @@ const AutocompletionSettings: React.FC<AutocompletionSettingsProps> = ({
         autocompletionSettingsService.importData(data);
         setSettings(autocompletionSettingsService.getSettings());
         alert('Settings imported successfully!');
-      } catch (error) {
+      } catch {
         alert('Error importing settings: Invalid file format');
       }
     };

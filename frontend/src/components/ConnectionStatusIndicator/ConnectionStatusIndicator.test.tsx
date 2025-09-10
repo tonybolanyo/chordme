@@ -13,7 +13,7 @@ vi.mock('../../hooks/useWebSocket', () => ({
 import { useConnectionIndicator } from '../../hooks/useWebSocket';
 import ConnectionStatusIndicator from './ConnectionStatusIndicator';
 
-const mockUseConnectionIndicator = useConnectionIndicator as vi.MockedFunction<typeof useConnectionIndicator>;
+const mockUseConnectionIndicator = useConnectionIndicator as vi.Mocked(...args: unknown[]) => unknown<typeof useConnectionIndicator>;
 
 describe('ConnectionStatusIndicator', () => {
   beforeEach(() => {

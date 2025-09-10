@@ -52,7 +52,7 @@ export interface UseComprehensiveAnalyticsReturn {
   // Actions
   refresh: () => Promise<void>;
   setTimeframe: (timeframe: AnalyticsTimeframe) => void;
-  exportData: (config: AnalyticsExportConfig) => Promise<any>;
+  exportData: (config: AnalyticsExportConfig) => Promise<unknown>;
   
   // Real-time updates
   subscribeToRealTimeUpdates: () => void;
@@ -79,7 +79,7 @@ export function useComprehensiveAnalytics(
   const [isRealTimeConnected, setIsRealTimeConnected] = useState(false);
   
   const [timeframe, setTimeframe] = useState<AnalyticsTimeframe>(options.timeframe || '30d');
-  const [includeAnonymous, setIncludeAnonymous] = useState(options.includeAnonymous || false);
+  const [includeAnonymous, _setIncludeAnonymous] = useState(options.includeAnonymous || false);
   
   // Refs for cleanup and intervals
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -205,7 +205,7 @@ export function useComprehensiveAnalytics(
       return result.data.widget_config;
     },
     
-    async exportData(config: AnalyticsExportConfig): Promise<any> {
+    async exportData(config: AnalyticsExportConfig): Promise<unknown> {
       const response = await fetch('/api/v1/analytics/comprehensive/export/comprehensive', {
         method: 'POST',
         headers: {
@@ -298,7 +298,7 @@ export function useComprehensiveAnalytics(
       return;
     }
     
-    const handleAnalyticsUpdate = (data: any) => {
+    const handleAnalyticsUpdate = (data: unknown) => {
       // Handle real-time analytics updates
       if (data.type === 'analytics_update') {
         // Refresh specific sections based on update type
@@ -456,15 +456,15 @@ export function useWidgetAnalytics(
  * Hook for real-time analytics updates
  */
 export function useRealTimeAnalytics() {
-  const [updates, setUpdates] = useState<any[]>([]);
+  const [updates, setUpdates] = useState<unknown[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   
   useEffect(() => {
-    const handleUpdate = (update: any) => {
+    const handleUpdate = (update: unknown) => {
       setUpdates(prev => [update, ...prev.slice(0, 9)]); // Keep last 10 updates
     };
     
-    const handleConnection = (status: any) => {
+    const handleConnection = (status: unknown) => {
       setIsConnected(status.connected);
     };
     

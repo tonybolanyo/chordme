@@ -9,7 +9,6 @@ import {
   ChordDiagram,
   StringPosition,
   ChordDiagramCollection,
-  InstrumentType,
   DifficultyLevel
 } from '../types/chordDiagram';
 
@@ -19,12 +18,6 @@ import { createChordDiagram, createBarreChord } from '../services/chordDiagramUt
  * Note names in chromatic order
  */
 const CHROMATIC_NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-const FLAT_NOTES = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
-
-/**
- * Standard guitar tuning (low to high)
- */
-const GUITAR_TUNING = ['E', 'A', 'D', 'G', 'B', 'E'];
 
 /**
  * Chord quality definitions with interval patterns
@@ -181,7 +174,7 @@ function generateChordDiagrams(root: string, quality: keyof typeof CHORD_QUALITI
             popularityScore: getPopularityScore(quality, rootFret)
           };
           diagrams.push(diagram);
-        } catch (error) {
+        } catch {
           // Skip invalid chord diagrams
         }
       }
@@ -240,7 +233,7 @@ function generateChordDiagrams(root: string, quality: keyof typeof CHORD_QUALITI
               popularityScore: getPopularityScore(quality, rootFret)
             };
             diagrams.push(diagram);
-          } catch (error) {
+          } catch {
             // Skip invalid chord diagrams
           }
         }
@@ -339,8 +332,6 @@ function generateSlashChords(): ChordDiagram[] {
   ];
   
   commonSlashChords.forEach(chordName => {
-    const [chordPart, bassNote] = chordName.split('/');
-    
     // Generate specific fingerings for common slash chords
     const positions = getSlashChordPositions(chordName);
     if (positions) {

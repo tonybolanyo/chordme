@@ -20,7 +20,6 @@ export interface RealtimeParticipantsProps {
 
 export const RealtimeParticipants: React.FC<RealtimeParticipantsProps> = ({
   participants,
-  currentUserId,
 }) => {
   return (
     <div className="realtime-participants">
@@ -46,13 +45,12 @@ export interface SetlistCommentsProps {
   comments: SetlistComment[];
   setlistId: string;
   canComment: boolean;
-  onAddComment: (content: string, options?: any) => Promise<SetlistComment>;
+  onAddComment: (content: string, options?: unknown) => Promise<SetlistComment>;
   onResolveComment: (commentId: string) => Promise<void>;
 }
 
 export const SetlistComments: React.FC<SetlistCommentsProps> = ({
   comments,
-  setlistId,
   canComment,
   onAddComment,
   onResolveComment,
@@ -118,14 +116,12 @@ export interface TaskManagementProps {
   tasks: SetlistTask[];
   setlistId: string;
   participants: SetlistCollaborationParticipant[];
-  onCreateTask: (title: string, options?: any) => Promise<SetlistTask>;
+  onCreateTask: (title: string, options?: unknown) => Promise<SetlistTask>;
   onUpdateTaskStatus: (taskId: string, status: string) => Promise<void>;
 }
 
 export const TaskManagement: React.FC<TaskManagementProps> = ({
   tasks,
-  setlistId,
-  participants,
   onCreateTask,
   onUpdateTaskStatus,
 }) => {
@@ -206,11 +202,10 @@ export const TaskManagement: React.FC<TaskManagementProps> = ({
 // ExternalSharing Component
 export interface ExternalSharingProps {
   setlistId: string;
-  onCreateShare: (shareType: string, options: any) => Promise<string>;
+  onCreateShare: (shareType: string, options: unknown) => Promise<string>;
 }
 
 export const ExternalSharing: React.FC<ExternalSharingProps> = ({
-  setlistId,
   onCreateShare,
 }) => {
   const [shareType, setShareType] = React.useState('venue');

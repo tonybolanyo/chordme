@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { performanceMonitoringService } from '../../services/performanceMonitoringService';
+import { performanceMonitoringService, PerformanceAlert } from '../../services/performanceMonitoringService';
 import './PerformanceMonitoringDashboard.css';
 
 interface PerformanceMonitoringDashboardProps {
@@ -50,10 +50,11 @@ const PerformanceMonitoringDashboard: React.FC<PerformanceMonitoringDashboardPro
   onClose
 }) => {
   const [performanceData, setPerformanceData] = useState<PerformanceStatus | null>(null);
-  const [isMonitoring, setIsMonitoring] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [ setIsMonitoring] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [refreshInterval, setRefreshInterval] = useState(5000); // 5 seconds
-  const [alerts, setAlerts] = useState<any[]>([]);
+  const [alerts, setAlerts] = useState<PerformanceAlert[]>([]);
 
   // Update performance data
   const updatePerformanceData = useCallback(() => {
@@ -68,7 +69,7 @@ const PerformanceMonitoringDashboard: React.FC<PerformanceMonitoringDashboardPro
 
   // Performance monitoring listener
   useEffect(() => {
-    const handlePerformanceUpdate = (data: any) => {
+    const handlePerformanceUpdate = (data: unknown) => {
       if (data.type === 'alert') {
         setAlerts(prev => [...prev.slice(-9), data.alert]); // Keep last 10 alerts
       }
@@ -111,11 +112,6 @@ const PerformanceMonitoringDashboard: React.FC<PerformanceMonitoringDashboardPro
     const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
-
-  const formatDuration = (ms: number) => {
-    if (ms < 1000) return `${Math.round(ms)}ms`;
-    return `${(ms / 1000).toFixed(2)}s`;
   };
 
   return (

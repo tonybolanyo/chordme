@@ -35,7 +35,7 @@ describe('GrowthService', () => {
         expires_at: '2024-02-01T00:00:00Z'
       };
 
-      (apiService.post as any).mockResolvedValue({ data: mockCode });
+      (apiService.post as unknown).mockResolvedValue({ data: mockCode });
 
       const result = await growthService.generateReferralCode();
 
@@ -55,7 +55,7 @@ describe('GrowthService', () => {
         expires_at: '2024-02-01T00:00:00Z'
       };
 
-      (apiService.post as any).mockResolvedValue({ data: mockCode });
+      (apiService.post as unknown).mockResolvedValue({ data: mockCode });
 
       const result = await growthService.generateReferralCode(options);
 
@@ -64,7 +64,7 @@ describe('GrowthService', () => {
     });
 
     it('should track referral', async () => {
-      (apiService.post as any).mockResolvedValue({});
+      (apiService.post as unknown).mockResolvedValue({});
 
       await growthService.trackReferral('ABC123', 'test@example.com');
 
@@ -85,7 +85,7 @@ describe('GrowthService', () => {
         expires_at: '2024-02-01T00:00:00Z'
       };
 
-      (apiService.post as any).mockResolvedValue({ data: mockCode });
+      (apiService.post as unknown).mockResolvedValue({ data: mockCode });
 
       const result = await growthService.completeReferral('ABC123');
 
@@ -105,7 +105,7 @@ describe('GrowthService', () => {
         recent_completions: []
       };
 
-      (apiService.get as any).mockResolvedValue({ data: mockStats });
+      (apiService.get as unknown).mockResolvedValue({ data: mockStats });
 
       const result = await growthService.getReferralStats();
 
@@ -131,7 +131,7 @@ describe('GrowthService', () => {
         }
       ];
 
-      (apiService.get as any).mockResolvedValue({ data: mockChallenges });
+      (apiService.get as unknown).mockResolvedValue({ data: mockChallenges });
 
       const result = await growthService.getDailyChallenges();
 
@@ -141,7 +141,7 @@ describe('GrowthService', () => {
 
     it('should get daily challenges for specific date', async () => {
       const mockChallenges = [];
-      (apiService.get as any).mockResolvedValue({ data: mockChallenges });
+      (apiService.get as unknown).mockResolvedValue({ data: mockChallenges });
 
       const result = await growthService.getDailyChallenges('2024-01-01');
 
@@ -167,7 +167,7 @@ describe('GrowthService', () => {
         points_awarded: 0
       };
 
-      (apiService.post as any).mockResolvedValue({ data: mockResult });
+      (apiService.post as unknown).mockResolvedValue({ data: mockResult });
 
       const result = await growthService.updateChallengeProgress(1, 15);
 
@@ -200,7 +200,7 @@ describe('GrowthService', () => {
         updated_at: '2024-01-01T00:00:00Z'
       };
 
-      (apiService.get as any).mockResolvedValue({ data: mockProgress });
+      (apiService.get as unknown).mockResolvedValue({ data: mockProgress });
 
       const result = await growthService.getOnboardingProgress();
 
@@ -227,7 +227,7 @@ describe('GrowthService', () => {
         new_milestones: ['first_day']
       };
 
-      (apiService.post as any).mockResolvedValue({ data: mockResult });
+      (apiService.post as unknown).mockResolvedValue({ data: mockResult });
 
       const result = await growthService.completeOnboardingStep('first_song_created');
 
@@ -238,7 +238,7 @@ describe('GrowthService', () => {
     });
   });
 
-  describe('Utility Functions', () => {
+  describe('Utility (...args: unknown[]) => unknowns', () => {
     it('should generate referral link', () => {
       const originalLocation = window.location;
       Object.defineProperty(window, 'location', {

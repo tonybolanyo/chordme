@@ -26,8 +26,7 @@ import {
   PerformanceInsights,
   ProblemSection,
   AIRecommendation,
-  SessionType,
-  DeviceType
+  SessionType
 } from '../types/analytics';
 
 interface PerformanceAnalyticsDashboardProps {
@@ -45,7 +44,6 @@ const PerformanceAnalyticsDashboard: React.FC<PerformanceAnalyticsDashboardProps
 }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'problems' | 'recommendations' | 'trends' | 'privacy'>('overview');
   const [sessionType, setSessionType] = useState<SessionType>('practice');
-  const [isSessionActive, setIsSessionActive] = useState(false);
 
   // Hooks for analytics data
   const {
@@ -53,7 +51,6 @@ const PerformanceAnalyticsDashboard: React.FC<PerformanceAnalyticsDashboardProps
     isTracking,
     startSession,
     endSession,
-    recordEvent,
     error: sessionError
   } = usePerformanceSession();
 
@@ -78,12 +75,7 @@ const PerformanceAnalyticsDashboard: React.FC<PerformanceAnalyticsDashboardProps
   } = useAIRecommendations(insights);
 
   const {
-    metrics,
-    incrementPause,
-    incrementRewind,
-    incrementTempoChange,
-    updatePosition,
-    updateCompletion
+    metrics
   } = useRealTimeMetrics(sessionId);
 
   // Handle session start
@@ -202,7 +194,7 @@ const PerformanceAnalyticsDashboard: React.FC<PerformanceAnalyticsDashboardProps
           ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id as unknown)}
               className={`py-4 px-1 border-b-2 font-medium text-sm ${
                 activeTab === tab.id
                   ? 'border-blue-500 text-blue-600'
@@ -275,7 +267,7 @@ const PerformanceAnalyticsDashboard: React.FC<PerformanceAnalyticsDashboardProps
 // Overview Tab Component
 const OverviewTab: React.FC<{
   insights?: PerformanceInsights;
-  metrics: any;
+  metrics: unknown;
   isTracking: boolean;
   loading: boolean;
   error?: string;

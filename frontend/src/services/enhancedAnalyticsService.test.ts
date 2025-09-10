@@ -301,7 +301,7 @@ describe('EnhancedAnalyticsService', () => {
 
       await expect(
         enhancedAnalyticsService.startPerformanceSession({
-          session_type: 'invalid_type' as any
+          session_type: 'invalid_type' as unknown
         })
       ).rejects.toThrow('Invalid session type');
     });

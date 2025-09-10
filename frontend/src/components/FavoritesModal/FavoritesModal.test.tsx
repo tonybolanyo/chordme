@@ -40,7 +40,7 @@ const mockElement = {
 const originalCreateElement = document.createElement;
 document.createElement = vi.fn((tagName) => {
   if (tagName === 'a') {
-    return mockElement as any;
+    return mockElement as HTMLAnchorElement;
   }
   return originalCreateElement(tagName);
 });
@@ -93,12 +93,12 @@ describe('FavoritesModal', () => {
     vi.clearAllMocks();
     
     // Setup default mock returns
-    (favoritesService.getFavoriteSongs as any).mockResolvedValue({
+    (favoritesService.getFavoriteSongs as vi.Mocked(...args: unknown[]) => unknown<typeof favoritesService.getFavoriteSongs>).mockResolvedValue({
       data: { favorites: mockFavoriteSongs, total_count: 1 }
     });
-    (favoritesService.getFavoriteQueries as any).mockReturnValue(mockFavoriteQueries);
-    (favoritesService.getSearchHistory as any).mockReturnValue(mockSearchHistory);
-    (favoritesService.getSearchPrivacySettings as any).mockReturnValue({
+    (favoritesService.getFavoriteQueries as vi.Mocked(...args: unknown[]) => unknown<typeof favoritesService.getFavoriteQueries>).mockReturnValue(mockFavoriteQueries);
+    (favoritesService.getSearchHistory as vi.Mocked(...args: unknown[]) => unknown<typeof favoritesService.getSearchHistory>).mockReturnValue(mockSearchHistory);
+    (favoritesService.getSearchPrivacySettings as vi.Mocked(...args: unknown[]) => unknown<typeof favoritesService.getSearchPrivacySettings>).mockReturnValue({
       clearOnExit: false,
       trackHistory: true,
     });
@@ -174,7 +174,7 @@ describe('FavoritesModal', () => {
   });
 
   it('should remove favorite song when remove button is clicked', async () => {
-    (favoritesService.toggleSongFavorite as any).mockResolvedValue({
+    (favoritesService.toggleSongFavorite as unknown).mockResolvedValue({
       data: { is_favorited: false }
     });
     
@@ -281,7 +281,7 @@ describe('FavoritesModal', () => {
       favorite_queries: mockFavoriteQueries,
     };
     
-    (favoritesService.exportFavorites as any).mockResolvedValue(mockExportData);
+    (favoritesService.exportFavorites as unknown).mockResolvedValue(mockExportData);
     
     render(<FavoritesModal {...defaultProps} />);
     
@@ -310,7 +310,7 @@ describe('FavoritesModal', () => {
   });
 
   it('should call onSelectQuery when favorite query is used', async () => {
-    (favoritesService.useFavoriteQuery as any).mockReturnValue(mockFavoriteQueries[0]);
+    (favoritesService.useFavoriteQuery as unknown).mockReturnValue(mockFavoriteQueries[0]);
     
     render(<FavoritesModal {...defaultProps} />);
     
@@ -329,7 +329,7 @@ describe('FavoritesModal', () => {
   });
 
   it('should show empty state when no favorites exist', async () => {
-    (favoritesService.getFavoriteSongs as any).mockResolvedValue({
+    (favoritesService.getFavoriteSongs as unknown).mockResolvedValue({
       data: { favorites: [], total_count: 0 }
     });
     
@@ -341,7 +341,7 @@ describe('FavoritesModal', () => {
   });
 
   it('should show loading state while fetching data', () => {
-    (favoritesService.getFavoriteSongs as any).mockReturnValue(
+    (favoritesService.getFavoriteSongs as unknown).mockReturnValue(
       new Promise(() => {}) // Never resolves
     );
     

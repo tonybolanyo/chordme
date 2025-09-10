@@ -14,7 +14,7 @@ import {
   TuningSuggestion,
   COMMON_GUITAR_TUNINGS
 } from '../types/tuning';
-import { ChordDiagram, StringPosition, InstrumentType, INSTRUMENT_CONFIGS } from '../types/chordDiagram';
+import { ChordDiagram, InstrumentType } from '../types/chordDiagram';
 import { generateId } from '../utils/idGenerator';
 
 /**
@@ -29,7 +29,7 @@ export class TuningService {
    */
   getAllTunings(instrument: InstrumentType = 'guitar'): TuningInfo[] {
     const commonTunings = Object.entries(COMMON_GUITAR_TUNINGS)
-      .filter(([_, tuning]) => tuning.instrument === instrument)
+      .filter(([ tuning]) => tuning.instrument === instrument)
       .map(([preset, tuning]) => this.createTuningInfo(preset as TuningPreset, tuning));
 
     const customTunings = Array.from(this.customTunings.values())
@@ -138,11 +138,11 @@ export class TuningService {
       return newFret < 0 ? -1 : newFret; // Mute if would go below fret 0
     });
 
-    let adjustments = tuningDifferences;
+    const adjustments = tuningDifferences;
     let requiresCapo = false;
     let capoPosition = 0;
     let confidence = 100;
-    let notes: string[] = [];
+    const notes: string[] = [];
 
     // Check if we need a capo
     const minValidFret = Math.min(...convertedPositions.filter(fret => fret >= 0));
@@ -211,7 +211,7 @@ export class TuningService {
     let bestCapo = 0;
     let bestScore = 0;
     let bestEffectiveTuning: string[] = [];
-    let alternatives: Array<{ position: number; confidence: number; notes: string }> = [];
+    const alternatives: Array<{ position: number; confidence: number; notes: string }> = [];
 
     for (let capoPos = 1; capoPos <= maxCapoPosition; capoPos++) {
       // Calculate effective tuning with capo
@@ -395,7 +395,7 @@ export class TuningService {
   /**
    * Helper method to create TuningInfo from template
    */
-  private createTuningInfo(preset: TuningPreset, template: any): TuningInfo {
+  private createTuningInfo(preset: TuningPreset, template: unknown): TuningInfo {
     return {
       id: `${template.instrument}_${preset}`,
       ...template,

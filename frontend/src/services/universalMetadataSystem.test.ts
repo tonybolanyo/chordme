@@ -28,13 +28,13 @@ describe('Universal Music Metadata System', () => {
       const spotifyTrack: SpotifyTrack = {
         id: 'spotify123',
         name: 'Test Song',
-        artists: [{ id: 'artist1', name: 'Test Artist' } as any],
+        artists: [{ id: 'artist1', name: 'Test Artist' } as unknown],
         album: {
           id: 'album1',
           name: 'Test Album',
           release_date: '2023-01-01',
           images: [{ url: 'image.jpg', width: 400, height: 400 }],
-        } as any,
+        } as unknown,
         duration_ms: 240000,
         explicit: false,
         popularity: 75,
@@ -79,8 +79,8 @@ describe('Universal Music Metadata System', () => {
       const incompleteSpotify: SpotifyTrack = {
         id: 'spotify123',
         name: 'Test Song',
-        artists: [{ id: 'artist1', name: 'Test Artist' } as any],
-        album: { id: 'album1', name: 'Test Album' } as any,
+        artists: [{ id: 'artist1', name: 'Test Artist' } as unknown],
+        album: { id: 'album1', name: 'Test Album' } as unknown,
         duration_ms: 240000,
         explicit: false,
         popularity: 0,
@@ -102,8 +102,8 @@ describe('Universal Music Metadata System', () => {
       const spotifyTrack: SpotifyTrack = {
         id: 'spotify123',
         name: 'Test Song (Radio Edit)',
-        artists: [{ id: 'artist1', name: 'Test Artist' } as any],
-        album: { id: 'album1', name: 'Test Album' } as any,
+        artists: [{ id: 'artist1', name: 'Test Artist' } as unknown],
+        album: { id: 'album1', name: 'Test Album' } as unknown,
         duration_ms: 240000,
         explicit: false,
         popularity: 75,
@@ -140,8 +140,8 @@ describe('Universal Music Metadata System', () => {
       const spotifyTrack: SpotifyTrack = {
         id: 'spotify123',
         name: 'Test Song',
-        artists: [{ id: 'artist1', name: 'Test Artist' } as any],
-        album: { id: 'album1', name: 'Test Album' } as any,
+        artists: [{ id: 'artist1', name: 'Test Artist' } as unknown],
+        album: { id: 'album1', name: 'Test Album' } as unknown,
         duration_ms: 240000, // 4 minutes
         explicit: false,
         popularity: 75,
@@ -176,8 +176,8 @@ describe('Universal Music Metadata System', () => {
       const spotifyTrack: SpotifyTrack = {
         id: 'spotify123',
         name: 'Test Song',
-        artists: [{ id: 'artist1', name: 'Test Artist' } as any],
-        album: { id: 'album1', name: 'Test Album' } as any,
+        artists: [{ id: 'artist1', name: 'Test Artist' } as unknown],
+        album: { id: 'album1', name: 'Test Album' } as unknown,
         duration_ms: 240000,
         explicit: false,
         popularity: 75,
@@ -213,8 +213,8 @@ describe('Universal Music Metadata System', () => {
       const spotifyTrack: SpotifyTrack = {
         id: 'spotify123',
         name: 'Test Song',
-        artists: [{ id: 'artist1', name: 'Test Artist' } as any],
-        album: { id: 'album1', name: 'Test Album' } as any,
+        artists: [{ id: 'artist1', name: 'Test Artist' } as unknown],
+        album: { id: 'album1', name: 'Test Album' } as unknown,
         duration_ms: 240000,
         explicit: false,
         popularity: 75,
@@ -267,7 +267,7 @@ describe('Universal Music Metadata System', () => {
       ];
 
       // Mock the fetch methods to avoid actual API calls
-      const service = crossPlatformMusicService as any;
+      const service = crossPlatformMusicService as unknown;
       service.fetchSpotifyTrack = vi.fn().mockResolvedValue({
         id: 'track1',
         name: 'Test Song',
@@ -304,12 +304,12 @@ describe('Universal Music Metadata System', () => {
       const spotifyTrack: SpotifyTrack = {
         id: 'spotify123',
         name: 'Test Song',
-        artists: [{ id: 'artist1', name: 'Test Artist' } as any],
+        artists: [{ id: 'artist1', name: 'Test Artist' } as unknown],
         album: {
           id: 'album1',
           name: 'Test Album',
           release_date: '2023-01-01',
-        } as any,
+        } as unknown,
         duration_ms: 240000,
         explicit: true,
         popularity: 75,
@@ -338,8 +338,8 @@ describe('Universal Music Metadata System', () => {
       const minimalTrack: SpotifyTrack = {
         id: 'spotify123',
         name: 'Test Song',
-        artists: [{ id: 'artist1', name: 'Test Artist' } as any],
-        album: { id: 'album1', name: 'Test Album' } as any,
+        artists: [{ id: 'artist1', name: 'Test Artist' } as unknown],
+        album: { id: 'album1', name: 'Test Album' } as unknown,
         duration_ms: 240000,
         explicit: false,
         popularity: 0,
@@ -369,7 +369,7 @@ describe('Universal Music Metadata System', () => {
       const malformedTrack = {
         id: 'test',
         // Missing required fields
-      } as any;
+      } as unknown;
 
       await expect(
         crossPlatformMusicService.createUnifiedMetadata(malformedTrack, undefined)
@@ -382,12 +382,12 @@ describe('Universal Music Metadata System', () => {
       const richSpotifyTrack: SpotifyTrack = {
         id: 'spotify123',
         name: 'Test Song',
-        artists: [{ id: 'artist1', name: 'Test Artist' } as any],
+        artists: [{ id: 'artist1', name: 'Test Artist' } as unknown],
         album: {
           id: 'album1',
           name: 'Test Album',
           release_date: '2023-01-01',
-        } as any,
+        } as unknown,
         duration_ms: 240000,
         explicit: true,
         popularity: 85,

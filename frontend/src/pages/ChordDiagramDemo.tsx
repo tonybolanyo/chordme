@@ -7,7 +7,7 @@
 
 import React, { useState } from 'react';
 import ChordDiagramRenderer from '../components/ChordDiagramRenderer';
-import { SAMPLE_GUITAR_CHORDS, SAMPLE_UKULELE_CHORDS, SAMPLE_MANDOLIN_CHORDS, ALL_SAMPLE_CHORDS } from '../utils/sampleChordData';
+import { SAMPLE_GUITAR_CHORDS, SAMPLE_UKULELE_CHORDS, SAMPLE_MANDOLIN_CHORDS } from '../utils/sampleChordData';
 import { InstrumentType } from '../types/chordDiagram';
 import './ChordDiagramDemo.css';
 

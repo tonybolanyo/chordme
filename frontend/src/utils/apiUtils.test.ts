@@ -4,7 +4,7 @@ import {
   parseNetworkError,
   apiErrorToAppError,
   fetchWithRetry,
-  createRetryFunction,
+  createRetry(...args: unknown[]) => unknown,
   isOnline,
   waitForOnline,
   type ApiError,
@@ -352,10 +352,10 @@ describe('apiUtils', () => {
     });
   });
 
-  describe('createRetryFunction', () => {
+  describe('createRetry(...args: unknown[]) => unknown', () => {
     it('creates a retry wrapper for any function', async () => {
       let attempts = 0;
-      const testFunction = vi.fn(async (value: string) => {
+      const test(...args: unknown[]) => unknown = vi.fn(async (value: string) => {
         attempts++;
         if (attempts < 3) {
           const error = new Error('Temporary failure') as ApiError;
@@ -366,45 +366,45 @@ describe('apiUtils', () => {
         return `success: ${value}`;
       });
 
-      const retryFunction = createRetryFunction(testFunction, {
+      const retry(...args: unknown[]) => unknown = createRetry(...args: unknown[]) => unknown(test(...args: unknown[]) => unknown, {
         maxAttempts: 3,
         delay: 0, // No delay for tests
       });
-      const result = await retryFunction('test');
+      const result = await retry(...args: unknown[]) => unknown('test');
 
       expect(result).toBe('success: test');
-      expect(testFunction).toHaveBeenCalledTimes(3);
+      expect(test(...args: unknown[]) => unknown).toHaveBeenCalledTimes(3);
     });
 
     it('fails after max attempts', async () => {
-      const testFunction = vi.fn(async () => {
+      const test(...args: unknown[]) => unknown = vi.fn(async () => {
         const error = new Error('Persistent failure') as ApiError;
         error.retryable = true;
         error.status = 500; // Make it a server error so default retry condition passes
         throw error;
       });
 
-      const retryFunction = createRetryFunction(testFunction, {
+      const retry(...args: unknown[]) => unknown = createRetry(...args: unknown[]) => unknown(test(...args: unknown[]) => unknown, {
         maxAttempts: 2,
         delay: 0, // No delay for tests
       });
 
-      await expect(retryFunction()).rejects.toThrow('Persistent failure');
-      expect(testFunction).toHaveBeenCalledTimes(2);
+      await expect(retry(...args: unknown[]) => unknown()).rejects.toThrow('Persistent failure');
+      expect(test(...args: unknown[]) => unknown).toHaveBeenCalledTimes(2);
     });
 
     it('does not retry non-retryable errors', async () => {
-      const testFunction = vi.fn(async () => {
+      const test(...args: unknown[]) => unknown = vi.fn(async () => {
         const error = new Error('Non-retryable') as ApiError;
         error.retryable = false;
         error.status = 400; // Client error, not retryable by default
         throw error;
       });
 
-      const retryFunction = createRetryFunction(testFunction);
+      const retry(...args: unknown[]) => unknown = createRetry(...args: unknown[]) => unknown(test(...args: unknown[]) => unknown);
 
-      await expect(retryFunction()).rejects.toThrow('Non-retryable');
-      expect(testFunction).toHaveBeenCalledTimes(1);
+      await expect(retry(...args: unknown[]) => unknown()).rejects.toThrow('Non-retryable');
+      expect(test(...args: unknown[]) => unknown).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -494,7 +494,7 @@ describe('apiUtils', () => {
 
       expect(removeEventListenerSpy).toHaveBeenCalledWith(
         'online',
-        expect.any(Function)
+        expect.any((...args: unknown[]) => unknown)
       );
     });
 
@@ -515,7 +515,7 @@ describe('apiUtils', () => {
 
       expect(removeEventListenerSpy).toHaveBeenCalledWith(
         'online',
-        expect.any(Function)
+        expect.any((...args: unknown[]) => unknown)
       );
     });
   });

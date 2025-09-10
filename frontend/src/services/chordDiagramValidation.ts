@@ -1,5 +1,5 @@
 /**
- * Chord Diagram Validation Functions
+ * Chord Diagram Validation (...args: unknown[]) => unknowns
  * 
  * This module provides comprehensive validation for chord diagram data structures,
  * ensuring data integrity and musical accuracy.

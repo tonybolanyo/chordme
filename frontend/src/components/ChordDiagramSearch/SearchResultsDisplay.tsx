@@ -160,7 +160,7 @@ const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({
   return (
     <div className="search-results-display">
       <div className="results-grid" role="region" aria-label="Search results">
-        {results.results.map((result, index) => (
+        {results.results.map((result) => (
           <div
             key={result.diagram.id}
             className="result-card"

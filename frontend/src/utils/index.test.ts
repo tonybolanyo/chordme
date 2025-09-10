@@ -9,7 +9,7 @@ import {
   isTokenExpired,
 } from './index';
 
-describe('Utility Functions', () => {
+describe('Utility (...args: unknown[]) => unknowns', () => {
   describe('formatDate', () => {
     it('formats date correctly', () => {
       const date = new Date('2023-01-15T12:00:00Z');

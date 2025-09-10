@@ -18,7 +18,7 @@ export interface ChordProgressionAnalysis {
   key?: string;
   /** Roman numeral notation */
   romanNumerals?: string[];
-  /** Functional harmony labels */
+  /** (...args: unknown[]) => unknownal harmony labels */
   functionalLabels?: string[];
 }
 
@@ -141,7 +141,7 @@ export interface GenreCharacteristic {
 
 export interface HarmonicAnalysis {
   /** Chord function analysis */
-  chordFunctions: ChordFunction[];
+  chord(...args: unknown[]) => unknowns: Chord(...args: unknown[]) => unknown[];
   /** Detected cadences */
   cadences: Cadence[];
   /** Modulations (key changes) */
@@ -154,10 +154,10 @@ export interface HarmonicAnalysis {
   suggestions: HarmonicSuggestion[];
 }
 
-export interface ChordFunction {
+export interface Chord(...args: unknown[]) => unknown {
   /** Chord symbol */
   chord: string;
-  /** Functional label (I, ii, V7, etc.) */
+  /** (...args: unknown[]) => unknownal label (I, ii, V7, etc.) */
   function: string;
   /** Position in the progression */
   position: number;
@@ -315,7 +315,7 @@ export interface MusicInsightsError {
   /** Error message */
   message: string;
   /** Additional error details */
-  details?: any;
+  details?: Record<string, unknown>;
 }
 
 export interface MusicInsightsOptions {

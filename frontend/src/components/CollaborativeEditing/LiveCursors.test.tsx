@@ -102,7 +102,7 @@ describe('LiveCursors', () => {
   });
 
   it('does not render current user cursor', () => {
-    const { useCollaborativePresence } = require('../../hooks/useCollaborativeEditing');
+    
     useCollaborativePresence.mockReturnValue({
       cursors: [
         {
@@ -133,7 +133,7 @@ describe('LiveCursors', () => {
   });
 
   it('renders other user cursors', () => {
-    const { useCollaborativePresence } = require('../../hooks/useCollaborativeEditing');
+    
     useCollaborativePresence.mockReturnValue({
       cursors: mockCursors,
     });
@@ -153,8 +153,8 @@ describe('LiveCursors', () => {
   });
 
   it('handles typing indicators correctly', () => {
-    const { useCollaborativePresence } = require('../../hooks/useCollaborativeEditing');
-    const { usePresenceSystem } = require('../../hooks/usePresenceSystem');
+    
+    
     
     useCollaborativePresence.mockReturnValue({
       cursors: mockCursors,
@@ -182,7 +182,7 @@ describe('LiveCursors', () => {
   });
 
   it('handles text selection highlighting', () => {
-    const { useCollaborativePresence } = require('../../hooks/useCollaborativeEditing');
+    
     
     const cursorsWithSelection = [
       {
@@ -216,7 +216,7 @@ describe('LiveCursors', () => {
   });
 
   it('handles empty cursor list', () => {
-    const { useCollaborativePresence } = require('../../hooks/useCollaborativeEditing');
+    
     useCollaborativePresence.mockReturnValue({
       cursors: [],
     });
@@ -251,7 +251,7 @@ describe('LiveCursors', () => {
   });
 
   it('filters out unknown users', () => {
-    const { useCollaborativePresence } = require('../../hooks/useCollaborativeEditing');
+    
     
     const cursorsWithUnknownUser = [
       {
@@ -283,7 +283,7 @@ describe('LiveCursors', () => {
   });
 
   it('handles invalid cursor positions gracefully', () => {
-    const { useCollaborativePresence } = require('../../hooks/useCollaborativeEditing');
+    
     
     const invalidCursors = [
       {
@@ -323,7 +323,7 @@ describe('LiveCursors', () => {
   });
 
   it('updates positions when editor content changes', () => {
-    const { useCollaborativePresence } = require('../../hooks/useCollaborativeEditing');
+    
     useCollaborativePresence.mockReturnValue({
       cursors: mockCursors,
     });

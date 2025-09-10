@@ -21,7 +21,7 @@ export class MetronomeService implements IMetronomeService {
   private currentMeasure = 0;
   private nextBeatTime = 0;
   private timerID?: number;
-  private eventListeners = new Map<keyof MetronomeEventMap, Set<EventListener<any>>>();
+  private eventListeners = new Map<keyof MetronomeEventMap, Set<EventListener<unknown>>>();
   
   private config: MetronomeConfig = {
     enabled: true,
@@ -41,7 +41,7 @@ export class MetronomeService implements IMetronomeService {
 
   private async initializeAudioContext(): Promise<void> {
     try {
-      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      const AudioContextClass = window.AudioContext || (window as unknown).webkitAudioContext;
       this.audioContext = new AudioContextClass();
 
       // Handle audio context state changes

@@ -4,7 +4,7 @@
  * smart scrolling that follows song structure, and tempo synchronization
  */
 
-import { ChordTimeMapping, SyncTimeline, TempoMapping } from '../types/audio';
+import { ChordTimeMapping } from '../types/audio';
 
 export interface AutoScrollConfig {
   enabled: boolean;
@@ -62,7 +62,7 @@ export class AutoScrollService {
   private lastScrollTime = 0;
   private scrollContainer: HTMLElement | null = null;
   private smartContext: SmartScrollContext | null = null;
-  private eventListeners = new Map<string, Set<Function>>();
+  private eventListeners = new Map<string, Set<(...args: unknown[]) => unknown>>();
 
   constructor() {
     this.initialize();
@@ -371,21 +371,21 @@ export class AutoScrollService {
   }
 
   // Event handling
-  addEventListener(type: string, listener: Function): void {
+  addEventListener(type: string, listener: (...args: unknown[]) => unknown): void {
     if (!this.eventListeners.has(type)) {
       this.eventListeners.set(type, new Set());
     }
     this.eventListeners.get(type)!.add(listener);
   }
 
-  removeEventListener(type: string, listener: Function): void {
+  removeEventListener(type: string, listener: (...args: unknown[]) => unknown): void {
     const listeners = this.eventListeners.get(type);
     if (listeners) {
       listeners.delete(listener);
     }
   }
 
-  private emit(type: string, data: any): void {
+  private emit(type: string, data: unknown): void {
     const listeners = this.eventListeners.get(type);
     if (listeners) {
       listeners.forEach((listener) => {

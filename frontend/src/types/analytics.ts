@@ -1,4 +1,5 @@
 // Performance Analytics and Insights Types
+import type { Song } from './index';
 
 export interface SetlistAnalytics {
   setlist_id: number;
@@ -357,7 +358,7 @@ export interface SimilarSongsResponse {
 export interface ArtistExploration {
   artist: string;
   total_songs: number;
-  songs: any[]; // Song objects
+  songs: Song[]; // Song objects
   artist_characteristics: {
     primary_genres: Record<string, number>;
     common_keys: Record<string, number>;
@@ -370,7 +371,7 @@ export interface ArtistExploration {
 export interface GenreExploration {
   genre: string;
   total_songs: number;
-  songs: any[]; // Song objects
+  songs: Song[]; // Song objects
   genre_characteristics: {
     popular_artists: Record<string, number>;
     common_keys: Record<string, number>;
@@ -872,7 +873,7 @@ export interface UseComprehensiveAnalyticsReturn {
   isRealTimeConnected: boolean;
   refresh: () => Promise<void>;
   setTimeframe: (timeframe: AnalyticsTimeframe) => void;
-  exportData: (config: AnalyticsExportConfig) => Promise<any>;
+  exportData: (config: AnalyticsExportConfig) => Promise<AnalyticsExportData>;
   subscribeToRealTimeUpdates: () => void;
   unsubscribeFromRealTimeUpdates: () => void;
 }

@@ -104,13 +104,13 @@ describe('Firestore Security Rules Validation', () => {
 
     // Check for songs indexes
     const songsIndexes = indexes.indexes.filter(
-      (index: any) => index.collectionGroup === 'songs'
+      (index: unknown) => index.collectionGroup === 'songs'
     );
     expect(songsIndexes.length).toBeGreaterThan(0);
 
     // Check for chords indexes
     const chordsIndexes = indexes.indexes.filter(
-      (index: any) => index.collectionGroup === 'chords'
+      (index: unknown) => index.collectionGroup === 'chords'
     );
     expect(chordsIndexes.length).toBeGreaterThan(0);
   });
