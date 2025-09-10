@@ -7,11 +7,9 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { audioEngine } from '../services/audioEngine';
 import {
   AudioSource,
-  PlaybackState,
   AudioEngineState,
   AudioError,
   Playlist,
-  PlaylistItem,
   VisualizationData,
 } from '../types/audio';
 

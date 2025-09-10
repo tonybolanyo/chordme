@@ -9,7 +9,6 @@ import {
   ChordDiagram,
   StringPosition,
   ChordDiagramCollection,
-  InstrumentType,
   DifficultyLevel
 } from '../types/chordDiagram';
 
@@ -175,7 +174,7 @@ function generateChordDiagrams(root: string, quality: keyof typeof CHORD_QUALITI
             popularityScore: getPopularityScore(quality, rootFret)
           };
           diagrams.push(diagram);
-        } catch (error) {
+        } catch {
           // Skip invalid chord diagrams
         }
       }
@@ -234,7 +233,7 @@ function generateChordDiagrams(root: string, quality: keyof typeof CHORD_QUALITI
               popularityScore: getPopularityScore(quality, rootFret)
             };
             diagrams.push(diagram);
-          } catch (error) {
+          } catch {
             // Skip invalid chord diagrams
           }
         }

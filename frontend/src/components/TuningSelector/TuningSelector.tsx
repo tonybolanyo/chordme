@@ -348,7 +348,7 @@ const CustomTuningModal: React.FC<CustomTuningModalProps> = ({
       );
       
       onSave(customTuning);
-    } catch (_error) {
+    } catch {
       setErrors(['Failed to create custom tuning']);
     }
   };

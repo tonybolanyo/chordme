@@ -6,7 +6,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { YouTubePlayer } from '../YouTubePlayer/YouTubePlayer';
 import { YouTubeSearch } from '../YouTubePlayer/YouTubeSearch';
-import { youtubeService } from '../../services/youtubeService';
 import { apiRequest } from '../../utils/apiUtils';
 import type {
   YouTubeSearchResult,

@@ -6,6 +6,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
 import SetlistCollaboration from '../SetlistCollaboration';
 import type { Setlist } from '../../../types/setlist';
+import { useSetlistCollaboration } from '../../../hooks/useSetlistCollaboration';
 
 // Mock the collaboration hook
 vi.mock('../../../hooks/useSetlistCollaboration', () => ({
@@ -159,8 +160,7 @@ const mockCollaboration = {
 
 describe('SetlistCollaboration', () => {
   beforeEach(() => {
-    const { useSetlistCollaboration } = require('../../../hooks/useSetlistCollaboration');
-    useSetlistCollaboration.mockReturnValue(mockCollaboration);
+    (useSetlistCollaboration as vi.MockedFunction<typeof useSetlistCollaboration>).mockReturnValue(mockCollaboration);
   });
 
   afterEach(() => {
@@ -277,8 +277,7 @@ describe('SetlistCollaboration', () => {
       },
     };
 
-    const { useSetlistCollaboration } = require('../../../hooks/useSetlistCollaboration');
-    useSetlistCollaboration.mockReturnValue(activeCollaboration);
+    (useSetlistCollaboration as vi.MockedFunction<typeof useSetlistCollaboration>).mockReturnValue(activeCollaboration);
 
     render(
       <SetlistCollaboration
@@ -354,8 +353,7 @@ describe('SetlistCollaboration', () => {
       error: 'Failed to connect to collaboration session',
     };
 
-    const { useSetlistCollaboration } = require('../../../hooks/useSetlistCollaboration');
-    useSetlistCollaboration.mockReturnValue(errorCollaboration);
+    (useSetlistCollaboration as vi.MockedFunction<typeof useSetlistCollaboration>).mockReturnValue(errorCollaboration);
 
     render(
       <SetlistCollaboration

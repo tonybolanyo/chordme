@@ -15,10 +15,7 @@ interface ProblemSectionsWidgetProps {
 }
 
 const ProblemSectionsWidget: React.FC<ProblemSectionsWidgetProps> = ({
-  data,
-  timeframe,
-  loading,
-  error
+  loading
 }) => {
   const { t } = useTranslation();
 

@@ -8,7 +8,7 @@
 
 import { tuningService } from './tuningService';
 import { TuningInfo } from '../types/tuning';
-import { ChordDiagram, InstrumentType } from '../types/chordDiagram';
+import { ChordDiagram } from '../types/chordDiagram';
 import { 
   createChordDiagramWithTuning, 
   transposeChordDiagramToTuning 

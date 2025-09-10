@@ -37,7 +37,6 @@ const ValidationSummary: React.FC<ValidationSummaryProps> = ({
   errors,
   warnings,
   isValidating,
-  isValid,
   onErrorClick
 }) => {
   const [showErrorList, setShowErrorList] = useState(false);

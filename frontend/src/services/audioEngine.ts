@@ -5,7 +5,6 @@
 
 import {
   AudioSource,
-  PlaybackState,
   PlaybackConfig,
   AudioEngineState,
   AudioError,
@@ -13,10 +12,8 @@ import {
   AudioCapabilities,
   AudioEventMap,
   IAudioEngine,
-  CrossfadeType,
   VisualizationData,
   Playlist,
-  PlaylistItem,
   // Synchronization imports
   SyncTimeline,
   ChordTimeMapping,
