@@ -6,7 +6,6 @@
  * genre classification, harmonic analysis, and learning recommendations.
  */
 
-import { chordRecognitionEngine } from './chordRecognition';
 import { detectChordsInContent } from './chordDetectionService';
 import {
   ComprehensiveMusicInsights,
@@ -26,7 +25,6 @@ import {
   HarmonicRhythm,
   HarmonicSuggestion,
   LearningRecommendation,
-  LearningResource,
   SongSimilarity,
   MusicInsightsOptions,
   MusicInsightsError
@@ -412,6 +410,7 @@ class AIMusicInsightsService {
    */
   private async classifyGenre(
     chords: string[],
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     content: string
   ): Promise<GenreClassification> {
     const characteristics: GenreCharacteristic[] = [];
@@ -634,7 +633,10 @@ class AIMusicInsightsService {
   }
 
   // Placeholder implementations for complex algorithms
-  private async detectPrimaryKey(chords: string[]): Promise<string> {
+  private async detectPrimaryKey(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    chords: string[]
+  ): Promise<string> {
     // Simplified key detection - would need more sophisticated algorithm
     return 'C major';
   }
@@ -745,7 +747,12 @@ class AIMusicInsightsService {
     return lyrics.length > 0 ? lyrics : null;
   }
 
-  private inferSectionType(line: string, lineIndex: number, sectionCount: number): SongSection | null {
+  private inferSectionType(
+    line: string, 
+    lineIndex: number, 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    sectionCount: number
+  ): SongSection | null {
     // Simple heuristics for section inference
     if (lineIndex === 0 && this.extractChordsFromLine(line).length > 0) {
       return {
@@ -982,13 +989,23 @@ class AIMusicInsightsService {
     }));
   }
 
-  private getChordFunction(chord: string, key: string): string {
+  private getChordFunction(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    chord: string, 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    key: string
+  ): string {
     // Simplified function analysis
     // This would need more sophisticated harmonic analysis
     return 'I'; // Placeholder
   }
 
-  private getHarmonicRole(chord: string, key: string): 'tonic' | 'predominant' | 'dominant' | 'passing' | 'neighbor' | 'other' {
+  private getHarmonicRole(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    chord: string, 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    key: string
+  ): 'tonic' | 'predominant' | 'dominant' | 'passing' | 'neighbor' | 'other' {
     // Simplified role analysis
     return 'tonic'; // Placeholder
   }
@@ -1011,7 +1028,10 @@ class AIMusicInsightsService {
     return cadences;
   }
 
-  private detectModulations(chords: string[]): Modulation[] {
+  private detectModulations(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    chords: string[]
+  ): Modulation[] {
     // Simplified modulation detection
     // This would need sophisticated harmonic analysis
     return [];
@@ -1034,7 +1054,11 @@ class AIMusicInsightsService {
     };
   }
 
-  private generateHarmonicSuggestions(functions: ChordFunction[], key: string): HarmonicSuggestion[] {
+  private generateHarmonicSuggestions(
+    functions: ChordFunction[], 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    key: string
+  ): HarmonicSuggestion[] {
     const suggestions: HarmonicSuggestion[] = [];
     
     // Example suggestion: add dominant before tonic

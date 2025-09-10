@@ -26,7 +26,8 @@ export const SetlistPage: React.FC<SetlistPageProps> = ({
   const [setlists, setSetlists] = useState<Setlist[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [searchParams, _setSearchParams] = useState<SetlistSearchParams>({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [searchParams, setSearchParams] = useState<SetlistSearchParams>({
     limit: 20,
     offset: 0,
     sort: 'updated_at',
@@ -57,12 +58,18 @@ export const SetlistPage: React.FC<SetlistPageProps> = ({
     setCurrentMode('create');
   };
 
-  const handleEdit = (_setlistId: string) => {
+  const handleEdit = (
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    setlistId: string
+  ) => {
     // In a real app, you'd navigate to edit mode with the setlist ID
     setCurrentMode('edit');
   };
 
-  const handleSave = (_setlist: Setlist) => {
+  const handleSave = (
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    setlist: Setlist
+  ) => {
     // Handle save and navigate back to list
     setCurrentMode('list');
     loadSetlists(); // Refresh the list

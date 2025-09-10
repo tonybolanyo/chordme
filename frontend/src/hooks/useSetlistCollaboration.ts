@@ -433,8 +433,10 @@ export function useSetlistCollaboration(
 
   // External sharing
   const createExternalShare = useCallback(async (
-    _shareType: string,
-    _options: {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    shareType: string,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    options: {
       accessLevel: string;
       expiresAt?: Date;
       recipientEmail?: string;

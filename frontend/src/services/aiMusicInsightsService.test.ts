@@ -6,7 +6,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import aiMusicInsightsService from './aiMusicInsightsService';
-import { ComprehensiveMusicInsights, MusicInsightsOptions } from '../types/musicInsights';
+import { MusicInsightsOptions } from '../types/musicInsights';
 
 // Mock dependencies
 vi.mock('./chordRecognition', () => ({
