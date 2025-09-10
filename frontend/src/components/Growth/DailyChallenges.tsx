@@ -215,15 +215,3 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({ challenge, onProgressUpda
     </div>
   );
 };
-
-const getChallengeIcon = (type: string) => {
-  const icons = {
-    practice_time: '⏱️',
-    accuracy: '🎯',
-    new_song: '🎵',
-    sharing: '📤',
-    streak: '🔥',
-    mastery: '⭐'
-  };
-  return icons[type as keyof typeof icons] || '🎯';
-};

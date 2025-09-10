@@ -32,7 +32,7 @@ const ExportResultsModal: React.FC<ExportResultsModalProps> = ({
     onClose();
   };
 
-  const handleConfigChange = (key: keyof ExportConfig, value: any) => {
+  const handleConfigChange = (key: keyof ExportConfig, value: ExportFormat | boolean | string) => {
     setExportConfig(prev => ({
       ...prev,
       [key]: value

@@ -180,7 +180,7 @@ describe('ChordTimingAnnotator', () => {
     });
 
     it('should disable buttons when no sync state', () => {
-      mockUseAudioSync.syncState = null as any;
+      mockUseAudioSync.syncState = null;
 
       render(<ChordTimingAnnotator />);
 

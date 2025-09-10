@@ -3,12 +3,13 @@
  */
 
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import ComprehensiveAnalyticsDashboard from '../ComprehensiveAnalyticsDashboard';
 import UserActivityWidget from '../widgets/UserActivityWidget';
 import SongPopularityWidget from '../widgets/SongPopularityWidget';
 import PerformanceStatsWidget from '../widgets/PerformanceStatsWidget';
+import { useComprehensiveAnalytics, useRealTimeAnalytics } from '../../hooks/useComprehensiveAnalytics';
 
 // Mock the hooks
 vi.mock('../../hooks/useComprehensiveAnalytics', () => ({
@@ -120,9 +121,8 @@ describe('ComprehensiveAnalyticsDashboard', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    const { useComprehensiveAnalytics, useRealTimeAnalytics } = require('../../hooks/useComprehensiveAnalytics');
-    useComprehensiveAnalytics.mockReturnValue(mockHookReturn);
-    useRealTimeAnalytics.mockReturnValue({
+    (useComprehensiveAnalytics as vi.MockedFunction<typeof useComprehensiveAnalytics>).mockReturnValue(mockHookReturn);
+    (useRealTimeAnalytics as vi.MockedFunction<typeof useRealTimeAnalytics>).mockReturnValue({
       updates: [],
       isConnected: true
     });
@@ -138,8 +138,7 @@ describe('ComprehensiveAnalyticsDashboard', () => {
   });
 
   it('shows loading state', () => {
-    const { useComprehensiveAnalytics } = require('../../hooks/useComprehensiveAnalytics');
-    useComprehensiveAnalytics.mockReturnValue({
+    (useComprehensiveAnalytics as vi.MockedFunction<typeof useComprehensiveAnalytics>).mockReturnValue({
       ...mockHookReturn,
       loading: true,
       dashboardData: null
@@ -151,8 +150,7 @@ describe('ComprehensiveAnalyticsDashboard', () => {
   });
 
   it('shows error state', () => {
-    const { useComprehensiveAnalytics } = require('../../hooks/useComprehensiveAnalytics');
-    useComprehensiveAnalytics.mockReturnValue({
+    (useComprehensiveAnalytics as vi.MockedFunction<typeof useComprehensiveAnalytics>).mockReturnValue({
       ...mockHookReturn,
       loading: false,
       error: 'Failed to load analytics',

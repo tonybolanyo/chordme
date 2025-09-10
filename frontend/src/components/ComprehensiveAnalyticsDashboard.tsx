@@ -11,18 +11,18 @@
  * - Data export capabilities
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   useComprehensiveAnalytics,
-  useWidgetAnalytics,
   useRealTimeAnalytics
 } from '../hooks/useComprehensiveAnalytics';
 import {
   AnalyticsTimeframe,
   WidgetConfig,
   DashboardWidget,
-  AnalyticsExportConfig
+  AnalyticsExportConfig,
+  ComprehensiveDashboardData
 } from '../types/analytics';
 
 // Widget Components
@@ -69,13 +69,12 @@ const ComprehensiveAnalyticsDashboard: React.FC<ComprehensiveAnalyticsDashboardP
   });
 
   // Real-time updates
-  const { updates, isConnected } = useRealTimeAnalytics();
+  const { updates } = useRealTimeAnalytics();
 
   // Local state
   const [selectedTimeframe, setSelectedTimeframe] = useState<AnalyticsTimeframe>(initialTimeframe);
   const [isExporting, setIsExporting] = useState(false);
   const [showWidgetConfig, setShowWidgetConfig] = useState(false);
-  const [isCustomizing, setIsCustomizing] = useState(false);
 
   // Available timeframes
   const timeframes: { value: AnalyticsTimeframe; label: string }[] = [
@@ -102,10 +101,10 @@ const ComprehensiveAnalyticsDashboard: React.FC<ComprehensiveAnalyticsDashboardP
         include_sections: ['user_activity', 'song_popularity', 'collaboration_patterns', 'performance_statistics']
       };
       
-      const exportData = await exportData(exportConfig);
+      const exportedData = await exportData(exportConfig);
       
       // Create and download file
-      const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+      const blob = new Blob([JSON.stringify(exportedData, null, 2)], {
         type: format === 'json' ? 'application/json' : 'text/csv'
       });
       const url = URL.createObjectURL(blob);
@@ -472,7 +471,7 @@ function formatDuration(seconds: number): string {
   return `${minutes}m`;
 }
 
-function getWidgetData(widgetId: string, dashboardData: any): any {
+function getWidgetData(widgetId: string, dashboardData: ComprehensiveDashboardData | null): unknown {
   switch (widgetId) {
     case 'user_activity':
       return dashboardData?.user_activity;

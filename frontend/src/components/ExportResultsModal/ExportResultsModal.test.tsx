@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import ExportResultsModal from './ExportResultsModal';
-import { ExportConfig } from '../../types';
 
 describe('ExportResultsModal', () => {
   const mockOnClose = vi.fn();

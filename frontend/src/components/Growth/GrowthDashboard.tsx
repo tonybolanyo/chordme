@@ -4,7 +4,6 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { growthService } from '../../services/growthService';
 
 interface GrowthDashboardProps {
   className?: string;
