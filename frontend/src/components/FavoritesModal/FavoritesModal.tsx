@@ -20,7 +20,7 @@ const FavoritesModal: React.FC<FavoritesModalProps> = ({
   const [activeTab, setActiveTab] = useState<TabType>('songs');
   const [favoriteSongs, setFavoriteSongs] = useState<FavoriteSong[]>([]);
   const [favoriteQueries, setFavoriteQueries] = useState<FavoriteQuery[]>([]);
-  const [searchHistory, setSearchHistory] = useState<any[]>([]);
+  const [searchHistory, setSearchHistory] = useState<unknown[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   

@@ -78,9 +78,9 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({
     hover_zone: null,
   });
 
-  const [availableDataSources, setAvailableDataSources] = useState<any[]>([]);
+  const [availableDataSources, setAvailableDataSources] = useState<unknown[]>([]);
   const [previewData, setPreviewData] = useState<unknown>(null);
-  const [reportTemplates, setReportTemplates] = useState<any[]>([]);
+  const [reportTemplates, setReportTemplates] = useState<unknown[]>([]);
 
   const canvasRef = useRef<HTMLDivElement>(null);
 

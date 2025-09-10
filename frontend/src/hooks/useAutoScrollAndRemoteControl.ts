@@ -89,7 +89,7 @@ export function useAutoScrollAndRemoteControl(
   const [voiceControlState, setVoiceControlState] = useState(
     voiceControlService.getState()
   );
-  const [connectedDevices, setConnectedDevices] = useState<any[]>([]);
+  const [connectedDevices, setConnectedDevices] = useState<unknown[]>([]);
   const [lastRemoteCommand, setLastRemoteCommand] = useState<RemoteCommand>();
   const [lastVoiceResult, setLastVoiceResult] = useState<unknown>();
 
