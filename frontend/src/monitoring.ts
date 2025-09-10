@@ -105,7 +105,7 @@ class FrontendMonitoring {
   /**
    * Filter Sentry events to reduce noise
    */
-  private filterSentryEvent(event: unknown): any {
+  private filterSentryEvent(event: unknown): unknown {
     // Filter out development-only errors
     if (this.config.environment === 'development') {
       if (event.exception?.values?.[0]?.value?.includes('ResizeObserver loop limit exceeded')) {

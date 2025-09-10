@@ -22,7 +22,7 @@ export interface FilterState {
 }
 
 export type FilterAction =
-  | { type: 'SET_FILTER'; payload: { key: keyof SearchQuery; value: any } }
+  | { type: 'SET_FILTER'; payload: { key: keyof SearchQuery; value: string | number | boolean | string[] } }
   | { type: 'SET_FILTERS'; payload: SearchQuery }
   | { type: 'CLEAR_FILTERS' }
   | { type: 'SET_ADVANCED_MODE'; payload: boolean }
@@ -174,8 +174,8 @@ interface FilterContextType {
   sharePreset: (presetId: number, userEmail: string) => Promise<void>;
   
   // Search actions
-  search: () => Promise<any[]>;
-  searchWithFilters: (filters: SearchQuery) => Promise<any[]>;
+  search: () => Promise<unknown[]>;
+  searchWithFilters: (filters: SearchQuery) => Promise<unknown[]>;
   
   // Utility functions
   hasActiveFilters: () => boolean;
@@ -319,11 +319,11 @@ export function FilterProvider({ children }: FilterProviderProps): JSX.Element {
   }, [refreshPresets]);
 
   // Search actions
-  const search = useCallback(async (): Promise<any[]> => {
+  const search = useCallback(async (): Promise<unknown[]> => {
     return searchWithFilters(state.currentFilters);
   }, [state.currentFilters]);
 
-  const searchWithFilters = useCallback(async (filters: SearchQuery): Promise<any[]> => {
+  const searchWithFilters = useCallback(async (filters: SearchQuery): Promise<unknown[]> => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
       

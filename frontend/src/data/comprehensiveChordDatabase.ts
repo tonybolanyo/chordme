@@ -333,8 +333,6 @@ function generateSlashChords(): ChordDiagram[] {
   ];
   
   commonSlashChords.forEach(chordName => {
-    const [chordPart, bassNote] = chordName.split('/');
-    
     // Generate specific fingerings for common slash chords
     const positions = getSlashChordPositions(chordName);
     if (positions) {

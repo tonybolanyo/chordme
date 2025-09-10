@@ -274,7 +274,6 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
   const isPlaying = currentState === YouTubePlayerState.PLAYING;
-  const isPaused = currentState === YouTubePlayerState.PAUSED;
   const isBuffering = currentState === YouTubePlayerState.BUFFERING;
 
   return (

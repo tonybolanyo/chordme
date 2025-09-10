@@ -29,7 +29,7 @@ export class TuningService {
    */
   getAllTunings(instrument: InstrumentType = 'guitar'): TuningInfo[] {
     const commonTunings = Object.entries(COMMON_GUITAR_TUNINGS)
-      .filter(([_, tuning]) => tuning.instrument === instrument)
+      .filter(([ tuning]) => tuning.instrument === instrument)
       .map(([preset, tuning]) => this.createTuningInfo(preset as TuningPreset, tuning));
 
     const customTunings = Array.from(this.customTunings.values())

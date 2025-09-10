@@ -51,7 +51,7 @@ const PerformanceMonitoringDashboard: React.FC<PerformanceMonitoringDashboardPro
 }) => {
   const [performanceData, setPerformanceData] = useState<PerformanceStatus | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_isMonitoring, setIsMonitoring] = useState(false);
+  const [ setIsMonitoring] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [refreshInterval, setRefreshInterval] = useState(5000); // 5 seconds
   const [alerts, setAlerts] = useState<PerformanceAlert[]>([]);
