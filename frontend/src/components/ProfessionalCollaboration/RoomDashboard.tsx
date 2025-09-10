@@ -33,7 +33,7 @@ interface Props {
   onUpdate: () => void;
 }
 
-const RoomDashboard: React.FC<Props> = ({ room, onUpdate: _onUpdate }) => {
+const RoomDashboard: React.FC<Props> = ({ room }) => {
   const [dashboard, setDashboard] = useState<ActivityDashboard | null>(null);
   const [loading, setLoading] = useState(true);
 

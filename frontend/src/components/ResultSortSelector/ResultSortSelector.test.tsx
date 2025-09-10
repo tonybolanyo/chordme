@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import ResultSortSelector from './ResultSortSelector';
-import { SearchSortOption, SortDirection } from '../../types';
 
 describe('ResultSortSelector', () => {
   const mockOnSortChange = vi.fn();

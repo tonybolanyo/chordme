@@ -129,7 +129,7 @@ interface GanttChartProps {
   onTaskUpdate: (taskId: number, updates: unknown) => void;
 }
 
-const GanttChart: React.FC<GanttChartProps> = ({ data, viewMode, onTaskUpdate }) => {
+const GanttChart: React.FC<GanttChartProps> = ({ data, viewMode }) => {
   const startDate = new Date(data.timeline.start_date);
   const endDate = new Date(data.timeline.end_date);
   const totalDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
@@ -175,7 +175,7 @@ const GanttChart: React.FC<GanttChartProps> = ({ data, viewMode, onTaskUpdate })
       
       <div className="gantt-body">
         <div className="gantt-rows">
-          {data.tasks.map((task, index) => (
+          {data.tasks.map((task, _index) => (
             <div key={task.id} className="gantt-row">
               <div className="task-info">
                 <span className="task-name">{task.name}</span>
@@ -195,7 +195,7 @@ const GanttChart: React.FC<GanttChartProps> = ({ data, viewMode, onTaskUpdate })
             </div>
           ))}
           
-          {data.milestones.map((milestone, index) => (
+          {data.milestones.map((milestone, _index) => (
             <div key={milestone.id} className="gantt-row milestone-row">
               <div className="task-info">
                 <span className="milestone-name">🏁 {milestone.name}</span>

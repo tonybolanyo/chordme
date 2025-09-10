@@ -9,7 +9,6 @@ interface SpotifyAuthButtonProps {
 }
 
 export const SpotifyAuthButton: React.FC<SpotifyAuthButtonProps> = ({
-  onAuthSuccess: _onAuthSuccess,
   onAuthError,
   className = '',
 }) => {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Project, ProjectTask, ProjectMilestone, TimelineData } from '../../types/professionalCollaboration';
+import { Project } from '../../types/professionalCollaboration';
 import { professionalCollaborationService } from '../../services/professionalCollaborationService';
 import ProjectList from './ProjectList';
 import ProjectTimeline from './ProjectTimeline';

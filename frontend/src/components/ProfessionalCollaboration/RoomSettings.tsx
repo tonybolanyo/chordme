@@ -7,7 +7,7 @@ interface Props {
   onUpdate: () => void;
 }
 
-const RoomSettings: React.FC<Props> = ({ room, onUpdate }) => {
+const RoomSettings: React.FC<Props> = () => {
   return (
     <Box>
       <Typography variant="h5">Room Settings</Typography>

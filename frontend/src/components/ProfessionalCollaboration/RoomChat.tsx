@@ -6,7 +6,7 @@ interface Props {
   room: CollaborationRoom;
 }
 
-const RoomChat: React.FC<Props> = ({ room: _room }) => {
+const RoomChat: React.FC<Props> = () => {
   return (
     <Box>
       <Typography variant="h5">Room Chat</Typography>

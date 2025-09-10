@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import ResultViewSelector from './ResultViewSelector';
-import { SearchResultsViewMode } from '../../types';
 
 describe('ResultViewSelector', () => {
   const mockOnViewModeChange = vi.fn();

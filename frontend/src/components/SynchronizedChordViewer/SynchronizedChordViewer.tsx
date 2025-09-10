@@ -4,7 +4,7 @@
  */
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { ChordTimeMapping, AudioSource, SyncTimeline } from '../../types/audio';
+import { AudioSource, SyncTimeline } from '../../types/audio';
 import { useAudioSync } from '../../hooks/useAudioSync';
 import { useAutoScrollAndRemoteControl } from '../../hooks/useAutoScrollAndRemoteControl';
 import './SynchronizedChordViewer.css';
@@ -52,7 +52,6 @@ export const SynchronizedChordViewer: React.FC<SynchronizedChordViewerProps> = (
   } = useAudioSync();
 
   const {
-    isAutoScrollActive,
     isEmergencyStopped,
     handleChordChange,
     setScrollContainer,
