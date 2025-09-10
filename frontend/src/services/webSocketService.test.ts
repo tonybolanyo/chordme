@@ -33,7 +33,7 @@ describe('WebSocketService', () => {
   beforeEach(() => {
     // Get fresh mock instances
     const { io } = await import('socket.io-client');
-    mockIo = io as any;
+    mockIo = io as unknown;
     mockSocket = mockIo();
     
     mockEventHandlers = {};

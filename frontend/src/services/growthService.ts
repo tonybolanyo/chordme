@@ -333,10 +333,10 @@ export class GrowthService {
     if (currentIndex === -1) return false;
     
     // Show hint if this step is not completed but previous steps are
-    if ((progress as any)[step]) return false;
+    if ((progress as unknown)[step]) return false;
     
     for (let i = 0; i < currentIndex; i++) {
-      if (!(progress as any)[stepOrder[i]]) return false;
+      if (!(progress as unknown)[stepOrder[i]]) return false;
     }
     
     return true;

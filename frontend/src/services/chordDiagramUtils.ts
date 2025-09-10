@@ -160,7 +160,7 @@ export function createBarreChord(
 ): BarreChord {
   return {
     fret,
-    finger: finger as any,
+    finger: finger as unknown,
     startString,
     endString,
     isPartial
@@ -262,7 +262,7 @@ export function createStringPositionsFromPattern(
     positions.push({
       stringNumber,
       fret: fretNumber,
-      finger: finger as any
+      finger: finger as unknown
     });
   });
 
@@ -301,7 +301,7 @@ export function optimizeFingerAssignments(positions: StringPosition[]): StringPo
           p.stringNumber === pos.stringNumber && p.fret === pos.fret
         );
         if (index >= 0) {
-          optimized[index].finger = fingerCounter as any;
+          optimized[index].finger = fingerCounter as unknown;
           optimized[index].isBarre = true;
           optimized[index].barreSpan = positions.length;
         }
@@ -313,7 +313,7 @@ export function optimizeFingerAssignments(positions: StringPosition[]): StringPo
         p.stringNumber === pos.stringNumber && p.fret === pos.fret
       );
       if (index >= 0) {
-        optimized[index].finger = fingerCounter as any;
+        optimized[index].finger = fingerCounter as unknown;
       }
     }
     fingerCounter++;
@@ -372,7 +372,7 @@ export function tabToStringPositions(
     positions.push({
       stringNumber: i + 1,
       fret,
-      finger: finger as any
+      finger: finger as unknown
     });
   }
 

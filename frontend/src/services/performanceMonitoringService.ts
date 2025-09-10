@@ -176,7 +176,7 @@ class PerformanceMonitoringService {
       return; // Memory API not supported
     }
 
-    const memory = (performance as any).memory;
+    const memory = (performance as unknown).memory;
     const sessionDuration = Date.now() - this.sessionStartTime;
     
     const metric: MemoryMetrics = {

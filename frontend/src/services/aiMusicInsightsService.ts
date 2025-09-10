@@ -216,7 +216,7 @@ class AIMusicInsightsService {
         if (line.includes('start_of_')) {
           // Start new section
           currentSection = {
-            type: sectionType as any,
+            type: sectionType as unknown,
             number: sectionNumber,
             startLine: i,
             chords: [],

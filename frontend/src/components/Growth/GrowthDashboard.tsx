@@ -135,7 +135,7 @@ export const GrowthDashboard: React.FC<GrowthDashboardProps> = ({ className = ''
           ].map(tab => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id as unknown)}
               className={`
                 py-2 px-1 border-b-2 font-medium text-sm
                 ${activeTab === tab.id

@@ -512,7 +512,7 @@ export class SongSearchService {
     if (params.has('q')) query.q = params.get('q') || undefined;
     if (params.has('genre')) query.genre = params.get('genre') || undefined;
     if (params.has('key')) query.key = params.get('key') || undefined;
-    if (params.has('difficulty')) query.difficulty = params.get('difficulty') as any;
+    if (params.has('difficulty')) query.difficulty = params.get('difficulty') as unknown;
     if (params.has('language')) query.language = params.get('language') || undefined;
     if (params.has('timeSignature')) query.timeSignature = params.get('timeSignature') || undefined;
     if (params.has('tags')) {
@@ -533,7 +533,7 @@ export class SongSearchService {
     }
     if (params.has('dateFrom')) query.dateFrom = params.get('dateFrom') || undefined;
     if (params.has('dateTo')) query.dateTo = params.get('dateTo') || undefined;
-    if (params.has('dateField')) query.dateField = params.get('dateField') as any;
+    if (params.has('dateField')) query.dateField = params.get('dateField') as unknown;
 
     return query;
   }

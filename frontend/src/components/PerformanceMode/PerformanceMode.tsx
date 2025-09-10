@@ -53,9 +53,9 @@ export const PerformanceMode: React.FC<PerformanceModeProps> = ({
   const isFullscreenSupported = useCallback(() => {
     return !!(
       document.fullscreenEnabled ||
-      (document as any).webkitFullscreenEnabled ||
-      (document as any).mozFullScreenEnabled ||
-      (document as any).msFullscreenEnabled
+      (document as unknown).webkitFullscreenEnabled ||
+      (document as unknown).mozFullScreenEnabled ||
+      (document as unknown).msFullscreenEnabled
     );
   }, []);
 
@@ -66,12 +66,12 @@ export const PerformanceMode: React.FC<PerformanceModeProps> = ({
     try {
       if (containerRef.current.requestFullscreen) {
         await containerRef.current.requestFullscreen();
-      } else if ((containerRef.current as any).webkitRequestFullscreen) {
-        await (containerRef.current as any).webkitRequestFullscreen();
-      } else if ((containerRef.current as any).mozRequestFullScreen) {
-        await (containerRef.current as any).mozRequestFullScreen();
-      } else if ((containerRef.current as any).msRequestFullscreen) {
-        await (containerRef.current as any).msRequestFullscreen();
+      } else if ((containerRef.current as unknown).webkitRequestFullscreen) {
+        await (containerRef.current as unknown).webkitRequestFullscreen();
+      } else if ((containerRef.current as unknown).mozRequestFullScreen) {
+        await (containerRef.current as unknown).mozRequestFullScreen();
+      } else if ((containerRef.current as unknown).msRequestFullscreen) {
+        await (containerRef.current as unknown).msRequestFullscreen();
       }
     } catch (error) {
       console.error('Failed to enter fullscreen:', error);
@@ -83,12 +83,12 @@ export const PerformanceMode: React.FC<PerformanceModeProps> = ({
     try {
       if (document.exitFullscreen) {
         await document.exitFullscreen();
-      } else if ((document as any).webkitExitFullscreen) {
-        await (document as any).webkitExitFullscreen();
-      } else if ((document as any).mozCancelFullScreen) {
-        await (document as any).mozCancelFullScreen();
-      } else if ((document as any).msExitFullscreen) {
-        await (document as any).msExitFullscreen();
+      } else if ((document as unknown).webkitExitFullscreen) {
+        await (document as unknown).webkitExitFullscreen();
+      } else if ((document as unknown).mozCancelFullScreen) {
+        await (document as unknown).mozCancelFullScreen();
+      } else if ((document as unknown).msExitFullscreen) {
+        await (document as unknown).msExitFullscreen();
       }
     } catch (error) {
       console.error('Failed to exit fullscreen:', error);
@@ -108,9 +108,9 @@ export const PerformanceMode: React.FC<PerformanceModeProps> = ({
   const handleFullscreenChange = useCallback(() => {
     const isCurrentlyFullscreen = !!(
       document.fullscreenElement ||
-      (document as any).webkitFullscreenElement ||
-      (document as any).mozFullScreenElement ||
-      (document as any).msFullscreenElement
+      (document as unknown).webkitFullscreenElement ||
+      (document as unknown).mozFullScreenElement ||
+      (document as unknown).msFullscreenElement
     );
 
     setState(prev => ({

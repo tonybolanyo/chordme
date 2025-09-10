@@ -39,8 +39,8 @@ describe('SpotifyService', () => {
     sessionStorage.clear();
     
     // Reset location mock
-    delete (window as any).location;
-    window.location = { href: '' } as any;
+    delete (window as unknown).location;
+    window.location = { href: '' } as unknown;
   });
 
   afterEach(() => {

@@ -90,10 +90,10 @@ describe('SetlistBuilder', () => {
     vi.clearAllMocks();
     
     // Setup default mocks
-    (setlistService.getSetlist as any).mockResolvedValue(mockSetlist);
-    (setlistService.createSetlist as any).mockResolvedValue(mockSetlist);
-    (setlistService.searchSongs as any).mockResolvedValue(mockSongs);
-    (setlistService.addSongToSetlist as any).mockResolvedValue({
+    (setlistService.getSetlist as unknown).mockResolvedValue(mockSetlist);
+    (setlistService.createSetlist as unknown).mockResolvedValue(mockSetlist);
+    (setlistService.searchSongs as unknown).mockResolvedValue(mockSongs);
+    (setlistService.addSongToSetlist as unknown).mockResolvedValue({
       id: 'new-setlist-song',
       setlist_id: 'setlist-1',
       song_id: 'song-2',
@@ -145,7 +145,7 @@ describe('SetlistBuilder', () => {
 
   it('handles search functionality', async () => {
     const searchMock = vi.fn().mockResolvedValue([mockSongs[0]]);
-    (setlistService.searchSongs as any).mockImplementation(searchMock);
+    (setlistService.searchSongs as unknown).mockImplementation(searchMock);
     
     renderWithI18n(<SetlistBuilder setlistId="setlist-1" />);
     
@@ -219,7 +219,7 @@ describe('SetlistBuilder', () => {
 
   it('calls onCancel when error occurs and go back is clicked', async () => {
     const onCancel = vi.fn();
-    (setlistService.getSetlist as any).mockRejectedValue(new Error('Failed to load'));
+    (setlistService.getSetlist as unknown).mockRejectedValue(new Error('Failed to load'));
     
     renderWithI18n(<SetlistBuilder setlistId="setlist-1" onCancel={onCancel} />);
     
@@ -237,7 +237,7 @@ describe('SetlistBuilder', () => {
       ...mockSetlist,
       name: 'New Setlist'
     });
-    (setlistService.createSetlist as any).mockImplementation(createMock);
+    (setlistService.createSetlist as unknown).mockImplementation(createMock);
     
     renderWithI18n(<SetlistBuilder />);
     
@@ -288,8 +288,8 @@ describe('SetlistBuilder', () => {
       updated_at: '2023-01-01T00:00:00Z'
     };
     
-    (setlistService.getTemplate as any).mockResolvedValue(templateMock);
-    (setlistService.createSetlistFromTemplate as any).mockResolvedValue({
+    (setlistService.getTemplate as unknown).mockResolvedValue(templateMock);
+    (setlistService.createSetlistFromTemplate as unknown).mockResolvedValue({
       ...mockSetlist,
       name: 'Test Template - 1/1/2023'
     });

@@ -506,15 +506,15 @@ export class RemoteControlService {
   private async setupWebHID(): Promise<void> {
     try {
       // Request HID device access
-      const devices = await (navigator as any).hid.getDevices();
+      const devices = await (navigator as unknown).hid.getDevices();
       console.log('Available HID devices:', devices);
 
       // Listen for device connections
-      (navigator as any).hid.addEventListener('connect', (event: unknown) => {
+      (navigator as unknown).hid.addEventListener('connect', (event: unknown) => {
         this.handleHIDDeviceConnect(event.device);
       });
 
-      (navigator as any).hid.addEventListener('disconnect', (event: unknown) => {
+      (navigator as unknown).hid.addEventListener('disconnect', (event: unknown) => {
         this.handleHIDDeviceDisconnect(event.device);
       });
     } catch (error) {
@@ -532,7 +532,7 @@ export class RemoteControlService {
     };
 
     // Register the device
-    const deviceId = this.connectDevice(null as any, deviceInfo);
+    const deviceId = this.connectDevice(null as unknown, deviceInfo);
     
     // Set up input event handling
     device.addEventListener('inputreport', (event: unknown) => {

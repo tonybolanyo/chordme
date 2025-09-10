@@ -375,8 +375,8 @@ function getMemoryUsage(): number {
   }
   
   // Fallback for browser environments
-  if (typeof performance !== 'undefined' && (performance as any).memory) {
-    return (performance as any).memory.usedJSHeapSize;
+  if (typeof performance !== 'undefined' && (performance as unknown).memory) {
+    return (performance as unknown).memory.usedJSHeapSize;
   }
   
   return 0;

@@ -79,7 +79,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({
   });
 
   const [availableDataSources, setAvailableDataSources] = useState<any[]>([]);
-  const [previewData, setPreviewData] = useState<any>(null);
+  const [previewData, setPreviewData] = useState<unknown>(null);
   const [reportTemplates, setReportTemplates] = useState<any[]>([]);
 
   const canvasRef = useRef<HTMLDivElement>(null);

@@ -310,7 +310,7 @@ describe('useAudioSync', () => {
     });
 
     it('should add chord annotation', () => {
-      vi.mocked(audioEngine.getState).mockReturnValue({ currentTime: 5 } as any);
+      vi.mocked(audioEngine.getState).mockReturnValue({ currentTime: 5 } as unknown);
 
       const { result } = renderHook(() => useAudioSync());
 

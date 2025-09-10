@@ -614,7 +614,7 @@ class CrossPlatformMusicService {
     resolved.album = spotifyTrack?.album.name || appleMusicTrack!.attributes.albumName;
     resolved.releaseDate = spotifyTrack?.album.release_date || appleMusicTrack?.attributes.releaseDate;
     resolved.genres = appleMusicTrack?.attributes.genreNames || [];
-    resolved.isrc = (spotifyTrack as any)?.external_ids?.isrc || appleMusicTrack?.attributes.isrc;
+    resolved.isrc = (spotifyTrack as unknown)?.external_ids?.isrc || appleMusicTrack?.attributes.isrc;
     resolved.artwork = this.getBestArtwork(spotifyTrack, appleMusicTrack);
     resolved.previewUrls = {
       spotify: spotifyTrack?.preview_url,

@@ -202,7 +202,7 @@ const SongSearch: React.FC<SongSearchProps> = ({
         q: searchQuery.trim() || undefined,
         genre: filters.genre || undefined,
         key: filters.key || undefined,
-        difficulty: filters.difficulty as any || undefined,
+        difficulty: filters.difficulty as unknown || undefined,
         language: filters.language || undefined,
         tags: filters.tags.length > 0 ? filters.tags : undefined,
         minTempo: filters.minTempo ? parseInt(filters.minTempo) : undefined,

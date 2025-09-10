@@ -164,7 +164,7 @@ export const AudioSyncDemo: React.FC = () => {
           <label>View Mode:</label>
           <select 
             value={viewMode} 
-            onChange={(e) => setViewMode(e.target.value as any)}
+            onChange={(e) => setViewMode(e.target.value as unknown)}
             className="view-mode-select"
           >
             <option value="split">Split View</option>

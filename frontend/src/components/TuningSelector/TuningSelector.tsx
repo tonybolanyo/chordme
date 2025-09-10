@@ -412,7 +412,7 @@ const CustomTuningModal: React.FC<CustomTuningModalProps> = ({
           <select
             id="tuning-difficulty"
             value={difficulty}
-            onChange={(e) => setDifficulty(e.target.value as any)}
+            onChange={(e) => setDifficulty(e.target.value as unknown)}
           >
             <option value="easy">Easy</option>
             <option value="medium">Medium</option>

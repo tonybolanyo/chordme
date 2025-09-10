@@ -97,7 +97,7 @@ export class VoiceControlService {
     try {
       const SpeechRecognitionClass = 
         window.SpeechRecognition || 
-        (window as any).webkitSpeechRecognition;
+        (window as unknown).webkitSpeechRecognition;
       
       this.recognition = new SpeechRecognitionClass();
       this.setupRecognitionHandlers();

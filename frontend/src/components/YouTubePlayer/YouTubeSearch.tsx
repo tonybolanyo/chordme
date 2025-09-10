@@ -153,7 +153,7 @@ export const YouTubeSearch: React.FC<YouTubeSearchProps> = ({
               <select
                 className="youtube-search__filter"
                 value={searchParams.order}
-                onChange={(e) => setSearchParams(prev => ({ ...prev, order: e.target.value as any }))}
+                onChange={(e) => setSearchParams(prev => ({ ...prev, order: e.target.value as unknown }))}
               >
                 <option value="relevance">Most Relevant</option>
                 <option value="date">Newest</option>
@@ -165,7 +165,7 @@ export const YouTubeSearch: React.FC<YouTubeSearchProps> = ({
               <select
                 className="youtube-search__filter"
                 value={searchParams.videoDuration}
-                onChange={(e) => setSearchParams(prev => ({ ...prev, videoDuration: e.target.value as any }))}
+                onChange={(e) => setSearchParams(prev => ({ ...prev, videoDuration: e.target.value as unknown }))}
               >
                 <option value="any">Any Duration</option>
                 <option value="short">Under 4 minutes</option>
@@ -176,7 +176,7 @@ export const YouTubeSearch: React.FC<YouTubeSearchProps> = ({
               <select
                 className="youtube-search__filter"
                 value={searchParams.videoDefinition}
-                onChange={(e) => setSearchParams(prev => ({ ...prev, videoDefinition: e.target.value as any }))}
+                onChange={(e) => setSearchParams(prev => ({ ...prev, videoDefinition: e.target.value as unknown }))}
               >
                 <option value="any">Any Quality</option>
                 <option value="high">HD</option>

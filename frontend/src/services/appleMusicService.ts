@@ -208,7 +208,7 @@ class AppleMusicService {
     };
 
     if (params.l) {
-      (searchParams as any).l = params.l;
+      (searchParams as unknown).l = params.l;
     }
 
     try {

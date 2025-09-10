@@ -63,7 +63,7 @@ describe('YouTubeService', () => {
     youtubeService = new YouTubeService();
     
     // Set up global YT mock
-    (global as any).window = {
+    (global as unknown).window = {
       YT: mockYT,
       onYouTubeIframeAPIReady: undefined,
       location: { origin: 'http://localhost:3000' },
@@ -85,8 +85,8 @@ describe('YouTubeService', () => {
       
       // Mock successful initialization
       setTimeout(() => {
-        if ((global as any).window.onYouTubeIframeAPIReady) {
-          (global as any).window.onYouTubeIframeAPIReady();
+        if ((global as unknown).window.onYouTubeIframeAPIReady) {
+          (global as unknown).window.onYouTubeIframeAPIReady();
         }
       }, 5);
 
@@ -110,8 +110,8 @@ describe('YouTubeService', () => {
       
       // Mock successful initialization
       setTimeout(() => {
-        if ((global as any).window.onYouTubeIframeAPIReady) {
-          (global as any).window.onYouTubeIframeAPIReady();
+        if ((global as unknown).window.onYouTubeIframeAPIReady) {
+          (global as unknown).window.onYouTubeIframeAPIReady();
         }
       }, 5);
 
@@ -126,8 +126,8 @@ describe('YouTubeService', () => {
     beforeEach(async () => {
       // Initialize service first
       setTimeout(() => {
-        if ((global as any).window.onYouTubeIframeAPIReady) {
-          (global as any).window.onYouTubeIframeAPIReady();
+        if ((global as unknown).window.onYouTubeIframeAPIReady) {
+          (global as unknown).window.onYouTubeIframeAPIReady();
         }
       }, 5);
       
@@ -192,8 +192,8 @@ describe('YouTubeService', () => {
     beforeEach(async () => {
       // Initialize service first
       setTimeout(() => {
-        if ((global as any).window.onYouTubeIframeAPIReady) {
-          (global as any).window.onYouTubeIframeAPIReady();
+        if ((global as unknown).window.onYouTubeIframeAPIReady) {
+          (global as unknown).window.onYouTubeIframeAPIReady();
         }
       }, 5);
       
@@ -310,8 +310,8 @@ describe('YouTubeService', () => {
     beforeEach(async () => {
       // Initialize service first
       setTimeout(() => {
-        if ((global as any).window.onYouTubeIframeAPIReady) {
-          (global as any).window.onYouTubeIframeAPIReady();
+        if ((global as unknown).window.onYouTubeIframeAPIReady) {
+          (global as unknown).window.onYouTubeIframeAPIReady();
         }
       }, 5);
       
@@ -393,8 +393,8 @@ describe('YouTubeService', () => {
     beforeEach(async () => {
       // Initialize service and create player
       setTimeout(() => {
-        if ((global as any).window.onYouTubeIframeAPIReady) {
-          (global as any).window.onYouTubeIframeAPIReady();
+        if ((global as unknown).window.onYouTubeIframeAPIReady) {
+          (global as unknown).window.onYouTubeIframeAPIReady();
         }
       }, 5);
       
@@ -457,8 +457,8 @@ describe('YouTubeService', () => {
     beforeEach(async () => {
       // Initialize service and create player
       setTimeout(() => {
-        if ((global as any).window.onYouTubeIframeAPIReady) {
-          (global as any).window.onYouTubeIframeAPIReady();
+        if ((global as unknown).window.onYouTubeIframeAPIReady) {
+          (global as unknown).window.onYouTubeIframeAPIReady();
         }
       }, 5);
       
@@ -484,8 +484,8 @@ describe('YouTubeService', () => {
     beforeEach(async () => {
       // Initialize service and create player
       setTimeout(() => {
-        if ((global as any).window.onYouTubeIframeAPIReady) {
-          (global as any).window.onYouTubeIframeAPIReady();
+        if ((global as unknown).window.onYouTubeIframeAPIReady) {
+          (global as unknown).window.onYouTubeIframeAPIReady();
         }
       }, 5);
       
@@ -539,8 +539,8 @@ describe('YouTubeService', () => {
     it('should cleanup all resources', async () => {
       // Initialize service and create player
       setTimeout(() => {
-        if ((global as any).window.onYouTubeIframeAPIReady) {
-          (global as any).window.onYouTubeIframeAPIReady();
+        if ((global as unknown).window.onYouTubeIframeAPIReady) {
+          (global as unknown).window.onYouTubeIframeAPIReady();
         }
       }, 5);
       

@@ -66,7 +66,7 @@ describe('CrossPlatformMusicService', () => {
         targetPlatform: 'apple-music',
       };
 
-      (appleMusicService.search as any).mockResolvedValue({
+      (appleMusicService.search as unknown).mockResolvedValue({
         results: {
           songs: {
             data: [
@@ -85,7 +85,7 @@ describe('CrossPlatformMusicService', () => {
         },
       });
 
-      (appleMusicService.convertToPlatformTrack as any).mockReturnValue(mockAppleMusicTrack);
+      (appleMusicService.convertToPlatformTrack as unknown).mockReturnValue(mockAppleMusicTrack);
 
       const result = await crossPlatformMusicService.matchTrack(request);
 
@@ -105,7 +105,7 @@ describe('CrossPlatformMusicService', () => {
         targetPlatform: 'apple-music',
       };
 
-      (appleMusicService.search as any).mockResolvedValue({
+      (appleMusicService.search as unknown).mockResolvedValue({
         results: {
           songs: {
             data: [
@@ -123,7 +123,7 @@ describe('CrossPlatformMusicService', () => {
         },
       });
 
-      (appleMusicService.convertToPlatformTrack as any).mockReturnValue(appleMusicTrackWithoutISRC);
+      (appleMusicService.convertToPlatformTrack as unknown).mockReturnValue(appleMusicTrackWithoutISRC);
 
       const result = await crossPlatformMusicService.matchTrack(request);
 
@@ -148,7 +148,7 @@ describe('CrossPlatformMusicService', () => {
         durationMs: 120000,
       };
 
-      (appleMusicService.search as any).mockResolvedValue({
+      (appleMusicService.search as unknown).mockResolvedValue({
         results: {
           songs: {
             data: [
@@ -166,7 +166,7 @@ describe('CrossPlatformMusicService', () => {
         },
       });
 
-      (appleMusicService.convertToPlatformTrack as any).mockReturnValue(poorMatch);
+      (appleMusicService.convertToPlatformTrack as unknown).mockReturnValue(poorMatch);
 
       const result = await crossPlatformMusicService.matchTrack(request);
 
@@ -188,7 +188,7 @@ describe('CrossPlatformMusicService', () => {
 
       const trackWithoutISRC = { ...mockAppleMusicTrack, isrc: undefined };
 
-      (appleMusicService.search as any).mockResolvedValue({
+      (appleMusicService.search as unknown).mockResolvedValue({
         results: {
           songs: {
             data: [
@@ -206,7 +206,7 @@ describe('CrossPlatformMusicService', () => {
         },
       });
 
-      (appleMusicService.convertToPlatformTrack as any).mockReturnValue(trackWithoutISRC);
+      (appleMusicService.convertToPlatformTrack as unknown).mockReturnValue(trackWithoutISRC);
 
       const result = await crossPlatformMusicService.matchTrack(request);
 
@@ -222,7 +222,7 @@ describe('CrossPlatformMusicService', () => {
         targetPlatform: 'apple-music',
       };
 
-      (appleMusicService.search as any).mockResolvedValue({ results: { songs: { data: [] } } });
+      (appleMusicService.search as unknown).mockResolvedValue({ results: { songs: { data: [] } } });
 
       await crossPlatformMusicService.matchTrack(request);
 
@@ -240,7 +240,7 @@ describe('CrossPlatformMusicService', () => {
         targetPlatform: 'apple-music',
       };
 
-      (appleMusicService.search as any).mockResolvedValue({ results: { songs: { data: [] } } });
+      (appleMusicService.search as unknown).mockResolvedValue({ results: { songs: { data: [] } } });
 
       await crossPlatformMusicService.matchTrack(request);
 
@@ -254,7 +254,7 @@ describe('CrossPlatformMusicService', () => {
 
   describe('String Similarity', () => {
     it('should calculate string similarity correctly', () => {
-      const service = crossPlatformMusicService as any;
+      const service = crossPlatformMusicService as unknown;
 
       // Identical strings
       expect(service.calculateStringSimilarity('test', 'test')).toBe(1);
@@ -273,7 +273,7 @@ describe('CrossPlatformMusicService', () => {
     });
 
     it('should normalize strings for comparison', () => {
-      const service = crossPlatformMusicService as any;
+      const service = crossPlatformMusicService as unknown;
 
       expect(service.normalizeString('Test Song!')).toBe('test song');
       expect(service.normalizeString('  Multiple   Spaces  ')).toBe('multiple spaces');
@@ -283,7 +283,7 @@ describe('CrossPlatformMusicService', () => {
 
   describe('Platform Conversion', () => {
     it('should convert Spotify track to platform format', () => {
-      const service = crossPlatformMusicService as any;
+      const service = crossPlatformMusicService as unknown;
       const spotifyTrack = {
         id: '123',
         name: 'Test Song',
@@ -356,7 +356,7 @@ describe('CrossPlatformMusicService', () => {
       };
 
       const result = await crossPlatformMusicService.createUnifiedMetadata(
-        spotifyTrack as any,
+        spotifyTrack as unknown,
         appleMusicTrack
       );
 
@@ -402,7 +402,7 @@ describe('CrossPlatformMusicService', () => {
       };
 
       const result = await crossPlatformMusicService.createUnifiedMetadata(
-        spotifyTrack as any,
+        spotifyTrack as unknown,
         appleMusicTrack
       );
 
@@ -418,7 +418,7 @@ describe('CrossPlatformMusicService', () => {
     it('should process multiple tracks in batches', async () => {
       const tracks = [mockSpotifyTrack, { ...mockSpotifyTrack, id: 'spotify456' }];
 
-      (appleMusicService.search as any).mockResolvedValue({
+      (appleMusicService.search as unknown).mockResolvedValue({
         results: { songs: { data: [] } },
       });
 
@@ -434,7 +434,7 @@ describe('CrossPlatformMusicService', () => {
     it('should handle failed matches in batch', async () => {
       const tracks = [mockSpotifyTrack];
 
-      (appleMusicService.search as any).mockRejectedValue(new Error('Search failed'));
+      (appleMusicService.search as unknown).mockRejectedValue(new Error('Search failed'));
 
       const results = await crossPlatformMusicService.batchMatchTracks(
         tracks,
@@ -455,7 +455,7 @@ describe('CrossPlatformMusicService', () => {
         targetPlatform: 'apple-music',
       };
 
-      (appleMusicService.search as any).mockRejectedValue(new Error('API Error'));
+      (appleMusicService.search as unknown).mockRejectedValue(new Error('API Error'));
 
       await expect(crossPlatformMusicService.matchTrack(request)).rejects.toThrow(
         'Failed to match track on apple-music'

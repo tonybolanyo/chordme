@@ -56,7 +56,7 @@ const ChordDiagramSearchDemo: React.FC = () => {
           <select
             id="dataset-select"
             value={selectedDataset}
-            onChange={(e) => setSelectedDataset(e.target.value as any)}
+            onChange={(e) => setSelectedDataset(e.target.value as unknown)}
           >
             <option value="all">All Instruments ({ALL_SAMPLE_CHORDS.length} chords)</option>
             <option value="guitar">Guitar Only ({SAMPLE_GUITAR_CHORDS.length} chords)</option>

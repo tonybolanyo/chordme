@@ -16,7 +16,7 @@ vi.mock('../services/spotifyService', () => ({
   },
 }));
 
-const mockSpotifyService = spotifyService as any;
+const mockSpotifyService = spotifyService as unknown;
 
 describe('SpotifyAuthButton', () => {
   const mockUserProfile: SpotifyUserProfile = {

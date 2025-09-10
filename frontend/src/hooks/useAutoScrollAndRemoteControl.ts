@@ -91,7 +91,7 @@ export function useAutoScrollAndRemoteControl(
   );
   const [connectedDevices, setConnectedDevices] = useState<any[]>([]);
   const [lastRemoteCommand, setLastRemoteCommand] = useState<RemoteCommand>();
-  const [lastVoiceResult, setLastVoiceResult] = useState<any>();
+  const [lastVoiceResult, setLastVoiceResult] = useState<unknown>();
 
   // Refs
   const currentAudioSource = useRef<AudioSource | null>(null);
@@ -256,7 +256,7 @@ export function useAutoScrollAndRemoteControl(
     // Convert voice command to remote command and execute
     const remoteCommand: RemoteCommand = {
       id: `voice_${Date.now()}`,
-      type: data.command.action as any,
+      type: data.command.action as unknown,
       payload: data.command.parameters,
       timestamp: Date.now(),
       deviceId: 'voice',

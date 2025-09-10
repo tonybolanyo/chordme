@@ -202,7 +202,7 @@ describe('NotificationToast', () => {
   it('handles unknown notification type gracefully', () => {
     const unknownNotification: SharingNotification = {
       ...mockNotification,
-      type: 'unknown_type' as any,
+      type: 'unknown_type' as unknown,
     };
 
     render(

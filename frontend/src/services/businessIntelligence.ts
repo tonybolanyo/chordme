@@ -504,7 +504,7 @@ class BusinessIntelligenceService {
    * Preview report data before generation
    */
   async previewReport(config: ReportConfig): Promise<unknown> {
-    const response = await apiCall<BIApiResponse<any>>(
+    const response = await apiCall<BIApiResponse<unknown>>(
       `${this.baseUrl}/reports/preview`,
       {
         method: 'POST',

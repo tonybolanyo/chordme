@@ -31,7 +31,7 @@ export interface MonitoringConfig {
 
 class FrontendMonitoring {
   private config: MonitoringConfig;
-  private errors: Array<any> = [];
+  private errors: Array<unknown> = [];
   private performanceMetrics: Array<PerformanceMetric> = [];
   private userId?: string;
 

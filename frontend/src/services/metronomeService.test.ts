@@ -448,7 +448,7 @@ describe('MetronomeService', () => {
       
       // Create metronome with no audio context
       const brokenMetronome = new MetronomeService();
-      (brokenMetronome as any).audioContext = null;
+      (brokenMetronome as unknown).audioContext = null;
       
       brokenMetronome.start();
       

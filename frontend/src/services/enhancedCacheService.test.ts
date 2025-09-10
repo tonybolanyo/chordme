@@ -309,7 +309,7 @@ describe('EnhancedCacheService', () => {
       localStorageMock.setItem('cache:loaded-key', JSON.stringify(cacheEntry));
       
       // Create new cache service instance (simulating page reload)
-      const newCacheService = new (enhancedCacheService.constructor as any)();
+      const newCacheService = new (enhancedCacheService.constructor as unknown)();
       
       expect(newCacheService.get('loaded-key')).toBe('loaded-value');
     });
@@ -328,7 +328,7 @@ describe('EnhancedCacheService', () => {
       localStorageMock.setItem('cache:expired-key', JSON.stringify(expiredEntry));
       
       // Create new cache service instance
-      const newCacheService = new (enhancedCacheService.constructor as any)();
+      const newCacheService = new (enhancedCacheService.constructor as unknown)();
       
       expect(newCacheService.get('expired-key')).toBeNull();
       expect(localStorageMock.getItem('cache:expired-key')).toBeNull();
@@ -421,7 +421,7 @@ describe('EnhancedCacheService', () => {
       
       // Should not throw error when creating new instance
       expect(() => {
-        new (enhancedCacheService.constructor as any)();
+        new (enhancedCacheService.constructor as unknown)();
       }).not.toThrow();
       
       expect(consoleSpy).toHaveBeenCalled();

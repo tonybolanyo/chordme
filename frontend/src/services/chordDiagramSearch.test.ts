@@ -413,7 +413,7 @@ describe('Enhanced Chord Diagram Search', () => {
         ...createChordDiagram(`Chord${i}`, 'guitar', [
           { stringNumber: 1, fret: i % 12, finger: 1 }
         ]),
-        difficulty: ['beginner', 'intermediate', 'advanced'][i % 3] as any
+        difficulty: ['beginner', 'intermediate', 'advanced'][i % 3] as unknown
       }));
 
       const startTime = performance.now();
