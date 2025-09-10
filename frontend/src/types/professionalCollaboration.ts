@@ -22,8 +22,8 @@ export interface CollaborationRoom {
   last_activity?: string;
   
   // Settings and metadata
-  settings: Record<string, any>;
-  metadata: Record<string, any>;
+  settings: Record<string, unknown>;
+  metadata: Record<string, unknown>;
   
   // Timestamps
   created_at: string;
@@ -67,7 +67,7 @@ export interface RoomResource {
   description?: string;
   resource_type: 'document' | 'audio' | 'video' | 'chord_chart' | 'setlist';
   content_url?: string;
-  content_data?: any;
+  content_data?: unknown;
   file_size?: number;
   mime_type?: string;
   category?: string;
@@ -217,7 +217,7 @@ export interface CreateResourceRequest {
   description?: string;
   resource_type: 'document' | 'audio' | 'video' | 'chord_chart' | 'setlist';
   content_url?: string;
-  content_data?: any;
+  content_data?: unknown;
   category?: string;
   tags?: string[];
   access_level?: 'room' | 'band_leader_only' | 'member_plus';
@@ -419,8 +419,8 @@ export interface ActivitySummary {
 export interface DashboardChart {
   type: 'line' | 'bar' | 'pie' | 'doughnut';
   title: string;
-  data: any; // Chart.js compatible data
-  options?: any; // Chart.js compatible options
+  data: Record<string, unknown>; // Chart.js compatible data
+  options?: Record<string, unknown>; // Chart.js compatible options
 }
 
 export interface RecentActivity {

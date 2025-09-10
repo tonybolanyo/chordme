@@ -315,7 +315,7 @@ export interface MusicInsightsError {
   /** Error message */
   message: string;
   /** Additional error details */
-  details?: any;
+  details?: Record<string, unknown>;
 }
 
 export interface MusicInsightsOptions {

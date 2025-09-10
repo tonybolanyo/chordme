@@ -114,11 +114,6 @@ const PerformanceMonitoringDashboard: React.FC<PerformanceMonitoringDashboardPro
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const _formatDuration = (ms: number) => {
-    if (ms < 1000) return `${Math.round(ms)}ms`;
-    return `${(ms / 1000).toFixed(2)}s`;
-  };
-
   return (
     <div className="performance-monitoring-dashboard">
       <div className="dashboard-header">

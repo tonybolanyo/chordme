@@ -55,6 +55,8 @@ export const DailyChallenges: React.FC<DailyChallengesProps> = ({ className = ''
     }
   };
 
+  // getChallengeIcon is used in the render logic below
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getChallengeIcon = React.useCallback((type: string) => {
     const icons = {
       practice_time: '⏱️',
