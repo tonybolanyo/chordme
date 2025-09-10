@@ -4,7 +4,7 @@
  * smart scrolling that follows song structure, and tempo synchronization
  */
 
-import { ChordTimeMapping, SyncTimeline, TempoMapping } from '../types/audio';
+import { ChordTimeMapping } from '../types/audio';
 
 export interface AutoScrollConfig {
   enabled: boolean;

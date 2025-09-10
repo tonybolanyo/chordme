@@ -147,11 +147,11 @@ export function useAutoScrollAndRemoteControl(
   }, []);
 
   // Auto-scroll event handlers
-  const handleAutoScrollConfigUpdate = useCallback((data: unknown) => {
+  const handleAutoScrollConfigUpdate = useCallback((data: any) => {
     setAutoScrollConfig(data.config);
   }, []);
 
-  const handleScrollComplete = useCallback((data: unknown) => {
+  const handleScrollComplete = useCallback(() => {
     setIsAutoScrollActive(false);
   }, []);
 
@@ -160,7 +160,7 @@ export function useAutoScrollAndRemoteControl(
     setIsAutoScrollActive(false);
   }, []);
 
-  const handleManualOverride = useCallback((data: unknown) => {
+  const handleManualOverride = useCallback((data: any) => {
     setIsManualOverrideActive(data.active);
   }, []);
 
@@ -172,23 +172,23 @@ export function useAutoScrollAndRemoteControl(
   }, [handleAutoScrollConfigUpdate, handleScrollComplete, handleAutoScrollEmergencyStop, handleManualOverride]);
 
   // Remote control event handlers
-  const handleRemoteControlConfigUpdate = useCallback((data: unknown) => {
+  const handleRemoteControlConfigUpdate = useCallback((data: any) => {
     setRemoteControlConfig(data.config);
   }, []);
 
-  const handleRemoteControlServerStarted = useCallback((data: unknown) => {
+  const handleRemoteControlServerStarted = useCallback(() => {
     setRemoteControlState(remoteControlService.getState());
   }, []);
 
-  const handleDeviceConnected = useCallback((data: unknown) => {
+  const handleDeviceConnected = useCallback(() => {
     setConnectedDevices(remoteControlService.getState().connectedDevices);
   }, []);
 
-  const handleDeviceDisconnected = useCallback((data: unknown) => {
+  const handleDeviceDisconnected = useCallback(() => {
     setConnectedDevices(remoteControlService.getState().connectedDevices);
   }, []);
 
-  const handleRemoteCommandExecuted = useCallback((data: unknown) => {
+  const handleRemoteCommandExecuted = useCallback((data: any) => {
     setLastRemoteCommand(data.command);
   }, []);
 
@@ -205,7 +205,7 @@ export function useAutoScrollAndRemoteControl(
       updateAutoScrollConfig(newConfig);
     });
 
-    remoteControlService.addEventListener('command:autoScrollSpeed', (data: unknown) => {
+    remoteControlService.addEventListener('command:autoScrollSpeed', (data: any) => {
       const speed = data.speed || data.value || 1.0;
       updateAutoScrollConfig({ speed: Math.max(0.1, Math.min(5.0, speed)) });
     });
@@ -243,16 +243,16 @@ export function useAutoScrollAndRemoteControl(
   }, [autoScrollConfig]);
 
   // Voice control event handlers
-  const handleVoiceControlConfigUpdate = useCallback((data: unknown) => {
+  const handleVoiceControlConfigUpdate = useCallback((data: any) => {
     setVoiceControlConfig(data.config);
   }, []);
 
-  const handleVoiceResult = useCallback((data: unknown) => {
+  const handleVoiceResult = useCallback((data: any) => {
     setLastVoiceResult(data.result);
     setVoiceControlState(voiceControlService.getState());
   }, []);
 
-  const handleVoiceCommandRecognized = useCallback((data: unknown) => {
+  const handleVoiceCommandRecognized = useCallback((data: any) => {
     // Convert voice command to remote command and execute
     const remoteCommand: RemoteCommand = {
       id: `voice_${Date.now()}`,

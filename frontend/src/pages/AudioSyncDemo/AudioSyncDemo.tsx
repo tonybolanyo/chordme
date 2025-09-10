@@ -7,7 +7,7 @@ import React, { useState, useCallback } from 'react';
 import { ChordTimingAnnotator } from '../../components/ChordTimingAnnotator';
 import { SynchronizedChordViewer } from '../../components/SynchronizedChordViewer';
 import { useAudioSync } from '../../hooks/useAudioSync';
-import { AudioSource, ChordTimeMapping, SyncTimeline } from '../../types/audio';
+import { AudioSource, ChordTimeMapping } from '../../types/audio';
 import './AudioSyncDemo.css';
 
 const sampleChordProContent = `{title: Amazing Grace}

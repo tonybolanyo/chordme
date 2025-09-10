@@ -8,7 +8,6 @@ import {
   ViewModeSelector,
 } from '../components';
 import { 
-  transposeChordProContent,
   transposeChordProContentWithKey,
   detectKeySignature
 } from '../services/chordService';

@@ -11,11 +11,9 @@ import {
   setlistCollaborationService,
 } from '../services/setlistCollaborationService';
 import type {
-  Setlist,
   SetlistSong,
   SetlistComment,
   SetlistTask,
-  BandMember,
   MobileCoordinationState,
 } from '../types/setlist';
 
@@ -435,8 +433,8 @@ export function useSetlistCollaboration(
 
   // External sharing
   const createExternalShare = useCallback(async (
-    shareType: string,
-    options: {
+    _shareType: string,
+    _options: {
       accessLevel: string;
       expiresAt?: Date;
       recipientEmail?: string;

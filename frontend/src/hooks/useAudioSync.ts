@@ -86,7 +86,6 @@ const defaultAutoDetectionConfig: AutoDetectionConfig = {
 
 export function useAudioSync(options: UseAudioSyncOptions = {}): UseAudioSyncReturn {
   const {
-    autoLoad = false,
     enablePracticeMode = true,
     defaultTolerance = 50,
   } = options;
@@ -135,16 +134,16 @@ export function useAudioSync(options: UseAudioSyncOptions = {}): UseAudioSyncRet
       setTimeline(event.timeline);
     };
 
-    const handleAnnotationAdded = (event: unknown) => {
+    const handleAnnotationAdded = () => {
       // Update timeline state if needed
       updateTimelineState();
     };
 
-    const handleAnnotationUpdated = (event: unknown) => {
+    const handleAnnotationUpdated = () => {
       updateTimelineState();
     };
 
-    const handleAnnotationRemoved = (event: unknown) => {
+    const handleAnnotationRemoved = () => {
       updateTimelineState();
     };
 
@@ -205,7 +204,7 @@ export function useAudioSync(options: UseAudioSyncOptions = {}): UseAudioSyncRet
     try {
       const exportedTimeline = audioEngine.exportSyncData();
       setTimeline(exportedTimeline);
-    } catch (error) {
+    } catch {
       // Timeline might not be available yet
     }
   }, []);
