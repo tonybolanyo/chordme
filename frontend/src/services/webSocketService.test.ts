@@ -26,7 +26,7 @@ import { useWebSocketConnection, useWebSocketRoom, useWebSocketCollaboration } f
 
 describe('WebSocketService', () => {
   let service: WebSocketService;
-  let mockEventHandlers: Record<string, Function>;
+  let mockEventHandlers: Record<string, (...args: unknown[]) => unknown>;
   let mockSocket: unknown;
   let mockIo: unknown;
 

@@ -62,7 +62,7 @@ export class AutoScrollService {
   private lastScrollTime = 0;
   private scrollContainer: HTMLElement | null = null;
   private smartContext: SmartScrollContext | null = null;
-  private eventListeners = new Map<string, Set<Function>>();
+  private eventListeners = new Map<string, Set<(...args: unknown[]) => unknown>>();
 
   constructor() {
     this.initialize();

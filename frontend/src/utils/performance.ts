@@ -387,7 +387,7 @@ export const performanceUtils = {
   /**
    * Measure function execution time
    */
-  measureFunction: <T>(fn: () => T, name: string): T => {
+  measure(...args: unknown[]) => unknown: <T>(fn: () => T, name: string): T => {
     const start = performance.now();
     const result = fn();
     const duration = performance.now() - start;
@@ -400,7 +400,7 @@ export const performanceUtils = {
   /**
    * Measure async function execution time
    */
-  measureAsyncFunction: async <T>(
+  measureAsync(...args: unknown[]) => unknown: async <T>(
     fn: () => Promise<T>,
     name: string
   ): Promise<T> => {

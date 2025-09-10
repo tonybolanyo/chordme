@@ -71,7 +71,7 @@ export class VoiceControlService {
 
   private recognition: SpeechRecognition | null = null;
   private defaultCommands: VoiceCommand[] = [];
-  private eventListeners = new Map<string, Set<Function>>();
+  private eventListeners = new Map<string, Set<(...args: unknown[]) => unknown>>();
   private commandTimeout: NodeJS.Timeout | null = null;
   private lastCommandTime = 0;
 

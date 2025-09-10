@@ -40,7 +40,7 @@ export class AudioSynchronizationService {
   private timeline?: SyncTimeline;
   private annotationMode = false;
   private lastAnnotationTime = 0;
-  private eventListeners = new Map<string, Set<Function>>();
+  private eventListeners = new Map<string, Set<(...args: unknown[]) => unknown>>();
 
   constructor() {
     this.initialize();

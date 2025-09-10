@@ -718,7 +718,7 @@ describe('Error Handling and Recovery', () => {
 
   it('should handle operation transformation errors', () => {
     // Test with invalid operation data
-    const invalidOperation: any = {
+    const invalidOperation: unknown = {
       type: 'invalid',
       position: -1,
       length: -5,

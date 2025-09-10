@@ -146,7 +146,7 @@ describe('Enhanced Chord Diagram Search', () => {
     });
   });
 
-  describe('Advanced Search Functionality', () => {
+  describe('Advanced Search (...args: unknown[]) => unknownality', () => {
     it('should search by chord name with fuzzy matching', () => {
       const options: ChordDiagramSearchOptions = {
         criteria: {
@@ -262,7 +262,7 @@ describe('Enhanced Chord Diagram Search', () => {
     });
   });
 
-  describe('Sorting Functionality', () => {
+  describe('Sorting (...args: unknown[]) => unknownality', () => {
     it('should sort by relevance (default)', () => {
       const options: ChordDiagramSearchOptions = {
         criteria: { name: 'C' },

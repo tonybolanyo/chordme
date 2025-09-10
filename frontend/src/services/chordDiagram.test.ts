@@ -272,7 +272,7 @@ describe('ChordDiagram Validation', () => {
     });
   });
 
-  describe('Utility Functions', () => {
+  describe('Utility (...args: unknown[]) => unknowns', () => {
     it('should check validity quickly', () => {
       expect(isValidChordDiagram(validChordDiagram)).toBe(true);
     });
@@ -423,7 +423,7 @@ describe('ChordDiagram Utilities', () => {
     });
   });
 
-  describe('Search Functionality', () => {
+  describe('Search (...args: unknown[]) => unknownality', () => {
     it('should search chord diagrams by name', () => {
       const diagrams = [
         createChordDiagram('C', 'guitar', []),

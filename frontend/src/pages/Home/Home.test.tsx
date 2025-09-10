@@ -270,7 +270,7 @@ describe('Home Component', () => {
     });
   });
 
-  describe('Create Song Functionality', () => {
+  describe('Create Song (...args: unknown[]) => unknownality', () => {
     beforeEach(async () => {
       mockApiService.getSongs.mockResolvedValue({
         status: 'success',

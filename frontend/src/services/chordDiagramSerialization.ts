@@ -1,5 +1,5 @@
 /**
- * Chord Diagram Serialization/Deserialization Functions
+ * Chord Diagram Serialization/Deserialization (...args: unknown[]) => unknowns
  * 
  * This module provides functions for converting chord diagrams to and from
  * JSON format for storage and transmission.

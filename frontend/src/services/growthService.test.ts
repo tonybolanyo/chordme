@@ -238,7 +238,7 @@ describe('GrowthService', () => {
     });
   });
 
-  describe('Utility Functions', () => {
+  describe('Utility (...args: unknown[]) => unknowns', () => {
     it('should generate referral link', () => {
       const originalLocation = window.location;
       Object.defineProperty(window, 'location', {

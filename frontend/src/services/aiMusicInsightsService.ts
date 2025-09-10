@@ -19,7 +19,7 @@ import {
   GenreClassification,
   GenreCharacteristic,
   HarmonicAnalysis,
-  ChordFunction,
+  Chord(...args: unknown[]) => unknown,
   Cadence,
   Modulation,
   HarmonicRhythm,
@@ -178,7 +178,7 @@ class AIMusicInsightsService {
           confidence: match.confidence,
           key: key,
           romanNumerals: progression.romans,
-          functionalLabels: this.getFunctionalLabels(progression.romans)
+          functionalLabels: this.get(...args: unknown[]) => unknownalLabels(progression.romans)
         });
       }
     }
@@ -475,10 +475,10 @@ class AIMusicInsightsService {
     const key = await this.detectPrimaryKey(chords);
 
     // Analyze chord functions
-    const chordFunctions = this.analyzeChordFunctions(chordSequence, key);
+    const chord(...args: unknown[]) => unknowns = this.analyzeChord(...args: unknown[]) => unknowns(chordSequence, key);
     
     // Detect cadences
-    const cadences = this.detectCadences(chordFunctions);
+    const cadences = this.detectCadences(chord(...args: unknown[]) => unknowns);
     
     // Detect modulations
     const modulations = this.detectModulations(chordSequence);
@@ -487,10 +487,10 @@ class AIMusicInsightsService {
     const harmonicRhythm = this.analyzeHarmonicRhythm(content);
     
     // Generate suggestions
-    const suggestions = this.generateHarmonicSuggestions(chordFunctions, key);
+    const suggestions = this.generateHarmonicSuggestions(chord(...args: unknown[]) => unknowns, key);
 
     return {
-      chordFunctions,
+      chord(...args: unknown[]) => unknowns,
       cadences,
       modulations,
       harmonicRhythm,
@@ -693,11 +693,11 @@ class AIMusicInsightsService {
       confidence: 0.6,
       key,
       romanNumerals: this.scaleDegreesToRomanNumerals(scaleDegrees),
-      functionalLabels: this.scaleDegreesToFunctionalLabels(scaleDegrees)
+      functionalLabels: this.scaleDegreesTo(...args: unknown[]) => unknownalLabels(scaleDegrees)
     };
   }
 
-  private getFunctionalLabels(romans: string[]): string[] {
+  private get(...args: unknown[]) => unknownalLabels(romans: string[]): string[] {
     const functionMap: Record<string, string> = {
       'I': 'tonic', 'ii': 'predominant', 'iii': 'tonic', 'IV': 'predominant',
       'V': 'dominant', 'vi': 'tonic', 'vii°': 'dominant'
@@ -711,7 +711,7 @@ class AIMusicInsightsService {
     return degrees.map(degree => romanMap[degree] || 'I');
   }
 
-  private scaleDegreesToFunctionalLabels(degrees: number[]): string[] {
+  private scaleDegreesTo(...args: unknown[]) => unknownalLabels(degrees: number[]): string[] {
     return degrees.map(degree => {
       switch (degree) {
         case 0: case 4: case 9: return 'tonic';
@@ -979,17 +979,17 @@ class AIMusicInsightsService {
     return `Weak ${genre.toLowerCase()} similarity`;
   }
 
-  private analyzeChordFunctions(chords: string[], key: string): ChordFunction[] {
+  private analyzeChord(...args: unknown[]) => unknowns(chords: string[], key: string): Chord(...args: unknown[]) => unknown[] {
     // Simplified chord function analysis
     return chords.map((chord, index) => ({
       chord,
-      function: this.getChordFunction(chord, key),
+      function: this.getChord(...args: unknown[]) => unknown(chord, key),
       position: index,
       role: this.getHarmonicRole(chord, key)
     }));
   }
 
-  private getChordFunction(
+  private getChord(...args: unknown[]) => unknown(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     chord: string, 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -1010,7 +1010,7 @@ class AIMusicInsightsService {
     return 'tonic'; // Placeholder
   }
 
-  private detectCadences(functions: ChordFunction[]): Cadence[] {
+  private detectCadences(functions: Chord(...args: unknown[]) => unknown[]): Cadence[] {
     const cadences: Cadence[] = [];
     
     // Look for V-I patterns (authentic cadence)
@@ -1055,7 +1055,7 @@ class AIMusicInsightsService {
   }
 
   private generateHarmonicSuggestions(
-    functions: ChordFunction[], 
+    functions: Chord(...args: unknown[]) => unknown[], 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     key: string
   ): HarmonicSuggestion[] {
@@ -1089,7 +1089,7 @@ class AIMusicInsightsService {
 
   private getDefaultHarmony(): HarmonicAnalysis {
     return {
-      chordFunctions: [],
+      chord(...args: unknown[]) => unknowns: [],
       cadences: [],
       modulations: [],
       harmonicRhythm: {

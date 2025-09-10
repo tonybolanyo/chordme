@@ -13,9 +13,6 @@ import type {
   AppleMusicRecommendationParams,
   AppleMusicRecommendations,
   AppleMusicSubscriptionStatus,
-  CrossPlatformMatchRequest,
-  CrossPlatformMatchResult,
-  UnifiedMusicMetadata,
   MusicPlatformTrack,
 } from '../types';
 
@@ -28,7 +25,7 @@ declare global {
 
 class AppleMusicService {
   private config: AppleMusicConfig;
-  private musicKitInstance: any = null;
+  private musicKitInstance: unknown = null;
   private isInitialized: boolean = false;
 
   constructor() {

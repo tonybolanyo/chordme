@@ -134,7 +134,7 @@ describe('PracticeModeService', () => {
     });
 
     it('should emit session started event', async () => {
-      let sessionStartedEvent: any = null;
+      let sessionStartedEvent: unknown = null;
       practiceService.addEventListener('practice:session_started', (event) => {
         sessionStartedEvent = event;
       });
@@ -162,7 +162,7 @@ describe('PracticeModeService', () => {
       await practiceService.startPracticeSession(mockSessionConfig);
       expect(practiceService.getCurrentSession()).not.toBeNull();
       
-      let sessionEndedEvent: any = null;
+      let sessionEndedEvent: unknown = null;
       practiceService.addEventListener('practice:session_ended', (event) => {
         sessionEndedEvent = event;
       });
@@ -229,7 +229,7 @@ describe('PracticeModeService', () => {
         averageAccuracy: 0.85,
       };
       
-      let progressUpdatedEvent: any = null;
+      let progressUpdatedEvent: unknown = null;
       practiceService.addEventListener('practice:progress_updated', (event) => {
         progressUpdatedEvent = event;
       });
@@ -297,7 +297,7 @@ describe('PracticeModeService', () => {
     });
 
     it('should emit timing feedback events', () => {
-      let timingFeedbackEvent: any = null;
+      let timingFeedbackEvent: unknown = null;
       practiceService.addEventListener('practice:timing_feedback', (event) => {
         timingFeedbackEvent = event;
       });
@@ -366,7 +366,7 @@ describe('PracticeModeService', () => {
         totalPracticeTime: 600, // 10 minutes
       });
       
-      let achievementUnlockedEvent: any = null;
+      let achievementUnlockedEvent: unknown = null;
       practiceService.addEventListener('practice:achievement_unlocked', (event) => {
         achievementUnlockedEvent = event;
       });
@@ -409,7 +409,7 @@ describe('PracticeModeService', () => {
     });
   });
 
-  describe('Recording Functionality', () => {
+  describe('Recording (...args: unknown[]) => unknownality', () => {
     it('should start recording when enabled', async () => {
       const configWithRecording = {
         ...mockSessionConfig,

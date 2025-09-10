@@ -93,12 +93,12 @@ describe('FavoritesModal', () => {
     vi.clearAllMocks();
     
     // Setup default mock returns
-    (favoritesService.getFavoriteSongs as vi.MockedFunction<typeof favoritesService.getFavoriteSongs>).mockResolvedValue({
+    (favoritesService.getFavoriteSongs as vi.Mocked(...args: unknown[]) => unknown<typeof favoritesService.getFavoriteSongs>).mockResolvedValue({
       data: { favorites: mockFavoriteSongs, total_count: 1 }
     });
-    (favoritesService.getFavoriteQueries as vi.MockedFunction<typeof favoritesService.getFavoriteQueries>).mockReturnValue(mockFavoriteQueries);
-    (favoritesService.getSearchHistory as vi.MockedFunction<typeof favoritesService.getSearchHistory>).mockReturnValue(mockSearchHistory);
-    (favoritesService.getSearchPrivacySettings as vi.MockedFunction<typeof favoritesService.getSearchPrivacySettings>).mockReturnValue({
+    (favoritesService.getFavoriteQueries as vi.Mocked(...args: unknown[]) => unknown<typeof favoritesService.getFavoriteQueries>).mockReturnValue(mockFavoriteQueries);
+    (favoritesService.getSearchHistory as vi.Mocked(...args: unknown[]) => unknown<typeof favoritesService.getSearchHistory>).mockReturnValue(mockSearchHistory);
+    (favoritesService.getSearchPrivacySettings as vi.Mocked(...args: unknown[]) => unknown<typeof favoritesService.getSearchPrivacySettings>).mockReturnValue({
       clearOnExit: false,
       trackHistory: true,
     });

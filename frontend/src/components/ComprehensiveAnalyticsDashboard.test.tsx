@@ -121,8 +121,8 @@ describe('ComprehensiveAnalyticsDashboard', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (useComprehensiveAnalytics as vi.MockedFunction<typeof useComprehensiveAnalytics>).mockReturnValue(mockHookReturn);
-    (useRealTimeAnalytics as vi.MockedFunction<typeof useRealTimeAnalytics>).mockReturnValue({
+    (useComprehensiveAnalytics as vi.Mocked(...args: unknown[]) => unknown<typeof useComprehensiveAnalytics>).mockReturnValue(mockHookReturn);
+    (useRealTimeAnalytics as vi.Mocked(...args: unknown[]) => unknown<typeof useRealTimeAnalytics>).mockReturnValue({
       updates: [],
       isConnected: true
     });
@@ -138,7 +138,7 @@ describe('ComprehensiveAnalyticsDashboard', () => {
   });
 
   it('shows loading state', () => {
-    (useComprehensiveAnalytics as vi.MockedFunction<typeof useComprehensiveAnalytics>).mockReturnValue({
+    (useComprehensiveAnalytics as vi.Mocked(...args: unknown[]) => unknown<typeof useComprehensiveAnalytics>).mockReturnValue({
       ...mockHookReturn,
       loading: true,
       dashboardData: null
@@ -150,7 +150,7 @@ describe('ComprehensiveAnalyticsDashboard', () => {
   });
 
   it('shows error state', () => {
-    (useComprehensiveAnalytics as vi.MockedFunction<typeof useComprehensiveAnalytics>).mockReturnValue({
+    (useComprehensiveAnalytics as vi.Mocked(...args: unknown[]) => unknown<typeof useComprehensiveAnalytics>).mockReturnValue({
       ...mockHookReturn,
       loading: false,
       error: 'Failed to load analytics',

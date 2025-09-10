@@ -270,7 +270,7 @@ describe('MetronomeService', () => {
       vi.useRealTimers();
     });
     it('should emit started event when metronome starts', () => {
-      let startedEvent: any = null;
+      let startedEvent: unknown = null;
       metronome.addEventListener('started', (event) => {
         startedEvent = event;
       });
@@ -283,7 +283,7 @@ describe('MetronomeService', () => {
     });
 
     it('should emit stopped event when metronome stops', () => {
-      let stoppedEvent: any = null;
+      let stoppedEvent: unknown = null;
       metronome.addEventListener('stopped', (event) => {
         stoppedEvent = event;
       });
@@ -332,8 +332,8 @@ describe('MetronomeService', () => {
     });
 
     it('should emit configuration change events', () => {
-      let bpmChangedEvent: any = null;
-      let timeSignatureChangedEvent: any = null;
+      let bpmChangedEvent: unknown = null;
+      let timeSignatureChangedEvent: unknown = null;
       
       metronome.addEventListener('bpm_changed', (event) => {
         bpmChangedEvent = event;

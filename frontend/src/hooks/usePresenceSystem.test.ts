@@ -247,7 +247,7 @@ describe('usePresenceSystem', () => {
     });
   });
 
-  describe('Utility Functions', () => {
+  describe('Utility (...args: unknown[]) => unknowns', () => {
     it('should count active users correctly', () => {
       const { result } = renderHook(() => usePresenceSystem({
         songId: mockSongId,
@@ -305,13 +305,13 @@ describe('usePresenceSystem', () => {
         activityConfig: { enableActivityTracking: true },
       }));
 
-      expect(addEventListenerSpy).toHaveBeenCalledWith('mousedown', expect.any(Function), true);
-      expect(addEventListenerSpy).toHaveBeenCalledWith('keypress', expect.any(Function), true);
+      expect(addEventListenerSpy).toHaveBeenCalledWith('mousedown', expect.any((...args: unknown[]) => unknown), true);
+      expect(addEventListenerSpy).toHaveBeenCalledWith('keypress', expect.any((...args: unknown[]) => unknown), true);
 
       unmount();
 
-      expect(removeEventListenerSpy).toHaveBeenCalledWith('mousedown', expect.any(Function), true);
-      expect(removeEventListenerSpy).toHaveBeenCalledWith('keypress', expect.any(Function), true);
+      expect(removeEventListenerSpy).toHaveBeenCalledWith('mousedown', expect.any((...args: unknown[]) => unknown), true);
+      expect(removeEventListenerSpy).toHaveBeenCalledWith('keypress', expect.any((...args: unknown[]) => unknown), true);
     });
 
     it('should not setup activity listeners when disabled', () => {

@@ -92,9 +92,9 @@ export class RemoteControlService {
   private websocketServer: WebSocket | null = null;
   private connectedClients = new Set<WebSocket>();
   private deviceRegistry = new Map<string, ConnectedDevice>();
-  private commandHandlers = new Map<RemoteCommandType, Function>();
+  private commandHandlers = new Map<RemoteCommandType, (...args: unknown[]) => unknown>();
   private heartbeatInterval: NodeJS.Timeout | null = null;
-  private eventListeners = new Map<string, Set<Function>>();
+  private eventListeners = new Map<string, Set<(...args: unknown[]) => unknown>>();
 
   constructor() {
     this.setupCommandHandlers();

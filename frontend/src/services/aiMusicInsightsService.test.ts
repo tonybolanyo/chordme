@@ -108,7 +108,7 @@ This should trigger an error`;
       const insights = await aiMusicInsightsService.analyzeSong(sampleChordProContent, options);
 
       expect(insights.genre.primaryGenre).toBe('Unknown');
-      expect(insights.harmony.chordFunctions).toHaveLength(0);
+      expect(insights.harmony.chord(...args: unknown[]) => unknowns).toHaveLength(0);
       expect(insights.recommendations).toHaveLength(0);
     });
 
@@ -341,8 +341,8 @@ This should trigger an error`;
     it('should analyze chord functions', async () => {
       const insights = await aiMusicInsightsService.analyzeSong(sampleChordProContent);
 
-      if (insights.harmony.chordFunctions.length > 0) {
-        for (const func of insights.harmony.chordFunctions) {
+      if (insights.harmony.chord(...args: unknown[]) => unknowns.length > 0) {
+        for (const func of insights.harmony.chord(...args: unknown[]) => unknowns) {
           expect(func.chord).toBeDefined();
           expect(func.function).toBeDefined();
           expect(func.position).toBeGreaterThanOrEqual(0);

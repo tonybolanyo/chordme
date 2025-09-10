@@ -311,7 +311,7 @@ describe('ApiService', () => {
     });
   });
 
-  describe('Download Functionality', () => {
+  describe('Download (...args: unknown[]) => unknownality', () => {
     beforeEach(() => {
       mockIsTokenExpired.mockReturnValue(false);
       // Mock DOM methods

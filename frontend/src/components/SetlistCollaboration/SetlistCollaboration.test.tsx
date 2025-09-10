@@ -160,7 +160,7 @@ const mockCollaboration = {
 
 describe('SetlistCollaboration', () => {
   beforeEach(() => {
-    (useSetlistCollaboration as vi.MockedFunction<typeof useSetlistCollaboration>).mockReturnValue(mockCollaboration);
+    (useSetlistCollaboration as vi.Mocked(...args: unknown[]) => unknown<typeof useSetlistCollaboration>).mockReturnValue(mockCollaboration);
   });
 
   afterEach(() => {
@@ -277,7 +277,7 @@ describe('SetlistCollaboration', () => {
       },
     };
 
-    (useSetlistCollaboration as vi.MockedFunction<typeof useSetlistCollaboration>).mockReturnValue(activeCollaboration);
+    (useSetlistCollaboration as vi.Mocked(...args: unknown[]) => unknown<typeof useSetlistCollaboration>).mockReturnValue(activeCollaboration);
 
     render(
       <SetlistCollaboration
@@ -353,7 +353,7 @@ describe('SetlistCollaboration', () => {
       error: 'Failed to connect to collaboration session',
     };
 
-    (useSetlistCollaboration as vi.MockedFunction<typeof useSetlistCollaboration>).mockReturnValue(errorCollaboration);
+    (useSetlistCollaboration as vi.Mocked(...args: unknown[]) => unknown<typeof useSetlistCollaboration>).mockReturnValue(errorCollaboration);
 
     render(
       <SetlistCollaboration

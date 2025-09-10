@@ -207,7 +207,7 @@ describe('FilterContext', () => {
     });
   });
 
-  describe('Search Functionality', () => {
+  describe('Search (...args: unknown[]) => unknownality', () => {
     it('should perform search with current filters', async () => {
       const user = userEvent.setup();
       renderWithProvider(<TestComponent />);

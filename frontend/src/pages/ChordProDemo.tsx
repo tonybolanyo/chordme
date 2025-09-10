@@ -292,7 +292,7 @@ The [Em]hour I [D]first be[G]lieved
             <li><strong>Key Selection:</strong> Dropdown with all major/minor keys</li>
             <li><strong>Key Display:</strong> Shows original → current key transformation</li>
             <li><strong>Notation Toggle:</strong> Switch between American (ABC) and Latin (DoReMi) notation</li>
-            <li><strong>Reset Function:</strong> Return to original key instantly</li>
+            <li><strong>Reset (...args: unknown[]) => unknown:</strong> Return to original key instantly</li>
             <li><strong>Keyboard Shortcuts:</strong> Ctrl+↑/↓, Ctrl+±, Ctrl+0</li>
             <li><strong>Smart Enharmonics:</strong> Context-aware sharp/flat preferences</li>
           </ul>

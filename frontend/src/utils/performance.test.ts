@@ -39,7 +39,7 @@ describe('performanceUtils', () => {
     vi.restoreAllMocks();
   });
 
-  describe('measureFunction', () => {
+  describe('measure(...args: unknown[]) => unknown', () => {
     it('measures synchronous function execution time', () => {
       let timeIndex = 0;
       mockPerformanceNow.mockImplementation(() => {
@@ -47,19 +47,19 @@ describe('performanceUtils', () => {
         return timeIndex === 1 ? 100 : 150; // 50ms execution time
       });
 
-      const testFunction = vi.fn(() => 'result');
+      const test(...args: unknown[]) => unknown = vi.fn(() => 'result');
       const recordMetricSpy = vi.spyOn(
         performanceMonitor,
         'recordCustomMetric'
       );
 
-      const result = performanceUtils.measureFunction(
-        testFunction,
+      const result = performanceUtils.measure(...args: unknown[]) => unknown(
+        test(...args: unknown[]) => unknown,
         'test-function'
       );
 
       expect(result).toBe('result');
-      expect(testFunction).toHaveBeenCalledTimes(1);
+      expect(test(...args: unknown[]) => unknown).toHaveBeenCalledTimes(1);
       expect(recordMetricSpy).toHaveBeenCalledWith('test-function', 50);
     });
 
@@ -70,7 +70,7 @@ describe('performanceUtils', () => {
         return timeIndex === 1 ? 100 : 125; // 25ms execution time
       });
 
-      const testFunction = vi.fn(() => {
+      const test(...args: unknown[]) => unknown = vi.fn(() => {
         throw new Error('Test error');
       });
       const recordMetricSpy = vi.spyOn(
@@ -79,7 +79,7 @@ describe('performanceUtils', () => {
       );
 
       expect(() =>
-        performanceUtils.measureFunction(testFunction, 'error-function')
+        performanceUtils.measure(...args: unknown[]) => unknown(test(...args: unknown[]) => unknown, 'error-function')
       ).toThrow('Test error');
 
       expect(recordMetricSpy).toHaveBeenCalledWith('error-function', 25);
@@ -88,14 +88,14 @@ describe('performanceUtils', () => {
     it('handles zero execution time', () => {
       mockPerformanceNow.mockReturnValue(100); // Same start and end time
 
-      const testFunction = vi.fn(() => 'instant');
+      const test(...args: unknown[]) => unknown = vi.fn(() => 'instant');
       const recordMetricSpy = vi.spyOn(
         performanceMonitor,
         'recordCustomMetric'
       );
 
-      const result = performanceUtils.measureFunction(
-        testFunction,
+      const result = performanceUtils.measure(...args: unknown[]) => unknown(
+        test(...args: unknown[]) => unknown,
         'instant-function'
       );
 
@@ -104,7 +104,7 @@ describe('performanceUtils', () => {
     });
   });
 
-  describe('measureAsyncFunction', () => {
+  describe('measureAsync(...args: unknown[]) => unknown', () => {
     it('measures asynchronous function execution time', async () => {
       let timeIndex = 0;
       mockPerformanceNow.mockImplementation(() => {
@@ -112,7 +112,7 @@ describe('performanceUtils', () => {
         return timeIndex === 1 ? 200 : 300; // 100ms execution time
       });
 
-      const testFunction = vi.fn(async () => {
+      const test(...args: unknown[]) => unknown = vi.fn(async () => {
         await new Promise((resolve) => setTimeout(resolve, 10));
         return 'async-result';
       });
@@ -121,13 +121,13 @@ describe('performanceUtils', () => {
         'recordCustomMetric'
       );
 
-      const result = await performanceUtils.measureAsyncFunction(
-        testFunction,
+      const result = await performanceUtils.measureAsync(...args: unknown[]) => unknown(
+        test(...args: unknown[]) => unknown,
         'async-function'
       );
 
       expect(result).toBe('async-result');
-      expect(testFunction).toHaveBeenCalledTimes(1);
+      expect(test(...args: unknown[]) => unknown).toHaveBeenCalledTimes(1);
       expect(recordMetricSpy).toHaveBeenCalledWith('async-function', 100);
     });
 
@@ -138,7 +138,7 @@ describe('performanceUtils', () => {
         return timeIndex === 1 ? 50 : 75; // 25ms execution time
       });
 
-      const testFunction = vi.fn(async () => {
+      const test(...args: unknown[]) => unknown = vi.fn(async () => {
         throw new Error('Async error');
       });
       const recordMetricSpy = vi.spyOn(
@@ -147,8 +147,8 @@ describe('performanceUtils', () => {
       );
 
       await expect(
-        performanceUtils.measureAsyncFunction(
-          testFunction,
+        performanceUtils.measureAsync(...args: unknown[]) => unknown(
+          test(...args: unknown[]) => unknown,
           'error-async-function'
         )
       ).rejects.toThrow('Async error');
@@ -159,14 +159,14 @@ describe('performanceUtils', () => {
     it('handles async function with resolved promise', async () => {
       mockPerformanceNow.mockReturnValueOnce(1000).mockReturnValueOnce(1050);
 
-      const testFunction = vi.fn(async () => Promise.resolve('resolved'));
+      const test(...args: unknown[]) => unknown = vi.fn(async () => Promise.resolve('resolved'));
       const recordMetricSpy = vi.spyOn(
         performanceMonitor,
         'recordCustomMetric'
       );
 
-      const result = await performanceUtils.measureAsyncFunction(
-        testFunction,
+      const result = await performanceUtils.measureAsync(...args: unknown[]) => unknown(
+        test(...args: unknown[]) => unknown,
         'resolved-function'
       );
 
@@ -431,7 +431,7 @@ describe('performanceMonitor', () => {
       delete (window as Record<string, unknown>).performance;
 
       expect(() => {
-        performanceUtils.measureFunction(() => 'test', 'no-performance');
+        performanceUtils.measure(...args: unknown[]) => unknown(() => 'test', 'no-performance');
       }).toThrow(); // This should throw because performance.now is not available
 
       window.performance = originalPerformance;

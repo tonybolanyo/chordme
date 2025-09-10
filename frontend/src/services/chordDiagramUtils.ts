@@ -1,5 +1,5 @@
 /**
- * Chord Diagram Utility Functions
+ * Chord Diagram Utility (...args: unknown[]) => unknowns
  * 
  * This module provides utility functions for creating, manipulating,
  * and working with chord diagram data structures.
