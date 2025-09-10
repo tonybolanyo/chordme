@@ -20,6 +20,20 @@ jest.mock('../../services/songSearchService', () => ({
 
 const mockSearchService = songSearchService as jest.Mocked<typeof songSearchService>;
 
+// Define the type for filter presets
+interface FilterPreset {
+  id: number;
+  name: string;
+  description: string;
+  filter_config: Record<string, unknown>;
+  is_public: boolean;
+  is_shared: boolean;
+  usage_count: number;
+  created_at: string;
+  updated_at: string;
+  user_id: number;
+}
+
 // Mock filter presets
 const mockPresets = [
   {
@@ -48,7 +62,7 @@ const mockPresets = [
   }
 ];
 
-function renderWithProvider(props: Partial<{ isOpen: boolean; onClose: () => void; onSearch: (results: any[]) => void }> = {}) {
+function renderWithProvider(props: Partial<{ isOpen: boolean; onClose: () => void; onSearch: (results: FilterPreset[]) => void }> = {}) {
   const defaultProps = {
     isOpen: true,
     onClose: jest.fn(),
