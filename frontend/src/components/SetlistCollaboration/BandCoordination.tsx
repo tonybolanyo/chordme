@@ -23,7 +23,6 @@ export interface BandCoordinationProps {
 export const BandCoordination: React.FC<BandCoordinationProps> = ({
   bandCoordination,
   participants,
-  currentUserRole,
   onStartRehearsalMode,
   onStartPerformanceMode,
   onStopCoordination,

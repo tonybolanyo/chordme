@@ -8,7 +8,6 @@ import { PracticeModeService } from './practiceModeService';
 import {
   PracticeGoal,
   PracticeSessionConfig,
-  DifficultyLevel,
   ChordTimeMapping,
 } from '../types/audio';
 

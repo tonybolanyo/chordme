@@ -20,7 +20,6 @@ export interface RealtimeParticipantsProps {
 
 export const RealtimeParticipants: React.FC<RealtimeParticipantsProps> = ({
   participants,
-  currentUserId,
 }) => {
   return (
     <div className="realtime-participants">
@@ -52,7 +51,6 @@ export interface SetlistCommentsProps {
 
 export const SetlistComments: React.FC<SetlistCommentsProps> = ({
   comments,
-  setlistId,
   canComment,
   onAddComment,
   onResolveComment,
@@ -124,8 +122,6 @@ export interface TaskManagementProps {
 
 export const TaskManagement: React.FC<TaskManagementProps> = ({
   tasks,
-  setlistId,
-  participants,
   onCreateTask,
   onUpdateTaskStatus,
 }) => {
@@ -210,7 +206,6 @@ export interface ExternalSharingProps {
 }
 
 export const ExternalSharing: React.FC<ExternalSharingProps> = ({
-  setlistId,
   onCreateShare,
 }) => {
   const [shareType, setShareType] = React.useState('venue');

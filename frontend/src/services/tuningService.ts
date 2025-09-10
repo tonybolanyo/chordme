@@ -14,7 +14,7 @@ import {
   TuningSuggestion,
   COMMON_GUITAR_TUNINGS
 } from '../types/tuning';
-import { ChordDiagram, StringPosition, InstrumentType, INSTRUMENT_CONFIGS } from '../types/chordDiagram';
+import { ChordDiagram, InstrumentType } from '../types/chordDiagram';
 import { generateId } from '../utils/idGenerator';
 
 /**

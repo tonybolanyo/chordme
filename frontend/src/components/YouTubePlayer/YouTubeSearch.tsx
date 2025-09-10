@@ -8,7 +8,6 @@ import { youtubeService } from '../../services/youtubeService';
 import {
   YouTubeSearchParams,
   YouTubeSearchResult,
-  YouTubeVideoData,
 } from '../../types/audio';
 import './YouTubeSearch.css';
 

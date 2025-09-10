@@ -175,7 +175,7 @@ const GanttChart: React.FC<GanttChartProps> = ({ data, viewMode }) => {
       
       <div className="gantt-body">
         <div className="gantt-rows">
-          {data.tasks.map((task, _index) => (
+          {data.tasks.map((task) => (
             <div key={task.id} className="gantt-row">
               <div className="task-info">
                 <span className="task-name">{task.name}</span>
@@ -195,7 +195,7 @@ const GanttChart: React.FC<GanttChartProps> = ({ data, viewMode }) => {
             </div>
           ))}
           
-          {data.milestones.map((milestone, _index) => (
+          {data.milestones.map((milestone) => (
             <div key={milestone.id} className="gantt-row milestone-row">
               <div className="task-info">
                 <span className="milestone-name">🏁 {milestone.name}</span>

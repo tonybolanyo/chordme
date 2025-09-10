@@ -6,7 +6,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { youtubeService, YouTubePlayerState } from '../../services/youtubeService';
 import {
-  YouTubeVideoData,
   YouTubePlayerConfig,
   YouTubeSyncConfig,
   ChordTimeMapping,

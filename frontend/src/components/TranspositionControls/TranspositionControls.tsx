@@ -19,11 +19,6 @@ interface TranspositionControlsProps {
 }
 
 // All 12 chromatic keys for key selection
-const CHROMATIC_KEYS = [
-  'C', 'C#/Db', 'D', 'D#/Eb', 'E', 'F', 
-  'F#/Gb', 'G', 'G#/Ab', 'A', 'A#/Bb', 'B'
-];
-
 // Major and minor keys for dropdown
 const ALL_KEYS = [
   // Major keys

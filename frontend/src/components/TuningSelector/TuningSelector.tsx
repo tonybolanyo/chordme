@@ -123,7 +123,7 @@ export const TuningSelector: React.FC<TuningSelectorProps> = ({
         <div className="tuning-suggestions">
           <h4>Suggested Tunings</h4>
           <div className="suggestions-list">
-            {suggestions.slice(0, 3).map((suggestion, _index) => (
+            {suggestions.slice(0, 3).map((suggestion) => (
               <TuningSuggestionCard
                 key={suggestion.tuning.id}
                 suggestion={suggestion}

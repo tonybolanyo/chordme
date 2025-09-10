@@ -19,12 +19,6 @@ import { createChordDiagram, createBarreChord } from '../services/chordDiagramUt
  * Note names in chromatic order
  */
 const CHROMATIC_NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-const FLAT_NOTES = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
-
-/**
- * Standard guitar tuning (low to high)
- */
-const GUITAR_TUNING = ['E', 'A', 'D', 'G', 'B', 'E'];
 
 /**
  * Chord quality definitions with interval patterns

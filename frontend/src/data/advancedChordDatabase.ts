@@ -6,11 +6,7 @@
  */
 
 import {
-  ChordDiagram,
-  StringPosition,
-  ChordDiagramCollection,
-  InstrumentType,
-  DifficultyLevel
+  ChordDiagram
 } from '../types/chordDiagram';
 
 import { createChordDiagram, createBarreChord, addAlternativeFingering } from '../services/chordDiagramUtils';
