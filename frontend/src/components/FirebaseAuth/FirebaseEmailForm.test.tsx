@@ -420,7 +420,7 @@ describe('FirebaseEmailForm Component', () => {
 
   describe('Form State Management', () => {
     it('should manage loading state correctly', async () => {
-      let resolveAuth: ((value: any) => void) | undefined;
+      let resolveAuth: ((value: unknown) => void) | undefined;
       mockSignInWithEmailAndPassword.mockImplementation(
         () =>
           new Promise((resolve) => {

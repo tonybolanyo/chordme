@@ -8,7 +8,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 interface RecentInsightsWidgetProps {
-  data: any;
+  data: unknown;
   timeframe: string;
   loading: boolean;
   error: string | null;

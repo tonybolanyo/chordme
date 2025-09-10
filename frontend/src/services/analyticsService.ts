@@ -327,7 +327,7 @@ class AnalyticsService {
     // Check for personally identifiable information
     const sensitiveFields = ['email', 'full_name', 'address', 'phone'];
     
-    const checkForSensitiveData = (obj: any): boolean => {
+    const checkForSensitiveData = (obj: unknown): boolean => {
       if (typeof obj !== 'object' || obj === null) {
         return false;
       }

@@ -73,7 +73,7 @@ export interface SearchResponse {
   query_info: {
     original_query: string;
     parsed_query: ParsedQuery;
-    filters_applied: Record<string, any>;
+    filters_applied: Record<string, unknown>;
   };
   suggestions?: string[];
 }

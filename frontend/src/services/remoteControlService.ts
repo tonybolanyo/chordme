@@ -21,7 +21,7 @@ export interface RemoteControlConfig {
 export interface RemoteCommand {
   id: string;
   type: RemoteCommandType;
-  payload?: any;
+  payload?: unknown;
   timestamp: number;
   deviceId: string;
   deviceType: DeviceType;
@@ -510,11 +510,11 @@ export class RemoteControlService {
       console.log('Available HID devices:', devices);
 
       // Listen for device connections
-      (navigator as any).hid.addEventListener('connect', (event: any) => {
+      (navigator as any).hid.addEventListener('connect', (event: unknown) => {
         this.handleHIDDeviceConnect(event.device);
       });
 
-      (navigator as any).hid.addEventListener('disconnect', (event: any) => {
+      (navigator as any).hid.addEventListener('disconnect', (event: unknown) => {
         this.handleHIDDeviceDisconnect(event.device);
       });
     } catch (error) {
@@ -522,7 +522,7 @@ export class RemoteControlService {
     }
   }
 
-  private handleHIDDeviceConnect(device: any): void {
+  private handleHIDDeviceConnect(device: unknown): void {
     console.log('HID device connected:', device);
     
     const deviceInfo: Partial<ConnectedDevice> = {
@@ -535,7 +535,7 @@ export class RemoteControlService {
     const deviceId = this.connectDevice(null as any, deviceInfo);
     
     // Set up input event handling
-    device.addEventListener('inputreport', (event: any) => {
+    device.addEventListener('inputreport', (event: unknown) => {
       this.handleHIDInput(deviceId, event);
     });
 
@@ -546,12 +546,12 @@ export class RemoteControlService {
     }
   }
 
-  private handleHIDDeviceDisconnect(device: any): void {
+  private handleHIDDeviceDisconnect(device: unknown): void {
     console.log('HID device disconnected:', device);
     // Find and disconnect the device
   }
 
-  private inferDeviceType(device: any): DeviceType {
+  private inferDeviceType(device: unknown): DeviceType {
     const productName = (device.productName || '').toLowerCase();
     
     if (productName.includes('presenter') || productName.includes('remote')) {
@@ -564,7 +564,7 @@ export class RemoteControlService {
     return 'presenter_remote'; // Default for HID devices
   }
 
-  private handleHIDInput(deviceId: string, event: any): void {
+  private handleHIDInput(deviceId: string, event: unknown): void {
     // Parse HID input and convert to remote commands
     const { data } = event;
     const command = this.parseHIDInput(deviceId, data);
@@ -657,7 +657,7 @@ export class RemoteControlService {
   }
 
   // Helper methods
-  private broadcastToDevices(message: any): void {
+  private broadcastToDevices(message: unknown): void {
     const messageStr = JSON.stringify(message);
     
     this.connectedClients.forEach(client => {
@@ -680,21 +680,21 @@ export class RemoteControlService {
   }
 
   // Event handling
-  addEventListener(type: string, listener: Function): void {
+  addEventListener(type: string, listener: (...args: unknown[]) => unknown): void {
     if (!this.eventListeners.has(type)) {
       this.eventListeners.set(type, new Set());
     }
     this.eventListeners.get(type)!.add(listener);
   }
 
-  removeEventListener(type: string, listener: Function): void {
+  removeEventListener(type: string, listener: (...args: unknown[]) => unknown): void {
     const listeners = this.eventListeners.get(type);
     if (listeners) {
       listeners.delete(listener);
     }
   }
 
-  private emit(type: string, data: any): void {
+  private emit(type: string, data: unknown): void {
     const listeners = this.eventListeners.get(type);
     if (listeners) {
       listeners.forEach((listener) => {

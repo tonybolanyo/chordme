@@ -163,7 +163,7 @@ class ProfessionalCollaborationService {
   async addParticipant(
     roomId: string, 
     participantData: AddParticipantRequest
-  ): Promise<any> {
+  ): Promise<unknown> {
     const response = await this.makeRequest(
       `/api/v1/collaboration-rooms/${roomId}/participants`,
       {
@@ -183,7 +183,7 @@ class ProfessionalCollaborationService {
     roomId: string,
     participantId: number,
     updates: Partial<AddParticipantRequest>
-  ): Promise<any> {
+  ): Promise<unknown> {
     const response = await this.makeRequest(
       `/api/v1/collaboration-rooms/${roomId}/participants/${participantId}`,
       {
@@ -214,7 +214,7 @@ class ProfessionalCollaborationService {
   async createResource(
     roomId: string, 
     resourceData: CreateResourceRequest
-  ): Promise<any> {
+  ): Promise<unknown> {
     const response = await this.makeRequest(
       `/api/v1/collaboration-rooms/${roomId}/resources`,
       {
@@ -235,7 +235,7 @@ class ProfessionalCollaborationService {
     category?: string,
     limit = 50,
     offset = 0
-  ): Promise<any> {
+  ): Promise<unknown> {
     const params = new URLSearchParams({
       limit: limit.toString(),
       offset: offset.toString(),
@@ -257,7 +257,7 @@ class ProfessionalCollaborationService {
     roomId: string,
     resourceId: number,
     updates: Partial<CreateResourceRequest>
-  ): Promise<any> {
+  ): Promise<unknown> {
     const response = await this.makeRequest(
       `/api/v1/collaboration-rooms/${roomId}/resources/${resourceId}`,
       {
@@ -288,7 +288,7 @@ class ProfessionalCollaborationService {
   async scheduleMeeting(
     roomId: string, 
     meetingData: ScheduleMeetingRequest
-  ): Promise<any> {
+  ): Promise<unknown> {
     const response = await this.makeRequest(
       `/api/v1/collaboration-rooms/${roomId}/meetings`,
       {
@@ -309,7 +309,7 @@ class ProfessionalCollaborationService {
     status?: string,
     limit = 20,
     offset = 0
-  ): Promise<any> {
+  ): Promise<unknown> {
     const params = new URLSearchParams({
       limit: limit.toString(),
       offset: offset.toString(),
@@ -331,7 +331,7 @@ class ProfessionalCollaborationService {
     roomId: string,
     meetingId: number,
     updates: Partial<ScheduleMeetingRequest>
-  ): Promise<any> {
+  ): Promise<unknown> {
     const response = await this.makeRequest(
       `/api/v1/collaboration-rooms/${roomId}/meetings/${meetingId}`,
       {
@@ -380,7 +380,7 @@ class ProfessionalCollaborationService {
   async sendChatMessage(
     roomId: string, 
     messageData: SendChatMessageRequest
-  ): Promise<any> {
+  ): Promise<unknown> {
     const response = await this.makeRequest(
       `/api/v1/collaboration-rooms/${roomId}/chat`,
       {
@@ -401,7 +401,7 @@ class ProfessionalCollaborationService {
     limit = 50,
     offset = 0,
     threadId?: string
-  ): Promise<any> {
+  ): Promise<unknown> {
     const params = new URLSearchParams({
       limit: limit.toString(),
       offset: offset.toString(),

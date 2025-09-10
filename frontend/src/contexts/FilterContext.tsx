@@ -17,7 +17,7 @@ export interface FilterState {
   availablePresets: FilterPreset[];
   isLoading: boolean;
   error: string | null;
-  lastSearchResults: any[];
+  lastSearchResults: unknown[];
   searchHistory: SearchQuery[];
 }
 
@@ -31,7 +31,7 @@ export type FilterAction =
   | { type: 'SET_AVAILABLE_PRESETS'; payload: FilterPreset[] }
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_ERROR'; payload: string | null }
-  | { type: 'SET_SEARCH_RESULTS'; payload: any[] }
+  | { type: 'SET_SEARCH_RESULTS'; payload: unknown[] }
   | { type: 'ADD_TO_HISTORY'; payload: SearchQuery }
   | { type: 'CLEAR_HISTORY' };
 
@@ -158,7 +158,7 @@ interface FilterContextType {
   state: FilterState;
   
   // Filter actions
-  setFilter: (key: keyof SearchQuery, value: any) => void;
+  setFilter: (key: keyof SearchQuery, value: unknown) => void;
   setFilters: (filters: SearchQuery) => void;
   clearFilters: () => void;
   toggleAdvancedMode: () => void;
@@ -208,7 +208,7 @@ export function FilterProvider({ children }: FilterProviderProps): JSX.Element {
   }, []);
 
   // Filter actions
-  const setFilter = useCallback((key: keyof SearchQuery, value: any) => {
+  const setFilter = useCallback((key: keyof SearchQuery, value: unknown) => {
     dispatch({ type: 'SET_FILTER', payload: { key, value } });
   }, []);
 

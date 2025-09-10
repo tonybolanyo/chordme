@@ -556,7 +556,7 @@ This should trigger an error`;
       try {
         await aiMusicInsightsService.analyzeSong('');
         expect.fail('Should have thrown an error');
-      } catch (error: any) {
+      } catch (error: unknown) {
         expect(error.message).toContain('No chords detected');
       }
     });

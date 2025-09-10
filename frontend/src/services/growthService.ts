@@ -76,7 +76,7 @@ export interface ExperimentAssignment {
   experiment: string;
   variant: string;
   assigned_at: string;
-  feature_flags: Record<string, any>;
+  feature_flags: Record<string, unknown>;
 }
 
 export interface AchievementProgress {
@@ -113,7 +113,7 @@ export interface Badge {
   icon?: string;
   color: string;
   badge_type: string;
-  requirements: Record<string, any>;
+  requirements: Record<string, unknown>;
   rarity: string;
   is_active: boolean;
   awarded_count: number;

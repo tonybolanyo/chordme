@@ -113,42 +113,42 @@ export function useAudioSync(options: UseAudioSyncOptions = {}): UseAudioSyncRet
     isInitializedRef.current = true;
 
     // Set up event listeners
-    const handleChordChange = (event: any) => {
+    const handleChordChange = (event: unknown) => {
       setCurrentChord(event.chord);
       setNextChord(event.nextChord || null);
     };
 
-    const handleMarkerReached = (event: any) => {
+    const handleMarkerReached = (event: unknown) => {
       // Handle marker events if needed
       console.log('Marker reached:', event.marker);
     };
 
-    const handleLoopStart = (event: any) => {
+    const handleLoopStart = (event: unknown) => {
       console.log('Loop started:', event.loop);
     };
 
-    const handleLoopEnd = (event: any) => {
+    const handleLoopEnd = (event: unknown) => {
       console.log('Loop ended:', event.loop);
     };
 
-    const handleTimelineLoaded = (event: any) => {
+    const handleTimelineLoaded = (event: unknown) => {
       setTimeline(event.timeline);
     };
 
-    const handleAnnotationAdded = (event: any) => {
+    const handleAnnotationAdded = (event: unknown) => {
       // Update timeline state if needed
       updateTimelineState();
     };
 
-    const handleAnnotationUpdated = (event: any) => {
+    const handleAnnotationUpdated = (event: unknown) => {
       updateTimelineState();
     };
 
-    const handleAnnotationRemoved = (event: any) => {
+    const handleAnnotationRemoved = (event: unknown) => {
       updateTimelineState();
     };
 
-    const handleAnalysisComplete = (event: any) => {
+    const handleAnalysisComplete = (event: unknown) => {
       setAnalysisProgress(100);
       // Auto-add detected chords to timeline
       const result: AudioAnalysisResult = event.result;
@@ -158,7 +158,7 @@ export function useAudioSync(options: UseAudioSyncOptions = {}): UseAudioSyncRet
       updateTimelineState();
     };
 
-    const handleSyncError = (event: any) => {
+    const handleSyncError = (event: unknown) => {
       console.error('Sync error:', event.error);
       setAnalysisProgress(0);
     };

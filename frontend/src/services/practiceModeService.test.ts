@@ -115,7 +115,7 @@ describe('PracticeModeService', () => {
       expect(parsedAchievements.length).toBeGreaterThan(0);
       
       // Check for specific achievements
-      const firstSession = parsedAchievements.find((a: any) => a.id === 'first_session');
+      const firstSession = parsedAchievements.find((a: unknown) => a.id === 'first_session');
       expect(firstSession).toBeDefined();
       expect(firstSession.title).toBe('First Steps');
     });

@@ -27,8 +27,8 @@ import { useWebSocketConnection, useWebSocketRoom, useWebSocketCollaboration } f
 describe('WebSocketService', () => {
   let service: WebSocketService;
   let mockEventHandlers: Record<string, Function>;
-  let mockSocket: any;
-  let mockIo: any;
+  let mockSocket: unknown;
+  let mockIo: unknown;
 
   beforeEach(() => {
     // Get fresh mock instances
@@ -37,7 +37,7 @@ describe('WebSocketService', () => {
     mockSocket = mockIo();
     
     mockEventHandlers = {};
-    mockSocket.on.mockImplementation((event: string, handler: Function) => {
+    mockSocket.on.mockImplementation((event: string, handler: (...args: unknown[]) => unknown) => {
       mockEventHandlers[event] = handler;
     });
     mockSocket.emit.mockClear();

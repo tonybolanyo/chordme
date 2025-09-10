@@ -74,7 +74,7 @@ export const YouTubeIntegration: React.FC<YouTubeIntegrationProps> = ({
           enabled: response.syncEnabled,
           chordProgression: response.chordMapping,
         }));
-      } catch (err: any) {
+      } catch (err: unknown) {
         if (err.status !== 404) {
           const errorMsg = err.message || 'Failed to load YouTube data';
           setError(errorMsg);
@@ -105,7 +105,7 @@ export const YouTubeIntegration: React.FC<YouTubeIntegrationProps> = ({
         total: number;
       }>(`/youtube/suggest/${song.id}`);
       setSuggestions(response.suggestions);
-    } catch (err: any) {
+    } catch (err: unknown) {
       const errorMsg = err.message || 'Failed to load video suggestions';
       setError(errorMsg);
       onError?.(errorMsg);
@@ -155,7 +155,7 @@ export const YouTubeIntegration: React.FC<YouTubeIntegrationProps> = ({
 
       setLinkedVideo(linkedData);
       setCurrentView('player');
-    } catch (err: any) {
+    } catch (err: unknown) {
       const errorMsg = err.message || 'Failed to link video';
       setError(errorMsg);
       onError?.(errorMsg);
@@ -180,7 +180,7 @@ export const YouTubeIntegration: React.FC<YouTubeIntegrationProps> = ({
       if (autoSearch) {
         await loadSuggestions();
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       const errorMsg = err.message || 'Failed to unlink video';
       setError(errorMsg);
       onError?.(errorMsg);
@@ -190,7 +190,7 @@ export const YouTubeIntegration: React.FC<YouTubeIntegrationProps> = ({
   }, [song.id, linkedVideo, autoSearch, loadSuggestions, onError]);
 
   // Handle YouTube player errors
-  const handlePlayerError = useCallback((error: any) => {
+  const handlePlayerError = useCallback((error: unknown) => {
     const errorMsg = error.message || 'YouTube player error';
     setError(errorMsg);
     onError?.(errorMsg);

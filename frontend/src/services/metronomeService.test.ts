@@ -297,7 +297,7 @@ describe('MetronomeService', () => {
     });
 
     it('should emit beat events with correct information', () => {
-      const beatEvents: any[] = [];
+      const beatEvents: unknown[] = [];
       metronome.addEventListener('beat', (event) => {
         beatEvents.push(event);
       });
@@ -315,7 +315,7 @@ describe('MetronomeService', () => {
     });
 
     it('should emit measure events correctly', () => {
-      const measureEvents: any[] = [];
+      const measureEvents: unknown[] = [];
       metronome.addEventListener('measure', (event) => {
         measureEvents.push(event);
       });
@@ -363,7 +363,7 @@ describe('MetronomeService', () => {
       vi.useRealTimers();
     });
     it('should mark first beat of measure as accent', () => {
-      const beatEvents: any[] = [];
+      const beatEvents: unknown[] = [];
       metronome.addEventListener('beat', (event) => {
         beatEvents.push(event);
       });
@@ -376,7 +376,7 @@ describe('MetronomeService', () => {
     });
 
     it('should mark non-first beats as non-accent', () => {
-      const beatEvents: any[] = [];
+      const beatEvents: unknown[] = [];
       metronome.addEventListener('beat', (event) => {
         beatEvents.push(event);
       });

@@ -68,7 +68,7 @@ class PerformanceMonitoringService {
   
   private monitoringInterval: number | null = null;
   private sessionStartTime: number = Date.now();
-  private listeners: Array<(metrics: any) => void> = [];
+  private listeners: Array<(metrics: unknown) => void> = [];
 
   constructor() {
     this.startMonitoring();
@@ -332,14 +332,14 @@ class PerformanceMonitoringService {
   /**
    * Add performance metrics listener
    */
-  public addListener(callback: (metrics: any) => void): void {
+  public addListener(callback: (metrics: unknown) => void): void {
     this.listeners.push(callback);
   }
 
   /**
    * Remove performance metrics listener
    */
-  public removeListener(callback: (metrics: any) => void): void {
+  public removeListener(callback: (metrics: unknown) => void): void {
     const index = this.listeners.indexOf(callback);
     if (index > -1) {
       this.listeners.splice(index, 1);
@@ -349,7 +349,7 @@ class PerformanceMonitoringService {
   /**
    * Notify all listeners
    */
-  private notifyListeners(data: any): void {
+  private notifyListeners(data: unknown): void {
     this.listeners.forEach(callback => {
       try {
         callback(data);

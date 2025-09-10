@@ -69,7 +69,7 @@ const PerformanceMonitoringDashboard: React.FC<PerformanceMonitoringDashboardPro
 
   // Performance monitoring listener
   useEffect(() => {
-    const handlePerformanceUpdate = (data: any) => {
+    const handlePerformanceUpdate = (data: unknown) => {
       if (data.type === 'alert') {
         setAlerts(prev => [...prev.slice(-9), data.alert]); // Keep last 10 alerts
       }

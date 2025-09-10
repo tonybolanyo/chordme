@@ -24,7 +24,7 @@ const mockYTPlayer = {
 };
 
 const mockYT = {
-  Player: vi.fn((containerId: string, config: any) => {
+  Player: vi.fn((containerId: string, config: unknown) => {
     // Simulate async player creation
     setTimeout(() => {
       config.events.onReady({ target: mockYTPlayer });
@@ -175,7 +175,7 @@ describe('YouTubeService', () => {
       };
 
       // Mock player creation error
-      mockYT.Player.mockImplementationOnce((containerId: string, config: any) => {
+      mockYT.Player.mockImplementationOnce((containerId: string, config: unknown) => {
         setTimeout(() => {
           config.events.onError({ data: 100 });
         }, 10);

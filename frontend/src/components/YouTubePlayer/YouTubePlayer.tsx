@@ -17,10 +17,10 @@ export interface YouTubePlayerProps {
   videoId?: string;
   config?: Partial<YouTubePlayerConfig>;
   syncConfig?: YouTubeSyncConfig;
-  onPlayerReady?: (player: any) => void;
+  onPlayerReady?: (player: unknown) => void;
   onStateChange?: (state: number) => void;
   onTimeUpdate?: (currentTime: number) => void;
-  onError?: (error: any) => void;
+  onError?: (error: unknown) => void;
   onChordHighlight?: (chord: ChordTimeMapping) => void;
   className?: string;
   height?: number;
@@ -170,7 +170,7 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
     };
   }, [onTimeUpdate, onChordHighlight]);
 
-  const handleStateChange = useCallback((event: any) => {
+  const handleStateChange = useCallback((event: unknown) => {
     const state = event.data;
     setCurrentState(state);
     onStateChange?.(state);
@@ -184,7 +184,7 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
     }
   }, [onStateChange]);
 
-  const handleError = useCallback((event: any) => {
+  const handleError = useCallback((event: unknown) => {
     let errorMessage = 'YouTube player error';
     
     switch (event.data) {

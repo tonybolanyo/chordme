@@ -42,7 +42,7 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ className = '' }) =
     setActiveView('overview');
   };
 
-  const handleCreateProject = async (projectData: any) => {
+  const handleCreateProject = async (projectData: unknown) => {
     try {
       const newProject = await professionalCollaborationService.createProject(projectData);
       setProjects(prev => [newProject, ...prev]);

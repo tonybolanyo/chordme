@@ -36,20 +36,20 @@ export interface UseAutoScrollAndRemoteControlReturn {
   // Remote control state and controls
   remoteControlConfig: RemoteControlConfig;
   updateRemoteControlConfig: (config: Partial<RemoteControlConfig>) => void;
-  remoteControlState: any;
+  remoteControlState: unknown;
   startRemoteControl: () => Promise<void>;
   stopRemoteControl: () => Promise<void>;
-  connectedDevices: any[];
+  connectedDevices: unknown[];
   lastRemoteCommand?: RemoteCommand;
 
   // Voice control state and controls
   voiceControlConfig: VoiceControlConfig;
   updateVoiceControlConfig: (config: Partial<VoiceControlConfig>) => void;
-  voiceControlState: any;
+  voiceControlState: unknown;
   isVoiceControlSupported: boolean;
   startVoiceControl: () => void;
   stopVoiceControl: () => void;
-  lastVoiceResult?: any;
+  lastVoiceResult?: unknown;
 
   // Integration utilities
   setAudioSource: (source: AudioSource) => void;
@@ -147,11 +147,11 @@ export function useAutoScrollAndRemoteControl(
   }, []);
 
   // Auto-scroll event handlers
-  const handleAutoScrollConfigUpdate = useCallback((data: any) => {
+  const handleAutoScrollConfigUpdate = useCallback((data: unknown) => {
     setAutoScrollConfig(data.config);
   }, []);
 
-  const handleScrollComplete = useCallback((data: any) => {
+  const handleScrollComplete = useCallback((data: unknown) => {
     setIsAutoScrollActive(false);
   }, []);
 
@@ -160,7 +160,7 @@ export function useAutoScrollAndRemoteControl(
     setIsAutoScrollActive(false);
   }, []);
 
-  const handleManualOverride = useCallback((data: any) => {
+  const handleManualOverride = useCallback((data: unknown) => {
     setIsManualOverrideActive(data.active);
   }, []);
 
@@ -172,23 +172,23 @@ export function useAutoScrollAndRemoteControl(
   }, [handleAutoScrollConfigUpdate, handleScrollComplete, handleAutoScrollEmergencyStop, handleManualOverride]);
 
   // Remote control event handlers
-  const handleRemoteControlConfigUpdate = useCallback((data: any) => {
+  const handleRemoteControlConfigUpdate = useCallback((data: unknown) => {
     setRemoteControlConfig(data.config);
   }, []);
 
-  const handleRemoteControlServerStarted = useCallback((data: any) => {
+  const handleRemoteControlServerStarted = useCallback((data: unknown) => {
     setRemoteControlState(remoteControlService.getState());
   }, []);
 
-  const handleDeviceConnected = useCallback((data: any) => {
+  const handleDeviceConnected = useCallback((data: unknown) => {
     setConnectedDevices(remoteControlService.getState().connectedDevices);
   }, []);
 
-  const handleDeviceDisconnected = useCallback((data: any) => {
+  const handleDeviceDisconnected = useCallback((data: unknown) => {
     setConnectedDevices(remoteControlService.getState().connectedDevices);
   }, []);
 
-  const handleRemoteCommandExecuted = useCallback((data: any) => {
+  const handleRemoteCommandExecuted = useCallback((data: unknown) => {
     setLastRemoteCommand(data.command);
   }, []);
 
@@ -205,7 +205,7 @@ export function useAutoScrollAndRemoteControl(
       updateAutoScrollConfig(newConfig);
     });
 
-    remoteControlService.addEventListener('command:autoScrollSpeed', (data: any) => {
+    remoteControlService.addEventListener('command:autoScrollSpeed', (data: unknown) => {
       const speed = data.speed || data.value || 1.0;
       updateAutoScrollConfig({ speed: Math.max(0.1, Math.min(5.0, speed)) });
     });
@@ -243,16 +243,16 @@ export function useAutoScrollAndRemoteControl(
   }, [autoScrollConfig]);
 
   // Voice control event handlers
-  const handleVoiceControlConfigUpdate = useCallback((data: any) => {
+  const handleVoiceControlConfigUpdate = useCallback((data: unknown) => {
     setVoiceControlConfig(data.config);
   }, []);
 
-  const handleVoiceResult = useCallback((data: any) => {
+  const handleVoiceResult = useCallback((data: unknown) => {
     setLastVoiceResult(data.result);
     setVoiceControlState(voiceControlService.getState());
   }, []);
 
-  const handleVoiceCommandRecognized = useCallback((data: any) => {
+  const handleVoiceCommandRecognized = useCallback((data: unknown) => {
     // Convert voice command to remote command and execute
     const remoteCommand: RemoteCommand = {
       id: `voice_${Date.now()}`,

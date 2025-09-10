@@ -431,7 +431,7 @@ export interface RecentActivity {
   user_id: number;
   user_name: string;
   timestamp: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface ParticipantStats {
@@ -472,7 +472,7 @@ export interface Project {
   template_id?: number;
   is_public: boolean;
   tags: string[];
-  custom_fields: Record<string, any>;
+  custom_fields: Record<string, unknown>;
   created_at: string;
   updated_at: string;
   stats?: ProjectStats;

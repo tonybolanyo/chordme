@@ -357,21 +357,21 @@ export class AudioSynchronizationService {
   }
 
   // Event handling
-  addEventListener(type: string, listener: Function): void {
+  addEventListener(type: string, listener: (...args: unknown[]) => unknown): void {
     if (!this.eventListeners.has(type)) {
       this.eventListeners.set(type, new Set());
     }
     this.eventListeners.get(type)!.add(listener);
   }
 
-  removeEventListener(type: string, listener: Function): void {
+  removeEventListener(type: string, listener: (...args: unknown[]) => unknown): void {
     const listeners = this.eventListeners.get(type);
     if (listeners) {
       listeners.delete(listener);
     }
   }
 
-  private emit(type: string, data: any): void {
+  private emit(type: string, data: unknown): void {
     const listeners = this.eventListeners.get(type);
     if (listeners) {
       listeners.forEach((listener) => {

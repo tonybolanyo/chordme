@@ -609,7 +609,7 @@ class AIMusicInsightsService {
     return algorithms;
   }
 
-  private assessDataQuality(content: string, chordDetection: any): number {
+  private assessDataQuality(content: string, chordDetection: unknown): number {
     let quality = 1.0;
     
     // Reduce quality if very few chords
@@ -629,7 +629,7 @@ class AIMusicInsightsService {
     return Math.max(0, Math.min(1, quality));
   }
 
-  private createInsightsError(code: string, message: string, details?: any): MusicInsightsError {
+  private createInsightsError(code: string, message: string, details?: unknown): MusicInsightsError {
     return { code, message, details };
   }
 
@@ -810,7 +810,7 @@ class AIMusicInsightsService {
 
   private getKeySignature(root: string, mode: string): { sharps: number; flats: number; accidentals: string[] } {
     // Simplified key signature calculation
-    const signatures: Record<string, any> = {
+    const signatures: Record<string, unknown> = {
       'C major': { sharps: 0, flats: 0, accidentals: [] },
       'G major': { sharps: 1, flats: 0, accidentals: ['F#'] },
       'F major': { sharps: 0, flats: 1, accidentals: ['Bb'] },

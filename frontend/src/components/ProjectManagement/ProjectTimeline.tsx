@@ -126,7 +126,7 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ projectId }) => {
 interface GanttChartProps {
   data: GanttChartData;
   viewMode: 'week' | 'month';
-  onTaskUpdate: (taskId: number, updates: any) => void;
+  onTaskUpdate: (taskId: number, updates: unknown) => void;
 }
 
 const GanttChart: React.FC<GanttChartProps> = ({ data, viewMode, onTaskUpdate }) => {
@@ -135,7 +135,7 @@ const GanttChart: React.FC<GanttChartProps> = ({ data, viewMode, onTaskUpdate })
   const totalDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
   const timelineWidth = Math.max(totalDays * (viewMode === 'week' ? 20 : 8), 800);
 
-  const getTaskPosition = (task: any) => {
+  const getTaskPosition = (task: unknown) => {
     const taskStart = new Date(task.start);
     const taskEnd = new Date(task.end);
     const dayWidth = timelineWidth / totalDays;
@@ -149,7 +149,7 @@ const GanttChart: React.FC<GanttChartProps> = ({ data, viewMode, onTaskUpdate })
     };
   };
 
-  const getMilestonePosition = (milestone: any) => {
+  const getMilestonePosition = (milestone: unknown) => {
     const milestoneDate = new Date(milestone.date);
     const dayWidth = timelineWidth / totalDays;
     const offset = Math.floor((milestoneDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));

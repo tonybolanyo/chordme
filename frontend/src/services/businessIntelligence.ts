@@ -503,7 +503,7 @@ class BusinessIntelligenceService {
   /**
    * Preview report data before generation
    */
-  async previewReport(config: ReportConfig): Promise<any> {
+  async previewReport(config: ReportConfig): Promise<unknown> {
     const response = await apiCall<BIApiResponse<any>>(
       `${this.baseUrl}/reports/preview`,
       {

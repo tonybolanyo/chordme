@@ -21,7 +21,7 @@ export interface VoiceCommand {
   id: string;
   patterns: string[]; // Multiple ways to say the command
   action: string; // Action to execute
-  parameters?: Record<string, any>;
+  parameters?: Record<string, unknown>;
   description: string;
   language?: string; // If specific to a language
   enabled: boolean;
@@ -363,8 +363,8 @@ export class VoiceControlService {
     });
   }
 
-  private extractCommandParameters(command: VoiceCommand, transcript: string): Record<string, any> {
-    const parameters: Record<string, any> = {};
+  private extractCommandParameters(command: VoiceCommand, transcript: string): Record<string, unknown> {
+    const parameters: Record<string, unknown> = {};
     
     // Extract numbers for volume, speed, etc.
     const numberMatch = transcript.match(/(\d+)/);
@@ -640,21 +640,21 @@ export class VoiceControlService {
   }
 
   // Event handling
-  addEventListener(type: string, listener: Function): void {
+  addEventListener(type: string, listener: (...args: unknown[]) => unknown): void {
     if (!this.eventListeners.has(type)) {
       this.eventListeners.set(type, new Set());
     }
     this.eventListeners.get(type)!.add(listener);
   }
 
-  removeEventListener(type: string, listener: Function): void {
+  removeEventListener(type: string, listener: (...args: unknown[]) => unknown): void {
     const listeners = this.eventListeners.get(type);
     if (listeners) {
       listeners.delete(listener);
     }
   }
 
-  private emit(type: string, data: any): void {
+  private emit(type: string, data: unknown): void {
     const listeners = this.eventListeners.get(type);
     if (listeners) {
       listeners.forEach((listener) => {

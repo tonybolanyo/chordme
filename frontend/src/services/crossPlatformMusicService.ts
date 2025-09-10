@@ -440,7 +440,7 @@ class CrossPlatformMusicService {
   /**
    * Calculate confidence score for a metadata source
    */
-  private calculateSourceConfidence(platform: string, track: any): number {
+  private calculateSourceConfidence(platform: string, track: unknown): number {
     let confidence = 0.5; // Base confidence
 
     // Platform-specific confidence adjustments
@@ -464,7 +464,7 @@ class CrossPlatformMusicService {
   /**
    * Check if track data is complete
    */
-  private isDataComplete(platform: string, track: any): boolean {
+  private isDataComplete(platform: string, track: unknown): boolean {
     if (platform === 'spotify') {
       return !!(track.name && track.artists?.length && track.album?.name && track.duration_ms);
     } else if (platform === 'apple-music') {
@@ -477,7 +477,7 @@ class CrossPlatformMusicService {
   /**
    * Get available metadata fields from a track
    */
-  private getAvailableFields(platform: string, track: any): string[] {
+  private getAvailableFields(platform: string, track: unknown): string[] {
     const fields: string[] = [];
     
     if (platform === 'spotify') {

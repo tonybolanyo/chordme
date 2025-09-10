@@ -11,7 +11,7 @@ vi.mock('../components', () => ({
     <div data-testid="transposition-controls">Controls</div>
   ),
   ViewModeSelector: () => <div data-testid="view-mode-selector">View Mode</div>,
-  SplitViewLayout: ({ editorContent, previewContent }: any) => (
+  SplitViewLayout: ({ editorContent, previewContent }: unknown) => (
     <div data-testid="split-view-layout">
       <div data-testid="editor-content">{editorContent}</div>
       <div data-testid="preview-content">{previewContent}</div>

@@ -395,7 +395,7 @@ export class TuningService {
   /**
    * Helper method to create TuningInfo from template
    */
-  private createTuningInfo(preset: TuningPreset, template: any): TuningInfo {
+  private createTuningInfo(preset: TuningPreset, template: unknown): TuningInfo {
     return {
       id: `${template.instrument}_${preset}`,
       ...template,

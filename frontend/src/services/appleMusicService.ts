@@ -22,7 +22,7 @@ import type {
 // MusicKit types for better integration
 declare global {
   interface Window {
-    MusicKit: any;
+    MusicKit: unknown;
   }
 }
 

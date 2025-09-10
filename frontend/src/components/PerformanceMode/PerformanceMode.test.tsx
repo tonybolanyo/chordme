@@ -9,7 +9,7 @@ import { PerformanceMode } from './PerformanceMode';
 
 // Mock SynchronizedChordViewer and TranspositionControls
 vi.mock('../SynchronizedChordViewer', () => ({
-  SynchronizedChordViewer: ({ content, className }: any) => (
+  SynchronizedChordViewer: ({ content, className }: { content: string; className?: string }) => (
     <div data-testid="synchronized-chord-viewer" className={className}>
       {content}
     </div>
@@ -17,7 +17,12 @@ vi.mock('../SynchronizedChordViewer', () => ({
 }));
 
 vi.mock('../TranspositionControls', () => ({
-  default: ({ onTranspose, onReset, currentTransposition, className }: any) => (
+  default: ({ onTranspose, onReset, currentTransposition, className }: { 
+    onTranspose: (value: number) => void; 
+    onReset: () => void; 
+    currentTransposition: number; 
+    className?: string; 
+  }) => (
     <div data-testid="transposition-controls" className={className}>
       <button onClick={() => onTranspose(1)}>Transpose Up</button>
       <button onClick={() => onTranspose(-1)}>Transpose Down</button>

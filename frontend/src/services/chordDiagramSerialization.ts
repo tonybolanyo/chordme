@@ -249,7 +249,7 @@ export function deserializeChordDiagramCollection(
   json: string,
   options: DeserializationOptions = {}
 ): ChordDiagramCollection {
-  let data: any;
+  let data: unknown;
   try {
     data = JSON.parse(json);
   } catch (error) {
@@ -260,7 +260,7 @@ export function deserializeChordDiagramCollection(
     throw new Error('Missing required fields in chord diagram collection data');
   }
 
-  const diagrams = data.diagrams.map((diagramData: any) => 
+  const diagrams = data.diagrams.map((diagramData: unknown) => 
     deserializeChordDiagram(JSON.stringify(diagramData), options)
   );
 

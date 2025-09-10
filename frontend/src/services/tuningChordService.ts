@@ -517,7 +517,7 @@ export class TuningChordService {
   /**
    * Get benefits of chord adaptation
    */
-  private getAdaptationBenefits(conversion: any): string[] {
+  private getAdaptationBenefits(conversion: unknown): string[] {
     const benefits: string[] = [];
     
     if (conversion.confidence > 90) {

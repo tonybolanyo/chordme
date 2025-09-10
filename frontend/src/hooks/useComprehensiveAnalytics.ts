@@ -52,7 +52,7 @@ export interface UseComprehensiveAnalyticsReturn {
   // Actions
   refresh: () => Promise<void>;
   setTimeframe: (timeframe: AnalyticsTimeframe) => void;
-  exportData: (config: AnalyticsExportConfig) => Promise<any>;
+  exportData: (config: AnalyticsExportConfig) => Promise<unknown>;
   
   // Real-time updates
   subscribeToRealTimeUpdates: () => void;
@@ -205,7 +205,7 @@ export function useComprehensiveAnalytics(
       return result.data.widget_config;
     },
     
-    async exportData(config: AnalyticsExportConfig): Promise<any> {
+    async exportData(config: AnalyticsExportConfig): Promise<unknown> {
       const response = await fetch('/api/v1/analytics/comprehensive/export/comprehensive', {
         method: 'POST',
         headers: {
@@ -298,7 +298,7 @@ export function useComprehensiveAnalytics(
       return;
     }
     
-    const handleAnalyticsUpdate = (data: any) => {
+    const handleAnalyticsUpdate = (data: unknown) => {
       // Handle real-time analytics updates
       if (data.type === 'analytics_update') {
         // Refresh specific sections based on update type
@@ -464,7 +464,7 @@ export function useRealTimeAnalytics() {
       setUpdates(prev => [update, ...prev.slice(0, 9)]); // Keep last 10 updates
     };
     
-    const handleConnection = (status: any) => {
+    const handleConnection = (status: unknown) => {
       setIsConnected(status.connected);
     };
     

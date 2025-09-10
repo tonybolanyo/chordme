@@ -267,7 +267,7 @@ const PerformanceAnalyticsDashboard: React.FC<PerformanceAnalyticsDashboardProps
 // Overview Tab Component
 const OverviewTab: React.FC<{
   insights?: PerformanceInsights;
-  metrics: any;
+  metrics: unknown;
   isTracking: boolean;
   loading: boolean;
   error?: string;
