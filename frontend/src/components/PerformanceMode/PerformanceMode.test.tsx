@@ -160,7 +160,7 @@ describe('PerformanceMode', () => {
   });
 
   it('applies correct CSS classes for different themes', () => {
-    const { rerender } = render(<PerformanceMode content={sampleContent} />);
+    render(<PerformanceMode content={sampleContent} />);
     
     let container = screen.getByTestId('synchronized-chord-viewer').closest('.performance-mode');
     expect(container).toHaveClass('performance-mode--practice');

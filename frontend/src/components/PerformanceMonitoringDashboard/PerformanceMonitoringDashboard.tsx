@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { performanceMonitoringService } from '../../services/performanceMonitoringService';
+import { performanceMonitoringService, PerformanceAlert } from '../../services/performanceMonitoringService';
 import './PerformanceMonitoringDashboard.css';
 
 interface PerformanceMonitoringDashboardProps {
@@ -50,10 +50,11 @@ const PerformanceMonitoringDashboard: React.FC<PerformanceMonitoringDashboardPro
   onClose
 }) => {
   const [performanceData, setPerformanceData] = useState<PerformanceStatus | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_isMonitoring, setIsMonitoring] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [refreshInterval, setRefreshInterval] = useState(5000); // 5 seconds
-  const [alerts, setAlerts] = useState<any[]>([]);
+  const [alerts, setAlerts] = useState<PerformanceAlert[]>([]);
 
   // Update performance data
   const updatePerformanceData = useCallback(() => {

@@ -40,7 +40,7 @@ const mockElement = {
 const originalCreateElement = document.createElement;
 document.createElement = vi.fn((tagName) => {
   if (tagName === 'a') {
-    return mockElement as any;
+    return mockElement as HTMLAnchorElement;
   }
   return originalCreateElement(tagName);
 });
@@ -93,12 +93,12 @@ describe('FavoritesModal', () => {
     vi.clearAllMocks();
     
     // Setup default mock returns
-    (favoritesService.getFavoriteSongs as any).mockResolvedValue({
+    (favoritesService.getFavoriteSongs as vi.MockedFunction<typeof favoritesService.getFavoriteSongs>).mockResolvedValue({
       data: { favorites: mockFavoriteSongs, total_count: 1 }
     });
-    (favoritesService.getFavoriteQueries as any).mockReturnValue(mockFavoriteQueries);
-    (favoritesService.getSearchHistory as any).mockReturnValue(mockSearchHistory);
-    (favoritesService.getSearchPrivacySettings as any).mockReturnValue({
+    (favoritesService.getFavoriteQueries as vi.MockedFunction<typeof favoritesService.getFavoriteQueries>).mockReturnValue(mockFavoriteQueries);
+    (favoritesService.getSearchHistory as vi.MockedFunction<typeof favoritesService.getSearchHistory>).mockReturnValue(mockSearchHistory);
+    (favoritesService.getSearchPrivacySettings as vi.MockedFunction<typeof favoritesService.getSearchPrivacySettings>).mockReturnValue({
       clearOnExit: false,
       trackHistory: true,
     });

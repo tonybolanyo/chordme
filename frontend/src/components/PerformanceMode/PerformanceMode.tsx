@@ -6,7 +6,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { SynchronizedChordViewer } from '../SynchronizedChordViewer';
 import TranspositionControls from '../TranspositionControls';
-import { ChordTimeMapping, AudioSource, SyncTimeline } from '../../types/audio';
+import { AudioSource, SyncTimeline } from '../../types/audio';
 import './PerformanceMode.css';
 
 export interface PerformanceModeProps {

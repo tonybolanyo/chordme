@@ -55,7 +55,7 @@ export const DailyChallenges: React.FC<DailyChallengesProps> = ({ className = ''
     }
   };
 
-  const getChallengeIcon = (type: string) => {
+  const getChallengeIcon = React.useCallback((type: string) => {
     const icons = {
       practice_time: '⏱️',
       accuracy: '🎯',
@@ -65,7 +65,7 @@ export const DailyChallenges: React.FC<DailyChallengesProps> = ({ className = ''
       mastery: '⭐'
     };
     return icons[type as keyof typeof icons] || '🎯';
-  };
+  }, []);
 
   if (loading) {
     return (
