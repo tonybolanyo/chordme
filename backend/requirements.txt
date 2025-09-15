@@ -90,7 +90,7 @@ hpack==4.1.0
     # via h2
 httpcore==1.0.9
     # via httpx
-httplib2==0.30.0
+httplib2==0.31.0
     # via
     #   google-api-python-client
     #   google-auth-httplib2
@@ -151,7 +151,7 @@ postgrest==1.1.1
     # via supabase
 proto-plus==1.26.1
     # via google-api-core
-protobuf==6.32.0
+protobuf==6.32.1
     # via
     #   google-api-core
     #   googleapis-common-protos
@@ -165,7 +165,7 @@ pyasn1==0.6.1
     #   rsa
 pyasn1-modules==0.4.2
     # via google-auth
-pydantic==2.11.7
+pydantic==2.11.9
     # via
     #   postgrest
     #   realtime
@@ -182,7 +182,7 @@ pyjwt==2.10.1
     #   supabase-auth
 pyotp==2.9.0
     # via -r requirements.in
-pyparsing==3.2.3
+pyparsing==3.2.4
     # via httplib2
 pypng==0.20220715.0
     # via qrcode
