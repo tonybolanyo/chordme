@@ -199,7 +199,7 @@ python-dateutil==2.9.0.post0
     # via storage3
 python-engineio==4.12.2
     # via python-socketio
-python-socketio==5.11.4
+python-socketio==5.14.0
     # via
     #   -r requirements.in
     #   flask-socketio
