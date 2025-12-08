@@ -68,9 +68,8 @@ services:
     depends_on:
       backend:
         condition: service_healthy
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
+    # Note: Volume mount disabled to avoid node_modules issues
+    # For frontend code changes, rebuild with: docker compose build frontend
     networks:
       - chordme-network
     healthcheck:
