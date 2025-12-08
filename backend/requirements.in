@@ -48,7 +48,7 @@ sentry-sdk[flask]==2.20.0
 structlog==25.4.0
 
 # WebSocket support
-python-socketio==5.11.4
+python-socketio==5.14.0
 flask-socketio==5.4.1
 redis==5.2.1  # For scaling Socket.IO across multiple instances
 
