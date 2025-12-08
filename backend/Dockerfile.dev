@@ -16,11 +16,12 @@ COPY requirements.txt .
 # Install Python dependencies
 RUN pip install --no-cache-dir --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org -r requirements.txt
 
+# Copy entrypoint script
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 # Copy application code
 COPY . .
-
-# Copy config template if config.py doesn't exist
-RUN if [ ! -f config.py ]; then cp config.template.py config.py; fi
 
 # Expose port
 EXPOSE 5000
@@ -28,4 +29,5 @@ EXPOSE 5000
 # Use Flask development server with hot reload
 ENV FLASK_APP=run.py
 ENV FLASK_DEBUG=1
-CMD ["python", "run.py"]
+
+ENTRYPOINT ["docker-entrypoint.sh"]

@@ -11,13 +11,20 @@ import os
 # Add the database directory to Python path so we can import the population script
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'database'))
 
-from populate_chord_database import populate_chord_database
+# Import conditionally to avoid errors when populate_chord_database is not available
+try:
+    from populate_chord_database import populate_chord_database
+except ImportError:
+    populate_chord_database = None
 
 
 @click.command()
 @with_appcontext
 def populate_chords():
     """Populate the chord database with 200+ essential chords."""
+    if populate_chord_database is None:
+        click.echo("Error: populate_chord_database module not available")
+        return
     click.echo("Starting chord database population...")
     
     try:

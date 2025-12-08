@@ -34,6 +34,7 @@ services:
       - JWT_SECRET_KEY=${JWT_SECRET_KEY:-development-jwt-secret-key}
       - SECRET_KEY=${SECRET_KEY:-development-secret-key}
       - HTTPS_ENFORCED=${HTTPS_ENFORCED:-False}
+      - SKIP_DB_CREATE_ALL=True
     ports:
       - "5000:5000"
     depends_on:
