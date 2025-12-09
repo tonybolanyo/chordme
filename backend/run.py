@@ -35,5 +35,6 @@ if __name__ == '__main__':
         debug=debug_mode,
         host=host,
         port=port,
-        ssl_context=ssl_context
+        ssl_context=ssl_context,
+        allow_unsafe_werkzeug=True  # Allow Werkzeug in development
     )

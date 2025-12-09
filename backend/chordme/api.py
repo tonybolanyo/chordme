@@ -6236,5 +6236,8 @@ app.register_blueprint(comprehensive_analytics_bp)
 app.register_blueprint(setlist_bp)
 
 # Initialize database tables
-with app.app_context():
-    db.create_all()
+# Skip for Docker/PostgreSQL setup where migrations are used
+import os
+if os.environ.get('SKIP_DB_CREATE_ALL', 'False').lower() not in ('true', '1', 'yes'):
+    with app.app_context():
+        db.create_all()

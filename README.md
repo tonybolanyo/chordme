@@ -27,6 +27,30 @@ Lyrics and chords in a simple way
 
 ## Quick Start
 
+### 🐳 Docker Setup (Recommended - Easiest)
+
+**Perfect for local development without cloud dependencies!**
+
+```bash
+# Clone the repository
+git clone https://github.com/tonybolanyo/chordme.git
+cd chordme
+
+# Start everything with Docker (database, backend, frontend)
+docker compose up -d
+
+# Access the application
+# Frontend: http://localhost:5173
+# Backend: http://localhost:5000
+# Database: localhost:5432
+```
+
+**That's it!** Everything runs locally with automatic database initialization.
+
+📖 See [DOCKER_SETUP.md](DOCKER_SETUP.md) for complete Docker instructions.
+
+### Manual Setup (Alternative)
+
 ```bash
 # Clone the repository
 git clone https://github.com/tonybolanyo/chordme.git
@@ -47,11 +71,11 @@ npm run dev:frontend   # Terminal 2 (React App - Port 5173)
 
 Then open http://localhost:5173 in your browser.
 
-## 🐳 Docker Setup (Recommended)
+## 🐳 Advanced Docker Options
 
-For a complete containerized development environment, use Docker Compose or Minikube:
+For more advanced setups, check [DOCKER_SETUP.md](DOCKER_SETUP.md):
 
-### Development Database (Easiest)
+### Development Database Only
 
 Start just the database and Redis services, run your app locally:
 
@@ -63,26 +87,8 @@ npm run docker:dev
 npm run dev:backend    # Terminal 1 (Flask API - Port 5000)
 npm run dev:frontend   # Terminal 2 (React App - Port 5173)
 
-# Access the application:
-# Frontend: http://localhost:5173
-# Backend API: http://localhost:5000
-# Database: localhost:5432 (PostgreSQL)
-
 # Stop services when done
 npm run docker:dev:stop
-```
-
-### Full Docker Compose
-
-```bash
-# Start all services (database, backend, frontend)
-npm run docker:start
-
-# Check status
-npm run docker:status
-
-# Stop services
-npm run docker:stop
 ```
 
 ### Minikube (Kubernetes)
@@ -97,6 +103,7 @@ npm run k8s:setup
 # Clean up
 npm run k8s:cleanup
 ```
+
 
 **[📖 Complete Docker Documentation](docs/docker-development.md)** - Detailed setup and troubleshooting guide
 
