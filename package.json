@@ -74,7 +74,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.2",
-    "@playwright/test": "^1.54.1",
+    "@playwright/test": "^1.57.0",
     "axe-core": "^4.10.3"
   },
   "keywords": [
