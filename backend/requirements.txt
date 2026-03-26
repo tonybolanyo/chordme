@@ -141,7 +141,7 @@ packaging==25.0
     #   deprecation
     #   flasgger
     #   pytest
-pillow==12.0.0
+pillow==12.1.1
     # via
     #   qrcode
     #   reportlab
@@ -151,14 +151,14 @@ postgrest==1.1.1
     # via supabase
 proto-plus==1.26.1
     # via google-api-core
-protobuf==6.33.2
+protobuf==6.33.5
     # via
     #   google-api-core
     #   googleapis-common-protos
     #   proto-plus
 psycopg2-binary==2.9.9
     # via -r requirements.in
-pyasn1==0.6.1
+pyasn1==0.6.3
     # via
     #   ldap3
     #   pyasn1-modules
@@ -219,7 +219,7 @@ referencing==0.37.0
     #   jsonschema-specifications
 reportlab==4.0.9
     # via -r requirements.in
-requests==2.32.4
+requests==2.33.0
     # via
     #   -r requirements.in
     #   google-api-core
@@ -272,7 +272,7 @@ typing-inspection==0.4.2
     # via pydantic
 uritemplate==4.2.0
     # via google-api-python-client
-urllib3==2.6.0
+urllib3==2.6.3
     # via
     #   requests
     #   sentry-sdk
